@@ -5,8 +5,8 @@
 		<link rel="icon" href="/icon.png" type="image/png">
 		<style>
 	        .fa:hover{cursor:pointer}
-            #settings form input{position: absolute;left:50%}
-			#settings form label{position: relative;left:-10%;top:5%}
+			form input{position:absolute;left:50%}
+			form label{position:absolute;left:10%;width:37.5%;text-align:right}
 			#chat li{background:none;list-style:none}
 			[cover]{position:fixed;left:0%;top:0%;width:100%;height:100%}
 			#loadcover{z-index:11}
@@ -23,11 +23,11 @@
 		<input id="cli" style="position:fixed;left:5%;top:90%;width:25%;height:5%;z-index:10;display:none">
 		<ul lsn id="chat" style="position:fixed;top:5%;width:30;height:75%;background:none;box-shadow:none;z-index:10"></ul>
 		<div id="main" starbg cover>
-            <h1 class="title" style="font-family:azonix,sans-serif;font-size:60px;position:absolute;top:15%;left:25%;width:50%;"><center>Blankstorm</center></h1>
+            <h1 class="title" style="font-family:azonix;font-size:60px;position:absolute;top:15%;left:25%;width:50%;"><center>Blankstorm</center></h1>
 			<button class="sp" style="position:fixed;left:37.5%;top:45%;width:25%;height:8%;">Singleplayer</button>
 			<button class="mp" style="position:fixed;left:37.5%;top:60%;width:25%;height:8%;">Multiplayer</button>
             <button class="options" style="position:fixed;left:37.5%;top:75%;width:12.4%;height:8%;">Options</button>
-			<a href="../"><button class="exit" style="position:fixed;left:50%;top:75%;width:12.4%;height:8%;">Exit</button></a>
+			<a href="/"><button class="exit" style="position:fixed;left:50%;top:75%;width:12.4%;height:8%;">Exit</button></a>
             <p class="version" style="position: fixed;left:90%;top:90%">[version]</p>
 		</div>
         <!-- save/server markup -->
@@ -35,17 +35,23 @@
 		<div id="save" cover nobg hide>
 			<div content>
 				<i class="fa fa-times" style="position:absolute;left:95%;top:5%;font-sze:30px"></i>
-				<input placeholder="save name" style="position:absolute;left:30%;top:10%;width:40%;height:5%">
-				<button style="position:absolute;left:35%;top:80%;width:30%;height:7.5%">Start</button>
+				<input placeholder="save name" class="name" style="position:absolute;left:30%;top:10%;width:40%;height:5%">
+				<button class="new" style="position:absolute;left:35%;top:80%;width:30%;height:7.5%">Start</button>
+				<form name="worldgen" nobg style="position:absolute;left:10%;top:20%;width:80%;height:50%">
+					<input type="range" name="size" label="Max world size" min="100" max="1000" step="100" value="500"><br><br>
+					<input type="range" name="planets" label="Max planets per level" min="1" max="9" step="1" value="9"><br><br>
+					<input type="range" name="difficulty" label="Difficulty" min="0.5" max="2" step="0.5" value="1"><br><br>
+					<input type="range" name="quality" label="Quality" min="32" max="256" step="32" value="128"><br><br>
+				</form>
 			</div>
 		</div>
 		<div id="server" hide content>
 			<i class="fa fa-times" style="position:absolute;left:95%;top:5%;font-sze:30px"></i>
-            <form>
-                <input placeholder="display name" name="name"  style="position:absolute;left:30%;top:10%;width:40%;height:5%;">
+            <form name="serverOptions">
+                <input placeholder="display name" name="displayName"  style="position:absolute;left:30%;top:10%;width:40%;height:5%;">
                 <input placeholder="server url" name="id" style="position:absolute;left:30%;top:20%;width:40%;height:5%;">
             </form>
-			<button style="position:absolute;left:35%;top:80%;width:30%;height:7.5%;">Save</button>
+			<button class="new" style="position:absolute;left:35%;top:80%;width:30%;height:7.5%;">Save</button>
 		</div>
 		<ul id="tips" hide lsn nobg style="position:fixed;left:25%;top:20%;width:50%;height:60%;border:0;text-align:center;">
 			<li><br>Access the shipyard, inventory, lab, and map by pressing e</li>
@@ -91,44 +97,37 @@
 			<button class="options" style="position:absolute;left:10%;top:40%;width:80%;height:15%">Options</button>
 			<button class="quit" style="position:absolute;left:10%;top:60%;width:80%;height:15%">Main&nbspMenu</button>
 		</div>
-		<div id="settings" hide content>
-                <button style="position: absolute;left: 5%; width: 15%;top:90%;height: 5%"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>
-                <center>
-                <h2>Settings</h2>
-                <form style="position: relative;top:10%">
-                    <input type="range" name="fontSize" label="Font Size" min="10" max="20" step="1" value="13">
-                    <br><br>
-                    <input type="checkbox" name="devMode" label="Developer Mode">
-                    <br><br>
-                    <input type="range" name="difficulty" label="Difficulty" min="0.5" max="1.5" step="0.5" value="1">
-					<br><br>
-					<input type="range" name="quality" label="Quality" min="32" max="256" step="32" value="128">
-					<br><br>
-					<input type="range" name="chatTimeout" label="Chat Timeout" min="2.5" max="7.5" step="0.5" value="5">
-					<br><br>
-					<input type="range" name="fps" label = "FPS" min="10" max="110" step="5" value="60">
-                </form>
-                </center>
-        </div>
+		<form id="settings" name="settings" hide content>
+			<button style="position: absolute;left: 5%; width: 15%;top:90%;height: 5%;"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>
+			<h2 style="text-align:center">Settings</h2>
+			<input type="range" name="fontSize" label="Font Size" min="10" max="20" step="1" value="13"><br><br>
+			<input type="checkbox" name="devMode" label="Developer Mode"><br><br>
+			<input type="range" name="chatTimeout" label="Chat Timeout" min="2.5" max="7.5" step="0.5" value="5"><br><br>
+			<input type="range" name="fps" label = "FPS" min="10" max="110" step="5" value="60">
+		</form>
 	</body>
     <div id="libraries">
-        <script class="jquery" src="../libraries/jquery.js"></script>
-        <script class="babylon" src="../libraries/babylon.min.js"></script>
-        <script class="loaders" src="../libraries/babylon.loaders.js"></script>
+        <script class="jquery" src="/libraries/jquery.js"></script>
+        <script class="babylon" src="/libraries/babylon.min.js"></script>
+        <script class="loaders" src="/libraries/babylon.loaders.js"></script>
     </div>
 	<script>
 	$("[label]").each(function(i){$(this).before($(`<label class="${this.name}">${$(this).attr("label")}</label>`))});
         
     //Prototype plugins
 	const def = (d,p,v) => {Object.defineProperty(d,p,{value:v,enumerable:!1})};
-	for(let  i of ["Object","Array","String","Boolean","Number"]){def(window[i],"fn",window[i].prototype)};
-	def(Object.fn,"hide",function(...p){for(let i in p){Object.defineProperty(this,p[i],{enumberable:!1})}});
-	def(Object.fn,"ro",function(...p){for(let i in p){Object.defineProperty(this,p[i],{writable:!1})}});
-	def(Object.fn,"assign",function(...objs){for(let i in objs){Object.assign(this,objs[i])}});
+	for(let  i of ["Object","Array","String","Boolean","Number","Date"]){def(window[i],"fn",window[i].prototype)};
+	def(Object.fn,"hide",function(...p){for(let i of p){Object.defineProperty(this,i,{enumberable:!1})}});
+	def(Object.fn,"ro",function(...p){for(let i of p){Object.defineProperty(this,i,{writable:!1})}});
+	def(Object.fn,"assign",function(...objs){for(let i of objs){Object.assign(this,i)}});
 	def(Array.fn,"total",function(){return eval(this.join("+"))});
     def(Number.fn,"toStar",function(){var s="";for(let i=0;i<this;i++){s+="*"};return s});
     def(String.fn,"isHex",function(){return /^[0-9a-f]+$/.test(this)});
 	def(String.fn,"isJSON",function(){try{JSON.parse(this);return !0}catch(e){return !1}});
+	Date.fn.assign({
+		today:()=>{let d = new Date();return `${d.getFullYear()}/${parseFloat(d.getMonth())+1}/${d.getDate()}`},
+		now:()=>{let d = new Date();return `${d.today()} ${d.getHours()}:${(d.getMinutes() < 10)?`0${d.getMinutes()}`:d.getMinutes()}`},
+	});
 	Object.fn.toString = Array.fn.toString = function(){return JSON.stringify(this)};
 		
 	window.assign(BABYLON);
@@ -177,13 +176,14 @@
     const trigger = event => {dispatchEvent(event)};
 	let gl = $("<canvas></canvas>")[0].getContext("webgl") || $("<canvas></canvas>")[0].getContext("experimental-webgl");
     let time = 0;
-    const date = new Date();
+    const date = new Date(), $d = new Date();
 	const system = {
 		gpu: gl.getParameter(gl.getExtension("webgl_debug_renderer_info").UNMASKED_RENDERER_WEBGL),
 		ram: {
-			used: performance.memory.usedJSHeapSize,
-			allocated: performance.memory.totalJSHeapSize,
-			max: performance.memory.jsHeapSizeLimit
+			used:()=>performance.memory.usedJSHeapSize,
+			allocated:()=>performance.memory.totalJSHeapSize,
+			max:()=>performance.memory.jsHeapSizeLimit,
+			get used(){},get allocated(){},get max(){},
 		},
 		cpu: navigator.hardwareConcurrency,
 		platform: navigator.platform,
@@ -191,22 +191,22 @@
 		
 	};
 	navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion","uaFullVersion"])
-	.then(ua => {system.assign({model:ua.model,os:ua.platform,osVersion:ua.uaFullVersion,platformVersion:ua.platformVersion})});
-    date.today = `${date.getFullYear()}/${parseFloat(date.getMonth())+1}/${date.getDate()}`;
-	date.now = function(){let d = new Date();return `${date.today} ${d.getHours()}:${d.getMinutes()}`};
+	.then(ua => {system.assign({model:ua.model,os:ua.platform,osVersion:ua.platformVersion,browserVersion:ua.uaFullVersion})});
+	onmousemove =e=>{mouse.x = e.clientX;mouse.y = e.clientY};
     setInterval(()=>{time+=10},10);
         
     //math vars
     const round = Math.round;
 	const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
     const rand = {
-		float: (min=0,max=1)=>rand.real() * (max - min) + min,
+		float: (min=0,max=1)=>rand.real * (max - min) + min,
 		hex: (length=1) => {let c = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"];let s = "";for(let i = 0;i<length;i++){s += c[rand.int(15)]}return s;},
-		bool: () => {let b = Math.round(rand.real());if(b){return !0;}else{return !1;}},
-		bin: (length=1) => {let b = "";for(let i = 0;i<length;i++){b += rand.int(1)}return b;},
-		int: (max=1) => Math.round(rand.real() * max),
-		real: () => Math.random()
+		get bool(){let b = Math.round(rand.real);return b?!0:!1},
+		bin: (length=1) => {let b = "";for(let i = 0;i<length;i++){b += rand.int(0,1)}return b;},
+		int: (min=0,max=1) => Math.round(rand.real * (max - min) + min),
+		get real(){return Math.random()},
 	};
+	const greek = ["Alpha","Beta","Gamma","Delta","Epsilon","Zeta","Eta","Theta","Iota","Kappa","Lambda","Mu","Nu","Xi","Omicron","Pi","Rho","Sigma","Tau","Upsilon","Phi","Chi","Psi","Omega"];
     const numeral = ["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIII","XXIV","XXV","XXVII","XXVII","XXVIII","XXIX","XXX","XXXI","XXXII","XXXIII","XXXIV","XXXV","XXXVI","XXXVII","XXXVIII","XXXIX","XL","XLI","XLII","XLIII","XLIV","XLV","XLVI","XLVII","XLVIII","XLIX","L","LI","LII","LIII","LIV","LV","LVI","LVII","LVIII","LIX","LX","LXI","LXII","LXIII","LXIV","LXV","LXVI","LXVII","LXVIII","nice","LXX","LXXI","LXXII","LXXIII","LXXIV","LXXV","LXXVI","LXXVII","LXXVIII","LXXIX","LXXX","LXXXI","LXXXII","LXXXIII","LXXXIV","LXXXV","LXXXVI","LXXXVII","LXXXVIII","LXXXIX","XC","XCI","XCII","XCIII","XCIV","XCV","XCVI","XCVII","XCVIII","XCIX","C"];
     const minimize = min = number => {
         let n = number;let l = ["","K","M","B","T","q","Q","s","S","O","N","D"];
@@ -217,121 +217,113 @@
             if(n < d){return round(n/d)+l[i]}
         }
  	};
+	const range = (min,max)=>{let a = [];for(let i = min;i<max;i++){a.push(i)}return a};
         
     //markup funations
 	const tab = a => {var o="";for(let i=0;i<a;i++){o += "&nbsp";if(i == a-1){return o}}};
 	const br = a => {var o="";for(let i=0;i<a;i++){o += "<br>";if(i == a-1){return o}}};
         
     //game vars
+	let [settings,worldgen,item,tech,server,save] = [$("#settings").obj(),$("#save form").obj(),{},{},{},{}];
+	const level = {num: 65, names: ["Crash Site", "Abrigato", "A Keralis","B Keralis", "Suzum", "Vespa", "Coruscare", "Vulca", "Jaeger", "Kashyyyk", "Outpost42","Victoria", "Gesht", "Sanctuary", "Snowmass", "Ja", "Keeg", "Haemeiguli", "Borebalae", "Albataetarius", "Hataerius", "Achernaiphoros", "Antadrophei", "Hoemeirai", "Antabalis", "Hoereo", "Pazadam", "Equidor", "Pax", "Xena", "Titan", "Oturn", "Thuamia", "Heuthea", "Ditharus", "Muxater", "Trukovis", "Bichotune", "Etis", "Leorus", "Aphus", "Harophos", "Athena", "Hades", "Icarus", "Ureus", "Xentos Prime", "Ketlak", "Aerox", "Thryox", "Stratus", "Nox", "Sanctum", "Pastūra", "Tinctus", "Morbus", "Neos", "Nomen", "Numerus", "Pax", "Fornax", "Skorda", "Alli", "Resurs","Home!"]}
 	const game = new Engine($("canvas.game")[0],!0);
 	game.assign({
 		canvas: $("canvas.game")[0],
-		version:"0.6.0",snapshot:"snapshot_1",
-		mods:[],event:{},frames:0,functions:{},
-		scene:new Scene(game),battle:new Scene(game),
-		isPaused:!1,mp:!1,mpDisabled:!1,phpEnabled:!1,
+		version:"Indev",snapshot:"2",difficulty:1,
+		mods:[],event:{},frames:0,functions:{},lvl:0,
+		isPaused:!1,mp:!1,mpDisabled:!0,phpEnabled:!1,
+		scene:new Scene(game),getScene:()=>save?.[save.sel]?.level?.[0]||game.scene,
+		cli: {isShown: false, prev: [], line:0,i: $("#cli").val(),cv:{}},
 		build: (s="",e="")=>{return `${game.version} ${game.snapshot?s+game.snapshot+e:""}`},
 		acs:cmd=>{for(let i of game.functions[cmd].split("\n")){acs(i)}},
-        log:(msg,lvl)=>{
-			let c = "#ebebeb"
-			switch(lvl){
-				case 0:c="#5f5";break;
-				case 1:c="#ee5";break;
-				case 2:c="#ff5";break;
-				case 3:c="#e55";break;
-				case 4:c="#f00";break;
-			}
-			console.log("%cGame Error: "+msg,`color:${c}`);
-		},
+        log:(msg,col="#ebebeb")=>{console.log("%c"+msg,`color:${col}`)},
+		err:msg=>{console.error("%cGame Error: "+msg,"color:#fff")},
+		warn:msg=>{console.warn("%c"+msg,"color:#fff")},
 		chat:msg=>{
 			let m = $(`<li>${msg}</li>`).appendTo($("#chat"));
 			setTimeout(()=>{m.fadeOut(2000,()=>{m.remove()})},settings.chatTimeout*1000);
-		},
-		debug:{
-			player:()=>{return {position:player.position,rotation:player.rotation}},
-			axies:()=>{
-				game.debug.stars = {
-    				x: star.new("debugx",5,0,0,0.25,[1,0.25,0.25]),
-    				y: star.new("debugy",0,5,0,0.25,[0.25,1,0.25]),
-    				z: star.new("debugz",0,0,5,0.25,[0.25,0.25,1])
-				} ;
-				return game.debug.stars},
-			reset:()=>{player.position = new Vector3(0,2.5,-25);player.rotation = Vector3.Zero()}
 		}
 	});
-	const cli = {isShown: false, prev: [], line:0,i: $("#cli").val(),cv:{}};
-	const player = new UniversalCamera("cam", new Vector3(0,2.5,-25), game.scene);
-    var settings = {};
-	if(ls.settings){if(ls.settings.isJSON()){settings = JSON.parse(ls.settings);$("#settings form").loadData(settings)}}
-	var [server,star,planet,tech,item] = [[],[],[],{},{}];
+	game.scene.name = "GAME_DEFAULT_SCENE";
+	const player = new UniversalCamera("player", new Vector3(0,0,-150), game.scene);
+	player.assign({
+		name: "",speed: 1,saves: [],servers: [],
+		move:(x,y,z)=>{player.position.addInPlace(player.getDirection(new Vector3(x,y,z)))},
+		reset: () => {player.position = new Vector3(0,0,-150);player.rotation = Vector3.Zero();},
+		wipe:()=>{
+			for(let i in item){item[i].amount = 0};
+			for(let i in tech){tech[i].level = 0};
+			for(let i =0;i<planet.length;i++){planet[i].taken = 0};
+			ship.fleet = []
+		}
+	});
     const ship = {
         generic: {},fleet: [],frozen: 0,battle:{active: !1,won: null},
         num: filter =>{let count = 0;for(let i=0;i < ship.fleet.length;i++){if(ship.fleet[i].type == filter){count++;}}return count}
     };
-    const save = {info: [],data: {meta:{},planet:{},star:{},ship:{},tech:{}}};
+	const warp = {
+		start: lvl => {warp.is = !0;warp.to = lvl;},//warps to level
+		end: fell => {warp.is = !1;game.lvl = warp.to;player._scene = save[save.sel].level[warp.to];player.reset()},//ends warp
+		show: (speed=2000) => {let i=0;let show = setInterval(()=>{if(i >= save[save.sel].level.length){clearInterval(show);player.attachControl(game.canvas,!1)}else{player.lockedTarget = Vector3.Zero();game.lvl = i;player._scene = save[save.sel].level[i];i++}},speed)},
+		is:false
+		
+	};
+	if(ls.settings?.isJSON()){settings = JSON.parse(ls.settings);$("#settings").loadData(settings)}
 	def(tech,"price",techtype=>{let t = techtype;let p = tech[t].cost;for(let i = 1;i<tech[t].level;i++){p*=tech[t].inc};return p});
 	def(tech,"locked",techtype=>{let t = techtype;let l = !1;for(let i in tech[t].requires){if(tech[i].level < tech[t].requires[i]){l = !0}}return l});
 	def(item,"multiplyer",1+(1-settings.difficulty));
-	def(player,"move",(x,y,z)=>{player.position.addInPlace(player.getDirection(new Vector3(x,y,z)))});
-	def(game.starsys,"num",10);
 	game.ro("version","mpDisabled","phpEnabled","snapshot");
-	//for(let i=0;i<game.starsys.num;i++){game.starsys[i] = {}};
-	//game.runRenderLoop(game.scene.render());
-	player.assign({name: "",speed: 1,saves: [],servers: []});
+	onresize =e=>{game.resize();game.warn("Do not paste any code someone gave you, as they may be trying to steal your information")};
     player.setTarget(Vector3.Zero());
-    planet.names = ["crash site", "Abrigato", "Beta-Keralis", "Suzum", "Vespa", "Coruscare", "Vulca", "Jaeger", "Kashyyyk", "Outpost42","Victoria Alpha","Victoria Bravo", "Gesht", "Sanctuary", "Snowmass", "Ja", "Keeg", "Haemeiguli", "Borebalae", "Albataetarius", "Hataerius", "Achernaiphoros", "Antadrophei", "Hoemeirai", "Antabalis", "Hoereo", "Pazadam", "Equidor", "Pax", "Xena", "Titan", "Oturn", "Thuamia", "Heuthea", "Ditharus", "Muxater", "Trukovis", "Bichotune", "Etis", "Leorus", "Aphus", "Harophos", "Athena", "Hades", "Icarus", "Ureus", "Xentos Prime", "Delta Ketlak", "Aerox", "Thryox", "Stratus", "Nox", "Sanctum", "Pastūra", "Tinctus", "Morbus", "Neos", "Nomen", "Numerus", "Pax", "Fornax", "Skorda", "Alli", "Resurs","Home!"];
-	planet.num = 65;
-    planet.sel = 0;
-    server.sel = null;
-    star.num = 128;
-	game.starsys.hide("num");
-        
-    //game positioning
-	var view = "none";
-	var borders = [1024,1024,1024];
-	var radius = [25,75];
     
     //default data
 	const mod = {
 		default: {
 			ships:{
-				corvette:{health:10,damage:1,reload:2,level:0,maxLevel:5,displayName:"Corvette",desc:"A light, fast blockade runner",
+				corvette:{
+					health:10,damage:1,reload:2,level:0,maxLevel:5,power:1,
+					displayName:"Corvette",desc:"A light, fast blockade runner",
                     cost:{metal:1000,minerals:500,fuel:250},
                     upgradeCost:{ancient_tech: [1,2,4,8,16,32],code_snippets: [1,2,5,10,20,35]}
 				},
 				frigate:{
-                    health:25,damage:5,reload:1,level:0,maxLevel:5,displayName:"Frigate",desc:"idk",
+                    health:25,damage:5,reload:1,level:0,maxLevel:5,power:2,
+					displayName:"Frigate",desc:"idk",
 					cost: {metal:2000,minerals:2000,fuel:500},
                     upgradeCost:{ancient_tech: [2,4,7,9,12,15],code_snippets: [5,10,20,30,35,40]}
 				},
 				crusier:{
-                    health:50,damage:10,reload:0.5,level:0,maxLevel:5,displayName:"Crusier",desc:"idk",
+                    health:50,damage:10,reload:0.5,level:0,maxLevel:5,power:5,
+					displayName:"Crusier",desc:"idk",
 					cost: {metal:4000,minerals:1000,fuel:1000},
                     upgradeCost:{ancient_tech: [3,5,8,12,18,26],code_snippets: [10,20,30,40,50,60]}
 				},
 				destroyer:{
-                    health:100,damage:25,reload:1,level:0,maxLevel:5,displayName:"Destroyer",desc:"A versitile ship, it can hold its own in battle.",
+                    health:100,damage:25,reload:1,level:0,maxLevel:5,power:10,
+					displayName:"Destroyer",desc:"A versitile ship, it can hold its own in battle.",
 					cost: {metal:10000,minerals:4000,fuel:2500},
                     upgradeCost:{ancient_tech: [8,12,20,35,60,75],code_snippets: [25,40,60,85,100,125]}
 				},
 				battleship:{
-                    health:250,damage:100,reload:0.5,level:0,maxLevel:5,displayName:"Battleship",desc:"Once in a battle, in can stay there and deal out damage for a long time",
+                    health:250,damage:100,reload:0.5,level:0,maxLevel:5,power:25,
+					displayName:"Battleship",desc:"Once in a battle, in can stay there and deal out damage for a long time",
 					cost: {metal:25000,minerals:10000,fuel:5000},
                     upgradeCost:{ancient_tech: [10,25,45,70,100,135],code_snippets: [20,25,40,55,70,85]}
 				},
 				dreadnought:{
-                    health:1000,damage:250,reload:0.25,level:0,maxLevel:5,displayName:"Dreadnought",desc:"The mother of all ships. Dominates everything it touches",
+                    health:1000,damage:250,reload:0.25,level:0,maxLevel:5,power:100,
+					displayName:"Dreadnought",desc:"The mother of all ships. Dominates everything it touches",
 					cost: {metal:100000,minerals:50000,fuel:25000},
                     upgradeCost:{ancient_tech: [25,50,100,150,250,400],code_snippets: [50,75,88,100,125,150]}
 				}
 			},
             items:{
-				metal: {displayName:"Titanium",desc:"",icon:"",amount:10000},
-				minerals: {displayName:"Crystal",desc:"",icon:"",amount:5000},
-				fuel: {displayName:"Fuel",desc:"",icon:"",amount:2500},
-				ancient_tech: {displayName:"Ancient Tech",desc:"",icon:"",amount:0},
-				code_snippets: {displayName:"Code Snippets",desc:"",icon:"",amount:0},
-				tech_points: {displayName:"Research Points",desc:"",icon:"",amount:0},
+				metal: {displayName:"Titanium",desc:"",rare:!1,value:1},
+				minerals: {displayName:"Crystal",desc:"",rare:!1,value:2},
+				fuel: {displayName:"Fuel",desc:"",rare:!1,value:4},
+				tech_points: {displayName:"Research Points",desc:"",rare:!1,value:100},
+				ancient_tech: {displayName:"Ancient Tech",desc:"",rare:!0,drop:0.1,value:1000},
+				code_snippets: {displayName:"Code Snippets",desc:"",rare:!0,drop:0.1,value:1000},
 			},
 			tech:{
 				armor:{level:0,cost:5,inc:1.2,max:50,displayName:"Armor",desc:"Increases health <br>+15% per level"},
@@ -346,44 +338,56 @@
 		}
 	};
 
-	//Event detection and some stuff done on initalization
+	//Some stuff done on initalization
 	document.title = "Blankstorm "+game.version;
     $("#main .version").html(game.version);
-	onmousemove = e=>{mouse.x = e.clientX;mouse.y = e.clientY};
-	oncontextmenu = $(".cm").not(":last").remove;
-	onresize = () =>{game.resize();console.log("%c Warning: Do not paste any code someone gave you, as they may be trying to steal your information", "font-size:15px;color: #fa0")};
-    console.log(
-		`%cBlankstorm%c ${game.version}${game.snapshot?` (${game.snapshot})`:``}`,
-		`background-color: #252525;color: #f50;padding:${settings.fontSize}px;text-align:center;`,
-		`background-color: #252525;color: #f50;padding:${settings.fontSize}px;text-align:center;`
-	);  
-	
+	game.log(`Blankstorm ${game.build("(",")")}`,`#f55;padding:${settings.fontSize}px;text-align:center`);  
+
 	//load mods into the game
 	for(let i in mod){
-		if(i != "default"){game.mods.push(i);}
+		if(i != "default"){game.mods.push(i)}
 		for(let j in mod[i]){
         switch(j){
-            case "ships":
-                for(let k in mod[i][j]){for(let l in mod[i][j][k]){
-                    if(l == "upgradeCost"){for(let m in mod[i][j][k][l]){if(mod[i][j][k][l][m].length < mod[i][j][k].maxLevel+1){game.log(`ship.generic.${k}.upgradeCost.${m} has invalid length`)}}}
-                }(k != "clickable" && k != "bg" && k != "nobg" && k != "cm" && k != "selected")?ship.generic[k] = mod[i][j][k]:game.log(`ship.generic.${k} has invaid name`);
-                break;
-            case "items": for(let k in mod[i][j]){item[k] = mod[i][j][k]} break;
-			case "tech": for(let k in mod[i][j]){tech[k] = mod[i][j][k]} break;
+            case "ships":ship.generic.assign(mod[i][j]);break;
+            case "items":item.assign(mod[i][j]);break;
+			case "tech":tech.assign(mod[i][j]);break;
 			case "styles":for(let k in mod[i][j]){$(":root").css("--"+k,mod[i][j][k])};break;
 			case "functions":for(let k in mod[i][j]){game.acsFunct[k] = mod[i][j][k]};break;
             default: console.warn(`mod "${i}" has invalid property "${j}"`)
         }
     }}
+	const gen = {
+		enemies: power => {//enemy spawning algorithm
+			let e=[],p=[];
+			for(let i in ship.generic){p.push(ship.generic[i].power)}
+			p.sort((c1,c2)=>{if(c1 > c2){return -1}else if(c2 > c1){return 1}else{return 0}});
+			for(let i=0;i<p.length;i++){for(let j in ship.generic){(p[i] == ship.generic[j].power)?p[i]=j:0;}}
+			for(let i=0;i<p.length;i++){
+				for(let j=0;j<Math.floor(power/ship.generic[p[i]].power);j++){
+					e.push(p[i]);power -= ship.generic[p[i]].power
+				}
+			}
+			e.power = power;
+			return e
+		},
+		items: (quantity=0,rares) => {
+			let q = quantity;
+			let r={};
+			for(let i in item){
+				(item[i].rare)?(rand.real < item[i].drop && rares)?r[i] = quantity/item[i].value:r[i]=0:r[i] = quantity/item[i].value;
+			}
+			return r;
+		}
+	};
     
     const ui = {//ui functions ~~ui
         load: {
-            back: ()=>{
-                let b = $(`<button id="load_back" style="position:absolute;left:5%;top:90%;width:15%;height:5%;"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>`)
+            get back(){
+                let b = $(`<button style="position:absolute;left:5%;top:90%;width:15%;height:5%;"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>`)
 				.click(()=>{$("#load").hide();$("#main").show()});return b
             },
-            new: ()=>{
-                let b = $(`<button id="load_new" style="position:absolute;left:80%;top:90%;width:15%;height:5%;"><i class="fa fa-plus" aria-hidden="true"></i> New</button>`)
+            get new(){
+                let b = $(`<button style="position:absolute;left:80%;top:90%;width:15%;height:5%;"><i class="fa fa-plus" aria-hidden="true"></i> New</button>`)
                 .click(()=>{if(game.mp){$("#load").hide();$("#server").show()}else{$("#load").hide();$("#save").show()}});return b
             },
             li: (id,info,info2,info3)=>$(`<li id="load_li_${id}" class="clickable bg">
@@ -439,19 +443,11 @@
             return $(`<li class="clickable bg">${i}<p style="display:inline-flex;position:relative;left:35%">${tech[t].displayName}</p></li>`).click(()=>{
                 if(item.tech_points >= tech.price(t) && tech[t].level < tech[t].max){if(typeof tech[t].requires == "object"){if(!tech.locked(t)){item.tech_points -= tech.price(t);tech[t].level++}}}})
         },
-        settings:()=>{
-			let el = $("#settings input");
-			settings = $("#settings form").obj();
-			for(let i in el){
-				let v = (el[i].type == "range") ? ` (${el[i].value})` : "";
-				$(`#settings label[class="${el[i].name}"]`).html(el.eq(i).attr("label") + v);
-			}
-		},
         lastScene: "#main"
     };
         
 	//the command processor ~~acs
-	const acs = (cmd) => {
+	const acs = cmd => {
 		let c = cmd.split(" ");
 		switch(c[0]){
 			case "help":
@@ -486,224 +482,138 @@
 					case "help":game.chat("player  subcommands: speed");break;
 					case "speed":c[2]?player.speed = parseFloat(c[2]):game.chat(`player speed: ${player.speed}`);break;
 					case "pos":case "tp":(c[2]&&c[3]&&c[4])?player.position = new Vector3(parseFloat(c[2]),parseFloat(c[3]),parseFloat(c[4])):0;break;
-					case "wipe":
-						for(let i in item){item[i].amount = 0}
-						for(let i in tech){tech[i].level = 0}
-						for(let i in planet){planet[i].taken = 0}
-						ship.fleet = [];
-					case "reset":
-						player.position = new Vector3(0,2.5,-25);
-						player.rotation = Vector3.Zero();
-						break;
+					case "wipe":player.wipe();
+					case "reset":player.reset();break;
 					default:game.chat(`Invalid command: ${cmd}`)
 				}break;
-			case "reloadengine":game.resize();game.scene.render();break;
+			case "warp":
+				switch(c[1]){
+					case "start":save[save.sel].level[c[2]]?warp.start(c[2]):0;break;
+					case "end":warp.is?warp.end():0;break;
+					case "to":if(save[save.sel].level[c[2]]){warp.start(c[2]);warp.end()};break;
+					case "show":warp.show(c[2]?c[2]:2000);break;
+				}break;
+			case "reloadengine":game.resize();game.scene().render();break;
 			case "":case ".":break;
 			default:game.chat(`Invalid command: ${cmd}`);break;
 		}
 	}
     
-	var enemies = [//[temp] will be replaced with an algorithm in a future release
-		["corvette"]
-		["frigate","corvette","corvette"],
-		["frigate","corvette","corvette","corvette","corvette"],
-		["frigate","frigate","frigate","frigate","frigate"],
-		["crusier","frigate","frigate","corvette","corvette"],
-		["crusier","frigate","frigate","frigate","frigate"],
-		["crusier","crusier","crusier","corvette","corvette"],
-		["destroyer","crusier","crusier","corvette","corvette","corvette","corvette"],
-		["destroyer","crusier","crusier","frigate","frigate"],
-		["destroyer","crusier","crusier","crusier","crusier"],
-		["destroyer","destroyer","destroyer","crusier","crusier"],
-		["destroyer","destroyer","destroyer","destroyer","destroyer"],
-		["battleship","destroyer","destroyer","destroyer","destroyer"],
-		["battleship","battleship","battleship","destroyer","destroyer"],
-		["battleship","battleship","battleship","destroyer","destroyer","destroyer","destroyer","destroyer"],
-		["battleship","battleship","battleship","battleship","crusier","crusier","frigate","frigate"],
-		["battleship","battleship","battleship","battleship","battleship","battleship","frigate","frigate"],
-		["battleship","battleship","battleship","battleship","battleship","battleship","crusier","crusier"],
-		["battleship","battleship","battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["battleship","battleship","battleship","battleship","battleship"],
-		["dreadnought","dreadnought","dreadnought","dreadnought","dreadnought"],
-		["dreadnought","dreadnought","dreadnought","dreadnought","dreadnought","dreadnought","dreadnought"]
-	];
-    
     //*.new functions ~~new
-    save.new = (name,date,version,data,push = !0) => {//also worldgen
-        let s = {id:rand.hex(16),name:name,date:date,version:version}
-        if(data){s.data = data}else{
-            //WorldGen
-            s.star = s.fleet = s.planet = [];
-            s.item = s.tech = s.ship = {};
-            for(let i = 0; i < star.num; i++){
-                star[i] = {x:rand.int(0-borders[0],0+borders[0]), y:rand.int(0-borders[1],0+borders[1]), z:rand.int(0-borders[2],0+borders[2]), size:rand.int(radius[0]/20,radius[1]/20)}
-            }
-            planet.new("Crash Site", 0, 0, 0, rand.int(radius[0],radius[1]),[0.5,0.5,0.5],null,[],{});
-            for(let i = 1; i<planet.num;i++){
-                if(i > planet.num-1){
-                    let e = [];for(let j=0;j<i/10;j++){e[j] = "dreadnought"}
-                    planet.new(planet.names[i],rand.int(0-borders[0],0+borders[0]),rand.int(0-borders[1],0+borders[1]),rand.int(0-borders[2],0+borders[2]),rand.int(radius[0],radius[1]),[rand.real(),rand.real(),rand.real()],!1,e,{metal:4000*i,minerals:2000*i,fuel:1000*i})   
-                } else {
-                    planet.new(planet.names[i],rand.int(0-borders[0],0+borders[0]),rand.int(0-borders[1],0+borders[1]),rand.int(0-borders[2],0+borders[2]),rand.int(radius[0],radius[1]),[rand.real(),rand.real(),rand.real()],!1,enemies[i],{metal:4000*i,minerals:2000*i,fuel:1000*i})      
-                }
-            }
-            ui.load.save(s);
-        }
-        push ? save.info[s.id] = s:!1;return s
-    };
 	server.new = (name,path,push = !0) => {
         let s = {id:rand.hex(16),name:name,path:path};
 		ui.load.server(s);
-        push ? save.info[s.id] = s:!1;return s
+        push ? save.info[s.id] = s:0;return s
     };
-	star.new = (name="star",x=0,y=0,z=0, radius=1, col = [1,1,1], strength=1) => {
-		let l = new PointLight(name + "_light", new Vector3(x,y,z),game.scene);
-		let s = Mesh.CreateSphere(name + "_sphere", settings.quality, radius, game.scene);
-		l.intensity = strength;
-		l.range = strength*100;
-		s.position = new Vector3(x,y,z);
-		s.material = new StandardMaterial(name + "_mat", game.scene);
+	star = (name="star",pos = [0,0,0], radius=1, col = [1,1,1], scene) => {
+		let s = Mesh.CreateSphere(name + "_sphere", worldgen.quality, radius, scene);
+		s.assign({
+			position: new Vector3(pos[0],pos[1],pos[2]),
+			light: new PointLight(name + "_light",this.position,scene),
+			material: new StandardMaterial(name + "_mat", scene),
+		});
+		let gl = new GlowLayer(name + "_glow", scene);
+		s.light.assign({intensity: 1, range: 100, position: s.position});
 		s.material.disableLighting = !0;
-		let gl = new GlowLayer(name + "_glow", game.scene);
-		gl.customEmissiveColorSelector = function(mesh, subMesh, material, result) {
-			if (mesh.name == name + "_sphere") {
-				result.set(col[0], col[1],col[2], strength);
-			} else {
-				result.set(0, 0, 0, 0);
-			}
+		gl.customEmissiveColorSelector = function(mesh, subMesh, mat, result) {
+			(mesh.name == name + "_sphere")?result.set(col[0], col[1],col[2], 1):result.set(0, 0, 0, 0);
 		}
-		return s
+		return s;
 	};
 	ship.new = (type,push = !0,enemy = !1) => {
-		let s = {};
-		/*if(enemy){s = new Mesh("custom",game.battle)}
-		else{s = new Mesh("custom",game.scene)}*/
+		let s = {type: type};
 		for(let i in ship.generic[type]){
             if(i != "cost" && i != "level" && i != "model"){s[i] = ship.generic[type][i]}
 		}
-		s.type = type;
-		/*let md = {
-			positions: [10,0,0,-10,2.5,0,-10,0,3,10,0,0,-10,0,3,-10,-2.5,0,10,0,0,-10,-2.5,0,-10,0,-3,10,0,0,-10,2.5,0,-10,0,-3,-10,2.5,0,-10,0,3,-10,0,-3,-10,-2.5,0,-10,0,3,-10,0,-3],
-			indices: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
-			normals: []
-		};
-
-		VertexData.ComputeNormals(md.positions, md.indices, md.normals);
-		s.vd = new VertexData();
-		s.vd.assign(md);
-		s.vd.applyToMesh(s,!0);
-		let m = s.material = new StandardMaterial("shipmat_"+ship.fleet.length, game.scene);
-		//mat.Fragment_Before_FragColor(`color = vec4(vec3(1.0,1.0,1.0)*(length(color.xyz)),1.0);`);
-		m.backFaceCulling = !1;
-		let t = m.emissiveTexture = new NoiseProceduralTexture(name + ".texture", settings.quality, game.scene);
-		t.assign({animationSpeedFactor: 0,octaves :8, persistence:1});
-		m.diffuseColor = new Color3(0.5,0.5,0.5);
-		m.emissiveColor = new Color3(0.5,0.5,0.5);*/
         push?ship.fleet.push(s):!1;
         return s
 	};
-	planet.new = (name = "planet",x = 0, y = 0, z = 0, radius = 1, col = [1,1,1], taken = !1, enemies = [], rewards = {},push) => {
-		let q = Mesh.CreateSphere(name,settings.quality,radius,game.scene)
-		q.taken = taken;q.radius = radius;q.rewards = rewards;q.enemies = [];
+	planet = (name = "planet",pos = [0,0,0], radius = 1, col = [1,1,1], taken = !1, enemies = [], rewards = {},scene) => {
+		let q = Mesh.CreateSphere(name,worldgen.quality,radius,scene);
+		q.assign({
+			taken:taken,
+			radius:radius,
+			rewards:rewards,
+			enemies:[],
+			position: new Vector3(pos[0],pos[1],pos[2])
+		});
 		for(let i in enemies){q.enemies[i] = ship.new(enemies[i],!1,!0)}
-		q.position = new Vector3(x,y,z);
-		let m = q.material = new StandardMaterial(name + ".mat", game.scene);
-		//mat.Fragment_Before_FragColor(`color = vec4(vec3(1.0,1.0,1.0)*(length(color.xyz)),1.0);`);
-		let t = m.emissiveTexture = new NoiseProceduralTexture(name + ".texture", settings.quality, game.scene);
-		t.assign({animationSpeedFactor: 0,octaves :5, persistence:0.8});
-		m.diffuseColor = new Color3(col[0],col[1],col[2]);
-		m.emissiveColor = new Color3(col[0]/2,col[1]/2,col[2]/2);
-		/* q.title = {};
-		q.title.plane = Mesh.CreatePlane(name+"_plane", 2);
-		q.title.texture = GUI.AdvancedDynamicTexture.CreateForMesh(q.title.plane);
-		q.title.text = new GUI.TextBlock(name+"_text",q.name);
-		q.title.plane.parent = q.planet;
-		q.title.plane.position = new Vector3(q.planet.position.x,q.planet.position.y + q.radius,q.planet.position.z);
-		q.title.text.color = "white";*/
-		push?1:planet.push(q);
+		let m = q.material = new StandardMaterial(name + ".mat", scene);
+		//m.Fragment_Before_FragColor(`color = vec4(vec3(1.0,1.0,1.0)*(length(color.xyz)),1.0);`);
+		m.assign({
+			emissiveTexture: new NoiseProceduralTexture(name + ".texture", worldgen.quality, scene),
+			diffuseColor: new Color3(col[0],col[1],col[2]),
+			emissiveColor: new Color3(col[0]/2,col[1]/2,col[2]/2),
+		});
+		m.emissiveTexture.assign({animationSpeedFactor: 0,octaves :5, persistence:0.8});
 		return q;
 	};
+    save.new = (name,date=$d.now(),version=game.version,data,push) => {//also worldgen
+        let s = {id:"_"+rand.hex(16),name:name,date:date,version:version,level:[]};
+        if(data){s.data = data}else{
+            //WorldGen
+            for(let i=0;i<level.num;i++){
+				let r = rand.int(75,125);
+				let l = s.level[i] = new Scene(game);
+				l.addCamera(player);
+				l.activeCamera = player;
+				l.assign({
+					name: level.names[i],
+					star: star(level.names[i],[0,0,0],r,[rand.real,rand.real,rand.real],l),
+					planets: [],
+					difficulty: worldgen.difficulty,
+					planetNum: rand.int(0,worldgen.planets),
+				});
+				l.star.radius = r;
+				let n = rand.bool?greek:range(1,l.planetNum+1);
+				let pre = rand.bool;
+				let size = rand.int(0,worldgen.size);				
+				for(let j=0;j<l.planetNum;j++){
+					let p = l.planets[j] = planet(
+						pre?n[j]+" "+l.name:l.name+" "+n[j],[rand.bool?rand.int(r/2,size):rand.int(-size,-r/2),rand.bool?rand.real:-rand.real,rand.bool?rand.int(r/2,size):rand.int(-size,-r/2)],
+						rand.int(10,25),[rand.real,rand.real,rand.real],!1,[gen.enemies(4*j*worldgen.difficulty)],
+						gen.items(1000*j*(2-worldgen.difficulty)),l
+					);
+				}
+			}
+            ui.load.save(s);
+			save.sel = s.id;
+			game.lvl = 0;
+        }
+        ! push? save[s.id] = s:0;return s
+    };
 	
 		
-    //Key Detection
+    //Event Detection
     onmousedown = m =>{mouse.pressed = !0};
     onmouseup = m =>{mouse.pressed = !1};
     onkeydown = k =>{key.pressed = !0};
     onkeyup = k =>{key.pressed = !1};
+	oncontextmenu =e=>{$(".cm").not(":last").remove()};
+	onclick=e=>{$(".cm").remove()};
 	
 	//Event Listeners (UI transitions, creating saves, etc.) ~~els
 	$("#main .sp").click(()=>{
-        $("#load").empty().append(ui.load.back(),ui.load.new());
+        $("#load").empty().append(ui.load.back,ui.load.new);
         for(let i in save.info){$("#load").append(ui.load.save(save.info[i]))}
         $("#main").hide();$("#load").show()
     });
 	$("#main .mp").click(()=>{if(game.mpDisabled){alert("Muliplayer is disabled in this version")}else if(!system.online){alert("You can't play multiplayer without internet")}else{$("#main").hide();$("#load").show()}});
     $("#main .options").click(()=>{ui.LastScene="#main";$("#settings").show()});
-    $("#main .exit").click(()=>{close()});
 	$("#save i").on("click",()=>{$("#load").show();$("#save").hide()});
 	$("#server i").on("click",()=>{$("#load").show();$("#server").hide()});
-	$("#save button").on("click",()=>{
-		let v = $("#save input").val()
-		if(v != ""){
-			let c = !0;
-			for(let i=0;i<save.info.length;i++){
-				if(save.info[i].name == v){c = !1;alert("You can't have more than one save with the same name")}
-			}
-			if(c){
-                save.new(v,date.today,game.version);
+	$("#save .new").on("click",()=>{
+		let v = $("#save .name").val()
+		if(v){
+                save.new(v);
 				for(let i in save.info){
 					if(save.info[i].id == v){save.sel = i}
 					else {$(`[id="save_${save.info[i].id}"]`).removeClass("selected")}	
 				}
 				$("#save").hide();$("#tips").show()
-			}
 		} else {alert("You must enter a save name.")}
 	});
-	$("#server button").on("click",()=>{
+	$("#server .new").on("click",()=>{
 		server.new(Object.assign($("#server form").obj(),{version:game.version}));
 		$("#server").hide();$("#load").show()
 	});
@@ -715,8 +625,7 @@
 	$("#nav .map").click(()=>{$("#e ul").hide();$("#e .map").show()});
 	$("#nav .yrd").click(()=>{$("#e ul").hide();$("#e .yrd").show()});
 	$("#nav .lab").click(()=>{$("#e ul").hide();$("#e .lab").show()});
-    $("#settings button").click(()=>{ls.settings = settings = $("#settings form").obj();$("#settings").hide();$(ui.LastScene).show()});
-	$("#settings").mouseenter(ui.settings).mouseleave(ui.settings);
+    $("#settings button").click(e=>{e.preventDefault();ls.settings = settings = $("#settings").obj();$("#settings").hide();$(ui.LastScene).show()});
     for(let i in ship.generic){$("ul.yrd").append(ui.ship(i))}
 	for(let i in tech){$("ul.lab").append(ui.lab(i))}
 	$("#map i").on("click",()=>{game.isPaused=!0;$("#map").hide()});
@@ -729,33 +638,22 @@
 	});
 	const showMap = () => {$("#e ul.map p").hide();$("canvas.map").show()};
 	$("#cli").on("keydown",e=>{
-		cli.i = $("#cli").val();
+		let c = game.cli;
+		c.i = $("#cli").val();
 		switch(e.key){
-		case "ArrowUp":
-			(cli.line-1 > -1)?cli.line--:!1;
-			$("#cli").val(cli.prev[cli.line]);
-			break;
-		case "ArrowDown":
-			(cli.line+1 <= cli.prev.length)?cli.line++:!1;
-			$("#cli").val(cli.prev[cli.line]);
-			break;
-		case "Enter":
-			(cli.i.slice(0,1) == "/")?acs(cli.i.slice(1)):game.mp?server.chat(cli.i):game.chat(cli.i);
-			cli.line = cli.prev.length
-			cli.prev[cli.line] = `${cli.i}`;
-			$("#cli").val("");
-			break;
-		}
+			case "ArrowUp":(c.line-1 > -1)?c.line--:0;$("#cli").val(c.prev[c.line]);break;
+			case "ArrowDown":(c.line+1 <= c.prev.length)?c.line++:0;$("#cli").val(c.prev[c.line]);break;
+			case "Enter":
+				(c.i.slice(0,1) == "/")?acs(c.i.slice(1)):game.mp?server.chat(c.i):game.chat(c.i);
+				c.line = c.prev.length;c.prev[c.line] = `${c.i}`;$("#cli").val("");
+				break;
+			}
 	});
 	$(game.canvas).click(e=>{game.isPaused ? "lol" : game.canvas.requestPointerLock();});
-	$(game.canvas).blur(e=>{$("#debug").hide()});
 	$(game.canvas).on("keydown",e=>{
 		switch(e.key){
-			case "Escape":
-				$("#esc").toggle();
-				game.isPaused = !game.isPaused;
-				break;
-			case "e":$("#e").toggle();break;
+			case "Escape":$("#esc").toggle();game.isPaused = !game.isPaused;break;
+			case "e":$("#e").toggle();game.isPaused = !game.isPaused;break;
 			case "d":player.move(player.speed,0,0);break;
 			case "w":player.move(0,0,player.speed);break;
 			case " ":player.move(0,player.speed,0);break;
@@ -776,67 +674,83 @@
 	});
 	//server side (saving saves, loading saves, verifying and cnnecting to servers) ~ss
 	if(game.phpEnabled){
-		const loadFromServer = () => {//import saves
-			console.groupCollapsed("Imported Saves");
-			$.get(`https://api.blankstorm.drvortex.dev/getsaves.php?uuid=${player.id}`,d=>{
-			let s = JSON.parse(d);
-			save.new(s.name,s.date,s.version,s.data);
-			});
-			console.groupEnd();
-		};
-		const saveToServer = saves => {//export saves
-			
-		};
+		player.assign({
+			_getsaves: () => {
+				console.groupCollapsed("Imported Saves");
+				$.get(`https://api.blankstorm.drvortex.dev/getsaves.php?uuid=${player.id}`,d=>{
+					let s = JSON.parse(d);
+					save.new(s.name,s.date,s.version,s.data);
+				});
+				console.groupEnd();
+			},
+			_setsaves: (saves) => {
+				$.post(`https://api.blankstorm.drvortex.dev/setsaves.php`,saves);
+			},
+			get saves(){return this._getsaves()},
+			set saves(saves){this._setsaves(saves)}
+		});
 	}
 	const loop = () => {// the loop ~~loop
-		game.frames += 1;
-		item.multiplyer = 1+(1-settings.difficulty);
-		ship.crit = {chance: 30+tech.missle.level,damage: 50+tech.missle.level*5};
-    	ship.multiplyer = {
-    	    damage: 1+(1-settings.difficulty)+tech.laser.level*0.1,
-			health: 1+(1-settings.difficulty)+tech.armor.level*0.15
-    	};
-		system.ram = {
-			used: performance.memory.usedJSHeapSize,
-			allocated: performance.memory.totalJSHeapSize,
-			max: performance.memory.jsHeapSizeLimit
-		};
-		if(!ship.battle.active){
-			for(let i = 0;i < ship.fleet.length;i++){
-				if(ship.fleet[i].health <= ship.generic[ship.fleet[i].type].health){
-					ship.fleet[i].health += ship.generic[ship.fleet[i].type].health/(1000-tech.regen.level*10);
+		if(!game.isPaused && save.sel && game.lvl > -1){
+			game.scene = save[save.sel].level[game.lvl];
+			game.frames += 1;
+			item.multiplyer = 1+(1-game.difficulty);
+			ship.crit = {chance: 30+tech.missle.level,damage: 50+tech.missle.level*5};
+			ship.multiplyer = {
+				damage: 1+(1-game.difficulty)+tech.laser.level*0.1,
+				health: 1+(1-game.difficulty)+tech.armor.level*0.15
+			};
+			system.ram = {
+				used: performance.memory.usedJSHeapSize,
+				allocated: performance.memory.totalJSHeapSize,
+				max: performance.memory.jsHeapSizeLimit
+			};
+			if(!ship.battle.active){
+				for(let i = 0;i < ship.fleet.length;i++){
+					if(ship.fleet[i].health <= ship.generic[ship.fleet[i].type].health){
+						ship.fleet[i].health += ship.generic[ship.fleet[i].type].health/(1000-tech.regen.level*10);
+					}
 				}
 			}
+			for(let i in tech){
+				(tech[i].level < numeral.length && tech[i].level > -1)? 
+				$(`ul.lab li.${i} p`).html(`${i} ${numeral[tech[i].level]}`):
+				$(`ul.lab li.${i} p`).html(`${i} ${minimize(tech[i].level)}`);
+					let u = !0;
+					for(var r in tech[i].requires){if(tech[r].level < tech[i].requires[r]){u = !1}}
+					u?$(`ul.lab .${i} i`).hide():$(`ul.lab .${i} i`).show();
+			}
+			game.isPaused ? player.detachControl(game.canvas, !1) : player.attachControl(game.canvas, !1);
+			game.isPaused ? $("#debug").hide():0;
+			settings.devMode ? $("#main .version").show() : $("#main .version").hide();
+			(player.rotation.y > 3.14) ? player.rotation.y -= 6.28:0;
+			(player.rotation.y < -3.14) ? player.rotation.y += 6.28:0;
+			$("#debug").is(":visible") ? $("#chat").hide() : $("#chat").show();
+			$("#debug .game").html(`
+				${game.build("/ ")} ${game.mods.length?`[${game.mods.join(",")}]`:`(vanilla)`}<br>
+				${settings.fps} FPS | ${game.frames}f | ${round(time*100)/100000}s
+			`);
+			$("#debug .player").html(`
+				P: ${round(player.position.x*10)/10}, ${round(player.position.y*10)/10}, ${round(player.position.z*10)/10}<br>
+				R: ${round(player.rotation.x*100)/100}, ${round(player.rotation.y*100)/100}
+			`);
+			$("#debug .system").html(`
+				${system.platform} ${system.os} ${system.osVersion}<br>
+				${system.gpu}<br>
+				RAM: ${round(system.ram.used/1000000)}MB/${round(system.ram.max/1000000)}MB | Allocated: ${round(system.ram.allocated/1000000)}MB<br>
+				${system.cpu} CPU Cores<br>
+			`);
+			save[save.sel].level[game.lvl].render();
+		} else if (Number(game.lvl) == NaN){
+			console.warn("Invalid game.lvl value");
 		}
-		for(let i in tech){
-			(tech[i].level < numeral.length && tech[i].level > -1)? 
-			$(`ul.lab li.${i} p`).html(`${i} ${numeral[tech[i].level]}`):
-			$(`ul.lab li.${i} p`).html(`${i} ${minimize(tech[i].level)}`);
-				let u = !0;
-				for(var r in tech[i].requires){if(tech[r].level < tech[i].requires[r]){u = !1}}
-				u?$(`ul.lab .${i} i`).hide():$(`ul.lab .${i} i`).show();
-		}
-		game.isPaused ? player.detachControl(game.canvas, false) : player.attachControl(game.canvas, false);
-		settings.devMode ? $("#main .version").show() : $("#main .version").hide();
-		(player.rotation.y > 3.14) ? player.rotation.y -= 6.28:0;
-		(player.rotation.y < -3.14) ? player.rotation.y += 6.28:0;
-		$("#debug").is(":visible") ? $("#chat").hide() : $("#chat").show();
-		$("#debug .game").html(`
-			${game.version} ${game.snapshot?"/ "+game.snapshot:""} ${game.mods.length?`[${game.mods.join(",")}]`:`(vanilla)`}<br>
-			${settings.fps} FPS | ${game.frames}f | ${round(time*100)/100000}s
-		`);
-		$("#debug .player").html(`
-			P: ${round(player.position.x*10)/10}, ${round(player.position.y*10)/10}, ${round(player.position.z*10)/10}<br>
-			R: ${round(player.rotation.x*100)/100}, ${round(player.rotation.y*100)/100}
-		`);
-		$("#debug .system").html(`
-			${system.platform} ${system.platformVersion} | ${system.os} ${system.osVersion}<br>
-			${system.gpu}<br>
-			RAM: ${round(system.ram.used/1000000)}MB/${round(system.ram.max/1000000)}MB | Allocated: ${round(system.ram.allocated/1000000)}MB<br>
-			${system.cpu} CPU Cores<br>
-		`);
-		game.scene.render();
-		ui.settings();
+		$("form").each(function(){
+			window[this.name] = $(this).obj();
+			$(this).find("input").each(function(){
+				let v = (this.type == "range")?` (${this.value})`:"";
+				$(`label[class="${this.name}"]`).text($(this).attr("label") + v);
+			});
+		});
 		setTimeout(loop,1000/settings.fps);
 	}
 	setTimeout(loop,1000/settings.fps);
