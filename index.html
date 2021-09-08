@@ -9,17 +9,19 @@
 			form label{position:absolute;left:10%;width:37.5%;text-align:right}
 			#chat li{background:none;list-style:none}
 			[cover]{position:fixed;left:0%;top:0%;width:100%;height:100%}
-			#loadcover{z-index:11}
 			#gamecover{z-index:0}
 			#e ul{position:absolute;top:15%;left:2.5%;width:90%;height:80%}
         </style>
 		<link rel="stylesheet" href="/libraries/styles.css">
 	</head>
 	<body id="body" oncontextmenu="return false;">
-		<a id="download_link" style="display:none;position:absolute;left:60%;top:480px;"><button>Save Game</button></a>
 		<audio><source src="" type="audio/mp3"></audio>
-		<div id="loadcover" style="background-color:#252525;color:#ebebeb" cover><center><br><br><br><br><br><p style="font-size:25px;font-family:sans-serif">Loading...</p></center></div>
 		<div id="gamecover" cover starbg></div>
+		<div id="loading" hide nobg style="position:fixed;left:25%;width:50%;top:45%;height:10%;z-index:9">
+			<p style="position:absolute;left:5%;top:5%">Creating save</p>
+			<div class="barbg" nobg style="position:absolute;left:5%;width:90%;top:60%;height:35%;background-color:#252525"></div>
+			<div class="bar" nbs style="position:absolute;left:5%;wdth:0%;top:60%;height:35%;background-color:hsla(200,50%,90%,0.75)"></div>
+		</div>
 		<input id="cli" style="position:fixed;left:5%;top:90%;width:25%;height:5%;z-index:10;display:none">
 		<ul lsn id="chat" style="position:fixed;top:5%;width:30;height:75%;background:none;box-shadow:none;z-index:10"></ul>
 		<div id="main" starbg cover>
@@ -53,13 +55,6 @@
             </form>
 			<button class="new" style="position:absolute;left:35%;top:80%;width:30%;height:7.5%;">Save</button>
 		</div>
-		<ul id="tips" hide lsn nobg style="position:fixed;left:25%;top:20%;width:50%;height:60%;border:0;text-align:center;">
-			<li><br>Access the shipyard, inventory, lab, and map by pressing e</li>
-			<li><br>Pause the game with esc</li>
-			<li><br>Attack planets after building a fleet</li>
-			<li><br>get more info on the <a href="https://annihiation.drvortex.dev/wiki" target="_blank">wiki</a></li>
-			<button style="position:fixed;left:40%;top:75%;width:20%;height:7.5%;">Start the Game</button>	
-		</ul>
         <!-- Inventory Tabs -->
 		<div id="e" content hide style="z-index:5">
 			<div id="nav" style="box-shadow:none;position:absolute;left:5%;top:5%;width:90%;height:7.5%">
@@ -116,6 +111,7 @@
         
     //Prototype plugins
 	const def = (d,p,v) => {Object.defineProperty(d,p,{value:v,enumerable:!1})};
+	const forInterval = (n,t=1000,f) => {let i=0;let s=setInterval(()=>{if(i < n){f(i)}i++},t);if(i >= n){clearInterval(s)}};
 	for(let  i of ["Object","Array","String","Boolean","Number","Date"]){def(window[i],"fn",window[i].prototype)};
 	def(Object.fn,"hide",function(...p){for(let i of p){Object.defineProperty(this,i,{enumberable:!1})}});
 	def(Object.fn,"ro",function(...p){for(let i of p){Object.defineProperty(this,i,{writable:!1})}});
@@ -123,7 +119,7 @@
 	def(Array.fn,"total",function(){return eval(this.join("+"))});
     def(Number.fn,"toStar",function(){var s="";for(let i=0;i<this;i++){s+="*"};return s});
     def(String.fn,"isHex",function(){return /^[0-9a-f]+$/.test(this)});
-	def(String.fn,"isJSON",function(){try{JSON.parse(this);return !0}catch(e){return !1}});
+	def(String.fn,"isJSON",function(){try{JSON.parse(this);return !0}catch(e){return !1}})
 	Date.fn.assign({
 		today:()=>{let d = new Date();return `${d.getFullYear()}/${parseFloat(d.getMonth())+1}/${d.getDate()}`},
 		now:()=>{let d = new Date();return `${d.today()} ${d.getHours()}:${(d.getMinutes() < 10)?`0${d.getMinutes()}`:d.getMinutes()}`},
@@ -187,11 +183,11 @@
 		},
 		cpu: navigator.hardwareConcurrency,
 		platform: navigator.platform,
-		online: navigator.onLine,
+		get online(){return navigator.onLine},
 		
 	};
 	navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion","uaFullVersion"])
-	.then(ua => {system.assign({model:ua.model,os:ua.platform,osVersion:ua.platformVersion,browserVersion:ua.uaFullVersion})});
+	.then(ua => {system.assign({model:ua.model,os:ua.platform,osVersion:ua.platformVersion,browserVersion:ua.uaFullVersion});Object.freeze(system)});
 	onmousemove =e=>{mouse.x = e.clientX;mouse.y = e.clientY};
     setInterval(()=>{time+=10},10);
         
@@ -229,7 +225,7 @@
 	const game = new Engine($("canvas.game")[0],!0);
 	game.assign({
 		canvas: $("canvas.game")[0],
-		version:"Indev",snapshot:"2",difficulty:1,
+		version:"Indev",snapshot:"3",difficulty:1,
 		mods:[],event:{},frames:0,functions:{},lvl:0,
 		isPaused:!1,mp:!1,mpDisabled:!0,phpEnabled:!1,
 		scene:new Scene(game),getScene:()=>save?.[save.sel]?.level?.[0]||game.scene,
@@ -272,6 +268,7 @@
 	def(tech,"price",techtype=>{let t = techtype;let p = tech[t].cost;for(let i = 1;i<tech[t].level;i++){p*=tech[t].inc};return p});
 	def(tech,"locked",techtype=>{let t = techtype;let l = !1;for(let i in tech[t].requires){if(tech[i].level < tech[t].requires[i]){l = !0}}return l});
 	def(item,"multiplyer",1+(1-settings.difficulty));
+	def(save,"sel",null);
 	game.ro("version","mpDisabled","phpEnabled","snapshot");
 	onresize =e=>{game.resize();game.warn("Do not paste any code someone gave you, as they may be trying to steal your information")};
     player.setTarget(Vector3.Zero());
@@ -396,20 +393,11 @@
                 <p style="display:inline-flex;font-size:18px;position:relative;left:70%;">${info3}</p>
             </li>`),
             save: s => {
-                let container = ui.load.li("#save_"+s.id,s.name,s.data,s.version);
-                container.click(()=>{for(let i in save.info){if(i == s.id){save.sel = i;container.addClass("selected")}else{$("#save_"+i).removeClass("selected")}}});
+                let container = ui.load.li("#save_"+s.id,s.name,s.date,s.version);
+                container.click(()=>{for(let i in save){if(i == s.id){save.sel = i;container.addClass("selected")}else{$("#save_"+i).removeClass("selected")}}});
                 container.on("dblclick",()=>{
                     if(s.version == game.version){for(let i in s){if(i!="name"&&i!="date"&&i!="type"&&i!="version"){window[i] = s[i]}}$("#load").hide();$(game.canvas).show();game.resize();view = "map"}
                     else{alert(`That save is not supported in the current version (${game.version})`)}
-                });
-                container.on("contextmenu",()=>{
-                    for(let i in save.info){if(save.info[i].name == name){save.sel = i;container.addClass("selected")}else{$("#save_"+i).removeClass("selected")}}
-                    let menu = $(`<div class="cm" style="position:fixed;left:${mouse.x}px;top:${mouse.y}px"></div>`);
-                    $('<button style="margin:10px 10px 5px 10px;">Download</button>').click(()=>{$("#download_link")[0].click()}).appendTo(menu);
-                    $('<button style="margin:10px 5px 10px 10px;">Delete</button>').click(()=>{
-                        if(confirm("Are you sure you want to delete this save?")){$(`[id="save_${s.id}"]`).remove();save.info.splice(save.sel,1);ls.saves = save.info;save.sel = null}
-                    }).appendTo(menu);
-                    container.parent().append(menu);
                 });
                 $("#load").prepend(container);
             }
@@ -503,7 +491,7 @@
 	server.new = (name,path,push = !0) => {
         let s = {id:rand.hex(16),name:name,path:path};
 		ui.load.server(s);
-        push ? save.info[s.id] = s:0;return s
+        push ? save[s.id] = s:0;return s
     };
 	star = (name="star",pos = [0,0,0], radius=1, col = [1,1,1], scene) => {
 		let s = Mesh.CreateSphere(name + "_sphere", worldgen.quality, radius, scene);
@@ -548,34 +536,41 @@
 		m.emissiveTexture.assign({animationSpeedFactor: 0,octaves :5, persistence:0.8});
 		return q;
 	};
-    save.new = (name,date=$d.now(),version=game.version,data,push) => {//also worldgen
+    save.new = async (name,date=$d.now(),version=game.version,data,push) => {//also worldgen
         let s = {id:"_"+rand.hex(16),name:name,date:date,version:version,level:[]};
         if(data){s.data = data}else{
             //WorldGen
-            for(let i=0;i<level.num;i++){
-				let r = rand.int(75,125);
-				let l = s.level[i] = new Scene(game);
-				l.addCamera(player);
-				l.activeCamera = player;
-				l.assign({
-					name: level.names[i],
-					star: star(level.names[i],[0,0,0],r,[rand.real,rand.real,rand.real],l),
-					planets: [],
-					difficulty: worldgen.difficulty,
-					planetNum: rand.int(0,worldgen.planets),
+			$("#loading").show();
+			let p = await new Promise(resolve=>{
+				forInterval(level.num,1000/system.cpu,i=>{
+					$("#loading p").html(`Creating level ${i+1}/${level.num} (${round(i/level.num*100)}%)`);
+					$("#loading .bar").css("width",(i+1)/level.num*90+"%");
+					let r = rand.int(75,125);
+					let l = s.level[i] = new Scene(game);
+					l.addCamera(player);
+					l.activeCamera = player;
+					l.assign({
+						name: level.names[i],
+						star: star(level.names[i],[0,0,0],r,[rand.real,rand.real,rand.real],l),
+						planets: [],
+						difficulty: worldgen.difficulty,
+						planetNum: rand.int(0,worldgen.planets),
+					});
+					l.star.radius = r;
+					let n = rand.bool?greek:range(1,l.planetNum+1);
+					let pre = rand.bool;
+					let size = rand.int(0,worldgen.size);				
+					for(let j=0;j<l.planetNum;j++){
+						let p = l.planets[j] = planet(
+							pre?n[j]+" "+l.name:l.name+" "+n[j],[rand.bool?rand.int(r/2,size):rand.int(-size,-r/2),rand.bool?rand.real:-rand.real,rand.bool?rand.int(r/2,size):rand.int(-size,-r/2)],
+							rand.int(10,25),[rand.real,rand.real,rand.real],!1,[gen.enemies(4*j*worldgen.difficulty)],
+							gen.items(1000*j*(2-worldgen.difficulty)),l
+						);
+					}
+					(i >= level.num-1)?resolve():0;
 				});
-				l.star.radius = r;
-				let n = rand.bool?greek:range(1,l.planetNum+1);
-				let pre = rand.bool;
-				let size = rand.int(0,worldgen.size);				
-				for(let j=0;j<l.planetNum;j++){
-					let p = l.planets[j] = planet(
-						pre?n[j]+" "+l.name:l.name+" "+n[j],[rand.bool?rand.int(r/2,size):rand.int(-size,-r/2),rand.bool?rand.real:-rand.real,rand.bool?rand.int(r/2,size):rand.int(-size,-r/2)],
-						rand.int(10,25),[rand.real,rand.real,rand.real],!1,[gen.enemies(4*j*worldgen.difficulty)],
-						gen.items(1000*j*(2-worldgen.difficulty)),l
-					);
-				}
-			}
+			});
+			$("#loading").hide();
             ui.load.save(s);
 			save.sel = s.id;
 			game.lvl = 0;
@@ -595,7 +590,7 @@
 	//Event Listeners (UI transitions, creating saves, etc.) ~~els
 	$("#main .sp").click(()=>{
         $("#load").empty().append(ui.load.back,ui.load.new);
-        for(let i in save.info){$("#load").append(ui.load.save(save.info[i]))}
+        for(let i in save){$("#load").append(ui.load.save(save[i]))}
         $("#main").hide();$("#load").show()
     });
 	$("#main .mp").click(()=>{if(game.mpDisabled){alert("Muliplayer is disabled in this version")}else if(!system.online){alert("You can't play multiplayer without internet")}else{$("#main").hide();$("#load").show()}});
@@ -603,21 +598,14 @@
 	$("#save i").on("click",()=>{$("#load").show();$("#save").hide()});
 	$("#server i").on("click",()=>{$("#load").show();$("#server").hide()});
 	$("#save .new").on("click",()=>{
-		let v = $("#save .name").val()
-		if(v){
-                save.new(v);
-				for(let i in save.info){
-					if(save.info[i].id == v){save.sel = i}
-					else {$(`[id="save_${save.info[i].id}"]`).removeClass("selected")}	
-				}
-				$("#save").hide();$("#tips").show()
-		} else {alert("You must enter a save name.")}
+		$("#save").hide();
+        save.new($("#save .name").val());
+		view="map";$(game.canvas).show();game.resize()
 	});
 	$("#server .new").on("click",()=>{
 		server.new(Object.assign($("#server form").obj(),{version:game.version}));
 		$("#server").hide();$("#load").show()
 	});
-	$("#tips button").click(()=>{view="map";$("#tips").hide();$(game.canvas).show();game.resize()});
 	$("#esc .resume").click(()=>{$("#esc").hide();game.isPaused = !1});
 	$("#esc .options").click(()=>{ui.LastScene="#esc";$("#esc").hide();$("#settings").show()});
     $("#esc .quit").click(()=>{$("#esc,#e,canvas.game").hide();$("#main").show()});
