@@ -113,7 +113,7 @@
 	const def = (d,p,v) => {Object.defineProperty(d,p,{value:v,enumerable:!1})};
 	const forInterval = (n,t=1000,f) => {let i=0;let s=setInterval(()=>{if(i < n){f(i)}i++},t);if(i >= n){clearInterval(s)}};
 	for(let  i of ["Object","Array","String","Boolean","Number","Date"]){def(window[i],"fn",window[i].prototype)};
-	def(Object.fn,"hide",function(...p){for(let i of p){Object.defineProperty(this,i,{enumberable:!1})}});
+	def(Object.fn,"hide",function(...p){for(let i of p){Object.defineProperty(this,i,{enumerable:!1})}});
 	def(Object.fn,"ro",function(...p){for(let i of p){Object.defineProperty(this,i,{writable:!1})}});
 	def(Object.fn,"assign",function(...objs){for(let i of objs){Object.assign(this,i)}});
 	def(Array.fn,"total",function(){return eval(this.join("+"))});
@@ -176,10 +176,9 @@
 	const system = {
 		gpu: gl.getParameter(gl.getExtension("webgl_debug_renderer_info").UNMASKED_RENDERER_WEBGL),
 		ram: {
-			used:()=>performance.memory.usedJSHeapSize,
-			allocated:()=>performance.memory.totalJSHeapSize,
-			max:()=>performance.memory.jsHeapSizeLimit,
-			get used(){},get allocated(){},get max(){},
+			get used(){return performance.memory.usedJSHeapSize},
+			get allocated(){return performance.memory.totalJSHeapSize},
+			get max(){return performance.memory.jsHeapSizeLimit},
 		},
 		cpu: navigator.hardwareConcurrency,
 		platform: navigator.platform,
@@ -220,15 +219,15 @@
 	const br = a => {var o="";for(let i=0;i<a;i++){o += "<br>";if(i == a-1){return o}}};
         
     //game vars
-	let [settings,worldgen,item,tech,server,save] = [$("#settings").obj(),$("#save form").obj(),{},{},{},{}];
+	let [settings,worldgen,item,tech,server,save] = [$("#settings").obj(),$("#save form").obj(),{},{},{},{sel:0}];
 	const level = {num: 65, names: ["Crash Site", "Abrigato", "A Keralis","B Keralis", "Suzum", "Vespa", "Coruscare", "Vulca", "Jaeger", "Kashyyyk", "Outpost42","Victoria", "Gesht", "Sanctuary", "Snowmass", "Ja", "Keeg", "Haemeiguli", "Borebalae", "Albataetarius", "Hataerius", "Achernaiphoros", "Antadrophei", "Hoemeirai", "Antabalis", "Hoereo", "Pazadam", "Equidor", "Pax", "Xena", "Titan", "Oturn", "Thuamia", "Heuthea", "Ditharus", "Muxater", "Trukovis", "Bichotune", "Etis", "Leorus", "Aphus", "Harophos", "Athena", "Hades", "Icarus", "Ureus", "Xentos Prime", "Ketlak", "Aerox", "Thryox", "Stratus", "Nox", "Sanctum", "Pastūra", "Tinctus", "Morbus", "Neos", "Nomen", "Numerus", "Pax", "Fornax", "Skorda", "Alli", "Resurs","Home!"]}
 	const game = new Engine($("canvas.game")[0],!0);
 	game.assign({
 		canvas: $("canvas.game")[0],
-		version:"Indev",snapshot:"3",difficulty:1,
+		version:"Indev",snapshot:"4",difficulty:1,
 		mods:[],event:{},frames:0,functions:{},lvl:0,
-		isPaused:!1,mp:!1,mpDisabled:!0,phpEnabled:!1,
-		scene:new Scene(game),getScene:()=>save?.[save.sel]?.level?.[0]||game.scene,
+		isPaused:!0,mp:!1,mpDisabled:!0,phpEnabled:!1,
+		defaultScene:new Scene(game),scene:(i=game.lvl)=>save?.[save.sel]?.level?.[i]||game.defaultScene,
 		cli: {isShown: false, prev: [], line:0,i: $("#cli").val(),cv:{}},
 		build: (s="",e="")=>{return `${game.version} ${game.snapshot?s+game.snapshot+e:""}`},
 		acs:cmd=>{for(let i of game.functions[cmd].split("\n")){acs(i)}},
@@ -240,8 +239,8 @@
 			setTimeout(()=>{m.fadeOut(2000,()=>{m.remove()})},settings.chatTimeout*1000);
 		}
 	});
-	game.scene.name = "GAME_DEFAULT_SCENE";
-	const player = new UniversalCamera("player", new Vector3(0,0,-150), game.scene);
+	game.defaultScene.name = "GAME_DEFAULT_SCENE";
+	const player = new UniversalCamera("player", new Vector3(0,0,-150), game.scene());
 	player.assign({
 		name: "",speed: 1,saves: [],servers: [],
 		move:(x,y,z)=>{player.position.addInPlace(player.getDirection(new Vector3(x,y,z)))},
@@ -259,8 +258,8 @@
     };
 	const warp = {
 		start: lvl => {warp.is = !0;warp.to = lvl;},//warps to level
-		end: fell => {warp.is = !1;game.lvl = warp.to;player._scene = save[save.sel].level[warp.to];player.reset()},//ends warp
-		show: (speed=2000) => {let i=0;let show = setInterval(()=>{if(i >= save[save.sel].level.length){clearInterval(show);player.attachControl(game.canvas,!1)}else{player.lockedTarget = Vector3.Zero();game.lvl = i;player._scene = save[save.sel].level[i];i++}},speed)},
+		end: fell => {warp.is = !1;game.lvl = warp.to;player._scene = game.scene(warp.to);player.reset()},//ends warp
+		show: (speed=2000) => {let i=0;let show = setInterval(()=>{if(i >= save[save.sel].level.length){clearInterval(show);player.attachControl(game.canvas,!1)}else{player.lockedTarget = Vector3.Zero();game.lvl = i;player._scene = game.scene(i);i++}},speed)},
 		is:false
 		
 	};
@@ -268,7 +267,7 @@
 	def(tech,"price",techtype=>{let t = techtype;let p = tech[t].cost;for(let i = 1;i<tech[t].level;i++){p*=tech[t].inc};return p});
 	def(tech,"locked",techtype=>{let t = techtype;let l = !1;for(let i in tech[t].requires){if(tech[i].level < tech[t].requires[i]){l = !0}}return l});
 	def(item,"multiplyer",1+(1-settings.difficulty));
-	def(save,"sel",null);
+	save.hide("sel");
 	game.ro("version","mpDisabled","phpEnabled","snapshot");
 	onresize =e=>{game.resize();game.warn("Do not paste any code someone gave you, as they may be trying to steal your information")};
     player.setTarget(Vector3.Zero());
@@ -394,7 +393,7 @@
             </li>`),
             save: s => {
                 let container = ui.load.li("#save_"+s.id,s.name,s.date,s.version);
-                container.click(()=>{for(let i in save){if(i == s.id){save.sel = i;container.addClass("selected")}else{$("#save_"+i).removeClass("selected")}}});
+                container.click(()=>{for(let i in save){if(i == s.id){save.sel = i;container.addClass("selected")}else{$("#save_"+i.id).removeClass("selected")}}});
                 container.on("dblclick",()=>{
                     if(s.version == game.version){for(let i in s){if(i!="name"&&i!="date"&&i!="type"&&i!="version"){window[i] = s[i]}}$("#load").hide();$(game.canvas).show();game.resize();view = "map"}
                     else{alert(`That save is not supported in the current version (${game.version})`)}
@@ -476,10 +475,10 @@
 				}break;
 			case "warp":
 				switch(c[1]){
-					case "start":save[save.sel].level[c[2]]?warp.start(c[2]):0;break;
+					case "start":game.scene(c[2])?warp.start(c[2]):0;break;
 					case "end":warp.is?warp.end():0;break;
-					case "to":if(save[save.sel].level[c[2]]){warp.start(c[2]);warp.end()};break;
-					case "show":warp.show(c[2]?c[2]:2000);break;
+					case "to":game.scene(c[2])?warp.start(c[2]):0;warp.end();break;
+					case "show":warp.show(c[2]?Number(c[2]):2000);break;
 				}break;
 			case "reloadengine":game.resize();game.scene().render();break;
 			case "":case ".":break;
@@ -536,8 +535,8 @@
 		m.emissiveTexture.assign({animationSpeedFactor: 0,octaves :5, persistence:0.8});
 		return q;
 	};
-    save.new = async (name,date=$d.now(),version=game.version,data,push) => {//also worldgen
-        let s = {id:"_"+rand.hex(16),name:name,date:date,version:version,level:[]};
+    def(save,"new",async (name,date=$d.now(),version=game.version,data,push) => {//also worldgen
+        let s = {id:rand.hex(16),name:name,date:date,version:version,level:[]};
         if(data){s.data = data}else{
             //WorldGen
 			$("#loading").show();
@@ -570,13 +569,14 @@
 					(i >= level.num-1)?resolve():0;
 				});
 			});
+			save.sel = s.id;
 			$("#loading").hide();
             ui.load.save(s);
-			save.sel = s.id;
 			game.lvl = 0;
+			game.isPaused = !1;
         }
         ! push? save[s.id] = s:0;return s
-    };
+    });
 	
 		
     //Event Detection
@@ -599,8 +599,8 @@
 	$("#server i").on("click",()=>{$("#load").show();$("#server").hide()});
 	$("#save .new").on("click",()=>{
 		$("#save").hide();
-        save.new($("#save .name").val());
-		view="map";$(game.canvas).show();game.resize()
+        let s = save.new($("#save .name").val());
+		$(game.canvas).show();game.resize();
 	});
 	$("#server .new").on("click",()=>{
 		server.new(Object.assign($("#server form").obj(),{version:game.version}));
@@ -647,7 +647,7 @@
 			case " ":player.move(0,player.speed,0);break;
 			case "a":player.move(-player.speed,0,0);break;
 			case "s":player.move(0,0,-player.speed);break;
-			case "F3":case "D":$("#debug").toggle();break;
+			case "F3":e.preventDefault();case "D":$("#debug").toggle();break;
 	   		case "/":$("#cli").toggle();break;
 		}
 	});
@@ -679,8 +679,7 @@
 		});
 	}
 	const loop = () => {// the loop ~~loop
-		if(!game.isPaused && save.sel && game.lvl > -1){
-			game.scene = save[save.sel].level[game.lvl];
+		if(!game.isPaused && save.sel && game.lvl >= 0){
 			game.frames += 1;
 			item.multiplyer = 1+(1-game.difficulty);
 			ship.crit = {chance: 30+tech.missle.level,damage: 50+tech.missle.level*5};
@@ -716,7 +715,9 @@
 			$("#debug").is(":visible") ? $("#chat").hide() : $("#chat").show();
 			$("#debug .game").html(`
 				${game.build("/ ")} ${game.mods.length?`[${game.mods.join(",")}]`:`(vanilla)`}<br>
-				${settings.fps} FPS | ${game.frames}f | ${round(time*100)/100000}s
+				${settings.fps} FPS | ${game.frames}f | ${round(time*100)/100000}s<br><br>
+				${save.sel} (${save[save.sel].name}) ${save[save.sel].date}<br>
+				LVL ${game.lvl} (${game.scene().name})<br>
 			`);
 			$("#debug .player").html(`
 				P: ${round(player.position.x*10)/10}, ${round(player.position.y*10)/10}, ${round(player.position.z*10)/10}<br>
@@ -725,10 +726,10 @@
 			$("#debug .system").html(`
 				${system.platform} ${system.os} ${system.osVersion}<br>
 				${system.gpu}<br>
-				RAM: ${round(system.ram.used/1000000)}MB/${round(system.ram.max/1000000)}MB | Allocated: ${round(system.ram.allocated/1000000)}MB<br>
-				${system.cpu} CPU Cores<br>
+				${round(system.ram.used/1000000)}MB/${round(system.ram.max/1000000)}MB | Allocated: ${round(system.ram.allocated/1000000)}MB<br>
+				${system.cpu} CPU Threads<br>
 			`);
-			save[save.sel].level[game.lvl].render();
+			game.scene().render();
 		} else if (Number(game.lvl) == NaN){
 			console.warn("Invalid game.lvl value");
 		}
