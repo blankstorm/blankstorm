@@ -5,7 +5,7 @@
 		<link rel="icon" href="/icon.png" type="image/png">
 		<style>
 	        .fa:hover{cursor:pointer}
-			form input{position:absolute;left:50%}
+			form input,form.key button{position:absolute;left:50%}
 			form label{position:absolute;left:10%;width:37.5%;text-align:right}
 			#chat li{background:none;list-style:none}
 			[cover]{position:fixed;left:0%;top:0%;width:100%;height:100%}
@@ -22,8 +22,8 @@
 			<div class="barbg" nobg style="position:absolute;left:5%;width:90%;top:60%;height:35%;background-color:#252525"></div>
 			<div class="bar" nbs style="position:absolute;left:5%;wdth:0%;top:60%;height:35%;background-color:hsla(200,50%,90%,0.75)"></div>
 		</div>
-		<input id="cli" style="position:fixed;left:5%;top:90%;width:25%;height:5%;z-index:10;display:none">
-		<ul lsn id="chat" style="position:fixed;top:5%;width:30;height:75%;background:none;box-shadow:none;z-index:10"></ul>
+		<input id="cli" style="position:fixed;left:5%;top:90%;width:25%;height:5%;z-index:10;display:none" ofs>
+		<ul lsn id="chat" style="position:fixed;top:5%;width:30;height:75%;background:none;box-shadow:none;z-index:10" ofs></ul>
 		<div id="main" starbg cover>
             <h1 class="title" style="font-family:azonix;font-size:60px;position:absolute;top:15%;left:25%;width:50%;"><center>Blankstorm</center></h1>
 			<button class="sp" style="position:fixed;left:37.5%;top:45%;width:25%;height:8%;">Singleplayer</button>
@@ -43,7 +43,7 @@
 					<input type="range" name="size" label="Max world size" min="100" max="1000" step="100" value="500"><br><br>
 					<input type="range" name="planets" label="Max planets per level" min="1" max="9" step="1" value="9"><br><br>
 					<input type="range" name="difficulty" label="Difficulty" min="0.5" max="2" step="0.5" value="1"><br><br>
-					<input type="range" name="quality" label="Quality" min="32" max="256" step="32" value="128"><br><br>
+					<input type="range" name="quality" label="Quality" min="32" max="256" step="32" value="64"><br><br>
 				</form>
 			</div>
 		</div>
@@ -63,43 +63,47 @@
 				<button class="yrd" style="position:absolute;width:20%;top:5%;height:90%;left:52.5%"><i class="fa fa-wrench" aria-hidden="true"></i> Shipyard</button>
 				<button class="lab" style="position:absolute;width:20%;top:5%;height:90%;left:77.5%"><i class="fa fa-flask" aria-hidden="true"></i> Lab</button>
 			</div>
-			<ul class="inv" lsn></ul>
-			<ul class="map" lsn hide><canvas hide class="map"></canvas><center><p>This has not been implemented.<br> It will be added in a future release.<br><a href="javascript:showMap()" style="color:hsla(200,50%,25%,1);text-shadow:none;">Show Map</a></p></center></ul>
-        	<ul class="yrd" lsn hide></ul>
-			<ul class="lab" lsn hide></ul>
-		</div>
-        <div id="attack" hide style="position:fixed;left:10%;top:10%;width:80%;height:80%;z-index:3;">
-			<center>
-			<i class="fa fa-times-circle" style="position:absolute;left:95%;top:1%;font-size:35px;"></i>
-			<p style="position:absolute;left:30%;top:60%;font-size:20px;"></p>
-			<button style="position:absolute;left:30%;top:80%;width:40%;height:10%">Attack</button>
-            </center>
-		</div>
-		<div id="report" hide content style="z-index:2">
-			<center/>
-				<i class="fa fa-times-circle" style="position:absolute;left:95%;top:1%;font-size:35px;"></i>
-				<p style="position:absolute;left:30%;top:40%;font-size:20px;"></p>
-				<button style="position:absolute;left:30%;top:80%;width:40%;height:10%">Accept</button>
+			<ul class="inv" ofs lsn></ul>
+			<ul class="map" ofs lsn hide><canvas hide class="map"></canvas><center><p>This has not been implemented.<br> It will be added in a future release.<br><a href="javascript:showMap()" style="color:hsla(200,50%,25%,1);text-shadow:none;">Show Map</a></p></center></ul>
+        	<ul class="yrd" ofs lsn hide></ul>
+			<ul class="lab" ofs lsn hide></ul>
 		</div>
 		<canvas class="game" hide cover style="z-index:0"></canvas>
-		<div id="debug" hide nobg>
-			<p style="position:fixed;left:1%;top:0;width:48%" class="game"></p>
-			<p style="position:fixed;left:1%;top:20%;width:48%" class="player"></p>
-			<p style="position:fixed;left:49%;top:0;width:50%;text-align:right;" class="system"></p>
+		<div id="debug" hide nobg style="width:fit-content">
+			<p style="position:fixed;left:1%;top:0;background-color:#2225;" class="game"></p>
+			<p style="position:fixed;left:1%;top:20%;background-color:#2225" class="player"></p>
+			<p style="position:fixed;left:49%;top:0;width:50%;text-align:right;background-color:#2225" class="system"></p>
 		</div>
 		<div id="esc" hide style="position:fixed;left:40%;width:20%;top:25%;height:50%;z-index:10">
 			<button class="resume" style="position:absolute;left:10%;top:20%;width:80%;height:15%">Resume&nbspGame</button>
 			<button class="options" style="position:absolute;left:10%;top:40%;width:80%;height:15%">Options</button>
 			<button class="quit" style="position:absolute;left:10%;top:60%;width:80%;height:15%">Main&nbspMenu</button>
 		</div>
-		<form id="settings" name="settings" hide content>
-			<button style="position: absolute;left: 5%; width: 15%;top:90%;height: 5%;"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>
-			<h2 style="text-align:center">Settings</h2>
-			<input type="range" name="fontSize" label="Font Size" min="10" max="20" step="1" value="13"><br><br>
-			<input type="checkbox" name="devMode" label="Developer Mode"><br><br>
-			<input type="range" name="chatTimeout" label="Chat Timeout" min="2.5" max="7.5" step="0.5" value="5"><br><br>
-			<input type="range" name="fps" label = "FPS" min="10" max="110" step="5" value="60">
-		</form>
+		<div id="settings" name="settings" hide content>
+			<button style="position:absolute;left:5%;width:15%;top:90%;height:7%" class="back"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>
+			<button style="position:absolute;left:5%;width:15%;top:10%;height:7%" class="gen"><i class="fa fa-cog" aria-hidden="true"></i> General</button>
+			<button style="position:absolute;left:5%;width:15%;top:20%;height:7%" class="key"><i class="fa fa-keyboard" aria-hidden="true"></i> Keybinds</button>
+			<form class="gen" style="position:absolute;left:25%;width:70%;top:5%;height:90%" nbs ofs>
+				<h2 style="text-align:center">Settings - General</h2>
+				<input type="range" name="fontSize" label="Font Size" min="10" max="20" step="1" value="13"><br><br>
+				<input type="checkbox" name="devMode" label="Developer Mode"><br><br>
+				<input type="range" name="chatTimeout" label="Chat Timeout" min="2.5" max="7.5" step="0.5" value="5"><br><br>
+				<input type="range" name="fps" label = "FPS" min="10" max="110" step="5" value="60">
+			</form>
+			<form class="key" style="position:absolute;left:25%;width:70%;top:5%;height:90%" nbs ofs hide>
+				<h2 style="text-align:center">Settings - Keybinds</h2>
+				<button name="forward" label="Forward"></button><br><br>
+				<button name="left" label="Strafe Left"></button><br><br>
+				<button name="right" label="Strafe Right"></button><br><br>
+				<button name="back" label="Backward"></button><br><br>
+				<button name="chat" label="Toggle Chat"></button><br><br>
+				<button name="inv" label="Toggle Inventory"></button><br><br>
+				<button name="inv1" label="Inventory Tab 1"></button><br><br>
+				<button name="inv2" label="Inventory Tab 2"></button><br><br>
+				<button name="inv3" label="Inventory Tab 3"></button><br><br>
+				<button name="inv4" label="Inventory Tab 4"></button><br><br>
+			</form>
+		</div>
 	</body>
     <div id="libraries">
         <script class="jquery" src="/libraries/jquery.js"></script>
@@ -107,18 +111,19 @@
         <script class="loaders" src="/libraries/babylon.loaders.js"></script>
     </div>
 	<script>
-	$("[label]").each(function(i){$(this).before($(`<label class="${this.name}">${$(this).attr("label")}</label>`))});
-        
-    //Prototype plugins
+	$("[label]").each(function(i){$(this).before($(`<label class="${this.name}">${$(this).attr("label")}&nbsp;&nbsp;</label>`))});
+	
+	//Prototype plugins
 	const def = (d,p,v) => {Object.defineProperty(d,p,{value:v,enumerable:!1})};
 	const forInterval = (n,t=1000,f) => {let i=0;let s=setInterval(()=>{if(i < n){f(i)}i++},t);if(i >= n){clearInterval(s)}};
+	const f = n => parseFloat(n);
 	for(let  i of ["Object","Array","String","Boolean","Number","Date"]){def(window[i],"fn",window[i].prototype)};
 	def(Object.fn,"hide",function(...p){for(let i of p){Object.defineProperty(this,i,{enumerable:!1})}});
 	def(Object.fn,"ro",function(...p){for(let i of p){Object.defineProperty(this,i,{writable:!1})}});
 	def(Object.fn,"assign",function(...objs){for(let i of objs){Object.assign(this,i)}});
 	def(Array.fn,"total",function(){return eval(this.join("+"))});
-    def(Number.fn,"toStar",function(){var s="";for(let i=0;i<this;i++){s+="*"};return s});
-    def(String.fn,"isHex",function(){return /^[0-9a-f]+$/.test(this)});
+	def(Number.fn,"toStar",function(){var s="";for(let i=0;i<this;i++){s+="*"};return s});
+	def(String.fn,"isHex",function(){return /^[0-9a-f]+$/.test(this)});
 	def(String.fn,"isJSON",function(){try{JSON.parse(this);return !0}catch(e){return !1}})
 	Date.fn.assign({
 		today:()=>{let d = new Date();return `${d.getFullYear()}/${parseFloat(d.getMonth())+1}/${d.getDate()}`},
@@ -127,6 +132,7 @@
 	Object.fn.toString = Array.fn.toString = function(){return JSON.stringify(this)};
 		
 	window.assign(BABYLON);
+	
 	//JQuery plugins
     $.fn.obj = function(){
 		let o = {};
@@ -149,30 +155,30 @@
 					(e.type == "checkbox") ? e.checked = obj[e.name] : e.value=obj[e.name];
 				}}}
 	};
-    $.fn.tooltip = function(info = "",style = ""){
-		let sel = "div,button,li,ul,ol";
-        let css = $(style || (this.is(sel) ? this : this.parents().filter(sel).eq(0)));
-        let tt = $(`<div class="tooltip" style="${style}"><p>${info}</p></div>`)
-		.css(css.css(["position","left","width"]))
-		.css({"z-index":9,"font-size":settings.fontSize,"font-family":"sans-serif"});
-		tt.css("top",parseFloat(tt.css("top")) - parseFloat(css.css("height")) - settings.fontSize * (info.split("<br>").length-1));
-        this.on("mouseenter",()=>{this.append(tt);tt.css("width",css.css("width"))}).on("mouseleave",()=>{tt.remove()});
-		return tt
-    };
-		
+	$.fn.tooltip = function(info = ""){
+		let tt = $(`<div class="tooltip"><p>${info}</p></div>`)
+		.css({position:"fixed",width:"fit-content",height:"fit-content","max-width":"15%","z-index":9,"font-size":settings.fontSize,"font-family":"sans-serif"});
+		this.mouseenter(e=>{
+			tt.css({left:settings.fontSize+mouse.x,top:settings.fontSize+mouse.y});
+			this.parent().append(tt);
+			tt.css({top:(settings.fontSize+mouse.y+f(getComputedStyle(tt[0]).height)<height)?settings.fontSize+mouse.y:settings.fontSize+mouse.y-f(getComputedStyle(tt[0]).height)})
+		}).mouseleave(e=>{tt.remove()});
+		return this
+	};
+
 	//variables ~~vars
         
     //input/api vars
-    const key = {pressed:!1};
+	const key = {pressed:!1};
 	const width = innerWidth;
 	const height = innerHeight;
-    const mouse = {x:0,y:0,pressed:!1};
-    const ls = localStorage;
-    const on = addEventListener;
-    const trigger = event => {dispatchEvent(event)};
+	const mouse = {x:0,y:0,pressed:!1};
+	const ls = localStorage;
+	const on = addEventListener;
+	const trigger = event => {dispatchEvent(event)};
 	let gl = $("<canvas></canvas>")[0].getContext("webgl") || $("<canvas></canvas>")[0].getContext("experimental-webgl");
-    let time = 0;
-    const date = new Date(), $d = new Date();
+	let time = 0;
+	const date = new Date(), $d = new Date();
 	const system = {
 		gpu: gl.getParameter(gl.getExtension("webgl_debug_renderer_info").UNMASKED_RENDERER_WEBGL),
 		ram: {
@@ -188,12 +194,12 @@
 	navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion","uaFullVersion"])
 	.then(ua => {system.assign({model:ua.model,os:ua.platform,osVersion:ua.platformVersion,browserVersion:ua.uaFullVersion});Object.freeze(system)});
 	onmousemove =e=>{mouse.x = e.clientX;mouse.y = e.clientY};
-    setInterval(()=>{time+=10},10);
-        
-    //math vars
-    const round = Math.round;
+	setInterval(()=>{time+=10},10);
+
+	//math vars
+	const round = Math.round;
 	const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-    const rand = {
+	const rand = {
 		float: (min=0,max=1)=>rand.real * (max - min) + min,
 		hex: (length=1) => {let c = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"];let s = "";for(let i = 0;i<length;i++){s += c[rand.int(15)]}return s;},
 		get bool(){let b = Math.round(rand.real);return b?!0:!1},
@@ -202,115 +208,134 @@
 		get real(){return Math.random()},
 	};
 	const greek = ["Alpha","Beta","Gamma","Delta","Epsilon","Zeta","Eta","Theta","Iota","Kappa","Lambda","Mu","Nu","Xi","Omicron","Pi","Rho","Sigma","Tau","Upsilon","Phi","Chi","Psi","Omega"];
-    const numeral = ["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIII","XXIV","XXV","XXVII","XXVII","XXVIII","XXIX","XXX","XXXI","XXXII","XXXIII","XXXIV","XXXV","XXXVI","XXXVII","XXXVIII","XXXIX","XL","XLI","XLII","XLIII","XLIV","XLV","XLVI","XLVII","XLVIII","XLIX","L","LI","LII","LIII","LIV","LV","LVI","LVII","LVIII","LIX","LX","LXI","LXII","LXIII","LXIV","LXV","LXVI","LXVII","LXVIII","nice","LXX","LXXI","LXXII","LXXIII","LXXIV","LXXV","LXXVI","LXXVII","LXXVIII","LXXIX","LXXX","LXXXI","LXXXII","LXXXIII","LXXXIV","LXXXV","LXXXVI","LXXXVII","LXXXVIII","LXXXIX","XC","XCI","XCII","XCIII","XCIV","XCV","XCVI","XCVII","XCVIII","XCIX","C"];
-    const minimize = min = number => {
-        let n = number;let l = ["","K","M","B","T","q","Q","s","S","O","N","D"];
-        if(typeof n != "number"){n = Number(n)}
-        if(n < 0 || n > Number(`1e${(l.length-1)*3}`)){return n}
+	const numeral = ["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIII","XXIV","XXV","XXVII","XXVII","XXVIII","XXIX","XXX","XXXI","XXXII","XXXIII","XXXIV","XXXV","XXXVI","XXXVII","XXXVIII","XXXIX","XL","XLI","XLII","XLIII","XLIV","XLV","XLVI","XLVII","XLVIII","XLIX","L","LI","LII","LIII","LIV","LV","LVI","LVII","LVIII","LIX","LX","LXI","LXII","LXIII","LXIV","LXV","LXVI","LXVII","LXVIII","nice","LXX","LXXI","LXXII","LXXIII","LXXIV","LXXV","LXXVI","LXXVII","LXXVIII","LXXIX","LXXX","LXXXI","LXXXII","LXXXIII","LXXXIV","LXXXV","LXXXVI","LXXXVII","LXXXVIII","LXXXIX","XC","XCI","XCII","XCIII","XCIV","XCV","XCVI","XCVII","XCVIII","XCIX","C"];
+	const minimize = min = number => {
+		let n = number;let l = ["","K","M","B","T","q","Q","s","S","O","N","D"];
+		if(typeof n != "number"){n = Number(n)}
+		if(n < 0 || n > Number(`1e${(l.length-1)*3}`)){return n}
 		for(let i = 0;i<l.length;i++){
-            let d = Number(`1e${i*3}`)/1000;
-            if(n < d){return round(n/d)+l[i]}
-        }
- 	};
+			let d = Number(`1e${i*3}`);
+			if(n/d < 1000){return round(n/d)+l[i]}
+		}
+	};
 	const range = (min,max)=>{let a = [];for(let i = min;i<max;i++){a.push(i)}return a};
-        
-    //markup funations
-	const tab = a => {var o="";for(let i=0;i<a;i++){o += "&nbsp";if(i == a-1){return o}}};
-	const br = a => {var o="";for(let i=0;i<a;i++){o += "<br>";if(i == a-1){return o}}};
-        
+
     //game vars
-	let [settings,worldgen,item,tech,server,save] = [$("#settings").obj(),$("#save form").obj(),{},{},{},{sel:0}];
-	const level = {num: 65, names: ["Crash Site", "Abrigato", "A Keralis","B Keralis", "Suzum", "Vespa", "Coruscare", "Vulca", "Jaeger", "Kashyyyk", "Outpost42","Victoria", "Gesht", "Sanctuary", "Snowmass", "Ja", "Keeg", "Haemeiguli", "Borebalae", "Albataetarius", "Hataerius", "Achernaiphoros", "Antadrophei", "Hoemeirai", "Antabalis", "Hoereo", "Pazadam", "Equidor", "Pax", "Xena", "Titan", "Oturn", "Thuamia", "Heuthea", "Ditharus", "Muxater", "Trukovis", "Bichotune", "Etis", "Leorus", "Aphus", "Harophos", "Athena", "Hades", "Icarus", "Ureus", "Xentos Prime", "Ketlak", "Aerox", "Thryox", "Stratus", "Nox", "Sanctum", "Pastūra", "Tinctus", "Morbus", "Neos", "Nomen", "Numerus", "Pax", "Fornax", "Skorda", "Alli", "Resurs","Home!"]}
+	let [settings,keybind,worldgen,item,tech,server,save,versions] = [$("form.gen").obj(),{forward:"w",left:"a",right:"s",back:"d",chat:"/",inv:"e",inv1:"1",inv2:"2",inv3:"3",inv4:"4"},$("#save form").obj(),{},{},{},{sel:null},[]];
+	$.get("manifest.json",d=>{versions = d}).fail(e=>{console.warn("Failed to load manifest.json:\n"+e)});
+	const level = {num: 65, names: ["Crash Site", "Abrigato","Kerali","Kaltez","Suzum", "Vespa", "Coruscare", "Vulca", "Jaeger", "Kashyyyk", "Outpost42","Victoria", "Gesht", "Sanctuary", "Snowmass", "Ja", "Keeg", "Haemeiguli", "Borebalae", "Albataetarius", "Hataerius", "Achernaiphoros", "Antadrophei", "Hoemeirai", "Antabalis", "Hoereo", "Pazadam", "Equidor", "Pax", "Xena", "Titan", "Oturn", "Thuamia", "Heuthea", "Ditharus", "Muxater", "Trukovis", "Bichotune", "Etis", "Leorus", "Aphus", "Harophos", "Athena", "Hades", "Icarus", "Ureus", "Xentos Prime", "Ketlak", "Aerox", "Thryox", "Stratus", "Nox", "Sanctum", "Pastūra", "Tinctus", "Morbus", "Neos", "Nomen", "Numerus", "Pax", "Fornax", "Skorda", "Alli", "Resurs","Home"]}
 	const game = new Engine($("canvas.game")[0],!0);
 	game.assign({
 		canvas: $("canvas.game")[0],
-		version:"Indev",snapshot:"4",difficulty:1,
+		version:"Indev",snapshot:"5",difficulty:1,
 		mods:[],event:{},frames:0,functions:{},lvl:0,
 		isPaused:!0,mp:!1,mpDisabled:!0,phpEnabled:!1,
-		defaultScene:new Scene(game),scene:(i=game.lvl)=>save?.[save.sel]?.level?.[i]||game.defaultScene,
 		cli: {isShown: false, prev: [], line:0,i: $("#cli").val(),cv:{}},
+		scene:(i=game.lvl)=>save?.[save.sel]?.level?.[i]||game.scene.default,
 		build: (s="",e="")=>{return `${game.version} ${game.snapshot?s+game.snapshot+e:""}`},
+		saveSettings: ()=>{
+			ls.settings = settings = $("form.gen").obj();
+			ls.keybind = keybind;
+			return ls
+		},
 		acs:cmd=>{for(let i of game.functions[cmd].split("\n")){acs(i)}},
         log:(msg,col="#ebebeb")=>{console.log("%c"+msg,`color:${col}`)},
-		err:msg=>{console.error("%cGame Error: "+msg,"color:#fff")},
-		warn:msg=>{console.warn("%c"+msg,"color:#fff")},
-		chat:msg=>{
-			let m = $(`<li>${msg}</li>`).appendTo($("#chat"));
-			setTimeout(()=>{m.fadeOut(2000,()=>{m.remove()})},settings.chatTimeout*1000);
-		}
+		chat:(...msg)=>{
+			for(let m of msg){let i = $(`<li>${m}</li>`).appendTo($("#chat"));setTimeout(e=>{i.fadeOut(2000,e=>{i.remove()})},settings.chatTimeout*1000);}
+		},
+		err:(error,alrt)=>{console.error(error);alrt?alert(error):0;game.chat(error)}
 	});
-	game.defaultScene.name = "GAME_DEFAULT_SCENE";
+	game.scene.default = new Scene(game);
+	game.scene.default.name = "GAME_DEFAULT_SCENE";
 	const player = new UniversalCamera("player", new Vector3(0,0,-150), game.scene());
 	player.assign({
 		name: "",speed: 1,saves: [],servers: [],
 		move:(x,y,z)=>{player.position.addInPlace(player.getDirection(new Vector3(x,y,z)))},
-		reset: () => {player.position = new Vector3(0,0,-150);player.rotation = Vector3.Zero();},
-		wipe:()=>{
-			for(let i in item){item[i].amount = 0};
-			for(let i in tech){tech[i].level = 0};
-			for(let i =0;i<planet.length;i++){planet[i].taken = 0};
-			ship.fleet = []
-		}
+		reset: () => {player.position = new Vector3(0,0,-150);player.rotation = Vector3.Zero()},
+		hasItems: items => {for(let i in items){if(item[i].amount < items[i]){return !1}}return !0},
+		removeItems: items => {for(let i in items){item[i]?item[i].amount-=items[i]:game.err(`removeItems failed: item "${i}" does not exist`)}},
+		giveItems: items => {for(let i in items){item[i]?item[i].amount+=items[i]:game.err(`giveItems failed: item "${i}" does not exist`)}},
+		wipe:()=>{for(let i of item){i.amount = 0};for(let i of tech){i.level = 0};for(let i =0;i<planet.length;i++){planet[i].taken = 0};ship.fleet = []}
 	});
     const ship = {
         generic: {},fleet: [],frozen: 0,battle:{active: !1,won: null},
         num: filter =>{let count = 0;for(let i=0;i < ship.fleet.length;i++){if(ship.fleet[i].type == filter){count++;}}return count}
     };
 	const warp = {
-		start: lvl => {warp.is = !0;warp.to = lvl;},//warps to level
-		end: fell => {warp.is = !1;game.lvl = warp.to;player._scene = game.scene(warp.to);player.reset()},//ends warp
+		start: lvl => {if(lvl >= 0 && lvl < level.num){warp.is = !0;warp.to = lvl}else{game.chat(`Failed to start warp to level ${lvl} (system does not exist)`)}},//warps to level
+		end: fell => {if(warp.is){warp.is = !1;game.lvl = warp.to;player._scene = game.scene(warp.to);player.reset();game.chat(`Warped to ${game.scene().name}`)}},//ends warp
 		show: (speed=2000) => {let i=0;let show = setInterval(()=>{if(i >= save[save.sel].level.length){clearInterval(show);player.attachControl(game.canvas,!1)}else{player.lockedTarget = Vector3.Zero();game.lvl = i;player._scene = game.scene(i);i++}},speed)},
 		is:false
 		
 	};
-	if(ls.settings?.isJSON()){settings = JSON.parse(ls.settings);$("#settings").loadData(settings)}
-	def(tech,"price",techtype=>{let t = techtype;let p = tech[t].cost;for(let i = 1;i<tech[t].level;i++){p*=tech[t].inc};return p});
-	def(tech,"locked",techtype=>{let t = techtype;let l = !1;for(let i in tech[t].requires){if(tech[i].level < tech[t].requires[i]){l = !0}}return l});
+	if(ls.settings?.isJSON()){settings = JSON.parse(ls.settings);$("form.gen").loadData(settings)}
+	if(ls.keybind?.isJSON()){keybind = JSON.parse(ls.keybind);$("form.key").loadData(keybind)}else{$("form.key").loadData(keybind)}
+	$("form.key button").each(function(i){$(this).text(keybind[this.name])})
+	def(tech,"price",t=>{let r = {};r.assign(tech[t].recipe);for(let p in tech[t].recipe){for(let i = 1;i<tech[t].level;i++){r[p]*=tech[t].inc};return r}});
+	def(tech,"locked",t=>{let l = !1;for(let i in tech[t].rq){if(tech[i].level < tech[t].rq[i]){l = !0}}return l});
 	def(item,"multiplyer",1+(1-settings.difficulty));
-	save.hide("sel");
+	save.hide("sel")
 	game.ro("version","mpDisabled","phpEnabled","snapshot");
-	onresize =e=>{game.resize();game.warn("Do not paste any code someone gave you, as they may be trying to steal your information")};
+	onresize =e=>{game.resize();console.warn("Do not paste any code someone gave you, as they may be trying to steal your information")};
     player.setTarget(Vector3.Zero());
-    
+
     //default data
 	const mod = {
 		default: {
 			ships:{
 				corvette:{
-					health:10,damage:1,reload:2,level:0,maxLevel:5,power:1,
+					hp:10,dmg:1,reload:2,maxLevel:5,power:1,
 					displayName:"Corvette",desc:"A light, fast blockade runner",
-                    cost:{metal:1000,minerals:500,fuel:250},
-                    upgradeCost:{ancient_tech: [1,2,4,8,16,32],code_snippets: [1,2,5,10,20,35]}
+                    recipe:{metal:1000,minerals:500,fuel:250},
+                    upgrade:[
+						{ancient_tech:1,code_snippets:1},{ancient_tech:2,code_snippets:2},{ancient_tech:4,code_snippets:5},
+						{ancient_tech:8,code_snippets:10},{ancient_tech:16,code_snippets:20},{ancient_tech:32,code_snippets:35}
+					]
 				},
 				frigate:{
-                    health:25,damage:5,reload:1,level:0,maxLevel:5,power:2,
-					displayName:"Frigate",desc:"idk",
-					cost: {metal:2000,minerals:2000,fuel:500},
-                    upgradeCost:{ancient_tech: [2,4,7,9,12,15],code_snippets: [5,10,20,30,35,40]}
+                    hp:25,dmg:5,reload:1,maxLevel:5,power:2,
+					displayName:"Frigate",desc:"",
+					recipe: {metal:2000,minerals:2000,fuel:500},
+					upgrade:[
+						{ancient_tech:2,code_snippets:5},{ancient_tech:4,code_snippets:10},{ancient_tech:7,code_snippets:20},
+						{ancient_tech:9,code_snippets:30},{ancient_tech:12,code_snippets:35},{ancient_tech:15,code_snippets:40}
+					]
 				},
 				crusier:{
-                    health:50,damage:10,reload:0.5,level:0,maxLevel:5,power:5,
-					displayName:"Crusier",desc:"idk",
-					cost: {metal:4000,minerals:1000,fuel:1000},
-                    upgradeCost:{ancient_tech: [3,5,8,12,18,26],code_snippets: [10,20,30,40,50,60]}
+                    hp:50,dmg:10,reload:0.5,maxLevel:5,power:5,
+					displayName:"Crusier",desc:"",
+					recipe: {metal:4000,minerals:1000,fuel:1000},
+					upgrade:[
+						{ancient_tech:3,code_snippets:10},{ancient_tech:5,code_snippets:20},{ancient_tech:8,code_snippets:30},
+						{ancient_tech:12,code_snippets:40},{ancient_tech:18,code_snippets:50},{ancient_tech:26,code_snippets:60}
+					]
 				},
 				destroyer:{
-                    health:100,damage:25,reload:1,level:0,maxLevel:5,power:10,
+                    hp:100,dmg:25,reload:1,maxLevel:5,power:10,
 					displayName:"Destroyer",desc:"A versitile ship, it can hold its own in battle.",
-					cost: {metal:10000,minerals:4000,fuel:2500},
-                    upgradeCost:{ancient_tech: [8,12,20,35,60,75],code_snippets: [25,40,60,85,100,125]}
+					recipe: {metal:10000,minerals:4000,fuel:2500},
+					upgrade:[
+						{ancient_tech:8,code_snippets:25},{ancient_tech:12,code_snippets:40},{ancient_tech:20,code_snippets:60},
+						{ancient_tech:35,code_snippets:85},{ancient_tech:60,code_snippets:100},{ancient_tech:75,code_snippets:125}
+					]
 				},
 				battleship:{
-                    health:250,damage:100,reload:0.5,level:0,maxLevel:5,power:25,
+                    hp:250,dmg:100,reload:0.5,maxLevel:5,power:25,
 					displayName:"Battleship",desc:"Once in a battle, in can stay there and deal out damage for a long time",
-					cost: {metal:25000,minerals:10000,fuel:5000},
-                    upgradeCost:{ancient_tech: [10,25,45,70,100,135],code_snippets: [20,25,40,55,70,85]}
+					recipe: {metal:25000,minerals:10000,fuel:5000},
+					upgrade:[
+						{ancient_tech:10,code_snippets:20},{ancient_tech:25,code_snippets:25},{ancient_tech:45,code_snippets:40},
+						{ancient_tech:70,code_snippets:55},{ancient_tech:100,code_snippets:70},{ancient_tech:135,code_snippets:85}
+					]
 				},
 				dreadnought:{
-                    health:1000,damage:250,reload:0.25,level:0,maxLevel:5,power:100,
+                    hp:1000,dmg:250,reload:0.25,maxLevel:5,power:100,
 					displayName:"Dreadnought",desc:"The mother of all ships. Dominates everything it touches",
-					cost: {metal:100000,minerals:50000,fuel:25000},
-                    upgradeCost:{ancient_tech: [25,50,100,150,250,400],code_snippets: [50,75,88,100,125,150]}
+					recipe: {metal:100000,minerals:50000,fuel:25000},
+					upgrade:[
+						{ancient_tech:25,code_snippets:50},{ancient_tech:50,code_snippets:75},{ancient_tech:100,code_snippets:88},
+						{ancient_tech:150,code_snippets:100},{ancient_tech:250,code_snippets:125},{ancient_tech:400,code_snippets:150}
+					]
 				}
 			},
             items:{
@@ -322,21 +347,21 @@
 				code_snippets: {displayName:"Code Snippets",desc:"",rare:!0,drop:0.1,value:1000},
 			},
 			tech:{
-				armor:{level:0,cost:5,inc:1.2,max:50,displayName:"Armor",desc:"Increases health <br>+15% per level"},
-				laser:{level:0,cost:5,inc:1.2,max:50,displayName:"Weapons",desc:"Increases base damage <br>+10% per level"},
-				reload:{level:0,cost:5,inc:1.2,max:50,displayName:"Reload",desc:"Decreases time between shots"},
-				shields:{level:0,cost:10,inc:1.25,max:25,requires:{armor:5},displayName:"Shields",desc:"Increases shields<br>+20% per level"},
-				missle:{level:0,cost:10,inc:1.25,max:25,requires:{laser:5},displayName:"Missles",desc:"Increases crit chance and crit damage<br>+1% crit chance<br>+5% crit damage"},
-				regen:{level:0,cost:10,inc:1.25,max:25,requires:{reload:5,armor:15},displayName:"Regeneration",desc:"Increases regen rate<br>+1% per level"},
-				construction:{level:0,cost:10,inc:1.25,max:50,requires:{armor:10},displayName:"Construction",desc:"Decreases ship material cost"},
-				salvage:{level:0,cost:20,inc:1.25,max:25,requires:{construction:5},displayName:"Salvage",desc:"Increases chance for rare items<br>+2% per level"}
+				armor:{recipe:{tech_points:5},inc:1.2,max:50,rq:{},displayName:"Armor",desc:"Increases health <br>+15% per level"},
+				laser:{recipe:{tech_points:5},inc:1.2,max:50,rq:{},displayName:"Weapons",desc:"Increases base damage <br>+10% per level"},
+				reload:{recipe:{tech_points:5},inc:1.2,max:50,rq:{},displayName:"Reload",desc:"Decreases time between shots"},
+				shields:{recipe:{tech_points:10},inc:1.25,max:25,rq:{armor:5},displayName:"Shields",desc:"Increases shields<br>+20% per level"},
+				missle:{recipe:{tech_points:10},inc:1.25,max:25,rq:{laser:5},displayName:"Missles",desc:"Increases crit chance and crit damage<br>+1% crit chance<br>+5% crit damage"},
+				regen:{recipe:{tech_points:10},inc:1.25,max:25,rq:{reload:5,armor:15},displayName:"Regeneration",desc:"Increases regen rate<br>+1% per level"},
+				construction:{recipe:{tech_points:10},inc:1.25,max:50,rq:{armor:10},displayName:"Construction",desc:"Decreases ship material cost"},
+				salvage:{recipe:{tech_points:20},inc:1.25,max:25,rq:{construction:5},displayName:"Salvage",desc:"Increases chance for rare items<br>+2% per level"}
 			}
 		}
 	};
 
 	//Some stuff done on initalization
 	document.title = "Blankstorm "+game.version;
-    $("#main .version").html(game.version);
+    $("#main .version").html(game.build("/"));
 	game.log(`Blankstorm ${game.build("(",")")}`,`#f55;padding:${settings.fontSize}px;text-align:center`);  
 
 	//load mods into the game
@@ -344,9 +369,9 @@
 		if(i != "default"){game.mods.push(i)}
 		for(let j in mod[i]){
         switch(j){
-            case "ships":ship.generic.assign(mod[i][j]);break;
-            case "items":item.assign(mod[i][j]);break;
-			case "tech":tech.assign(mod[i][j]);break;
+			case "ships":for(let k in mod[i][j]){ship.generic[k] = {...mod[i][j][k],level:0}};break;
+			case "items":for(let k in mod[i][j]){item[k] = {...mod[i][j][k],amount:0}};break;
+			case "tech": for(let k in mod[i][j]){tech[k] = {...mod[i][j][k],level:0}};break;
 			case "styles":for(let k in mod[i][j]){$(":root").css("--"+k,mod[i][j][k])};break;
 			case "functions":for(let k in mod[i][j]){game.acsFunct[k] = mod[i][j][k]};break;
             default: console.warn(`mod "${i}" has invalid property "${j}"`)
@@ -375,71 +400,66 @@
 			return r;
 		}
 	};
-    
     const ui = {//ui functions ~~ui
-        load: {
-            get back(){
-                let b = $(`<button style="position:absolute;left:5%;top:90%;width:15%;height:5%;"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>`)
-				.click(()=>{$("#load").hide();$("#main").show()});return b
-            },
-            get new(){
-                let b = $(`<button style="position:absolute;left:80%;top:90%;width:15%;height:5%;"><i class="fa fa-plus" aria-hidden="true"></i> New</button>`)
-                .click(()=>{if(game.mp){$("#load").hide();$("#server").show()}else{$("#load").hide();$("#save").show()}});return b
-            },
-            li: (id,info,info2,info3)=>$(`<li id="load_li_${id}" class="clickable bg">
-                <p style="display:inline-flex;font-size:18px;position:relative;left:10%;">${info}</p>
-                <p style="display:inline-flex;font-size:18px;position:relative;left:30%;">${info2}</p>
-                <p style="display:inline-flex;font-size:18px;position:relative;left:70%;">${info3}</p>
-            </li>`),
-            save: s => {
-                let container = ui.load.li("#save_"+s.id,s.name,s.date,s.version);
-                container.click(()=>{for(let i in save){if(i == s.id){save.sel = i;container.addClass("selected")}else{$("#save_"+i.id).removeClass("selected")}}});
-                container.on("dblclick",()=>{
-                    if(s.version == game.version){for(let i in s){if(i!="name"&&i!="date"&&i!="type"&&i!="version"){window[i] = s[i]}}$("#load").hide();$(game.canvas).show();game.resize();view = "map"}
-                    else{alert(`That save is not supported in the current version (${game.version})`)}
-                });
-                $("#load").prepend(container);
-            }
-        },
-        ship:shiptype=>{
-			let t = shiptype;let ct = "";let uct = "";
-			for(let m in ship.generic[t].cost){ct += `<br>${item[m].displayName}: ${min(item[m].amount)}/${min(ship.generic[t].cost[m])}`}
-			for(let m in ship.generic[t].upgradeCost){uct += `<br>${item[m].displayName}: ${round(item[m].amount)}/${round(ship.generic[t].upgradeCost[m])}`}
-            let l = $(`<li class="clickable bg ${t}"></li>`);
-			let u = $(`<i style="display:inline-flex;position:relative;left:10%;font-size:25px" class="fa fa-arrow-circle-o-up" aria-hidden="true"></i>`).appendTo(l);
-			let i = $(`<i style="display:inline-flex;position:relative;left:80%;font-size:25px" class="fa fa-info-circle" aria-hidden="true"></i>`).appendTo(l);
-			let d = $(`<p style="display:inline-flex;position:relative;left:35%">[${ship.num(t)}]&nbsp${ship.generic[t].displayName}</p>`).appendTo(l);
-			i.tooltip(`${ship.generic[t].desc}<br><strong>Material Cost</strong>${ct}`,i);
-			u.tooltip(`<br><strong>Upgrade Cost</strong>${uct}`,u);
-            u.click(()=>{
-                let hasItems = !0;
-                for(let j in ship.generic[t].upgradeCost){if(item[j]){if(item[j].amount < ship.generic[t].upgradeCost[j] || !hasItems){hasItems=!1}}else{alert(`item ${j} does not exist`)}}
-                if(ship.generic[t].level < ship.generic[t].maxLevel && hasItems){for(let j in ship.generic[t].upgradeCost){item[j].amount -= ship.generic[t].upgradeCost[j]}ship.generic[t].level++}
+		get back(){return $(`<button style="position:absolute;left:5%;top:90%;width:15%;height:5%;"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>`)},
+		get new(){return $(`<button style="position:absolute;left:80%;top:90%;width:15%;height:5%;"><i class="fa fa-plus" aria-hidden="true"></i> New</button>`)},
+		li: (...info)=>{
+			let l = $(`<li class="clickable bg"></li>`);
+			l.info = [];
+			for(let i in info){
+				i = Number(i);
+				l.info[i] = $(info[i].slice(0,3)==".fa"?
+					`<i class="${info[i].substr(1)}" style="display:inline-flex;font-size:${settings.fontSize*5/3}px;position:relative;left:${100/(info.length+1)*(i+1)}%" aria=hidden="true"></i>`:
+					`<p style="display:inline-flex;font-size:${settings.fontSize}px;position:relative;left:${100/(info.length+1)*(i+1)}%">${info[i]}</p>`
+				).appendTo(l);
+			}
+			l.pos = (...per)=>{for(let i in per){l.info[i].css("left",per[i]+"%")}};
+			//l.hide("pos");
+			return l
+		},
+        yrd:(shiptype)=>{
+			let s = ship.generic[shiptype], ct = "", uct = "";
+			for(let m in s.recipe){ct += `<br>${item[m].displayName}: ${min(item[m].amount)}/${min(s.recipe[m])}`}
+			for(let m in s.upgrade[s.level]){uct += `<br>${item[m].displayName}: ${min(item[m].amount)}/${min(s.upgrade[s.level][m])}`}
+			s.li = ui.li(".fa fa-arrow-circle-up",".fa fa-plus-circle",`[${ship.num(shiptype)}] ${s.displayName}`);
+			s.li.pos(20,80,40);
+            s.li.info[0].click(e=>{
+                if(s.level < s.maxLevel && player.hasItems(s.upgrade[s.level])){player.removeItems(s.upgrade[s.level]);s.level++}
+            }).tooltip(`Level ${s.level}/${s.maxLevel}<br><br><strong>Upgrade Cost</strong>${uct}`);
+			s.li.info[1].tooltip(`${s.desc}<br><br><strong>Material Cost</strong>${ct}`);
+			s.li.info[1].click(e=>{
+                if(player.hasItems(s.recipe)){player.removeItems(s.recipe);ship.new(shiptype)}
+				s.li.info[2].html(`[${ship.num(shiptype)}]&nbsp${s.displayName}`);
             });
-			l.click(()=>{
-                let hasItems = !0;
-                for(let j in ship.generic[t].cost){if(item[j]){if(item[j].amount < ship.generic[t].cost[j]*(1-tech.construction.level/100) || !hasItems){hasItems=!1}}else{alert(`item ${j} does not exist`)}}
-                if(hasItems){for(let j in ship.generic[t].cost){item[j].amount -= ship.generic[t].cost[j]*(1-tech.construction.level/100)}ship.new(t)}
-				d.html(`[${ship.num(t)}]&nbsp${ship.generic[t].displayName}`);
-            });
-            return l;
+            return s.li;
         },
-        lab:techtype=>{
-            let t = techtype;let i = "";
-            if(tech.locked(t)){i = `<i class="fa fa-lock" style="display:inline-flex;position:relative;left:10%" aria-hidden="true"></i>`}
-            return $(`<li class="clickable bg">${i}<p style="display:inline-flex;position:relative;left:35%">${tech[t].displayName}</p></li>`).click(()=>{
-                if(item.tech_points >= tech.price(t) && tech[t].level < tech[t].max){if(typeof tech[t].requires == "object"){if(!tech.locked(t)){item.tech_points -= tech.price(t);tech[t].level++}}}})
-        },
+        lab:(t)=>{
+			tech[t].li = ui.li(".fa fa-arrow-circle-up",".fa fa-lock",tech[t].displayName);
+			tech[t].li.click(e=>{if(player.hasItems(tech.price(t)) && tech[t].level < tech[t].max && !tech.locked(t)){player.removeItems(tech.price(t));tech[t].level++}});
+			tech[t].li.pos(80,20,35);
+			let uc = "", rq = "";
+			for(let i in tech[t].recipe){uc += `<br>${item[i].displayName}: ${min(item[i].amount)}/${min(tech[t].recipe[i])}`}
+			for(let i in tech[t].rq){rq += `<br>${tech[i].displayName}: ${tech[i].level}/${tech[t].rq[i]}`}
+			tech[t].li.info[0].tooltip(`<strong>${tech[t].displayName}</strong><br>${tech[t].desc}<br>Level: ${tech[t].level}/${tech[t].max}<br><br><strong>Material Cost:</strong>${uc}<br>${Object.keys(tech[t].rq).length?`<br><strong>Requires:</strong>`:``}${rq}`);
+			return tech[t].li
+		},
+		inv:(i)=>{
+			item[i].li = ui.li(min(item[i].amount),`${item[i].displayName}${item[i].rare?` (rare)`:``}:`);
+			item[i].li.click(e=>{if(item[i].recipe && player.hasItems(item[i].recipe)){player.removeItems(item[i].recipe);item[i].amount++}});
+			item[i].li.pos(60,30);
+			item[i].li.removeClass("clickable")
+			return item[i].li
+		},
         lastScene: "#main"
     };
-        
+
 	//the command processor ~~acs
 	const acs = cmd => {
 		let c = cmd.split(" ");
 		switch(c[0]){
 			case "help":
 				game.chat(`
-					Commands: customVar(cv), item, tech, ship, player, echo. <br>
+					Commands: item, tech, ship, player, echo. <br>
 					see the <a href="https://blankstorm.drvortex.dev/api/commands" target="_blank">API Reference</a> for for details
 				`)
 				break;
@@ -452,7 +472,7 @@
 			case "tech":
 				switch(c[1]){
 					case "lvl":c[3]?tech[c[2]].level = parseFloat(c[3]):game.chat(`tech "${c[2]}" level: ${tech[c[2]].level}`);break;
-					case "rq":c[3]?tech[c[2]].requires = JSON.parse(c[3]):game.chat(`tech "${c[2]}" requirements: ${item[c[2]].requires}`);break;
+					case "rq":c[3]?tech[c[2]].rq = JSON.parse(c[3]):game.chat(`tech "${c[2]}" requirements: ${item[c[2]].rq}`);break;
 					default:game.chat(tech[c[2]]);
 				}break;
 			case "ship":
@@ -460,8 +480,8 @@
 					case "new":ship.new(c[2]);break;
 					case "count":game.chat(`amount of ship type "${c[2]}": ${ship.num(c[2])}`);break;
 					case "stats":game.chat(`ship stats for ship ${c[2]}: ${ship.fleet[c[2]]}`);break;
-					case "recipe":c[3]?ship.generic[c[2]].cost = JSON.parse(c[3]):game.chat(`ship "${c[2]}" recipe: ${ship.generic[c[2]].cost}`);break;
-					case "upgrade":c[3]?ship.generic[c[2]].upgradeCost = JSON.parse(c[3]):game.chat(`ship "${c[2]}" recipe: ${ship.generic[c[2]].upgradeCost}`);break;
+					case "recipe":c[3]?ship.generic[c[2]].recipe = JSON.parse(c[3]):game.chat(`ship "${c[2]}" recipe: ${ship.generic[c[2]].recipe}`);break;
+					case "upgrade":c[3]?ship.generic[c[2]].upgrade = JSON.parse(c[3]):game.chat(`ship "${c[2]}" recipe: ${ship.generic[c[2]].upgrade}`);break;
 					default:game.chat(ship.generic[c[2]]);
 				}break;
 			case "player":
@@ -481,41 +501,50 @@
 					case "show":warp.show(c[2]?Number(c[2]):2000);break;
 				}break;
 			case "reloadengine":game.resize();game.scene().render();break;
+			case "$":c.shift();eval(`with(window){try{game.chat(${c.join(" ")})}catch(err){game.chat(err)}}`);break;
+			case "%":c.shift();eval(`with(window){try{${c.join(" ")}}catch(err){game.chat(err)}}`);break;
 			case "":case ".":break;
 			default:game.chat(`Invalid command: ${cmd}`);break;
 		}
 	}
-    
     //*.new functions ~~new
 	server.new = (name,path,push = !0) => {
         let s = {id:rand.hex(16),name:name,path:path};
-		ui.load.server(s);
+		s.li = ui.li(s.name,s.date,s.version);
+		s.li.click(e=>{for(let i in save){if(i == s.id){save.sel = i;s.li.addClass("selected")}else{$(save[i].li).removeClass("selected")}}});
+		s.li.dblclick(e=>{
+			if(s.version == game.version){for(let i of ["item","tech","ship"]){window[i] = s[i]}$("#load").hide();$(game.canvas).show();game.resize()}
+			else{alert(`That save is not supported in the current version (${game.version})`)}
+		}).prependTo("#load");
         push ? save[s.id] = s:0;return s
     };
-	star = (name="star",pos = [0,0,0], radius=1, col = [1,1,1], scene) => {
-		let s = Mesh.CreateSphere(name + "_sphere", worldgen.quality, radius, scene);
+	const star = (name="star",pos = [0,0,0], radius=1, col = [1,1,1], scene) => {
+		let s = Mesh.CreateSphere(name, worldgen.quality, radius, scene);
 		s.assign({
 			position: new Vector3(pos[0],pos[1],pos[2]),
-			light: new PointLight(name + "_light",this.position,scene),
-			material: new StandardMaterial(name + "_mat", scene),
+			light: new PointLight(name + ".light",this.position,scene),
+			material: new StandardMaterial(name + ".mat", scene),
+			isStar: !0
 		});
-		let gl = new GlowLayer(name + "_glow", scene);
+		s.gl = new GlowLayer(name + ".gl", scene);
 		s.light.assign({intensity: 1, range: 100, position: s.position});
 		s.material.disableLighting = !0;
-		gl.customEmissiveColorSelector = function(mesh, subMesh, mat, result) {
-			(mesh.name == name + "_sphere")?result.set(col[0], col[1],col[2], 1):result.set(0, 0, 0, 0);
+		s.gl.customEmissiveColorSelector = function(mesh, subMesh, mat, result) {
+			(mesh.name == name)?result.set(col[0], col[1],col[2], 1):result.set(0, 0, 0, 0);
 		}
 		return s;
 	};
-	ship.new = (type,push = !0,enemy = !1) => {
-		let s = {type: type};
+	ship.new = (type,scene=game.scene(),e) => {
+		s = {type:type};
 		for(let i in ship.generic[type]){
-            if(i != "cost" && i != "level" && i != "model"){s[i] = ship.generic[type][i]}
+            if(i != "recipe" && i != "upgrade" && i != "level" && i != "model"){s[i] = ship.generic[type][i]}
 		}
-        push?ship.fleet.push(s):!1;
+		//let C = Mesh.CreateCapsule("capsule",{},game.scene());let M = C.material = new StandardMaterial("casule.mat",game.scene());M.emissiveColor = new Color3(0.5,0.5,0.5);C.position = new Vector3(0,0,-130);C.rotation = new Vector3(1.57,0,0)
+		//let C = Mesh.CreateCapsule("capsule",{},game.scene());let M = C.material = new StandardMaterial("casule.mat",game.scene());M.emissiveColor = new Color3(0.5,0.5,0.5);C.position = new Vector3(0,0,-130);let R=0;setInterval(e=>{C.rotation = new Vector3(1.57,R,0);R+=0.1},100)
+        e?1:ship.fleet.push(s);
         return s
 	};
-	planet = (name = "planet",pos = [0,0,0], radius = 1, col = [1,1,1], taken = !1, enemies = [], rewards = {},scene) => {
+	const planet = (name = "planet",pos = [0,0,0], radius = 1, col = [1,1,1], taken = !1, enemies = [], rewards = {},scene=game.scene()) => {
 		let q = Mesh.CreateSphere(name,worldgen.quality,radius,scene);
 		q.assign({
 			taken:taken,
@@ -524,7 +553,7 @@
 			enemies:[],
 			position: new Vector3(pos[0],pos[1],pos[2])
 		});
-		for(let i in enemies){q.enemies[i] = ship.new(enemies[i],!1,!0)}
+		for(let i in enemies){q.enemies[i] = ship.new(enemies[i],scene,!0)}
 		let m = q.material = new StandardMaterial(name + ".mat", scene);
 		//m.Fragment_Before_FragColor(`color = vec4(vec3(1.0,1.0,1.0)*(length(color.xyz)),1.0);`);
 		m.assign({
@@ -536,32 +565,35 @@
 		return q;
 	};
     def(save,"new",async (name,date=$d.now(),version=game.version,data,push) => {//also worldgen
-        let s = {id:rand.hex(16),name:name,date:date,version:version,level:[]};
+        let s = {id:rand.hex(16),name:name,date:date,version:version,level:[],items:gen.items(10000)};
         if(data){s.data = data}else{
             //WorldGen
 			$("#loading").show();
 			let p = await new Promise(resolve=>{
-				forInterval(level.num,1000/system.cpu,i=>{
+				forInterval(level.num,8/system.cpu*worldgen.quality,i=>{
 					$("#loading p").html(`Creating level ${i+1}/${level.num} (${round(i/level.num*100)}%)`);
 					$("#loading .bar").css("width",(i+1)/level.num*90+"%");
 					let r = rand.int(75,125);
 					let l = s.level[i] = new Scene(game);
 					l.addCamera(player);
-					l.activeCamera = player;
 					l.assign({
 						name: level.names[i],
 						star: star(level.names[i],[0,0,0],r,[rand.real,rand.real,rand.real],l),
 						planets: [],
 						difficulty: worldgen.difficulty,
 						planetNum: rand.int(0,worldgen.planets),
+						activeCamera: player,
 					});
 					l.star.radius = r;
-					let n = rand.bool?greek:range(1,l.planetNum+1);
-					let pre = rand.bool;
-					let size = rand.int(0,worldgen.size);				
+					let n = rand.bool?greek:range(1,l.planetNum+1), pre = rand.bool, size = rand.int(0,worldgen.size);				
 					for(let j=0;j<l.planetNum;j++){
 						let p = l.planets[j] = planet(
-							pre?n[j]+" "+l.name:l.name+" "+n[j],[rand.bool?rand.int(r/2,size):rand.int(-size,-r/2),rand.bool?rand.real:-rand.real,rand.bool?rand.int(r/2,size):rand.int(-size,-r/2)],
+							rand.int(0,99999)==0?"Dose Bohnen":pre?n[j]+" "+l.name:l.name+" "+n[j],
+							[
+								rand.bool?rand.int(r/2,size):rand.int(-size,-r/2),
+								rand.bool?rand.real:-rand.real,
+								rand.bool?rand.int(r/2,size):rand.int(-size,-r/2)
+							],
 							rand.int(10,25),[rand.real,rand.real,rand.real],!1,[gen.enemies(4*j*worldgen.difficulty)],
 							gen.items(1000*j*(2-worldgen.difficulty)),l
 						);
@@ -569,15 +601,19 @@
 					(i >= level.num-1)?resolve():0;
 				});
 			});
+			s.li = ui.li(s.name,s.date,s.version);
+			s.li.click(e=>{for(let i in save){if(i == s.id){save.sel = i;s.li.addClass("selected")}else{$(save[i].li).removeClass("selected")}}});
+			s.li.on("dblclick",e=>{
+				if(s.version == game.version){for(let i of ["item","tech","ship"]){window[i] = s[i]}$("#load").hide();$(game.canvas).show();game.resize()}
+				else{alert(`That save is not supported in the current version (${game.version})`)}
+			}).prependTo("#load");
 			save.sel = s.id;
 			$("#loading").hide();
-            ui.load.save(s);
 			game.lvl = 0;
 			game.isPaused = !1;
         }
         ! push? save[s.id] = s:0;return s
     });
-	
 		
     //Event Detection
     onmousedown = m =>{mouse.pressed = !0};
@@ -588,49 +624,49 @@
 	onclick=e=>{$(".cm").remove()};
 	
 	//Event Listeners (UI transitions, creating saves, etc.) ~~els
-	$("#main .sp").click(()=>{
-        $("#load").empty().append(ui.load.back,ui.load.new);
-        for(let i in save){$("#load").append(ui.load.save(save[i]))}
+	$("#main .sp").click(e=>{
+        $("#load").empty().append(
+			ui.back.click(e=>{$("#load").hide();$("#main").show()}),
+			ui.new.click(e=>{if(game.mp){$("#load").hide();$("#server").show()}else{$("#load").hide();$("#save").show()}})
+		);
+        for(let i in save){$("#load").append(save[i].li)}
         $("#main").hide();$("#load").show()
     });
 	$("#main .mp").click(()=>{if(game.mpDisabled){alert("Muliplayer is disabled in this version")}else if(!system.online){alert("You can't play multiplayer without internet")}else{$("#main").hide();$("#load").show()}});
-    $("#main .options").click(()=>{ui.LastScene="#main";$("#settings").show()});
-	$("#save i").on("click",()=>{$("#load").show();$("#save").hide()});
-	$("#server i").on("click",()=>{$("#load").show();$("#server").hide()});
-	$("#save .new").on("click",()=>{
+    $("#main .options").click(e=>{ui.LastScene="#main";$("#settings").show()});
+	$("#save i").click(e=>{$("#load").show();$("#save").hide()});
+	$("#server i").click(e=>{$("#load").show();$("#server").hide()});
+	$("#save .new").click(e=>{
 		$("#save").hide();
         let s = save.new($("#save .name").val());
 		$(game.canvas).show();game.resize();
 	});
-	$("#server .new").on("click",()=>{
+	$("#server .new").click(e=>{
 		server.new(Object.assign($("#server form").obj(),{version:game.version}));
 		$("#server").hide();$("#load").show()
 	});
-	$("#esc .resume").click(()=>{$("#esc").hide();game.isPaused = !1});
-	$("#esc .options").click(()=>{ui.LastScene="#esc";$("#esc").hide();$("#settings").show()});
-    $("#esc .quit").click(()=>{$("#esc,#e,canvas.game").hide();$("#main").show()});
-	$("#nav .inv").click(()=>{$("#e ul").hide();$("#e .inv").show()});
-	$("#nav .map").click(()=>{$("#e ul").hide();$("#e .map").show()});
-	$("#nav .yrd").click(()=>{$("#e ul").hide();$("#e .yrd").show()});
-	$("#nav .lab").click(()=>{$("#e ul").hide();$("#e .lab").show()});
-    $("#settings button").click(e=>{e.preventDefault();ls.settings = settings = $("#settings").obj();$("#settings").hide();$(ui.LastScene).show()});
-    for(let i in ship.generic){$("ul.yrd").append(ui.ship(i))}
-	for(let i in tech){$("ul.lab").append(ui.lab(i))}
-	$("#map i").on("click",()=>{game.isPaused=!0;$("#map").hide()});
-	$("#map button").on("click",()=>{view = "battle";game.isPaused = !0;$("#map").hide();$("#battle").show()});
-	$("#report i").on("click",()=>{ship.battle.won=null;game.isPaused=!0;$("#report").hide()});
-	$("#report button").on("click",()=>{ship.battle.won=null;game.isPaused=!0;$("#report").hide()});
-	$("#battle button").on("click",()=>{
-		ship.battle.active = !1;ship.battle.won=!1;game.isPaused=!1;view = "map";
-		$("#battle").hide();$("#report").show()
-	});
+	$("#esc .resume").click(e=>{$("#esc").hide();game.isPaused = !1});
+	$("#esc .options").click(e=>{ui.LastScene="#esc";$("#esc").hide();$("#settings").show()});
+    $("#esc .quit").click(e=>{$("#debug,#esc,#e,canvas.game").hide();game.isPaused=!0;game.lvl=0;save.sel=null;$("#main").show()});
+	$("#nav .inv").click(e=>{$("#e ul").hide();$("ul.inv").show()});
+	$("#nav .map").click(e=>{$("#e ul").hide();$("ul.map").show()});
+	$("#nav .yrd").click(e=>{$("#e ul").hide();$("ul.yrd").show()});
+	$("#nav .lab").click(e=>{$("#e ul").hide();$("ul.lab").show()});
+	$("#settings button.gen").click(e=>{game.saveSettings();$("#settings form").hide();$("form.gen").show()})
+	$("#settings button.key").click(e=>{game.saveSettings();$("#settings form").hide();$("form.key").show()})
+    $("#settings button.back").click(e=>{game.saveSettings();$("#settings").hide();$(ui.LastScene).show()});
+	$("form.key button").click(function(e){e.preventDefault()})
+	$("form.key button").keydown(function(e){keybind[this.name] = e.key;$(this).text(keybind[this.name])});
 	const showMap = () => {$("#e ul.map p").hide();$("canvas.map").show()};
-	$("#cli").on("keydown",e=>{
+	$("body").keydown(e=>{
+		e.key=="~"?$("#cli").toggle():0;
+	});	
+	$("#cli").keydown(e=>{
 		let c = game.cli;
 		c.i = $("#cli").val();
 		switch(e.key){
 			case "ArrowUp":(c.line-1 > -1)?c.line--:0;$("#cli").val(c.prev[c.line]);break;
-			case "ArrowDown":(c.line+1 <= c.prev.length)?c.line++:0;$("#cli").val(c.prev[c.line]);break;
+			case "ArrowDown":(c.line < c.prev.length)?c.line++:0;$("#cli").val(c.prev[c.line]);break;
 			case "Enter":
 				(c.i.slice(0,1) == "/")?acs(c.i.slice(1)):game.mp?server.chat(c.i):game.chat(c.i);
 				c.line = c.prev.length;c.prev[c.line] = `${c.i}`;$("#cli").val("");
@@ -638,26 +674,32 @@
 			}
 	});
 	$(game.canvas).click(e=>{game.isPaused ? "lol" : game.canvas.requestPointerLock();});
-	$(game.canvas).on("keydown",e=>{
+	$(game.canvas).keydown(e=>{
 		switch(e.key){
 			case "Escape":$("#esc").toggle();game.isPaused = !game.isPaused;break;
-			case "e":$("#e").toggle();game.isPaused = !game.isPaused;break;
-			case "d":player.move(player.speed,0,0);break;
-			case "w":player.move(0,0,player.speed);break;
-			case " ":player.move(0,player.speed,0);break;
-			case "a":player.move(-player.speed,0,0);break;
-			case "s":player.move(0,0,-player.speed);break;
-			case "F3":e.preventDefault();case "D":$("#debug").toggle();break;
-	   		case "/":$("#cli").toggle();break;
+			case keybind.inv:$("ul.inv").empty();for(let i in item){item[i].li = ui.inv(i);$("ul.inv").append(item[i].li)};$("#e").toggle();game.isPaused = !game.isPaused;break;
+			case keybind.forward:player.move(0,0,player.speed);break;
+			case keybind.back:player.move(0,0,-player.speed);break;
+			case keybind.right:player.move(player.speed,0,0);break;
+			case keybind.left:player.move(-player.speed,0,0);break;
+			case "F3":e.preventDefault();
+			case "D":$("#debug").toggle();break;
+	   		case keybind.chat:$("#cli").toggle();break;
 		}
 	});
-	$("#e").on("keydown",e=>{
+	$("#e").click(e=>{
+		$("ul.lab,ul.yrd,ul.inv").empty();
+		for(let i in item){item[i].li = ui.inv(i);$("ul.inv").append(item[i].li)};
+		for(let i in tech){tech[i].li = ui.lab(i);$("ul.lab").append(tech[i].li);tech.locked(i)?tech[i].li.info[1].show():tech[i].li.info[1].hide();}
+		for(let i in ship.generic){ship.generic[i].li = ui.yrd(i);$("ul.yrd").append(ship.generic[i].li)}
+	});
+	$("#e").keydown(e=>{
 		switch(e.key){
-			case "e":$("#e").toggle();game.isPaused = !game.isPaused;break;
-			case "1":$("#e ul").hide();$("ul.inv").show();break;
-			case "2":$("#e ul").hide();$("ul.map").show();break;
-			case "3":$("#e ul").hide();$("ul.yrd").show();break;
-			case "4":$("#e ul").hide();$("ul.lab").show();break;
+			case keybind.inv:$("#e").toggle();game.isPaused = !game.isPaused;break;
+			case keybind.inv1:$("#e ul").hide();$("ul.inv").show();break;
+			case keybind.inv2:$("#e ul").hide();$("ul.map").show();break;
+			case keybind.inv3:$("#e ul").hide();$("ul.yrd").show();break;
+			case keybind.inv4:$("#e ul").hide();$("ul.lab").show();break;
 		}
 	});
 	//server side (saving saves, loading saves, verifying and cnnecting to servers) ~ss
@@ -682,10 +724,10 @@
 		if(!game.isPaused && save.sel && game.lvl >= 0){
 			game.frames += 1;
 			item.multiplyer = 1+(1-game.difficulty);
-			ship.crit = {chance: 30+tech.missle.level,damage: 50+tech.missle.level*5};
+			ship.crit = {chance: 30+tech.missle.level,dmg: 50+tech.missle.level*5};
 			ship.multiplyer = {
-				damage: 1+(1-game.difficulty)+tech.laser.level*0.1,
-				health: 1+(1-game.difficulty)+tech.armor.level*0.15
+				dmg: 1+(1-game.difficulty)+tech.laser.level*0.1,
+				hp: 1+(1-game.difficulty)+tech.armor.level*0.15
 			};
 			system.ram = {
 				used: performance.memory.usedJSHeapSize,
@@ -694,34 +736,32 @@
 			};
 			if(!ship.battle.active){
 				for(let i = 0;i < ship.fleet.length;i++){
-					if(ship.fleet[i].health <= ship.generic[ship.fleet[i].type].health){
-						ship.fleet[i].health += ship.generic[ship.fleet[i].type].health/(1000-tech.regen.level*10);
+					if(ship.fleet[i].hp <= ship.generic[ship.fleet[i].type].hp){
+						ship.fleet[i].hp += ship.generic[ship.fleet[i].type].hp/(1000-tech.regen.level*10);
 					}
 				}
 			}
-			for(let i in tech){
-				(tech[i].level < numeral.length && tech[i].level > -1)? 
-				$(`ul.lab li.${i} p`).html(`${i} ${numeral[tech[i].level]}`):
-				$(`ul.lab li.${i} p`).html(`${i} ${minimize(tech[i].level)}`);
-					let u = !0;
-					for(var r in tech[i].requires){if(tech[r].level < tech[i].requires[r]){u = !1}}
-					u?$(`ul.lab .${i} i`).hide():$(`ul.lab .${i} i`).show();
-			}
-			game.isPaused ? player.detachControl(game.canvas, !1) : player.attachControl(game.canvas, !1);
+			document.pointerLockElement == game.canvas ? player.attachControl(game.canvas, !1): player.detachControl(game.canvas, !1);
 			game.isPaused ? $("#debug").hide():0;
 			settings.devMode ? $("#main .version").show() : $("#main .version").hide();
 			(player.rotation.y > 3.14) ? player.rotation.y -= 6.28:0;
 			(player.rotation.y < -3.14) ? player.rotation.y += 6.28:0;
+			let P = game.scene().star;
+			for(let i in game.scene().planets){
+				let p = game.scene().planets[i];
+				if(p.getDistanceToCamera(player) < P.getDistanceToCamera(player) && !p?.isStar){P=p}
+			}
 			$("#debug").is(":visible") ? $("#chat").hide() : $("#chat").show();
 			$("#debug .game").html(`
 				${game.build("/ ")} ${game.mods.length?`[${game.mods.join(",")}]`:`(vanilla)`}<br>
 				${settings.fps} FPS | ${game.frames}f | ${round(time*100)/100000}s<br><br>
 				${save.sel} (${save[save.sel].name}) ${save[save.sel].date}<br>
-				LVL ${game.lvl} (${game.scene().name})<br>
+				LVL ${game.lvl} (${game.scene().name}) ${round(game.scene().star.getDistanceToCamera(player)*10)/10}<br>
 			`);
 			$("#debug .player").html(`
 				P: ${round(player.position.x*10)/10}, ${round(player.position.y*10)/10}, ${round(player.position.z*10)/10}<br>
-				R: ${round(player.rotation.x*100)/100}, ${round(player.rotation.y*100)/100}
+				R: ${round(player.rotation.x*100)/100}, ${round(player.rotation.y*100)/100}<br>
+				${P.name} (${P.position.x}, ${P.position.z}) ${round(P.getDistanceToCamera(player)*10)/10}<br>
 			`);
 			$("#debug .system").html(`
 				${system.platform} ${system.os} ${system.osVersion}<br>
