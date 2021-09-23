@@ -17,10 +17,12 @@
 	<body id="body" oncontextmenu="return false;">
 		<audio><source src="" type="audio/mp3"></audio>
 		<div id="gamecover" cover starbg></div>
-		<div id="loading" hide nobg style="position:fixed;left:25%;width:50%;top:45%;height:10%;z-index:9">
-			<p style="position:absolute;left:5%;top:5%">Creating save</p>
-			<div class="barbg" nobg style="position:absolute;left:5%;width:90%;top:60%;height:35%;background-color:#252525"></div>
-			<div class="bar" nbs style="position:absolute;left:5%;wdth:0%;top:60%;height:35%;background-color:hsla(200,50%,90%,0.75)"></div>
+		<div id="loading" nobg cover hide>
+			<div class="content" nobg style="position:fixed;left:25%;width:50%;top:45%;height:10%;z-index:9">
+				<p style="position:absolute;left:5%;top:5%">Creating save</p>
+				<div class="barbg" nobg style="position:absolute;left:5%;width:90%;top:60%;height:35%;background-color:#252525"></div>
+				<div class="bar" nbs style="position:absolute;left:5%;wdth:0%;top:60%;height:35%;background-color:hsla(200,50%,90%,0.75)"></div>
+			</div>
 		</div>
 		<input id="cli" style="position:fixed;left:5%;top:90%;width:25%;height:5%;z-index:10;display:none" ofs>
 		<ul lsn id="chat" style="position:fixed;top:5%;width:30;height:75%;background:none;box-shadow:none;z-index:10" ofs></ul>
@@ -30,7 +32,7 @@
 			<button class="mp" style="position:fixed;left:37.5%;top:60%;width:25%;height:8%;">Multiplayer</button>
             <button class="options" style="position:fixed;left:37.5%;top:75%;width:12.4%;height:8%;">Options</button>
 			<a href="/"><button class="exit" style="position:fixed;left:50%;top:75%;width:12.4%;height:8%;">Exit</button></a>
-            <p class="version" style="position: fixed;left:90%;top:90%">[version]</p>
+            <p class="version" style="position: fixed;left:50%;top:90%;width:47.5%;text-align:right">Loading Assets...</p>
 		</div>
         <!-- save/server markup -->
 		<ul id="load" hide lsn content style="overflow:scroll"></ul>
@@ -74,10 +76,12 @@
 			<p style="position:fixed;left:1%;top:20%;background-color:#2225" class="player"></p>
 			<p style="position:fixed;left:49%;top:0;width:50%;text-align:right;background-color:#2225" class="system"></p>
 		</div>
-		<div id="esc" hide style="position:fixed;left:40%;width:20%;top:25%;height:50%;z-index:10">
-			<button class="resume" style="position:absolute;left:10%;top:20%;width:80%;height:15%">Resume&nbspGame</button>
-			<button class="options" style="position:absolute;left:10%;top:40%;width:80%;height:15%">Options</button>
-			<button class="quit" style="position:absolute;left:10%;top:60%;width:80%;height:15%">Main&nbspMenu</button>
+		<div id="esc" hide cover nobg>
+			<div class="content" style="position:fixed;left:40%;width:20%;top:25%;height:50%;z-index:10">
+				<button class="resume" style="position:absolute;left:10%;top:20%;width:80%;height:15%">Resume&nbspGame</button>
+				<button class="options" style="position:absolute;left:10%;top:40%;width:80%;height:15%">Options</button>
+				<button class="quit" style="position:absolute;left:10%;top:60%;width:80%;height:15%">Main&nbspMenu</button>
+			</div>
 		</div>
 		<div id="settings" name="settings" hide content>
 			<button style="position:absolute;left:5%;width:15%;top:90%;height:7%" class="back"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>
@@ -112,7 +116,8 @@
     </div>
 	<script>
 	$("[label]").each(function(i){$(this).before($(`<label class="${this.name}">${$(this).attr("label")}&nbsp;&nbsp;</label>`))});
-	
+	//const assets = $.ajax("/libraries/assets.json",{async:!1}).responseJSON;
+		
 	//Prototype plugins
 	const def = (d,p,v) => {Object.defineProperty(d,p,{value:v,enumerable:!1})};
 	const forInterval = (n,t=1000,f) => {let i=0;let s=setInterval(()=>{if(i < n){f(i)}i++},t);if(i >= n){clearInterval(s)}};
@@ -176,7 +181,7 @@
 	const ls = localStorage;
 	const on = addEventListener;
 	const trigger = event => {dispatchEvent(event)};
-	let gl = $("<canvas></canvas>")[0].getContext("webgl") || $("<canvas></canvas>")[0].getContext("experimental-webgl");
+	const gl = $("<canvas></canvas>")[0].getContext("webgl") || $("<canvas></canvas>")[0].getContext("experimental-webgl");
 	let time = 0;
 	const date = new Date(), $d = new Date();
 	const system = {
@@ -219,7 +224,6 @@
 		}
 	};
 	const range = (min,max)=>{let a = [];for(let i = min;i<max;i++){a.push(i)}return a};
-
     //game vars
 	let [settings,keybind,worldgen,item,tech,server,save,versions] = [$("form.gen").obj(),{forward:"w",left:"a",right:"s",back:"d",chat:"/",inv:"e",inv1:"1",inv2:"2",inv3:"3",inv4:"4"},$("#save form").obj(),{},{},{},{sel:null},[]];
 	$.get("manifest.json",d=>{versions = d}).fail(e=>{console.warn("Failed to load manifest.json:\n"+e)});
@@ -227,7 +231,7 @@
 	const game = new Engine($("canvas.game")[0],!0);
 	game.assign({
 		canvas: $("canvas.game")[0],
-		version:"Indev",snapshot:"5",difficulty:1,
+		version:"Indev",snapshot:"6",difficulty:1,
 		mods:[],event:{},frames:0,functions:{},lvl:0,
 		isPaused:!0,mp:!1,mpDisabled:!0,phpEnabled:!1,
 		cli: {isShown: false, prev: [], line:0,i: $("#cli").val(),cv:{}},
@@ -238,6 +242,15 @@
 			ls.keybind = keybind;
 			return ls
 		},
+		starbox:scene=>{
+			let box = Mesh.CreateBox("starbox", 1800, scene);
+			box.infiniteDistance = !0;
+			box.material = new StandardMaterial("starbox.mat", scene);
+			box.material.assign({backFaceCulling: !1, disableLighting: !0});
+			box.material.reflectionTexture = new CubeTexture("/assets/0.6.0/skybox", scene);
+			box.material.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+			return box
+		},
 		acs:cmd=>{for(let i of game.functions[cmd].split("\n")){acs(i)}},
         log:(msg,col="#ebebeb")=>{console.log("%c"+msg,`color:${col}`)},
 		chat:(...msg)=>{
@@ -246,7 +259,11 @@
 		err:(error,alrt)=>{console.error(error);alrt?alert(error):0;game.chat(error)}
 	});
 	game.scene.default = new Scene(game);
-	game.scene.default.name = "GAME_DEFAULT_SCENE";
+	game.scene.default.assign({
+		name: "GAME_DEFAULT_SCENE",
+		clearColor: Color3.Black(),
+		starbox: game.starbox(game.scene.default)
+	});
 	const player = new UniversalCamera("player", new Vector3(0,0,-150), game.scene());
 	player.assign({
 		name: "",speed: 1,saves: [],servers: [],
@@ -268,6 +285,9 @@
 		is:false
 		
 	};
+	const queryServer = (type,query) => {
+		if(game.mp){}
+	}
 	if(ls.settings?.isJSON()){settings = JSON.parse(ls.settings);$("form.gen").loadData(settings)}
 	if(ls.keybind?.isJSON()){keybind = JSON.parse(ls.keybind);$("form.key").loadData(keybind)}else{$("form.key").loadData(keybind)}
 	$("form.key button").each(function(i){$(this).text(keybind[this.name])})
@@ -361,8 +381,8 @@
 
 	//Some stuff done on initalization
 	document.title = "Blankstorm "+game.version;
-    $("#main .version").html(game.build("/"));
-	game.log(`Blankstorm ${game.build("(",")")}`,`#f55;padding:${settings.fontSize}px;text-align:center`);  
+    $("#main .version").html(game.build("/ "));
+	game.log(`Blankstorm ${game.build("(",")")}`,`#f55;padding:${settings.fontSize}px;text-align:center`);
 
 	//load mods into the game
 	for(let i in mod){
@@ -401,8 +421,8 @@
 		}
 	};
     const ui = {//ui functions ~~ui
-		get back(){return $(`<button style="position:absolute;left:5%;top:90%;width:15%;height:5%;"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>`)},
-		get new(){return $(`<button style="position:absolute;left:80%;top:90%;width:15%;height:5%;"><i class="fa fa-plus" aria-hidden="true"></i> New</button>`)},
+		get back(){return $(`<button style="position:absolute;left:2%;top:90%;width:15%;height:7%;"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</button>`)},
+		get new(){return $(`<button style="position:absolute;left:83%;top:90%;width:15%;height:7%;"><i class="fa fa-plus" aria-hidden="true"></i> New</button>`)},
 		li: (...info)=>{
 			let l = $(`<li class="clickable bg"></li>`);
 			l.info = [];
@@ -428,7 +448,7 @@
             }).tooltip(`Level ${s.level}/${s.maxLevel}<br><br><strong>Upgrade Cost</strong>${uct}`);
 			s.li.info[1].tooltip(`${s.desc}<br><br><strong>Material Cost</strong>${ct}`);
 			s.li.info[1].click(e=>{
-                if(player.hasItems(s.recipe)){player.removeItems(s.recipe);ship.new(shiptype)}
+                if(player.hasItems(s.recipe)){player.removeItems(s.recipe);ship.new(shiptype,player.position)}
 				s.li.info[2].html(`[${ship.num(shiptype)}]&nbsp${s.displayName}`);
             });
             return s.li;
@@ -438,7 +458,7 @@
 			tech[t].li.click(e=>{if(player.hasItems(tech.price(t)) && tech[t].level < tech[t].max && !tech.locked(t)){player.removeItems(tech.price(t));tech[t].level++}});
 			tech[t].li.pos(80,20,35);
 			let uc = "", rq = "";
-			for(let i in tech[t].recipe){uc += `<br>${item[i].displayName}: ${min(item[i].amount)}/${min(tech[t].recipe[i])}`}
+			for(let i in tech.price(t)){uc += `<br>${item[i].displayName}: ${min(item[i].amount)}/${min(tech.price(t)[i])}`}
 			for(let i in tech[t].rq){rq += `<br>${tech[i].displayName}: ${tech[i].level}/${tech[t].rq[i]}`}
 			tech[t].li.info[0].tooltip(`<strong>${tech[t].displayName}</strong><br>${tech[t].desc}<br>Level: ${tech[t].level}/${tech[t].max}<br><br><strong>Material Cost:</strong>${uc}<br>${Object.keys(tech[t].rq).length?`<br><strong>Requires:</strong>`:``}${rq}`);
 			return tech[t].li
@@ -501,6 +521,10 @@
 					case "show":warp.show(c[2]?Number(c[2]):2000);break;
 				}break;
 			case "reloadengine":game.resize();game.scene().render();break;
+			case "debug":
+				switch(c[1]){
+					case "marker":let m = MeshBuilder.CreateCapsule("debug.marker",{orientation:Vector3.Forward(),radius:0.125},game.scene());m.material = new StandardMaterial("debug_mat",game.scene());m.material.emissiveColor = new Color3(1,0,0);m.position = player.position;m.rotation = player.rotation;break;
+				}break;
 			case "$":c.shift();eval(`with(window){try{game.chat(${c.join(" ")})}catch(err){game.chat(err)}}`);break;
 			case "%":c.shift();eval(`with(window){try{${c.join(" ")}}catch(err){game.chat(err)}}`);break;
 			case "":case ".":break;
@@ -527,20 +551,26 @@
 			isStar: !0
 		});
 		s.gl = new GlowLayer(name + ".gl", scene);
-		s.light.assign({intensity: 1, range: 100, position: s.position});
+		s.light.assign({intensity: 1, range: 500, position: s.position});
 		s.material.disableLighting = !0;
 		s.gl.customEmissiveColorSelector = function(mesh, subMesh, mat, result) {
 			(mesh.name == name)?result.set(col[0], col[1],col[2], 1):result.set(0, 0, 0, 0);
 		}
-		return s;
+		return s
 	};
 	ship.new = (type,scene=game.scene(),e) => {
-		s = {type:type};
+		let s = MeshBuilder.CreateCapsule("capsule",{orientation:Vector3.Forward()},scene);
+		s.assign({
+			material:new StandardMaterial("ship.mat",scene),
+			pos: new Vector3(rand.bool?rand.float(0.5,5):rand.float(-0.5,-5),rand.bool?rand.float(0.5,2):rand.float(-0.5,-2),rand.bool?rand.float(0.5,5):rand.float(-0.5,-5)),
+			type:type
+		});
 		for(let i in ship.generic[type]){
             if(i != "recipe" && i != "upgrade" && i != "level" && i != "model"){s[i] = ship.generic[type][i]}
 		}
-		//let C = Mesh.CreateCapsule("capsule",{},game.scene());let M = C.material = new StandardMaterial("casule.mat",game.scene());M.emissiveColor = new Color3(0.5,0.5,0.5);C.position = new Vector3(0,0,-130);C.rotation = new Vector3(1.57,0,0)
-		//let C = Mesh.CreateCapsule("capsule",{},game.scene());let M = C.material = new StandardMaterial("casule.mat",game.scene());M.emissiveColor = new Color3(0.5,0.5,0.5);C.position = new Vector3(0,0,-130);let R=0;setInterval(e=>{C.rotation = new Vector3(1.57,R,0);R+=0.1},100)
+		s.material.emissiveTexture = new NoiseProceduralTexture("ship.texture", worldgen.quality, scene);
+		s.material.emissiveTexture.assign({animationSpeedFactor: 0,octaves :8, persistence:1});
+		s.material.emissiveColor = new Color3(0.5,0.5,0.5);
         e?1:ship.fleet.push(s);
         return s
 	};
@@ -552,14 +582,18 @@
 			rewards:rewards,
 			enemies:[],
 			position: new Vector3(pos[0],pos[1],pos[2])
-		});
-		for(let i in enemies){q.enemies[i] = ship.new(enemies[i],scene,!0)}
+		})
+		
+		/*for(let i in enemies){
+			q.enemies[i] = ship.new(enemies[i],scene,!0)
+			q.enemies[i].position = rand.bool?rand.float(-q.radius,-q.radius/2):rand.float(q.radius/2,q.radius)
+		}*/
 		let m = q.material = new StandardMaterial(name + ".mat", scene);
 		//m.Fragment_Before_FragColor(`color = vec4(vec3(1.0,1.0,1.0)*(length(color.xyz)),1.0);`);
 		m.assign({
 			emissiveTexture: new NoiseProceduralTexture(name + ".texture", worldgen.quality, scene),
-			diffuseColor: new Color3(col[0],col[1],col[2]),
-			emissiveColor: new Color3(col[0]/2,col[1]/2,col[2]/2),
+			emissiveColor: new Color3(col[0]/4,col[1]/4,col[2]/4),
+			diffuseColor: new Color3(col[0],col[1],col[2])
 		});
 		m.emissiveTexture.assign({animationSpeedFactor: 0,octaves :5, persistence:0.8});
 		return q;
@@ -579,10 +613,12 @@
 					l.assign({
 						name: level.names[i],
 						star: star(level.names[i],[0,0,0],r,[rand.real,rand.real,rand.real],l),
+						clearColor: Color3.Black(),
+						starbox: game.starbox(l),
 						planets: [],
 						difficulty: worldgen.difficulty,
 						planetNum: rand.int(0,worldgen.planets),
-						activeCamera: player,
+						activeCamera: player
 					});
 					l.star.radius = r;
 					let n = rand.bool?greek:range(1,l.planetNum+1), pre = rand.bool, size = rand.int(0,worldgen.size);				
@@ -659,8 +695,11 @@
 	$("form.key button").keydown(function(e){keybind[this.name] = e.key;$(this).text(keybind[this.name])});
 	const showMap = () => {$("#e ul.map p").hide();$("canvas.map").show()};
 	$("body").keydown(e=>{
-		e.key=="~"?$("#cli").toggle():0;
-	});	
+		switch(e.key){
+			case "~":$("#cli").toggle();break;
+			case "F8":e.preventDefault();open("https://blankstorm.drvortex.dev/report-bug","target=_blank");break;
+		}
+	});
 	$("#cli").keydown(e=>{
 		let c = game.cli;
 		c.i = $("#cli").val();
@@ -676,8 +715,8 @@
 	$(game.canvas).click(e=>{game.isPaused ? "lol" : game.canvas.requestPointerLock();});
 	$(game.canvas).keydown(e=>{
 		switch(e.key){
-			case "Escape":$("#esc").toggle();game.isPaused = !game.isPaused;break;
-			case keybind.inv:$("ul.inv").empty();for(let i in item){item[i].li = ui.inv(i);$("ul.inv").append(item[i].li)};$("#e").toggle();game.isPaused = !game.isPaused;break;
+			case "Escape":if(!$("#e").is(":visible")){$("#esc").toggle();game.isPaused = !game.isPaused}break;
+			case keybind.inv:if(!$("#esc").is(":visible")){$("ul.inv").empty();for(let i in item){item[i].li = ui.inv(i);$("ul.inv").append(item[i].li)};$("#e").toggle();game.isPaused = !game.isPaused}break;
 			case keybind.forward:player.move(0,0,player.speed);break;
 			case keybind.back:player.move(0,0,-player.speed);break;
 			case keybind.right:player.move(player.speed,0,0);break;
@@ -702,24 +741,11 @@
 			case keybind.inv4:$("#e ul").hide();$("ul.lab").show();break;
 		}
 	});
-	//server side (saving saves, loading saves, verifying and cnnecting to servers) ~ss
-	if(game.phpEnabled){
-		player.assign({
-			_getsaves: () => {
-				console.groupCollapsed("Imported Saves");
-				$.get(`https://api.blankstorm.drvortex.dev/getsaves.php?uuid=${player.id}`,d=>{
-					let s = JSON.parse(d);
-					save.new(s.name,s.date,s.version,s.data);
-				});
-				console.groupEnd();
-			},
-			_setsaves: (saves) => {
-				$.post(`https://api.blankstorm.drvortex.dev/setsaves.php`,saves);
-			},
-			get saves(){return this._getsaves()},
-			set saves(saves){this._setsaves(saves)}
-		});
-	}
+	$("#esc").keydown(e=>{
+		switch(e.key){
+			case "Escape":("#esc").toggle();game.isPaused = !game.isPaused;break;
+		}
+	});
 	const loop = () => {// the loop ~~loop
 		if(!game.isPaused && save.sel && game.lvl >= 0){
 			game.frames += 1;
@@ -751,7 +777,12 @@
 				let p = game.scene().planets[i];
 				if(p.getDistanceToCamera(player) < P.getDistanceToCamera(player) && !p?.isStar){P=p}
 			}
+			for(let s of ship.fleet){
+				s.rotation = player.rotation;
+				s.position = player.position.add(s.pos)
+			}
 			$("#debug").is(":visible") ? $("#chat").hide() : $("#chat").show();
+			//$("#esc").is(":visible") || $("#e").is(":visible") ? game.isPaused = !0: 0;
 			$("#debug .game").html(`
 				${game.build("/ ")} ${game.mods.length?`[${game.mods.join(",")}]`:`(vanilla)`}<br>
 				${settings.fps} FPS | ${game.frames}f | ${round(time*100)/100000}s<br><br>
