@@ -382,7 +382,7 @@
 	<input id=cli style=position:fixed;left:15px;bottom:15px;width:30%;height:30px;padding:0;margin:0;z-index:10 hide ofs=x>
 	<ul lsn id=chat style=position:fixed;left:15px;bottom:50px;width:30%;height:fit-content;max-height:35%;background:#2225;padding:0;margin:0;z-index:9 nbs ofn ofs=y bw></ul>
 	<div id=main cover bg=none center-flex>
-		<img src=image/title.png plot=c,90px,450px,50px />
+		<img src=image/title.png plot=c,90px,475px,75px />
 		<button class=sp plot=c,260px,350px,50px>Singleplayer</button>
 		<button class=mp plot=c,360px,350px,50px>Multiplayer</button>
 		<button class=options plot=c,460px,350px,50px>Options</button>
@@ -412,11 +412,15 @@
 		<p plot=c,c-2em,300px,1em style=text-align:center></p>
 		<button plot=c,c+2em,100px,2em class=back>Cancel</button>
 	</div>
-	<div id=mp_testing hide cover bg=none>
-		<p plot=c,c-2em,300px,1em,a>Multiplayer is not properly implemented yet. Feel free to test chat or commands (T). Use the pause menu (Esc) to disconnect. Thanks!</p>
-	</div>
+	<p hide id=mp_message plot=c,c-2em,300px,1em>
+		Multiplayer is not properly implemented yet.<br>
+		Feel free to test chat or commands (T).<br>
+		Use the pause menu (Esc) to disconnect.<br>
+		Thanks!
+	</p>
 	<div id=tablist hide plot=c,0,100px,100px>
-		
+		<p class=url plot=c,1em,fit-content,1em,a></p>
+		<p class=players plot=c,2em,fit-content,1em,a></p>
 	</div>
 	<dialog id=modal style=width:350px;height:8em>
 		<p class=info plot=c,c-2em,300px,1em,a style=text-align:center></p>
@@ -455,7 +459,7 @@
 		<p class=rcs plot=1em,100px,150px,50px bg=trans style=text-align:center;line-height:50px;font-size:20px>RCS: ON
 		</p>
 		<svg class=xp plot=c,b1em,300px,1em viewBox='0 0 300 16' border>
-			<rect fill=var(--text-color) x=0 y=0 width=0 height=100%></rect>
+			<rect fill=var(--button-color) x=0 y=0 width=0 height=100%></rect>
 		</svg>
 	</div>
 	<div id=hud_ship hide bg=none>
@@ -473,7 +477,7 @@
 	<div id=settings hide content>
 		<button plot=50px,50px,135px,35px,a class=gen><svg><use href=#fa-gear /></svg> General</button>
 		<button plot=50px,100px,135px,35px,a class=key><svg><use href=#fa-keyboard /></svg> Keybinds</button>
-		<button plot=50px,150px,135px,35px,a class=mod><svg><use href=#fa-puzzle-piece /></svg> Mods</button>
+		<button plot=50px,150px,135px,35px,a class=mod hide><svg><use href=#fa-puzzle-piece /></svg> Mods</button>
 		<button plot='50px,calc(100% - 85px),135px,35px,a' class=back><svg><use href=#fa-arrow-left /></svg> Back</button>
 		<form class=gen name=settings nbs bg=none ofs=y>
 			<h2 style=text-align:center>Settings - General</h2>
@@ -505,7 +509,7 @@
 	const skybox_image = 'image/skybox.jpg';
 
 	const web = url => `https://blankstorm.drvortex.dev/` + url,
-	upload = (forEach, type, multiple = true) => $(`<input type=file accept='${type}' ${multiple?'multiple':''}>`).change(e => {[...e.target.files].forEach(forEach)})[0].click(),
+	upload = (type, multiple = false) => new Promise(res => $(`<input type=file ${type ? `accept='${type}'` : ''} ${multiple?'multiple':''}>`).change(e => res([...e.target.files]))[0].click()),
 	download = (data, name) => $(`<a href=${URL.createObjectURL(new Blob([data]))} download=${name}></a>`)[0].click(),
 	isJSON = str => {
 		try {
@@ -518,6 +522,12 @@
 	isHex = str => /^[0-9a-f]+$/.test(str),
 	isInt = num => +num == Math.round(+num);
 
+	const MediaType = class{
+		constructor(string){
+			['type','sub','suffix','parameter'].map((k,i) => this[k] = string.split(/\/|\+|;/)[i]);
+			
+		}
+	};
 	const modal = (text = 'Are you sure?', options = {No: false, Yes: true}) => new Promise(res => {
 		$('#modal p.info').text(text);
 		$('#modal')[0].showModal();
@@ -569,6 +579,9 @@
 	});
 
 	Object.prototype.toString = function () { return JSON.stringify(this) };
+	Math._log = Math.log;
+	Math.log = (num, base = Math.E) => Math._log(num)/Math._log(base);
+	
 	Object.assign(window, BABYLON);
 
 	Object.assign(Vector3.prototype, {
@@ -698,7 +711,7 @@
 	Mesh.sizeOf = mesh => {
 		if (typeof mesh.getHierarchyBoundingVectors != 'function') throw new TypeError('parameter is not a Mesh');
 		const sizes = mesh.getHierarchyBoundingVectors();
-		return new Vector3(sizes.max.x - sizes.min.x, sizes.max.y - sizes.min.y, sizes.max.z - sizes.min.z)
+		return sizes.max.subtract(sizes.min);
 	};
 	
 	let settings = $("form.gen").formData(),
@@ -719,13 +732,12 @@
 	item = {},
 	tech = {};
 
-	const game = new Engine($("canvas.game")[0], true, { preserveDrawingBuffer: true, stencil: true });
-	Object.assign(game, {
+	const game = {
 		canvas: $('canvas.game'),
 		engine: new Engine($("canvas.game")[0], true, { preserveDrawingBuffer: true, stencil: true }),
-		build: 'infdev_8',
+		version: 'infdev_9',
 		genericVersion: 'infdev',
-		displayVersion: 'Infdev 8',
+		displayVersion: 'Infdev 9',
 		screenshots: [],
 		mods: new Map(),
 		function: {},
@@ -735,13 +747,13 @@
 		mpEnabled: false,
 		hitboxes: false,
 		difficulty: 1,
-		createKeybind: (name, val, label, onTrigger, type, varName, hidden) => {
+		createKeybind: (name, val, label, onTrigger) => {
 			keybind[name] = val;
 			$('#settings form.key').append(
 				$(`<label>${label}&nbsp;&nbsp;</label>`).attr('for', 'keybind.' + name),
 				$(`<button !sub name=${name}></button><br><br>`)
-					.text(`${type || ''} ${keybind[name]}`).click(function (e) { e.preventDefault(); $(this).focus() })
-					.on(type || 'keydown', function (e) { e.preventDefault(); keybind[this.name] = e.key; $(this).text(`${type || ''} ${keybind[this.name]}`) })
+					.text(keybind[name]).click(function(e){ e.preventDefault(); $(this).focus() })
+					.on('keydown', function(e){ e.preventDefault(); keybind[this.name] = e.key; $(this).text(keybind[this.name]) })
 			);
 			$('canvas.game,[ingame-ui],#hud,#hud_ship,#tablist').keydown(e => { if (e.key == val) onTrigger(e) });
 		},
@@ -760,7 +772,7 @@
 					if(saves.get(saves.sel).entities.has(sel.slice(1))){
 						return saves.get(saves.sel).entities.get(sel.slice(1))
 					}else{
-						console.warn(`Entity ${sel} doesnot exist`);
+						console.warn(`Entity ${sel} does not exist`);
 					}
 					break;
 			}
@@ -860,8 +872,7 @@
 				fleet = faction == player ? faction.data().fleet : faction.fleet,
 				spawned = new Ship(type, faction, faction == player ? saves.get(saves.sel) : undefined);
 				spawned.addToScene(game.scene());
-				spawned.position = parseFloat(x) == x && parseFloat(y) == y && parseFloat(z) == z ? new Vector3(parseFloat(z), parseFloat(y), parseFloat(z)) : faction.fleetLocation;
-				fleet.push(spawned);
+				spawned.position = parseFloat(x) == x && parseFloat(y) == y && parseFloat(z) == z ? new Vector3(parseFloat(x), parseFloat(y), parseFloat(z)) : faction.fleetLocation;
 			},
 			data: {
 				get: {
@@ -964,7 +975,7 @@
 			},
 			reload: () => {
 				//maybe also reload mods in the future
-				game.resize();
+				game.engine.resize();
 				game.scene().render();
 			}
 		},
@@ -997,7 +1008,7 @@
 				$(selector).show().focus();
 			}
 		}
-	});
+	};
 	const Entity = class extends TransformNode{
 		constructor(save){
 			let id = rand.hex(32);
@@ -1109,7 +1120,7 @@
 			this.setColor3("haloColor", options.haloColor);
 		}
 	}
-	game.scene.default = new Scene(game);
+	game.scene.default = new Scene(game.engine);
 	//game.scene.default = new Level('GAME_DEFAULT_SCENE',1,false);
 	Object.assign(game.scene.default, {
 		name: 'GAME_DEFAULT_SCENE',
@@ -1119,7 +1130,7 @@
 		bodies: new Map()
 	});
 	const player = new UniversalCamera("player", rand.cords(rand.int(0, 50), true).add(new Vector3(0, 0, -1000)), game.scene());
-	const playerData = { items: {}, tech: {}, fleet: [], fleetSize: new Vector3(5, 5, 5)};
+	const playerData = { items: {}, tech: {}, fleet: [], fleetSize: new Vector3(5, 5, 5), xpPoints: 0, xp : 0};
 	Object.assign(player, {
 		username: '', marker: {}, speed: 1, velocity: Vector3.Zero(), camIsActive: true, rcsIsActive: true,
 		cam: new ArcRotateCamera('player.cam', -pi / 2, pi / 2.5, 5, player.position, game.scene()), targetBody: null,
@@ -1283,7 +1294,7 @@
 	Object.defineProperty(item, 'multiplyer', { value: 1 + (1 - settings.difficulty), enumerable: false });
 	game.freezeProperty('build', 'genericVersion', 'displayVersion', 'mpEnabled', 'scene', 'log', 'chat');
 	player.freezeProperty('updateFleet', 'move', 'stop', 'reset', 'hasItems', 'removeItems', 'giveItems', 'wipe', 'chat');
-	onresize = e => { game.resize(); console.warn('Do not paste any code someone gave you, as they may be trying to steal your information') };
+	onresize = e => { game.engine.resize(); console.warn('Do not paste any code someone gave you, as they may be trying to steal your information') };
 	player.setTarget(Vector3.Zero());
 	if (!game.mpEnabled && !query.mp) {
 		$('#main .mp').hide();
@@ -1345,7 +1356,7 @@
 
 	//Some stuff done on initalization
 	document.title = "Blankstorm " + game.displayVersion;
-	$("#main .version").html(`<a href="${web('/versions#' + game.build)}" target="_blank">${game.displayVersion}</a>`);
+	$("#main .version").html(`<a href="${web('/versions#' + game.version)}" target="_blank">${game.displayVersion}</a>`);
 	console.log(`%cBlankstorm ${game.displayVersion}`, `color:#f55`);
 
 	//load mods & keybinds into the game
@@ -1414,10 +1425,15 @@
 				<span style=text-align:center;grid-row:${row};grid-column:2;>${tech[t].displayName}</span>
 				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=#fa-circle-up /></svg></span>
 			`);
-			tech[t].gui.click(e => { if (player.hasItems(tech.price(t)) && player.data().tech[t] < tech[t].max && !tech.locked(t) && player.levelOf(player.data().xp) >= 1) { player.removeItems(tech.price(t)); player.data().tech[t]++; player.data().xp = player.xpOf(player.levelOf(player.data().xp) - 1) } });
-			let upgradeCost = "", techRequires = "";
-			for (let i in tech.price(t)) { upgradeCost += `<br>${item[i].displayName}: ${minimize(player.data().items[i])}/${minimize(tech.price(t)[i])}` }
-			for (let i in tech[t].requires) { techRequires += (tech[t].requires[i] > 0) ? `<br>${tech[i].displayName}: ${player.data().tech[i]}/${tech[t].requires[i]}` : `<br>Incompatible with ${tech[i].displayName}` }
+			tech[t].gui.click(e => {
+				if(player.hasItems(tech.price(t)) && player.data().tech[t] < tech[t].max && !tech.locked(t) && player.data().xpPoints >= 1){
+					player.removeItems(tech.price(t));
+					player.data().tech[t]++;
+					player.data().xpPoints--;
+				}
+			});
+			let upgradeCost = Object.entries(tech.price(t)).reduce((a, [k, v]) => a + `<br>${item[k].displayName}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
+			techRequires = Object.entries(tech[t].requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${tech[k].displayName}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${tech[k].displayName}`, '');
 			tech[t].gui.eq(-1).children('svg').tooltip(`<strong>${tech[t].displayName}</strong><br>${tech[t].desc}<br>${player.data().tech[t] >= tech[t].max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=#fa-arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech[t].requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${settings.debug_tooltips ? '<br>type: ' + t : ''}`);
 			return tech[t].gui
 		},
@@ -1639,7 +1655,7 @@
                 lowerClip: new Vector2(0.5, 0.9)
 			}]
 		]);
-		constructor({name, position = Vector3.Zero(), biome = 'earthlike', radius = 1, color = Color3.Gray(), owner = null, fleet = [], rewards = {}, scene = game.scene()}){
+		constructor({name, position = Vector3.Zero(), biome = 'earthlike', radius = 1, owner = null, fleet = [], rewards = {}, scene = game.scene()}){
 			super(name ?? 'Unknown Planet', scene);
 			CreateSphereVertexData({ diameter: radius * 2, segments: settings.mesh_quality }).applyToMesh(this);
 			Object.assign(this, {
@@ -1673,7 +1689,7 @@
 		constructor(name, location = new Vector2(rand.int(-25, 25), rand.int(-25, 25)), hasStar = true, onready = () => null, save = saves.get(saves.sel)) {
 			(async () => {
 				const id = rand.hex(32);
-				super(game);
+				super(game.engine);
 				Object.assign(this, {
 					id: id,
 					name: name,
@@ -1695,7 +1711,7 @@
 				this.center = hasStar ? new Star({
 					name: name,
 					position: Vector3.Zero(),
-					radius: rand.int(150, 250),
+					radius: rand.int(300, 500),
 					color: new Color3(Math.random() ** 3 / 2 + rand.float(0.3, 0.4), Math.random() ** 3 / 2 + rand.float(0.3, 0.4), Math.random() ** 3 / 2 + rand.float(0.3, 0.4)),
 					scene: this
 				}) : new CelestialBody(name, this);
@@ -1764,6 +1780,7 @@
 			}
 			//load a save from cache but do not make a new save
 		}
+		static cache = [];
 		constructor(nameOrData) {
 			try {
 				if(isJSON(nameOrData)){
@@ -1799,7 +1816,7 @@
 										name: bodyData.name,
 										position: Vector3.FromArray(bodyData.position),
 										radius: bodyData.radius,
-										color: Color3.FromArray(bodyData.color),
+										biome: bodyData.biome,
 										owner: bodyData.owner,
 										fleet: [], //map entity data to this
 										rewards: bodyData.rewards,
@@ -1828,7 +1845,7 @@
 						id: rand.hex(16),
 						name: name,
 						date: new Date(),
-						version: game.build,
+						version: game.version,
 						difficulty: 1,
 						levels: {},
 						systems: {},
@@ -1836,7 +1853,7 @@
 						currentLevel: Vector2.Zero(),
 						playerData: {}
 					});
-					this.playerData[player.id] = { items: gen.items(5000), xp: 0, tech: {}, fleet: [] };
+					this.playerData[player.id] = { items: gen.items(5000), xp: 0, tech: {}, fleet: [], xpPoints: 0 };
 					for (let i in tech) {
 						this.playerData[player.id].tech[i] = 0;
 					}
@@ -1864,19 +1881,7 @@
 				this.gui
 					.attr('clickable', '')
 					.click(e => { $('.selected').removeClass('selected'); saves.sel = this.id; this.gui.addClass('selected') })
-					.contextmenu(e => { $('.selected').removeClass('selected'); saves.sel = this.id; this.gui.addClass('selected') })
-					.cm(
-						$(`<button style=margin:10px><svg><use href=#fa-circle-play /></svg>&nbsp;Play</button>`).click(e => {
-							if(this.version == game.build){ $('#load').hide(); game.canvas.show(); $('#hud').show(); game.resize(); game.isPaused = false }
-							else{ alert(`That save is not supported in the current version (${game.displayVersion})`) }
-						}),
-						$(`<button style=margin:10px><svg><use href=#fa-download /></svg>&nbsp;Download</button>`).click(e => { }),
-						$(`<button style=margin:10px><svg><use href=#fa-trash /></svg>&nbsp;Delete</button>`).click(e => { if (confirm('Are you sure?')) { s.li.remove(); delete s[s.id] } })
-					)
-					.dblclick(e => {
-						if(this.version == game.build){ $('#load').hide(); game.canvas.show(); $('#hud').show(); game.resize(); game.isPaused = false }
-						else{ alert(`That save is not supported in the current version (${game.displayVersion})`) }
-					})
+					.dblclick(e => this.play())
 					.prependTo('#load');
 				this.gui.delete.click(e => {
 					modal('Are you sure?').then(del => {
@@ -1891,15 +1896,15 @@
 			} catch (err) { console.error(err.stack.split('\n').join('<br>')) }
 		}
 		play(){
-			if(this.version == game.build){
+			if(this.version == game.version){
 				$('#load').hide();
 				game.canvas.show().focus();
 				game.canvas[0].requestPointerLock();
 				$('#hud').show();
-				game.resize();
+				game.engine.resize();
 				game.isPaused = false
 			}else{
-				modal('That save is in compatible with the current game version', {Accept: true});
+				modal('That save is in compatible with the current game version', {Ok: true});
 			}
 		}
 		serialize(){
@@ -1931,7 +1936,7 @@
 							shipType: entity.type,
 							hp: entity.hp,
 							lvl: entity.level,
-							owner: player.data().fleet.includes(entity) ? player.id : null, //TODO: Replace w/ checker for different bodies
+							owner: player.data().fleet.includes(entity) ? player.id : null, 
 						});
 						break;
 						default:
@@ -1980,9 +1985,8 @@
 								case 'Planet':
 								Object.assign(bodyData, {
 									type: 'planet',
-									biome: null,
-									radius: body.radius,
-									color: body.material.diffuseColor.asArray(),
+									biome: body.biome,
+									radius: body.radius
 								});
 								break;
 								default: bodyData.type = null;
@@ -1997,6 +2001,7 @@
 					tech: playerData.tech,
 					items: playerData.items,
 					xp: playerData.xp,
+					xpPoints: playerData.xpPoints,
 					fleet: playerData.fleet.map(s => s.id)
 				};
 			}
@@ -2038,14 +2043,14 @@
 			servers.set(this.url, this);
 		}
 		connect(){
-			$('#connect p').text('Connecting...');
-			if(this.socket.connected){
+			if(this?.socket?.connected){
 				throw new ReferenceError(`Can't connect to server: already connected`);
 			}
+			$('#connect p').text('Connecting...');
 			this.socket = io(this.url, {reconnection: false, auth: {token: cookie.token}});
 			this.socket.on('connect', socket => {
 				$('#connect').hide();
-				$('#mp_testing').show();
+				$('canvas.game,#mp_testing').show();
 			});
 			this.socket.on('connect_error', err => {
 				$('#connect p').text('Connection Error: ' + err.message);
@@ -2207,11 +2212,10 @@
 	});
 
 	//Load saves and servers into the (from the IndexedDB)
-	const saveCache = [];
 	db.transaction('saves', 'readonly').objectStore('saves').getAll().onsuccess = e => {
 		e.target.result.forEach(save => {
-			saveCache.push(save);
-			new Save(save);
+			Save.cache.push(save);
+			//new Save(save);
 		});
 	};
 	db.transaction('servers', 'readonly').objectStore('servers').getAllKeys().onsuccess = e => {
@@ -2323,16 +2327,8 @@
 				}
 			}),
 			$('<button plot=r130px,b15px,100px,35px,a><svg><use href=#fa-plus /></svg></i>&nbsp;Upload</button>').click(e => {
-				upload((file, i, array) => {
-					new Blob([file]).text().then(text => {
-						try {
-							eval?.(text);
-							db.transaction('mods', 'readwrite').objectStore('mods').put(text, rand.hex(8))
-						} catch (err) {
-							game.error('Failed to load mod: ' + err);
-						}
-					});
-				}), '.js'
+				//upload('.js').then(files => [...files].forEach(file => file.text().then(mod => game.loadMod(mod))));
+				modal('Mods are not supported.',{Ok: true});
 			})
 		);
 		ui.update()
@@ -2430,13 +2426,14 @@
 	$("button").click(e => { playsound(sound.ui, settings.sfx) })
 	$('#e div').not('#nav,.inv').hide();
 
-	const loop = () => {// the loop ~~loop
+	// the loop ~~loop
+	const loop = () => {
 		if (saves.get(saves.sel) instanceof Save && game.currentLevel instanceof Vector2){
 			if(!game.isPaused){
 				try {
 					game.frames++;
 					warp.cooltime = Math.max(0, warp.cooltime - (1 - player.data().tech.energy / 100));
-					warp.energy = Math.min(warp.maxEnergy, warp.energy + (1 + player.data().tech.energy / 20) / game.fps);
+					warp.energy = Math.min(warp.maxEnergy, warp.energy + (1 + player.data().tech.energy / 20) / game.engine.getFps());
 					item.multiplyer = 1 + (1 - game.difficulty);
 					ship.crit = { chance: 30 + player.data().tech.missle, dmg: 50 + player.data().tech.missle * 5 };
 					ship.multiplyer = {
@@ -2480,7 +2477,7 @@
 							ship.battle = null;
 						}else{
 							player.data().fleet.forEach(s => {
-								if((game.frames / game.getFps() * s.reload).toFixed(1) == Math.floor(game.frames / game.getFps() * s.reload)) {
+								if((game.frames / game.engine.getFps() * s.reload).toFixed(1) == Math.floor(game.frames / game.engine.getFps() * s.reload)) {
 									let target = game.scene().bodies.get(ship.battle).fleet[rand.int(0, game.scene().bodies.get(ship.battle).fleet.length - 1)];
 									let laser = Mesh.CreateLines("laser." + rand.hex(16), [s.mesh().position.add(Vector3.Up()).add(rand.cords(1)), target.mesh().position.add(Vector3.Up())], game.scene());
 									laser.color = new Color3(0, 1, 1);
@@ -2491,8 +2488,17 @@
 							game.scene().bodies.get(ship.battle).fleet.forEach((s, i) => {
 								player.updateFleet();
 								if(player.data().fleet.length > 0){
-									if (s.hp <= 0) { player.giveItems(ship.generic[s.type].recipe[0]); player.data().xp += ship.generic[s.type].xp; s.remove(); game.scene().bodies.get(ship.battle).fleet.splice(i, 1) }
-									else if ((game.frames / game.getFps() * s.reload).toFixed(1) == Math.floor(game.frames / game.getFps() * s.reload)) {
+									if (s.hp <= 0) {
+										player.giveItems(ship.generic[s.type].recipe[0]);
+										if(Math.floor(player.levelOf(player.data().xp  + ship.generic[s.type].xp)) > Math.floor(player.levelOf(player.data().xp))){
+											/*level up*/
+											player.data().xpPoints++;
+										}
+										player.data().xp += ship.generic[s.type].xp;
+										s.remove();
+										game.scene().bodies.get(ship.battle).fleet.splice(i, 1);
+									}
+									else if ((game.frames / game.engine.getFps() * s.reload).toFixed(1) == Math.floor(game.frames / game.engine.getFps() * s.reload)) {
 										let target = player.data().fleet[rand.int(0, player.data().fleet.length - 1)];
 										let laser = Mesh.CreateLines("laser." + rand.hex(16), [s.mesh().position.add(Vector3.Up()).add(rand.cords(1)), target.mesh().position.add(Vector3.Up())], game.scene());
 										laser.color = new Color3(1, 0, 0);
@@ -2511,17 +2517,17 @@
 					}
 					player.updateFleet();
 					player.data().fleet.forEach((s, i) => {
-						s.position.addInPlace(new Vector3(s.velocity.x / game.getFps(), s.velocity.y / game.getFps(), s.velocity.z / game.getFps()));
-						if (player.rcsIsActive) s.velocity = s.velocity.multiplyByFloats(0.9, 0.9, 0.9);
+						s.position.addInPlace(new Vector3(s.velocity.x / game.engine.getFps(), s.velocity.y / game.engine.getFps(), s.velocity.z / game.engine.getFps()));
+						if(player.rcsIsActive) s.velocity = s.velocity.multiplyByFloats(0.9, 0.9, 0.9);
 						s.mesh().position = player.position.add(player.getDirection(s.position));
 						s.mesh().rotation = player.rotation.add(s.rotation);
 					});
-					player.position.addInPlace(new Vector3(player.velocity.x / game.getFps(), player.velocity.y / game.getFps(), player.velocity.z / game.getFps()));
+					player.position.addInPlace(new Vector3(player.velocity.x / game.engine.getFps(), player.velocity.y / game.engine.getFps(), player.velocity.z / game.engine.getFps()));
 					$('#hud p.level').text(Math.floor(player.levelOf(player.data().xp)));
 					$('#hud .xp rect').attr('width', (player.levelOf(player.data().xp) % 1 * 100) + '%');
 					$("#debug .left").html(`
-						<span>${game.build} ${game.mods.length ? `[${game.mods.join(", ")}]` : `(vanilla)`}</span><br>
-						<span>FPS ${game.getFps().toFixed()}</span><br>
+						<span>${game.version} ${game.mods.length ? `[${game.mods.join(", ")}]` : `(vanilla)`}</span><br>
+						<span>FPS ${game.engine.getFps().toFixed()}</span><br>
 						<span>${saves.sel} (${saves.get(saves.sel).date.toLocaleString()}) L: ${Object.keys(saves.get(saves.sel).levels).length} S: ${Object.keys(saves.get(saves.sel).systems).length}</span><br><br>
 						<span>P: ${player.position.toFixed(1).display()} V: ${player.velocity.toFixed(1).display()} R: ${player.rotation.toFixed(2).display('xy')}</span><br>
 						<span>C: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)}) r: ${player.cam.radius.toFixed(1)} m: ${player.camIsActive ? 'player' : 'ship'}</span><br><br>
@@ -2531,7 +2537,7 @@
 					$("#debug .right").html(`
 						<span>Babylon v${Engine.Version} | jQuery v${$().jquery}</span><br>
 						<span>${navigator.platform}</span><br>
-						<span>${game._glRenderer}</span><br>
+						<span>${game.engine._glRenderer}</span><br>
 						<span>${(performance.memory.usedJSHeapSize / 1000000).toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(performance.memory.totalJSHeapSize / 1000000).toFixed()}MB Allocated)</span><br>
 						<span>${navigator.hardwareConcurrency} CPU Threads</span><br><br>
 						<span>${closestBody.name} ${closestBody.position.toFixed(1).display('xz')} ${Vector3.Distance(player.position, closestBody.position)?.toFixed(1)} | ${Vector3.Distance(player.position, closestBody.position.add(closestBody.fleetLocation)).toFixed(1)}</span><br>
@@ -2556,6 +2562,6 @@
 	ui.update()
 	$('#loading_cover').fadeOut(1000);
 	console.log('Game loaded successfully');
-	game.runRenderLoop(loop);
+	game.engine.runRenderLoop(loop);
 	</script>
 </html>
