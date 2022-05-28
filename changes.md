@@ -1,19 +1,25 @@
-# Ideas
+# Changes
+
+These are the changes for the next update[s].
+
+## Ideas
+*Possible features*
 
 - Fleet class
 
-# Future
+## Future
+*For a furture release*
 
 - Economy [Cash-Money]
 - Weapon types
 - Weak spots
 
-# Planned
+## Planned
 
 - Cargo ships
 - Particles and laser collisions
 
-# Features and Changes
+## Features and Changes
 
 - Ctrl + S to save
 - Strobing / RGB UI easter egg
@@ -30,7 +36,7 @@
 - Material descriptions
 - Localization support
 
-# Bugs
+## Bugs
 
 - Save creation input misaligned
 - Volume settings not affecting sound
@@ -51,7 +57,7 @@
 - Incorrect thrust description
 - Game would not save levels with more than one digit or a negative for either coordinate
 
-# Technical Changes
+## Technical Changes
 
 - Support for timed actions with updates at intervals (using `Action`)
 - Support for meshless entities
