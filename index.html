@@ -281,7 +281,10 @@
 		}
 		[cover]{
 			position: fixed;
-			inset: 0 0 0 0;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
 		}
 		[content]{
 			position: fixed;
@@ -329,7 +332,7 @@
 		<button class=options plot=c,460px,350px,50px></button>
 		<a class=exit href= /><button class=exit plot=c,560px,350px,50px></button></a>
 		<p class=version plot=r2em,b1em,fit-content,1em style=text-align:right></p>
-		<p class=copyright plot=2em,b1em,fit-content,1em>© 2022 Dr. Vortex. All Rights Reserved.</p>
+		<p class=copyright plot=2em,b1em,fit-content,1em>&copy; 2022 Dr. Vortex. All Rights Reserved.</p>
 	</div>
 	<ul id=load hide lsn content ofs=y style=padding:2.5%>
 		<button class=back plot=25px,b25px,125px,36px,a>
@@ -611,23 +614,35 @@
 	Object.assign(window, BABYLON);
 
 	Object.assign(Vector3.prototype, {
-		abs: function(){return new Vector3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z))},
-		toFixed: function(num = 1){return new Vector3(this.x.toFixed(num), this.y.toFixed(num), this.z.toFixed(num))},
-		toPolar: function(){return Math.sqrt(this.x ** 2 + this.y ** 2 + this.z ** 2)},
-		display: function(mode = 'xyz', ...options){
+		abs(){return new Vector3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z))},
+		toFixed(num = 1){return new Vector3(this.x.toFixed(num), this.y.toFixed(num), this.z.toFixed(num))},
+		round(){return new Vector3(Math.round(this.x), Math.round(this.y), Math.round(this.z))},
+		toPolar(){return Math.sqrt(this.x ** 2 + this.y ** 2 + this.z ** 2)},
+		display(mode = 'xyz', ...options){
 			return mode == 'xyz' ? `(${this.x}, ${this.y}, ${this.z})` :
 			mode == 'xy' ? `(${this.x}, ${this.y})` :
 			mode == 'xz' ? `(${this.x}, ${this.z})` :
 			mode == 'yz' ? `(${this.y}, ${this.z})` :
 			new SyntaxError('Vector3().display: Invalid mode: ' + mode);
 		},
-		worldToScreen: function(scene = game.scene()){
-			return Vector3.Project(this, Matrix.Identity(), scene.getTransformMatrix(), new Viewport(0, 0, width, height));
+		worldToScreen(scene = game.scene()){
+			return Vector3.Project(this, Matrix.Identity(), scene.getTransformMatrix(), {x: 0, y: 0, width: innerWidth, height: innerHeight});
+		},
+		
+	});
+	Object.assign(Vector3, {
+		screenToWorld(x, y, depth, scene = game.scene()){
+			return Vector3.Unproject(new Vector3(x, y, depth), innerWidth, innerHeight, Matrix.Identity(), scene.getViewMatrix(), scene.getProjectionMatrix());
+		},
+		screenToWorldPlane(x, y, scene = game.scene()){
+			return scene.pick(x, y, mesh => mesh == scene.xzPlane).pickedPoint;
 		}
 	});
-	Vector2.prototype.display = function(){
-		return `(${this.x}, ${this.y})`;
-	};
+	Object.assign(Vector2.prototype, {
+		display(){return `(${this.x}, ${this.y})`;},
+		abs(){return new Vector2(Math.abs(this.x), Math.abs(this.y))},
+		round(){return new Vector2(Math.round(this.x), Math.round(this.y))},
+	});
 
 	//JQuery plugins
 	$.ajaxSetup({timeout:3000});
@@ -668,8 +683,8 @@
 				this.attr('tooltip-active', true).parent().append(tooltip);
 				let computedStyle = getComputedStyle(tooltip[0]);
 				tooltip.css({
-					left: (settings.font_size + mouse.x + parseFloat(computedStyle.width) < width) ? settings.font_size + mouse.x : settings.font_size + mouse.x - parseFloat(computedStyle.width),
-					top: (settings.font_size + mouse.y + parseFloat(computedStyle.height) < height) ? settings.font_size + mouse.y : settings.font_size + mouse.y - parseFloat(computedStyle.height)
+					left: (settings.font_size + mouse.x + parseFloat(computedStyle.width) < innerWidth) ? settings.font_size + mouse.x : settings.font_size + mouse.x - parseFloat(computedStyle.width),
+					top: (settings.font_size + mouse.y + parseFloat(computedStyle.height) < innerHeight) ? settings.font_size + mouse.y : settings.font_size + mouse.y - parseFloat(computedStyle.height)
 				})
 			})
 			.mouseleave(e => { tooltip.remove(); this.removeAttr('tooltip-active') });
@@ -684,7 +699,7 @@
 			e.preventDefault();
 			menu.css({ left: settings.font_size + mouse.x, top: settings.font_size + mouse.y });
 			this.parent().append(menu);
-			menu.css({ top: (settings.font_size + mouse.y + parseFloat(getComputedStyle(menu[0]).height) < height) ? settings.font_size + mouse.y : settings.font_size + mouse.y - parseFloat(getComputedStyle(menu[0]).height) })
+			menu.css({ top: (settings.font_size + mouse.y + parseFloat(getComputedStyle(menu[0]).height) < innerHeight) ? settings.font_size + mouse.y : settings.font_size + mouse.y - parseFloat(getComputedStyle(menu[0]).height) })
 		});
 		return this
 	}
@@ -751,7 +766,7 @@
 	sound = {
 		rift: 'music/rift.mp3',
 		planets: 'music/planets.mp3',
-		destroy_ship: 'sfx/destry_ship.mp3',
+		destroy_ship: 'sfx/destroy_ship.mp3',
 		warp_start: 'sfx/warp_start.mp3',
 		warp_end: 'sfx/warp_end.mp3',
 		laser_fire: 'sfx/laser_fire.mp3',
@@ -808,7 +823,6 @@
 					reject(request.statusText);
 				}else if(typeof json != 'object' || !json.language|| !(json.version || json.versions) || !json.menu || !json.player){
 					reject('Incorrect format');
-					console.log
 				}else if(json.version != game.version && ![...json.versions].includes(game.version)){
 					reject('Wrong game version');
 				}else{
@@ -840,7 +854,7 @@
 		},
 		clearCache(){
 			return new Promise((resolve, reject) => {
-				let transaction = db.transaction('locales').objectStore('locales').clear();
+				let transaction = db.transaction('locales', 'readwrite').objectStore('locales').clear();
 				transaction.onsuccess = e => resolve();
 				transaction.onerror = e => reject('DB transaction failed');
 				
@@ -871,9 +885,9 @@
 				$('#esc button.resume').text(lang.menu.resume ?? 'Resume Game');
 				$('#esc button.save').text(lang.menu.save ?? 'Save Game');
 				$('#esc button.quit').text(lang.menu.quit ?? 'Main Menu');
-				$('#load button.upload').text(lang.menu.upload ?? 'Upload');
+				$('#load button.upload span').text(lang.menu.upload ?? 'Upload');
 				$(':where(#load,#save,#settings) button.back span').text(lang.menu.back ?? 'Back');
-				$(':where(#load button.new,#q button.map.new) span').text(lang.menu.new ?? 'New');
+				$(':where(#load,#q) button.new span').text(lang.menu.new ?? 'New');
 				$('#save button.new span').text(lang.menu.start ?? 'Start');
 				$('#connect button.back span').text(lang.menu.cancel ?? 'Cancel');
 				$('#settings :where(button.gen,form.gen h2) span').text(lang.menu.general ?? 'General');
@@ -900,9 +914,96 @@
 	locale.isCached('en').then(is => {
 		if(!is){
 			locale.get('locales/en.json').then(lang => locale.set('en'));
-
 		}
 	});
+
+	//pathfinding (using A*)
+	const path = {
+		Node: class{
+			position = Vector2.Zero();
+			parent = null;
+			constructor(...args){
+				this.position = args[0] instanceof Vector2 ? args[0].round() : new Vector2(args[0], args[1]);
+				if(args[1] instanceof path.Node) this.parent = args[1];
+				if(args[2] instanceof path.Node) this.parent = args[2];
+			}
+			gCost = 0;
+			hCost = 0;
+			intersects = [];
+			heapIndex = null;
+			get fCost(){
+				return this.gCost + this.hCost;
+			}
+			equals(node){
+				return this.position.equals(node.position)
+			}
+		},
+		find(start, end, scene){
+			if(!(start instanceof Vector2 || start instanceof Vector3)) throw new TypeError('Start must be a Vector');
+			if(!(end instanceof Vector2 || start instanceof Vector3)) throw new TypeError('End must be a Vector');
+			let
+			startNode = new path.Node(start instanceof Vector3 ? new Vector2(start.x, start.z) : start),
+			endNode = new path.Node(end instanceof Vector3 ? new Vector2(end.x, end.z) : end),
+			openNodes = [startNode],
+			closedNodes = [];
+			while(openNodes.length > 0 && openNodes.length < 1e5 && closedNodes.length < 1e5){
+				let currentNode = openNodes.reduce((previous, current) => previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current, openNodes[0]);
+				openNodes.splice(openNodes.findIndex(node => node == currentNode), 1);
+				closedNodes.push(currentNode);
+				if(currentNode.equals(endNode)){
+					endNode = currentNode;
+					return path.trace(startNode, endNode);
+				}
+				let relatives = [0,1,-1].flatMap(x => [0,1,-1].map(y => new Vector2(x, y))).filter(v => v.x != 0 || v.y != 0);
+				neighbors = relatives.map(v => openNodes.some(node => node.position.equals(v)) ? openNodes.find(node => node.position.equals(v)) : new path.Node(currentNode.position.add(v), currentNode));
+				for(let neighbor of neighbors){
+					if(scene instanceof Level){
+						scene.bodies.forEach(body => {
+							if(Vector2.Distance(new Vector2(body.position.x, body.position.z), neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
+						});
+					}
+					if(!neighbor.intersects.length && !closedNodes.some(node => node.equals(neighbor))){
+						let costToNeighbor = currentNode.gCost + path.distance(currentNode, neighbor);
+						if(costToNeighbor < neighbor.gCost || !openNodes.some(node => node.equals(neighbor))){
+							neighbor.gCost = costToNeighbor;
+							neighbor.hCost = path.distance(neighbor, endNode);
+							if(!openNodes.some(node => node.equals(neighbor))) openNodes.push(neighbor);
+						}
+					}	
+				}
+			}
+		},
+		distance(nodeA, nodeB){
+			if(!(nodeA instanceof path.Node && nodeB instanceof path.Node)) throw new TypeError('passed nodes must be path.Node');
+			let distance = nodeA.position.subtract(nodeB.position).abs();
+			return 1.4 * (distance.x > distance.y ? distance.y : distance.x) + (distance.x > distance.y ? 1 : -1) * (distance.x - distance.y);
+		},
+		trace(startNode, endNode){
+			let path = [], currentNode = endNode;
+			while(!currentNode.equals(startNode)){
+				path.push(currentNode);
+				currentNode = currentNode.parent;
+			}
+			return path.reverse();
+		},
+		debugPath: null,
+		debugMark(x, y, scene = game.scene()){
+			let target = player.data().position.add(new Vector3(x, 0, y)).round();
+			if(this.debugPath || x === false){
+				this.debugPath.forEach(node => node.marker.dispose());
+			}
+			if(x !== false){
+				
+				this.debugPath = path.find(player.data().position, target, scene);
+				this.debugPath.forEach(node => {
+					node.marker = MeshBuilder.CreateBox('pathmarker', {}, scene);
+					node.marker.position = new Vector3(node.position.x, 0, node.position.y);
+					node.marker.material = new StandardMaterial('matmarker', scene);
+					node.marker.material.emissiveColor = node.marker.position.equals(target) ? Color3.Green() : Color3.White();
+				});
+			}
+		}
+	}
 
 	const game = {
 		canvas: $('canvas.game'),
@@ -934,14 +1035,6 @@
 		hitboxes: false,
 		difficulty: 1,
 		strobeInterval: null,
-		loadLocale: (locale) => {
-
-		},
-		setLocale: id => {
-			if(id instanceof Locale){
-
-			}
-		},
 		strobe: rate => {
 			if(game.strobeInterval){
 				clearInterval(game.strobeInterval);
@@ -982,31 +1075,31 @@
 		toggleChat: command => {
 			$('#chat,#chat_history').toggle();
 			if ($('#cli').toggle().is(':visible')){
-				document.exitPointerLock();
+				player.cam.detachControl(game.canvas, true);
 				$('#cli').focus();
 				if(command){
 					$('#cli').val('/');
 				}
-				e.preventDefault();
 			}else{
 				game.canvas.focus();
-				game.canvas[0].requestPointerLock();
+				player.cam.attachControl(game.canvas, true);
+				player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
 			}
 		},
 		getEntity: sel => {
 			if (typeof sel != 'string') throw new TypeError('getEntity: selector must be of type string');
-			if (typeof saves.sel != 'string') throw new TypeError('getEntity: you must have a save selected');
+			if (typeof saves.selected != 'string') throw new TypeError('getEntity: you must have a save selected');
 			switch (sel[0]) {
 				case '@':
 					return (sel.slice(1) == player.username || sel.slice(1) == player.id) ? player :
 						new ReferenceError('getEntity: multi-player entity selection not implemented');
 					break;
 				case '*':
-					return [...saves.get(saves.sel).entities.values()];
+					return [...saves.current.entities.values()];
 					break;
 				case '#':
-					if(saves.get(saves.sel).entities.has(sel.slice(1))){
-						return saves.get(saves.sel).entities.get(sel.slice(1))
+					if(saves.current.entities.has(sel.slice(1))){
+						return saves.current.entities.get(sel.slice(1))
 					}else{
 						console.warn(`Entity ${sel} does not exist`);
 					}
@@ -1015,12 +1108,12 @@
 		},
 		removeEntity: (...args) => {
 			for(let e of args){
-				let id = [...saves.get(saves.sel).entities].find(en => en[1] == e)?.[0];
+				let id = [...saves.current.entities].find(en => en[1] == e)?.[0];
 				if(e instanceof Entity && id){
 					e.remove();
-					saves.get(saves.sel).entities.delete(id);
-					for(let i in saves.get(saves.sel).levels){
-						for(let [id, body] of saves.get(saves.sel).levels[i].bodies){
+					saves.current.entities.delete(id);
+					for(let i in saves.current.levels){
+						for(let [id, body] of saves.current.levels[i].bodies){
 							if(body.fleet.includes(e)) body.fleet.splice(body.fleet.indexOf(e), 1);
 						};
 					};
@@ -1033,18 +1126,18 @@
 		},
 		getBody: sel => {
 			if (typeof sel != 'string') throw new TypeError('getBody: selector must be of type string');
-			if (typeof saves.sel != 'string') throw new TypeError('getBody: you must have a save selected');
+			if (typeof saves.selected != 'string') throw new TypeError('getBody: you must have a save selected');
 			switch (sel[0]) {
 				case '*':
 					let total = [];
-					for(let i in saves.get(saves.sel).levels){
-						total.push(...saves.get(saves.sel).levels[i].bodies.values())
+					for(let i in saves.current.levels){
+						total.push(...saves.current.levels[i].bodies.values())
 					}
 					return total
 					break;
 				case '#':
-					for(let i in saves.get(saves.sel).levels){
-						for(let [id, body] of saves.get(saves.sel).levels[i].bodies){
+					for(let i in saves.current.levels){
+						for(let [id, body] of saves.current.levels[i].bodies){
 							if(id == sel.slice(1)) return body;
 						}
 					};
@@ -1054,8 +1147,8 @@
 		removeBody: (...args) => {
 			for(let body of args){
 				if(body instanceof CelestialBody){
-					for(let i in saves.get(saves.sel).levels){
-						saves.get(saves.sel).levels[i].bodies.delete(id);
+					for(let i in saves.current.levels){
+						saves.current.levels[i].bodies.delete(id);
 					};
 				}
 				else{
@@ -1064,16 +1157,11 @@
 			}
 		},
 		cli: { line: 0, currentInput: "", i: $("#cli").val(), prev: [] },
-		scene: location => {
-			if (location instanceof Vector2 || location == undefined) {
-				return saves.get(saves.sel)?.levels[location instanceof Vector2 ? location.asArray() : game.currentLevel.asArray()] || game.scene.default;
-			} else {
-				throw new TypeError('Passed location must be a Vector2 or undefined.');
-			}
-
+		scene: (location = game.currentLevel) => {
+			return saves.current?.levels[location instanceof Vector2 ? location.asArray() : Vector2.Zero().asArray()] || game.scene.default;
 		},
-		get currentLevel() { return saves.get(saves.sel) ? saves.get(saves.sel).currentLevel : Vector2.Zero() },
-		set currentLevel(val) { return saves.get(saves.sel) ? saves.get(saves.sel).currentLevel = val : console.warn('Tried to set currentLevel without a valid save') },
+		get currentLevel() { return saves.current ? saves.current.currentLevel : Vector2.Zero() },
+		set currentLevel(val) { return saves.current ? saves.current.currentLevel = val : console.warn('Tried to set currentLevel without a valid save') },
 		saveSettings: () => {
 			let settingsStore = db.transaction('settings', 'readwrite').objectStore('settings');
 			settings = $("form.gen").formData();
@@ -1106,7 +1194,7 @@
 			spawn: (type, selector, x, y, z) => {
 				let faction = game.getEntity(selector),
 				fleet = faction == player ? faction.data().fleet : faction.fleet,
-				spawned = new Ship(type, faction, faction == player ? saves.get(saves.sel) : faction.getSave());
+				spawned = new Ship(type, faction, faction == player ? saves.current : faction.getSave());
 				spawned.addToScene(game.scene());
 				spawned.position = parseFloat(x) == x && parseFloat(y) == y && parseFloat(z) == z ? new Vector3(parseFloat(x), parseFloat(y), parseFloat(z)) : Vector3.Zero();
 			},
@@ -1210,7 +1298,7 @@
 				if(game.mp){
 					servers.get(servers.sel).socket.emit('command', command);
 				}else{
-					if (saves.sel && saves.get(saves.sel) instanceof Save) {
+					if (saves.selected && saves.current instanceof Save.Live) {
 						let commands = command.split(' '), hasRun = false;
 						let result = (commands.filter(p => p).reduce((o, p, i) => typeof o?.[p] == 'function' ? (hasRun = true, o?.[p](...commands.slice(i + 1))) : hasRun ? o : o?.[p] ? o?.[p] : new ReferenceError('Command does not exist'), game.commands) ?? '');
 						return result;
@@ -1224,17 +1312,19 @@
 		changeUI: (selector, hideAll) => {
 			if ($(selector).is(':visible')) {
 				game.canvas.focus();
-				game.canvas[0].requestPointerLock();
+				player.cam.attachControl(game.canvas, true);
+				player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
 				$(selector).hide();
 			} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
 				game.canvas.focus();
-				game.canvas[0].requestPointerLock();
+				player.cam.attachControl(game.canvas, true);
+				player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
 				$('[game-ui]').hide();
 			} else if (!$('[game-ui]').is(':visible')) {
-				document.exitPointerLock();
+				player.cam.detachControl(game.canvas, true);
 				$(selector).show().focus();
 			}
-		}
+		}		
 	};
 	const Entity = class extends TransformNode{
 		static generic = new Map();
@@ -1245,11 +1335,11 @@
 			});
 		}
 		constructor(save, id = rand.hex(32), owner = null){
-			super(id, save.levels[save.currentLevel]);
+			super(id);
 			this.id = id;
 			this.owner = owner;
 			this.meshes = new Map();
-			if(save instanceof Save) save.entities.set(this.id, this);
+			if(save instanceof Save.Live) save.entities.set(this.id, this);
 		}
 		addToScene(scene = game.scene()){
 			if(!(scene instanceof Level)) throw new TypeError('passed scene must be a level');
@@ -1426,7 +1516,7 @@
 			return this.readonly ? ui.filter('span:gt(1)') : ui;
 		}
 		get screenPos(){
-			return Vector3.Project(this.position, Matrix.Identity(), game.scene().getTransformMatrix(), {x: 0, y: 0, width, height});
+			return Vector3.Project(this.position, Matrix.Identity(), game.scene().getTransformMatrix(), {x: 0, y: 0, width: innerWidth, height: innerHeight});
 		}
 		constructor({
 			id = rand.hex(32),
@@ -1440,21 +1530,26 @@
 			scene.waypoints.push(this);
 			this.#readonly = readonly;
 			Object.assign(this, {name, position, color, icon});
-			this.marker = $(`<svg ingame><use href=image/icons.svg#${icon} /></svg><p ingame style=justify-self:center></p>`).addClass('marker').appendTo('body');
+			this.marker = $(`<svg ingame><use href=image/icons.svg#${icon} /></svg><p ingame style=justify-self:center></p>`).addClass('marker').hide().appendTo('body');
 			this.marker.filter('p').css('text-shadow', '1px 1px 1px #000')
 		}
 	}
 	const StorageData = class extends Map{
-		max = 1;
-		constructor({max, items}){
-			super(Object.keys(item).map(i => [i, 0]))
-			this.max = max;
+		constructor({max = 1, items = {}}){
+			super(Object.keys(item).map(i => [i, 0]));
+			this.baseMax = max;
+			Object.entries(items).forEach(args => this.add(...args));
+		}
+		get max(){
+			return this.baseMax * (1 + player.data().tech.storage / 20)
 		}
 		get total(){
-			return [...this.values()].reduce((a, c) => a + c, 0);
+			return [...this.entries()].reduce((total, [name, amount]) => total + amount * item[name].value, 0);
 		}
-		empty(){
-			this.forEach(item => item = 0);
+		empty(filter){
+			for(let name of this.keys()){
+				if((filter instanceof Array ? filter.includes(name) : filter == name) || !filter) this.set(name, 0);
+			}
 		}
 		serialize(){
 			return Object.fromEntries([...this]);
@@ -1462,11 +1557,11 @@
 		add(item, amount){
 			this.set(item, this.get(item) + amount);
 		}
-		sub(item, amount){
+		remove(item, amount){
 			this.set(item, this.get(item) - amount);
 		}
 	};
-	const PlayerData = class extends TransformNode{
+	const Player = PlayerData = class extends TransformNode{
 		get items(){
 			let items = {};
 			Object.keys(item).forEach(item => {
@@ -1479,7 +1574,10 @@
 		}
 
 		set items(value){
-			console.error('can not set items');
+			this.fleet.forEach(ship => {
+				ship.storage.empty(Object.keys(value));
+			});
+			this.addItems(value);
 		}
 		addItems(items){
 			this.fleet.forEach(ship => {
@@ -1521,26 +1619,22 @@
 		shipNum(type){
 			return this.fleet.reduce((total, ship) => total + ship.type == type ? 1 : 0, 0)
 		}
-		tech = {};
+		tech = Object.fromEntries(Object.keys(tech).map(item => [item, 0]));
 		fleet = [];
 		xp = 0;
 		xpPoints = 0;
 		get power(){
 			return this.fleet.reduce((a, ship) => a + ship.power, 0);
 		}
-		constructor(data, level){
-			if(!(level instanceof Scene)) throw new TypeError('passed level not a Scene');
-			super(data.id, level);
-			Object.assign(this, data);
+		constructor(data, save){
+			//if(!(save instanceof Save.Live)) throw new TypeError('passed save not a Save');
+			super(data.id || 'player');
+			this.position = rand.cords(rand.int(0, 50), true).add(new Vector3(0, 0, -1000));
 			this.rotation.z = Math.PI;
+			Object.assign(this, data);
 		}
 	}
-	/*const Player = class extends Entity{
-		constructor(data){
-			super(data.name || 'player', rand.cords(rand.int(0, 50), true).add(new Vector3(0, 0, -1000)), game.scene())
-		}
-	}*/
-	const playerData = new PlayerData({id: 'DEFAULT'}, game.scene());
+	const playerData = new Player({id: 'DEFAULT'}, game.scene());
 	const player = {
 		username: '', marker: {}, speed: 1, velocity: Vector3.Zero(), camIsActive: true, rcsIsActive: true,
 		cam: new ArcRotateCamera('player.cam', 0, 0, 5, Vector3.Zero(), game.scene()), targetBody: null,
@@ -1562,18 +1656,15 @@
 				player.reset();
 				player.wipe();
 				Ship.battle = null;
-				let s = new Ship('frigate', player, saves.get(saves.sel));
+				let s = new Ship('frigate', player, saves.current);
 				s.addToScene(game.scene());
 			}
 		},
 		chat: (...msg) => { for (let m of msg) { game.chat((`${player.username}: ${m}`).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')) } },
 		stop: (delay = 0) => { setTimeout(e => { player.velocity = Vector3.Zero(); player.data().fleet.forEach(s => { s.velocity = Vector3.Zero() }) }, (+delay) || 0) },
-		reset: noStop => { player.data().position = rand.cords(rand.int(0, 50), true).add(new Vector3(0, 0, -1000)); player.data().rotation = Vector3.Zero(); player.cam.alpha = 0; player.cam.beta = 0; if (!noStop) player.stop() },
-		hasItems: items => { let has = true; for (let i in items) { if (player.data().items[i] < items[i]) { has = false } } return has },
-		removeItems: items => { for (let i in items) { item[i] ? player.data().items[i] -= items[i] : game.error(`removeItems failed: item "${i}" does not exist`) } },
-		giveItems: items => { for (let i in items) { item[i] ? player.data().items[i] += items[i] : game.error(`giveItems failed: item "${i}" does not exist`) } },
+		reset: noStop => { player.data().position = rand.cords(rand.int(0, 50), true).add(new Vector3(0, 0, -1000)); player.data().rotation = Vector3.Zero(); player.cam.alpha = 0; player.cam.beta = 0; player.cam.target = player.position; if (!noStop) player.stop() },
 		wipe: () => { for (let i in item) { player.data().items[i] = 0 }; for (let i in tech) { player.data().tech[i] = 0 }; for (let i in player.data().fleet) { player.data().fleet[i].remove() } player.data().fleet = [] },
-		data: id => saves.get(saves.sel)?.playerData?.[id ?? player.id] ?? playerData,
+		data: id => saves.current?.playerData?.[id ?? player.id] ?? playerData,
 		levelOf: xp => Math.sqrt(xp / 10),
 		xpOf: level => 10 * level ** 2
 	};
@@ -1592,8 +1683,7 @@
 					{ ancient_tech: 4, code_snippets: 5 },
 					{ ancient_tech: 8, code_snippets: 10 }, 
 					{ ancient_tech: 16, code_snippets: 20 }
-				], requires: {},
-				model: 'model/corvette.gltf'
+				], requires: {}, model: 'model/corvette.gltf'
 			},
 			frigate: {
 				hp: 25, damage: 0.5, reload: 1, maxLevel: 5,
@@ -1606,8 +1696,15 @@
 					{ ancient_tech: 7, code_snippets: 20 },
 					{ ancient_tech: 9, code_snippets: 30 },
 					{ ancient_tech: 12, code_snippets: 35 }
-				], requires: {},
-				model: 'model/corvette.gltf'
+				], requires: {}, model: 'model/corvette.gltf'
+			},
+			transport_small: {
+				hp: 5, damage: 0.1, reload: 5, maxLevel: 1,
+				power: 1, enemy: false, camRadius: 20, xp: 10, storage: 25000,
+				critChance:  0.1, critDamage: 1,
+				recipe: [
+					{ metal: 5000, minerals: 1000, fuel: 2500}
+				], requires: {storage: 3}, model: 'model/transport_small.glb'
 			},
 			crusier: {
 				hp: 50, damage: 1, reload: 2, maxLevel: 5,
@@ -1620,8 +1717,7 @@
 					{ ancient_tech: 8, code_snippets: 30 },
 					{ ancient_tech: 12, code_snippets: 40 },
 					{ ancient_tech: 18, code_snippets: 50 }
-				], requires: {},
-				model: 'model/crusier.gltf'
+				], requires: {}, model: 'model/crusier.gltf'
 			},
 			destroyer: {
 				hp: 100, damage: 2.5, reload: 1, maxLevel: 5,
@@ -1634,8 +1730,15 @@
 					{ ancient_tech: 20, code_snippets: 60 },
 					{ ancient_tech: 35, code_snippets: 85 },
 					{ ancient_tech: 60, code_snippets: 100 }
-				], requires: {},
-				model: 'model/destroyer.gltf'
+				], requires: {}, model: 'model/destroyer.gltf'
+			},
+			transport_medium: {
+				hp: 50, damage: 1, reload: 5, maxLevel: 1,
+				power: 10, enemy: false, camRadius: 50, xp: 10, storage: 100000,
+				critChance:  0.1, critDamage: 1,
+				recipe: [
+					{ metal: 10000, minerals: 2000, fuel: 5000}
+				], requires: {storage: 5}, model: 'model/transport_small.glb'
 			},
 			battleship: {
 				hp: 250, damage: 10, reload: 2, maxLevel: 5,
@@ -1648,8 +1751,7 @@
 					{ ancient_tech: 45, code_snippets: 40 },
 					{ ancient_tech: 70, code_snippets: 55 },
 					{ ancient_tech: 100, code_snippets: 70 }
-				], requires: {},
-				model: 'model/battleship.gltf'
+				], requires: {}, model: 'model/battleship.gltf'
 			},
 			dreadnought: {
 				hp: 2000, damage: 100, reload: 4, maxLevel: 5,
@@ -1662,12 +1764,11 @@
 					{ ancient_tech: 100, code_snippets: 88 },
 					{ ancient_tech: 150, code_snippets: 100 },
 					{ ancient_tech: 250, code_snippets: 125 }
-				], requires: { build: 5 },
-				model: 'model/dreadnought.gltf'
+				], requires: { build: 5 }, model: 'model/dreadnought.gltf'
 			}
 		}
 		constructor(typeOrData, faction = player, save){
-			super(save ?? (faction == player && saves.get(saves.sel) instanceof Save ? saves.get(saves.sel) : faction.getSave()), typeof typeOrData == 'object' ? typeOrData.id : undefined, faction == player ? faction.data() : faction);
+			super(save ?? (faction == player && saves.current instanceof Save.Live ? saves.current : faction.getSave()), typeof typeOrData == 'object' ? typeOrData.id : undefined, faction == player ? faction.data() : faction);
 			
 			if(typeof typeOrData == 'object'){
 				Object.assign(this, {
@@ -1714,13 +1815,15 @@
 					player.cam._scene = game.scene(destination);
 					game.chat(`Warped to ${destination.x},${destination.y} (${game.scene().name})`);
 					player.reset();
+					player.cam.target = player.data().position;
+					ui.update();
 					playsound(sound.warp_end, settings.sfx);
 				}
-				if(!(saves.get(saves.sel).levels[destination.asArray()] instanceof Level)){
-					new Level(saves.get(saves.sel).systems[destination.asArray()] || 'Empty Space', destination, !!saves.get(saves.sel).systems[destination.asArray()], lvl => {
-						saves.get(saves.sel).levels[destination.asArray()] = lvl;
+				if(!(saves.current.levels[destination.asArray()] instanceof Level)){
+					new Level(saves.current.systems[destination.asArray()] || 'Empty Space', destination, !!saves.current.systems[destination.asArray()], lvl => {
+						saves.current.levels[destination.asArray()] = lvl;
 						done();
-					}, saves.get(saves.sel));
+					}, saves.current);
 				}else{
 					done();
 				}
@@ -1762,17 +1865,11 @@
 	}
 	let transaction = db.transaction('settings', 'readonly').objectStore('settings').get('general');
 	transaction.onsuccess = e => {
-		//let startTime = Date.now();
-		//console.log(`[${Date.now() - startTime}] settings retrieved: ${settings.locale}`);
 		settings = transaction.result ?? settings;
-		//console.log(`[${Date.now() - startTime}] settings loaded: ${settings.locale}`);
 		locale.getCached().then(locales => {
-			//console.log(`[${Date.now() - startTime}] locales retrieved: ${settings.locale}`);
 			locales.forEach(lang => {
-				//console.log(`[${Date.now() - startTime}] testing locale "${lang}": ${settings.locale}`);
 				if(!locale.langs.has(lang)){
 					locale.load(lang).then(() => {
-						//console.log(`[${Date.now() - startTime}] loaded locale "${lang}": ${settings.locale}`);
 						if('en' == lang){
 							locale.set('en');
 						}
@@ -1865,17 +1962,13 @@
 		game.screenshots.push(game.canvas[0].toDataURL("image/png")); ui.update();
 	});
 	game.createKeybind('save', {key: 's', ctrl: true}, 'Save Game', e => {
-		if(saves.get(saves.sel) instanceof Save){
+		if(saves.current instanceof Save.Live){
 			$('#esc .save').text('Saving...');
-			let dbCall = db.transaction('saves','readwrite').objectStore('saves').put(saves.get(saves.sel).serialize(), saves.sel);
-			dbCall.onsuccess = e => {
-				game.chat('Game Saved.');
-				$('#esc .save').text('Save Game');
-			};
-			dbCall.onerror = err => {
-				game.chat('Failed to save game: ' + err);
-				$('#esc .save').text('Save Game');
-			};
+			saves.get(saves.current.id).data = saves.current.serialize();
+			saves.get(saves.current.id).saveToDB()
+			.then(() => game.chat('Game saved.'))
+			.catch(err => game.chat('Failed to save game: ' + err))
+			.finally(() => $('#esc .save').text('Save Game'));
 		}else{throw 'Save Error: you must have a valid save selected.'}
 	});
 
@@ -1900,7 +1993,7 @@
 		$('form.key').formData(keybind);
 	};
 	db.transaction('mods', 'readonly').objectStore('mods').getAll().onsuccess = e => {
-		console.log('Loaded mods: ' + e.target.result.join('\n'))
+		console.log('Loaded mods: ' +  (e.target.result.join('\n') || '(none)'));
 	};
 	const gen = {
 		enemies: power => {//enemy spawning algorithm
@@ -1941,9 +2034,9 @@
 			`);
 			gui.eq(-1).children('svg')
 				.click(e => {
-					if(player.hasItems(s.recipe[0])){
-						player.removeItems(s.recipe[0]);
-						new Ship(shiptype, player, saves.get(saves.sel));
+					if(player.data().hasItems(s.recipe[0])){
+						player.data().removeItems(s.recipe[0]);
+						new Ship(shiptype, player, saves.current);
 					}
 					ui.update();
 				})
@@ -1958,8 +2051,8 @@
 				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=image/icons.svg#circle-up /></svg></span>
 			`);
 			gui.click(e => {
-				if(player.hasItems(tech.price(t)) && player.data().tech[t] < tech[t].max && !tech.locked(t) && player.data().xpPoints >= 1){
-					player.removeItems(tech.price(t));
+				if(player.data().hasItems(tech.price(t)) && player.data().tech[t] < tech[t].max && !tech.locked(t) && player.data().xpPoints >= 1){
+					player.data().removeItems(tech.price(t));
 					player.data().tech[t]++;
 					player.data().xpPoints--;
 				}
@@ -1976,7 +2069,7 @@
 				<span style=text-align:right;grid-row:${row};grid-coloumn:1;>${locale.text.item[i].name}${item[i].rare ? ` (rare)` : ``}: </span>
 				<span style=text-align:left;grid-row:${row};grid-coloumn:2;>${minimize(player.data().items[i])}</span>
 			`)
-				.click(e => { if (item[i].recipe && player.hasItems(item[i].recipe)) { player.removeItems(item[i].recipe); player.data().items[i]++ } })
+				.click(e => { if (item[i].recipe && player.data().hasItems(item[i].recipe)) { player.data().removeItems(item[i].recipe); player.data().items[i]++ } })
 				.removeAttr('clickable');
 			return gui
 		},
@@ -1987,7 +2080,7 @@
 				item[i].gui = ui.inv(i, ++invRows);
 				$('div.inv').append(item[i].gui)
 			};
-			$('svg.item-bar rect').attr('width', player.data().totalItems / player.data().maxItems * 100);
+			$('svg.item-bar rect').attr('width', player.data().totalItems / player.data().maxItems * 100 || 0);
 			$('div.item-bar p.label').text(`${minimize(player.data().totalItems)} / ${minimize(player.data().maxItems)}`)
 			for(let i in tech) {
 				tech[i].gui = ui.lab(i, ++labRows);
@@ -2041,14 +2134,9 @@
 				server.gui.name.text(server.name);
 			});
 			saves.forEach(save => {
-				save.gui.name.text(save.name);
-				save.gui.version.text(game.versions.get(save.version) ? game.versions.get(save.version).text : save.version);
-				save.gui.date.text(save.date.toLocaleString());
-			});
-			Save.cache.forEach(save => {
 				save.gui.name.text(save.data.name);
-				save.gui.version.text(game.versions.get(save.data.version) ? game.versions.get(save.data.version).text : save.data.version);
-				save.gui.date.text(new Date(save.data.date).toLocaleString());
+				save.gui.version.text(game.versions.get(save.data.version)?.text ?? save.data.version);
+				save.gui.date.text(save.data.date.toLocaleString());
 			});
 			$(':root').css('--font-size',settings.font_size+'px')
 			if(game.mp){
@@ -2248,7 +2336,7 @@
 			CreateSphereVertexData({ diameter: radius * 2, segments: settings.mesh_quality }).applyToMesh(this);
 			Object.assign(this, {
 				owner, radius, rewards, biome, position,
-				material: Planet.biomes.has(biome) ? new CelestialBodyMaterial(Planet.biomes.get(biome)) : new StandardMaterial('mat', scene)
+				material: Planet.biomes.has(biome) ? new CelestialBodyMaterial(Planet.biomes.get(biome), scene) : new StandardMaterial('mat', scene)
 			});
 			this.fleetLocation.position = rand.cords(rand.int(radius + 5, radius * 1.2), true);
 			this.waypoint = new Waypoint({
@@ -2282,44 +2370,39 @@
 		getSave(){
 			return this._save
 		}
-		constructor(nameOrData, location = new Vector2(rand.int(-25, 25), rand.int(-25, 25)), hasStar = true, onready = () => null, save = saves.get(saves.sel)) {
+		constructor(nameOrData, location = new Vector2(rand.int(-25, 25), rand.int(-25, 25)), hasStar = true, onready = () => null, save = saves.current) {
 			(async () => {
 				super(game.engine);
 				const id = rand.hex(32);
 				this.isLoaded = typeof nameOrData == 'object';
 				Object.assign(this, this.isLoaded ? {
 					...nameOrData,
-					gl: Object.assign(new GlowLayer('glowLayer#' + id, this), { intensity: 0.9 }),
-					hl: new HighlightLayer('highlight#' + id, this),
-					skybox: Mesh.CreateBox('skybox', Level.size * 2, this),
-					bodies: new Map(),
 					location: Vector2.FromArray(nameOrData.location),
-					onReady: onready,
-					_save: save,
-					probe: new ReflectionProbe('probe#' + id, 256, this),
-					activeCamera: player.cam,
-					clearColor: new Color3(0.8, 0.75, 0.85),
-					genericEntities: {},
-					waypoints: []
 				} : {
-					id: id,
+					id,
 					name: nameOrData,
-					gl: Object.assign(new GlowLayer('glowLayer#' + id, this), { intensity: 0.9 }),
-					hl: new HighlightLayer('highlight#' + id, this),
-					skybox: Mesh.CreateBox('skybox', Level.size * 2, this),
-					location: location,
-					hasStar: hasStar,
+					location,
+					hasStar,
 					difficulty: Vector2.Distance(location, Vector2.Zero()),
 					planetNum: hasStar ? rand.int(1, Planet.maxNum) : 0,
-					probe: new ReflectionProbe('probe#' + id, 256, this),
-					clearColor: new Color3(0.8, 0.75, 0.85),
-					activeCamera: player.cam,
-					bodies: new Map(),
+				});
+				Object.assign(this, {
+					skybox: Mesh.CreateBox('skybox', Level.size * 2, this),
+					gl: Object.assign(new GlowLayer('glowLayer#' + id, this), { intensity: 0.9 }),
+					hl: new HighlightLayer('highlight#' + id, this),
+					xzPlane: MeshBuilder.CreatePlane('xzPlane#' + id, {size: Level.size * 2}, this),
 					onReady: onready,
 					_save: save,
+					probe: new ReflectionProbe('probe#' + id, 256, this),
+					activeCamera: player.cam,
+					clearColor: new Color3(0.8, 0.75, 0.85),
 					genericEntities: {},
+					bodies: new Map(),
+					selectedEntities: [],
 					waypoints: []
 				});
+				this.xzPlane.rotation.x = Math.PI / 2;
+				this.xzPlane.setEnabled(false);
 				if(!this.isLoaded){
 					this.center = hasStar ? new Star({
 						name: nameOrData,
@@ -2375,7 +2458,7 @@
 				this.registerBeforeRender(()=>{
         			let ratio = this.getAnimationRatio();
 					for(let [id, body] of this.bodies){
-						if(body instanceof Planet){
+						if(body instanceof Planet && body.material instanceof CelestialBodyMaterial){
 							body.rotation.y += 0.0001 * ratio * body.material.rotationFactor;
 							body.material.setMatrix("rotation", Matrix.RotationY(body.matrixAngle));
 							body.matrixAngle -= 0.0004 * ratio;
@@ -2388,7 +2471,6 @@
 		}
 	}
 	const Save = class {
-		static cache = new Map();
 		static upgrades = new Map([
 			['infdev_11', data => ({...data, version: 'alpha_1.0.0'})],
 			['infdev_12', data => ({...data, version: 'alpha_1.0.0'})],
@@ -2399,288 +2481,291 @@
 			}
 			return data;
 		}
-		static Cache = class {
-			constructor(data){
-				this.data = data;
-				this.gui = new Save.GUI(this);
-				Save.cache.set(this.data.id, this);
-			}
-			load(){
-				if(game.version != this.data.version){
-					this.data = Save.upgrade(this.data);
-					ui.update();
-				}
-				new Save(JSON.stringify(this.data));
-			}
-		};
-		static GUI = function(data){
-			let isCache = data instanceof Save.Cache ? true : false, saveData = isCache ? data.data : data;
+		static current = {location:Vector2.Zero()}
+		static GUI = function(save){
 			const gui = $(`<li ofn bg bw style=align-items:center;height:3em;></li>`);
 			gui.delete = $(`<p style=position:absolute;left:10%><svg><use href=image/icons.svg#trash /></svg></p>`).appendTo(gui);
 			gui.download = $(`<p style=position:absolute;left:15%><svg><use href=image/icons.svg#download /></svg></p>`).appendTo(gui);
 			gui.play = $(`<p style=position:absolute;left:20%><svg><use href=image/icons.svg#play /></svg></p>`).appendTo(gui);
 			gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=image/icons.svg#pencil /></svg></p>`).appendTo(gui);
-			gui.name = $(`<p style=position:absolute;left:30%>${saveData.name}</p>`).appendTo(gui);
-			gui.version = $(`<p style=position:absolute;left:55%>${game.versions.get(saveData.version) ? game.versions.get(saveData.version).text : saveData.version}</p>`).appendTo(gui);
-			gui.date = $(`<p style=position:absolute;left:65%>${new Date(saveData.date).toLocaleString()}</p>`).appendTo(gui);
+			gui.name = $(`<p style=position:absolute;left:30%>${save.data.name}</p>`).appendTo(gui);
+			gui.version = $(`<p style=position:absolute;left:55%>${game.versions.get(save.data.version) ? game.versions.get(save.data.version).text : save.data.version}</p>`).appendTo(gui);
+			gui.date = $(`<p style=position:absolute;left:65%>${new Date(save.data.date).toLocaleString()}</p>`).appendTo(gui);
 			$('<p> </p>').appendTo(gui);
 				
+			let loadAndPlay = async () => {
+				$('#loading_cover').show();
+				let live = save.load();
+				await live.ready;
+				saves.current = live;
+				live.play();
+				$('#loading_cover').hide();
+			}
+
 			gui
 			.attr('clickable', '')
-			.click(e => { $('.selected').removeClass('selected'); saves.sel = saveData.id; gui.addClass('selected') })
-			.dblclick(e => isCache ? data.load() : saveData.play());
+			.click(e => { $('.selected').removeClass('selected'); saves.selected = save.data.id; gui.addClass('selected') })
+			.dblclick(loadAndPlay);
 			if(!game.mp) gui.prependTo('#load');
 			gui.delete.click(e => {
 				confirm().then(() => {
 					gui.remove();
-					db.transaction('saves', 'readwrite').objectStore('saves').delete(saveData.id);
-					(isCache ? Save.cache : saves).delete(saveData.id);
+					db.transaction('saves', 'readwrite').objectStore('saves').delete(save.data.id);
+					saves.delete(save.data.id);
 					
 				});
 			});
-			gui.download.click(e => download(JSON.stringify(isCache ? saveData : saveData.serialize()), (saveData.name || 'save') + '.json'));
-			gui.play.click(e => isCache ? data.load() : saveData.play());
+			gui.download.click(e => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
+			gui.play.click(loadAndPlay);
 			gui.edit.click(e => {
-				modal([{name: 'name', text: 'New name', value: saveData.name}], {Cancel: false, Save: true}).then(result => {
+				modal([{name: 'name', text: 'New name', value: save.data.name}], {Cancel: false, Save: true}).then(result => {
 				if(result.result){
-						saveData.name = result.name;
+						save.data.name = result.name;
 						ui.update();
 					}
 				});
 			});
 			return gui;
 		};
-		constructor(nameOrData) {
-			try {
-				if(isJSON(nameOrData)){
-					let saveData = JSON.parse(nameOrData);
-					if(saves.has(saveData.id)){
-						saves.get(saveData.id).gui.remove();
-						saves.delete(saveData.id);
+		static Live = class{
+			constructor(save){
+				this.ready = save instanceof Save ? this.init(save) : this.generate(save);
+			}
+			async init(save){
+				if(!(save instanceof Save)) throw new TypeError('save must be a Save');
+				let saveData = save.data
+				Object.assign(this, {
+					id: saveData.id,
+					name: saveData.name,
+					date: new Date(saveData.date),
+					version: saveData.version,
+					difficulty: saveData.difficulty,
+					levels: {},
+					entities: new Map(),
+					systems: saveData.systems,
+					currentLevel: Vector2.FromArray(saveData.currentLevel),
+					playerData: {},
+				});
+				for(let entityData of saveData.entities){
+					switch(entityData.type){
+						case 'ship':
+							new Ship(entityData,  entityData.owner == player.id ? player : null, this);
+							break;
+						default:
+							new Entity(this);
 					}
-					if(Save.cache.has(saveData.id)){
-						Save.cache.get(saveData.id).gui.remove();
-						Save.cache.delete(saveData.id);
-					}
-					Object.assign(this, {
-						id: saveData.id,
-						name: saveData.name,
-						date: new Date(saveData.date),
-						version: saveData.version,
-						difficulty: saveData.difficulty,
-						levels: {},
-						entities: new Map(),
-						systems: saveData.systems,
-						currentLevel: Vector2.FromArray(saveData.currentLevel),
-						playerData: {},
+				}
+				for(let id in saveData.playerData){
+					let data = {...saveData.playerData[id], id};
+					this.playerData[id] = new PlayerData({
+						position: Vector3.FromArray(data.position),
+						rotation: Vector3.FromArray(data.rotation),
+						fleet: data.fleet.map(id => this.entities.get(id)),
+						id,
+						xp: data.xp,
+						xpPoints: data.xpPoints,
+						tech: data.tech
 					});
-					for(let entityData of saveData.entities){
-						switch(entityData.type){
-							case 'ship':
-								new Ship(entityData,  entityData.owner == player.id ? player : null, this);
+				}
+				for(let location in saveData.levels){
+					this.levels[location] = new Level(saveData.levels[location], null, null, level => {
+						for(let waypoint of level.waypoints){
+							new Waypoint({
+								id: waypoint.id,
+								name: waypoint.name,
+								color: Color3.FromArray(waypoint.color),
+								position: Vector3.FromArray(waypoint)
+							});
+						}
+						for(let id in saveData.levels[location].bodies){
+							let bodyData = saveData.levels[location].bodies[id], body = null;
+							switch(bodyData.type){
+								case 'star':
+									new Star({
+										position: Vector3.FromArray(bodyData.position),
+										fleet: bodyData.fleet.map(id => this.entities.get(id)),
+										color: Color3.FromArray(bodyData.color),
+										scene: level
+									}.copyFrom(bodyData, ['name', 'radius', 'id']));
 								break;
-							default:
-								new Entity(this);
-						}
-					}
-					for(let id in saveData.playerData){
-						let data = {...saveData.playerData[id], id};
-						this.playerData[id] = new PlayerData({
-							position: Vector3.FromArray(data.position),
-							rotation: Vector3.FromArray(data.rotation),
-							fleet: data.fleet.map(id => this.entities.get(id)),
-							id,
-							xp: data.xp,
-							xpPoints: data.xpPoints,
-							tech: data.tech
-						}, game.scene());
-					}
-					for(let location in saveData.levels){
-						this.levels[location] = new Level(saveData.levels[location], null, null, level => {
-							for(let waypoint of level.waypoints){
-								new Waypoint({
-									id: waypoint.id,
-									name: waypoint.name,
-									color: Color3.FromArray(waypoint.color),
-									position: Vector3.FromArray(waypoint)
-								});
+								case 'planet':
+									
+									new Planet({
+										position: Vector3.FromArray(bodyData.position),
+										fleet: bodyData.fleet.map(id => this.entities.get(id)),
+										scene: level
+									}.copyFrom(bodyData, ['name','radius','id','biome','owner','rewards']));
+								break;
+								default:
+									new CelestialBody(bodyData.name, bodyData.id, level);
+									//TODO: Change Star/Planet constructors to use standerdized data
 							}
-							for(let id in saveData.levels[location].bodies){
-								let bodyData = saveData.levels[location].bodies[id], body = null;
-								switch(bodyData.type){
-									case 'star':
-										new Star({
-											position: Vector3.FromArray(bodyData.position),
-											fleet: bodyData.fleet.map(id => this.entities.get(id)),
-											color: Color3.FromArray(bodyData.color),
-											scene: level
-										}.copyFrom(bodyData, ['name', 'radius', 'id']));
-									break;
-									case 'planet':
-										
-										new Planet({
-											position: Vector3.FromArray(bodyData.position),
-											fleet: bodyData.fleet.map(id => this.entities.get(id)),
-											scene: level
-										}.copyFrom(bodyData, ['name','radius','id','biome','owner','rewards']));
-									break;
-									default:
-										new CelestialBody(bodyData.name, bodyData.id, level);
-										//TODO: Change Star/Planet constructors to use standerdized data
-								}
-							}
-						}, this);
-					}
-				}else{
-					Object.assign(this, {
-						id: rand.hex(16),
-						name: nameOrData,
-						date: new Date(),
-						version: game.version,
-						difficulty: 1,
-						levels: {},
-						systems: {},
-						entities: new Map(),
-						currentLevel: Vector2.Zero(),
-						playerData: {[player.id]: new PlayerData({id: player.id, items: gen.items(5000), position: new Vector3(0, 0, -1000).add(rand.cords(50, true))}, game.scene())}
-					});
-					for (let i in tech) {
-						this.playerData[player.id].tech[i] = 0;
-					}
-					this.systems[[0,0]] = Level.names[0];
-					Level.names.slice(1).forEach(name => {
-						let x = rand.int(-25, 25), y = rand.int(-25, 25);
-						if(x && y){
-							this.systems[[x,y]] = name;
 						}
-					});
-					this.levels[[0,0]] = new Level(Level.names[0], Vector2.Zero(), true, lvl => {
-						this.play();
-						let ship = new Ship('frigate', player, this);
-						ship.addToScene(lvl);
 					}, this);
 				}
-				this.gui = new Save.GUI(this);
-				saves.set(this.id, this);
-				
-			} catch (err) { console.error(err.stack.split('\n').join('<br>')) }
-		}
-		play(){
-			if(this.version == game.version){
-				$('#load').hide();
-				game.canvas.show().focus();
-				game.canvas[0].requestPointerLock();
-				$('#hud').show();
-				game.engine.resize();
-				saves.sel = this.id;
-				game.isPaused = false;
-				player.cam.target = player.data().position;
-			}else{
-				alert('That save is in compatible with the current game version');
+				return this
 			}
-		}
-		serialize(){
-			let data = {
-				date: this.date.toJSON(),
-				levels: {},
-				entities: [],
-				currentLevel: this.currentLevel instanceof Vector2 ? this.currentLevel.asArray() : this.currentLevel,
-				playerData: {}
-			}.copyFrom(this, ['systems', 'difficulty', 'version', 'name', 'id']);
-			for(let entity of this.entities.values()){
-				if(!entity instanceof Entity){
-					console.warn(`entity #${entity?.id} not saved: invalid type`);
-				}else{
-					let entityData = {
-						position: entity.position.asArray().map(num => +num.toFixed(3)),
-						rotation: entity.rotation.asArray().map(num => +num.toFixed(3)),
-						name: entity.name,
-						id: entity.id
-					};
-					switch(entity.constructor.name){
-						case 'Ship':
-						Object.assign(entityData, {
-							type: 'ship',
-							shipType: entity.type,
-							owner: player.data().fleet.includes(entity) ? player.id : null, 
-							storage: entity.storage.serialize(),
-							reload: +entity.reload.toFixed(3),
-							hp: +entity.hp.toFixed(3),
-						}).copyFrom(entity, ['damage', 'level', 'power']);
-						break;
-						default:
-						Object.assign(entityData, {
-							type: null,
-							hp: 0,
-							owner: null
-						});
+			async generate(options){
+				Object.assign(this, {
+					id: rand.hex(16),
+					name: options.name,
+					date: new Date(),
+					version: game.version,
+					difficulty: 1,
+					levels: {},
+					systems: {},
+					entities: new Map(),
+					currentLevel: Vector2.Zero(),
+					playerData: {[player.id]: new Player({id: player.id, position: new Vector3(0, 0, -1000).add(rand.cords(50, true))}, this)},
+				});
+				this.systems[[0,0]] = Level.names[0];
+				Level.names.slice(1).forEach(name => {
+					let x = rand.int(-25, 25), y = rand.int(-25, 25);
+					if(x && y){
+						this.systems[[x,y]] = name;
 					}
-					data.entities.push(entityData);
-				}
-			};
-			for(let i in this.levels){
-				if(!/(-?)(\d+),(-?)(\d+)/.test(i)){
-					console.warn(`level ${i} in save ${this.id} not serialized: invalid key`);
-				}else if(!this.levels[i] instanceof Level){
-					console.warn(`level ${i} in save ${this.id} not serialized: invalid type (not a level)`);
+				});
+				this.levels[[0,0]] = new Level(Level.names[0], Vector2.Zero(), true, lvl => {
+					this.play();
+					let ships = [new Ship('frigate', player, this), new Ship('transport_small', player, this)];
+					this.playerData[player.id].addItems(gen.items(5000));
+					ships[0].position.z += 25;
+					ships.forEach(ship => ship.addToScene(lvl));
+				}, this);
+				saves.current = this
+				return this
+			}
+			play(){
+				if(this.version == game.version){
+					$('#load').hide();
+					game.canvas.show().focus();
+					$('#hud').show();
+					game.engine.resize();
+					saves.selected = this.id;
+					game.isPaused = false;
+					player.cam.attachControl(game.canvas, true);
+					player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+					player.cam.target = player.data().position;
 				}else{
-					data.levels[i] = {
-						bodies: {},
-						name: this.levels[i].name,
-						location: this.levels[i].location.asArray().map(num => +num.toFixed(3)),
-						planetNum: this.levels[i].planetNum,
-						hasStar: this.levels[i].hasStar
-					};
-					for(let [id, body] of this.levels[i].bodies){
-						if(!body instanceof CelestialBody){
-							console.warn(`body #${body?.id} not saved: invalid type`);
-						}else{
-							let bodyData = data.levels[i].bodies[id] = {
-								position: body.position.asArray().map(num => +num.toFixed(3)),
-								name: body.name,
-								id: body.id,
-								fleetLocation: body.fleetLocation.position.asArray().map(num => +num.toFixed(3)),
-								fleet: body.fleet.map(f => f.id),
-								owner: body.owner
-							};
-							switch(body.constructor.name){
-								case 'Star':
-								Object.assign(bodyData, {
-									type: 'star',
-									radius: body.radius,
-									color: body.material.emissiveColor.asArray().map(num => +num.toFixed(3)),
-								});
-								break;
-								case 'Planet':
-								Object.assign(bodyData, {
-									type: 'planet',
-									biome: body.biome,
-									radius: body.radius
-								});
-								break;
-								default: bodyData.type = null;
-							}
-						}
-					};
+					alert('That save is in compatible with the current game version');
 				}
 			}
-			for(let id in this.playerData){
-				let playerData = this.playerData[id];
-				data.playerData[id] = {
-					position: playerData.position.asArray().map(num => +num.toFixed(3)),
-					rotation: playerData.rotation.asArray().map(num => +num.toFixed(3)),
-					fleet: playerData.fleet.map(s => s.id)
-				}.copyFrom(playerData, ['tech', 'items', 'xp', 'xpPoints']);
+			serialize(){
+				let data = {
+					date: this.date.toJSON(),
+					levels: {},
+					entities: [],
+					currentLevel: this.currentLevel instanceof Vector2 ? this.currentLevel.asArray() : this.currentLevel,
+					playerData: {}
+				}.copyFrom(this, ['systems', 'difficulty', 'version', 'name', 'id']);
+				for(let entity of this.entities.values()){
+					if(!entity instanceof Entity){
+						console.warn(`entity #${entity?.id} not saved: invalid type`);
+					}else{
+						let entityData = {
+							position: entity.position.asArray().map(num => +num.toFixed(3)),
+							rotation: entity.rotation.asArray().map(num => +num.toFixed(3)),
+							name: entity.name,
+							id: entity.id
+						};
+						switch(entity.constructor.name){
+							case 'Ship':
+							Object.assign(entityData, {
+								type: 'ship',
+								shipType: entity.type,
+								owner: player.data().fleet.includes(entity) ? player.id : null, 
+								storage: entity.storage.serialize(),
+								reload: +entity.reload.toFixed(3),
+								hp: +entity.hp.toFixed(3),
+							}).copyFrom(entity, ['damage', 'level', 'power']);
+							break;
+							default:
+							Object.assign(entityData, {
+								type: null,
+								hp: 0,
+								owner: null
+							});
+						}
+						data.entities.push(entityData);
+					}
+				};
+				for(let i in this.levels){
+					if(!/(-?)(\d+),(-?)(\d+)/.test(i)){
+						console.warn(`level ${i} in this ${this.id} not serialized: invalid key`);
+					}else if(!this.levels[i] instanceof Level){
+						console.warn(`level ${i} in save ${this.id} not serialized: invalid type (not a level)`);
+					}else{
+						data.levels[i] = {
+							bodies: {},
+							name: this.levels[i].name,
+							location: this.levels[i].location.asArray().map(num => +num.toFixed(3)),
+							planetNum: this.levels[i].planetNum,
+							hasStar: this.levels[i].hasStar
+						};
+						for(let [id, body] of this.levels[i].bodies){
+							if(!body instanceof CelestialBody){
+								console.warn(`body #${body?.id} not saved: invalid type`);
+							}else{
+								let bodyData = data.levels[i].bodies[id] = {
+									position: body.position.asArray().map(num => +num.toFixed(3)),
+									name: body.name,
+									id: body.id,
+									fleetLocation: body.fleetLocation.position.asArray().map(num => +num.toFixed(3)),
+									fleet: body.fleet.map(f => f.id),
+									owner: body.owner
+								};
+								switch(body.constructor.name){
+									case 'Star':
+									Object.assign(bodyData, {
+										type: 'star',
+										radius: body.radius,
+										color: body.material.emissiveColor.asArray().map(num => +num.toFixed(3)),
+									});
+									break;
+									case 'Planet':
+									Object.assign(bodyData, {
+										type: 'planet',
+										biome: body.biome,
+										radius: body.radius
+									});
+									break;
+									default: bodyData.type = null;
+								}
+							}
+						};
+					}
+				}
+				for(let id in this.playerData){
+					let playerData = this.playerData[id];
+					data.playerData[id] = {
+						position: playerData.position.asArray().map(num => +num.toFixed(3)),
+						rotation: playerData.rotation.asArray().map(num => +num.toFixed(3)),
+						fleet: playerData.fleet.map(s => s.id)
+					}.copyFrom(playerData, ['tech', 'items', 'xp', 'xpPoints']);
+				}
+				return data;
 			}
-			return data;
+			dispose(){
+				this.levels.forEach(level => level.dispose());
+			}
+		}
+		constructor(data){
+			try {
+				this.data = data;
+				this.gui = new Save.GUI(this);
+				saves.set(this.data.id, this);
+				
+			} catch (err) { console.error(err.stack) }
+		}
+		load(){
+			return new Save.Live(this);
 		}
 		saveToDB(){
 			return new Promise((result, reject) => {
-				let transaction = db.transaction('saves','readwrite').objectStore('saves').put(this.serialize(), this.id);
-				transaction.onsuccess = result;
-				transaction.onerror = reject;
+				let transaction = db.transaction('saves','readwrite').objectStore('saves').put(this, this.id);
+				transaction.onsuccess = () => result(transaction.result);
+				transaction.onerror = () => reject(transaction.error);
 			});
-			
 		}
 	}
 	const Server = class {
@@ -2726,7 +2811,8 @@
 				game.canvas.show().focus();
 				$('#mp_message,#hud').show();
 				game.engine.resize();
-				game.canvas[0].requestPointerLock();
+				player.cam.attachControl(game.canvas, true);
+				player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
 				$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
 			});
 			this.socket.on('connect_error', err => {
@@ -2854,6 +2940,7 @@
 		thrust: { recipe: { fuel: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
 		energy: { recipe: { fuel: 5000, minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
 		shields: { recipe: { metal: 2500, minerals: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 }},
+		storage: { recipe: { metal: 10000, minerals: 10000, fuel: 10000}, xp: 2, scale: 10, requires: {}},
 		missle: { recipe: { metal: 10000, minerals: 1000, fuel: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 }},
 		regen: { recipe: { metal: 50000, minerals: 10000, fuel: 10000 }, xp: 1, scale: 1.5, max: 25, requires: { reload: 5, armor: 15 }},
 		build: { recipe: { metal: 100000 }, xp: 2, scale: 1.5, max: 50, requires: { armor: 10, thrust: 10, reload: 10 }},
@@ -2863,7 +2950,7 @@
 	//Load saves and servers into the game (from the IndexedDB)
 	db.transaction('saves', 'readonly').objectStore('saves').getAll().onsuccess = e => {
 		e.target.result.forEach(save => {
-			new Save.Cache(save);
+			new Save(save);
 		});
 	};
 	db.transaction('servers', 'readonly').objectStore('servers').getAllKeys().onsuccess = e => {
@@ -2879,15 +2966,17 @@
 		game.mp = false;
 		$("#load li").detach();
 		saves.forEach(save => save.gui.prependTo('#load'));
-		Save.cache.forEach(save => save.gui.prependTo('#load'));
+		saves.forEach(save => save.gui.prependTo('#load'));
 		$("#main").hide();
-		$('#load button.upload').html(`<svg><use href=image/icons.svg#upload /></svg> ${locale.text.menu.upload}`);
+		$('#load button.upload use').attr('href', 'image/icons.svg#upload');
+		$('#load button.upload span').text(locale.text.menu.upload);
 		$("#load").show()
 	});
 	$("#main .mp").click(e => {
 		game.mp = true;
 		$('#main').hide();
-		$('#load button.refresh').html(`<svg><use href=image/icons.svg#arrows-rotate /></svg> ${locale.text.menu.refresh}`);
+		$('#load button.refresh use').attr('href', 'image/icons.svg#arrows-rotate');
+		$('#load button.refresh span').text(locale.text.menu.refresh);
 		$('#load').show();
 		$("#load li").detach();
 		servers.forEach(server => {
@@ -2929,17 +3018,19 @@
 	});
 	$('#save .new').click(e => {
 		$('#save')[0].close();
-		let save = new Save($('#save .name').val());
+		let save = new Save.Live({name: $('#save .name').val()});
+		//handle UI
 	});
 	$('#esc .resume').click(e => {
 		$('#esc').hide();
-		game.canvas.focus()[0].requestPointerLock();
+		player.cam.attachControl(game.canvas, true);
+		player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
 		game.isPaused = false;
 	});
 	$('#esc .save').click(e => {
-		if(saves.get(saves.sel) instanceof Save){
+		if(saves.get(saves.selected) instanceof Save){
 			$('#esc .save').text('Saving...');
-			saves.get(saves.sel).saveToDB()
+			saves.get(saves.selected).saveToDB()
 			.then(e => {
 				game.chat('Game Saved.');
 				$('#esc .save').text('Save Game');
@@ -2962,7 +3053,7 @@
 			servers.get(servers.sel).disconnect();
 		}else{
 			game.currentLevel = Vector2.Zero();
-			saves.sel = null;
+			saves.selected = null;
 			$('#main').show();
 		}
 	});
@@ -3005,7 +3096,7 @@
 	$('#hud_ship .upgrade').click(e => {
 		let s = player.data().fleet[player.data().fleet.sel], g = Ship.generic[player.data().fleet[player.data().fleet.sel].type], upCost = '';
 		for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locale.text.item[m].name}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
-		if (s.level < g.recipe.length - 1 && player.hasItems(g.recipe[s.level + 1])) { player.removeItems(g.recipe[s.level + 1]); s.level++ }
+		if (s.level < g.recipe.length - 1 && player.data().hasItems(g.recipe[s.level + 1])) { player.data().removeItems(g.recipe[s.level + 1]); s.level++ }
 		ui.update();
 	}).tooltip(e => {
 		if (player.data().fleet.sel > -1) {
@@ -3058,7 +3149,16 @@
 				break;
 		}
 	});
-	game.canvas.click(e => { game.isPaused ? null : game.canvas[0].requestPointerLock(); ui.update() });
+	game.canvas.click(e => {
+		if(!game.isPaused){
+			player.cam.attachControl(game.canvas, true);
+			player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+		}
+		if(e.button == 2){
+
+		}
+		ui.update();
+	});
 	game.canvas.keydown(e => {
 		switch(e.key){
 			case 'F3': $('#debug').toggle();
@@ -3100,15 +3200,12 @@
 		}
 		ui.update();
 	});
-	$(document).on('pointerlockchange', e => {
-		game.scene().activeCamera[document.pointerLockElement == game.canvas[0] ? 'attachControl' : 'detachControl'](game.canvas[0], false);
-	});
 	$("button").click(e => { playsound(sound.ui, settings.sfx) })
 	$('#e>div,#q>div').not('.nav,.inv,.yrd,.item-bar').hide();
 
 	// the loop ~~loop
 	const loop = () => {
-		if (saves.get(saves.sel) instanceof Save && game.currentLevel instanceof Vector2){
+		if (saves.current instanceof Save.Live && game.currentLevel instanceof Vector2){
 			if(!game.isPaused){
 				try {
 					game.frames++;
@@ -3170,7 +3267,7 @@
 								player.updateFleet();
 								if(player.data().fleet.length > 0){
 									if (ship.hp <= 0) {
-										player.giveItems(Ship.generic[ship.type].recipe[0]);
+										player.data().addItems(Ship.generic[ship.type].recipe[0]);
 										if(Math.floor(player.levelOf(player.data().xp  + Ship.generic[ship.type].xp)) > Math.floor(player.levelOf(player.data().xp))){
 											/*level up*/
 											player.data().xpPoints++;
@@ -3209,8 +3306,8 @@
 					game.scene().waypoints.forEach(waypoint => {
 						let pos = waypoint.screenPos;
 						waypoint.marker
-						.css({position: 'fixed', left: Math.clamp(pos.x, 0, width - settings.font_size) + 'px', top: Math.clamp(pos.y, 0, height - settings.font_size) + 'px', fill: waypoint.color.toHexString()})
-						.filter('p').text(Vector2.Distance(pos, new Vector2(width / 2, height / 2)) < 60 ? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km` : '');
+						.css({position: 'fixed', left: Math.clamp(pos.x, 0, innerWidth - settings.font_size) + 'px', top: Math.clamp(pos.y, 0, innerHeight - settings.font_size) + 'px', fill: waypoint.color.toHexString()})
+						.filter('p').text(Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.marker.eq(0).is(':hover') ||  waypoint.marker.eq(1).is(':hover') ? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km` : '');
 						waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
 					});
 					$('#hud p.level').text(Math.floor(player.levelOf(player.data().xp)));
@@ -3218,7 +3315,7 @@
 					$("#debug .left").html(`
 						<span>${game.version} ${game.mods.length ? `[${game.mods.join(", ")}]` : `(vanilla)`}</span><br>
 						<span>FPS ${game.engine.getFps().toFixed()}</span><br>
-						<span>${saves.sel} (${saves.get(saves.sel).date.toLocaleString()}) L: ${Object.keys(saves.get(saves.sel).levels).length} S: ${Object.keys(saves.get(saves.sel).systems).length}</span><br><br>
+						<span>${saves.selected} (${saves.current.date.toLocaleString()}) L: ${Object.keys(saves.current.levels).length} S: ${Object.keys(saves.current.systems).length}</span><br><br>
 						<span>P: ${player.data().position.toFixed(1).display()} V: ${player.velocity.toFixed(1).display()} R: ${player.data().rotation.toFixed(2).display('xy')}</span><br>
 						<span>C: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)}) r: ${player.cam.radius.toFixed(1)} m: ${player.camIsActive ? 'player' : 'ship'}</span><br><br>
 						<span>LVL ${game.currentLevel.display()} ${game.scene().name} B: ${game.scene().bodies.size}</span><br>
@@ -3229,7 +3326,7 @@
 						<span>${game.engine._glRenderer}</span><br>
 						<span>${performance.memory ? `${(performance.memory.usedJSHeapSize / 1000000) .toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(performance.memory.totalJSHeapSize / 1000000).toFixed()}MB Allocated)` : 'Memory usage unknown' }</span><br>
 						<span>${navigator.hardwareConcurrency} CPU Threads</span><br><br>
-						<span>${closestBody.name} ${closestBody.position.toFixed(1).display('xz')} ${Vector3.Distance(player.data().position, closestBody.position)?.toFixed(1)} | ${Vector3.Distance(player.data().position, closestBody.position.add(closestBody.fleetLocation.position)).toFixed(1)}</span><br>
+						<span>${closestBody ? `${closestBody.name} ${closestBody.position.toFixed(1).display('xz')} ${Vector3.Distance(player.data().position, closestBody.position)?.toFixed(1)} | ${Vector3.Distance(player.data().position, closestBody.position.add(closestBody.fleetLocation.position)).toFixed(1)}` : `No Closest body`}</span><br>
 						<span>${player.targetBody ?? ''}</span><br><br>
 						<span>Selected ship: ${player.data().fleet[player.data().fleet.sel] ? `
 						<span>${player.data().fleet[player.data().fleet.sel].id} (${player.data().fleet[player.data().fleet.sel].type}) ${player.data().fleet.sel + 1}/${player.data().fleet.length}</span><br>
@@ -3247,7 +3344,7 @@
 	};
 	ui.update()
 	$('#loading_cover').fadeOut(1000);
-	console.log('Game loadeding successful');
+	console.log('Game loaded successful');
 	game.engine.runRenderLoop(loop);
 	</script>
 </html>

@@ -10,14 +10,15 @@ These are the changes for the next update[s].
 ## Future
 *For a furture release*
 
-- Economy [Cash-Money]
-- Weapon types
-- Weak spots
+- Economy [Stonks]
+- Weapon types [Pointy]
+- Particles and laser collisions
 
 ## Planned
 
-- Cargo ships
-- Particles and laser collisions
+- WASD are camera only
+- left click to move/attack
+- right click to see info
 
 ## Features and Changes
 
@@ -35,6 +36,8 @@ These are the changes for the next update[s].
 - Fully implemented criticals
 - Material descriptions
 - Localization support
+- New ships: small and medium transport
+- Scroll (middle) click to rotate the camera
 
 ## Bugs
 
@@ -42,7 +45,6 @@ These are the changes for the next update[s].
 - Volume settings not affecting sound
 - Screenshot context menu not preventing default menu
 - `(Entity).removeFromScene()` did not delete the internally stored mesh
-- Ship movement was janky
 - Couldn't warp
 - warp range limit was not applied
 - Modal would not vertically align the inputs properly
@@ -56,6 +58,12 @@ These are the changes for the next update[s].
 - Changing settings would not update the 
 - Incorrect thrust description
 - Game would not save levels with more than one digit or a negative for either coordinate
+- Incorrect spelling in game loaded message
+- Toggling chat would try to fire `preventDefault()` internally
+- Changing levels would not call `ui.update`
+- Changing levels did not reassign the camera's target to the player
+- Levels without any bodies would fail to render
+- ships would not load storage correctly after saving
 
 ## Technical Changes
 
@@ -68,3 +76,4 @@ These are the changes for the next update[s].
 - Changed message for when game is fully loaded
 - Removed `navigator.platform` from debug screen
 - Change star materials to `StandardMaterial` and removed the materials library
+- Ships use relative cordinates with a parent

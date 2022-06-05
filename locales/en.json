@@ -63,6 +63,14 @@
 		"dreadnought": {
 			"name": "Dreadnought",
 			"description": "The mother of all ships. Dominates everything it touches"
+		},
+		"transport_small": {
+			"name": "Small Transpot",
+			"description": "A smaller transport, it can move a small amount of resources"
+		},
+		"transport_medium": {
+			"name": "Medium Transpot",
+			"description": "Larger than a small transport, it can carry many resources"
 		}
 	},
 	"item": {
@@ -127,6 +135,10 @@
 		"salvage": {
 			"name": "Salvage",
 			"description": "Increases chance for rare items by 2% / level"
+		},
+		"storage": {
+			"name": "Storage",
+			"description": "Increases storage capacity by 5% / level"
 		}
 	}
 }
