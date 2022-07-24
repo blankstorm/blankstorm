@@ -2,26 +2,37 @@
 <html>
 <head>
 	<script async>
-		let db = {}, openDBReq = indexedDB.open('blankstorm', 2);
-		openDBReq.onsuccess = e => {
-			db = e.target.result;
-		};
-		openDBReq.onerror = e => {
-			console.error('Failed to open IndexedDB: ' + e.target.error);
+		IDBRequest.prototype.async = function(){
+			return new Promise((resolve, reject) => {
+				this.onsuccess = e => resolve(this.result);
+				this.onerror = e => reject(this.error);
+			});
 		}
-		openDBReq.onupgradeneeded = e => {
-			let db = e.target.result;
-			switch(e.oldVersion){
-				case 0:
-				db.createObjectStore('saves');
-				db.createObjectStore('settings');
-				db.createObjectStore('servers');
-				db.createObjectStore('mods');
-				case 1:
-				db.createObjectStore('locales');
+		const db = {
+			promise: new Promise((resolve, reject) => {
+				let req = indexedDB.open('blankstorm', 2);
+				req.onsuccess = e => resolve(req.result);
+				req.onerror = e => reject(req.error);
+				req.onupgradeneeded = e => {
+					let db = req.result;
+					switch(e.oldVersion){
+						case 0:
+						db.createObjectStore('saves');
+						db.createObjectStore('settings');
+						db.createObjectStore('servers');
+						db.createObjectStore('mods');
+						case 1:
+						db.createObjectStore('locales');
+					}
+				}
+			}),
+			async tx(stores, mode){
+				let db = await this.promise;
+				return db.transaction(stores, mode);
 			}
-			
 		}
+		db.promise.catch(e => console.error('Failed to open IndexedDB: ' + e));
+		
 	</script>
 	<link rel=icon href=image/icon.png type=image/png>
 	<style>
@@ -643,6 +654,11 @@
 		abs(){return new Vector2(Math.abs(this.x), Math.abs(this.y))},
 		round(){return new Vector2(Math.round(this.x), Math.round(this.y))},
 	});
+	Array.prototype.spliceOut = function(element){
+		let i = this.indexOf(element);
+		if(i != -1) this.splice(i, 1);
+		return i != -1;
+	};
 
 	//JQuery plugins
 	$.ajaxSetup({timeout:3000});
@@ -815,8 +831,7 @@
 		
 	}
 	const locale = {
-		get(url){
-			return new Promise((resolve, reject) => {
+		async get(url){
 				let request = $.ajax(url, {async: false}), json = request.responseJSON;
 				json.language ||= json.lang;
 				if(request.status != 200){
@@ -831,48 +846,32 @@
 					.attr('value', json.language)
 					.text(json.name)
 					.appendTo('#settings form.gen select[name=locale]');
-					let transaction = db.transaction('locales', 'readwrite').objectStore('locales').put(json, json.language);
-					transaction.onsuccess = e => resolve(json);
-					transaction.onerror = e => reject('DB transaction failed');
+					let tx = await db.tx('locales', 'readwrite'),
+					result = await tx.objectStore('locales').put(json, json.language).async();
+					return result;
 				}
-			});
 		},
-		load(id){
-			return new Promise((resolve, reject) => {
-				let transaction = db.transaction('locales').objectStore('locales').get(id);
-				transaction.onsuccess = e => {
-					this.langs.set(id, transaction.result);
-					$('<option></option>')
-					.attr('value', transaction.result.language)
-					.text(transaction.result.name)
-					.appendTo('#settings form.gen select[name=locale]');
-					resolve(transaction.result);
-				}
-				transaction.onerror = e => reject('DB transaction failed');
-				
-			});
+		async load(id){
+			let tx = await db.tx('locales'),
+			result = await tx.objectStore('locales').get(id).async();
+			this.langs.set(id, result);
+			$('<option></option>')
+			.attr('value', result.language)
+			.text(result.name)
+			.appendTo('#settings form.gen select[name=locale]');
+			return result;
 		},
-		clearCache(){
-			return new Promise((resolve, reject) => {
-				let transaction = db.transaction('locales', 'readwrite').objectStore('locales').clear();
-				transaction.onsuccess = e => resolve();
-				transaction.onerror = e => reject('DB transaction failed');
-				
-			});
+		async clearCache(){
+			let tx = await db.tx('locales', 'readwrite');
+			return await tx.objectStore('locales').clear().async();
 		},
-		isCached(id){
-			return new Promise((resolve, reject) => {
-				let transaction = db.transaction('locales').objectStore('locales').count(id);
-				transaction.onsuccess = e => resolve(!!transaction.result);
-				transaction.onerror = e => reject('DB transaction failed');
-			});
+		async isCached(id){
+			let tx = await db.tx('locales');
+			return !!(await tx.objectStore('locales').count(id).async());
 		},
-		getCached(){
-			return new Promise((resolve, reject) => {
-				let tx = db.transaction('locales').objectStore('locales').getAllKeys();
-				tx.onsuccess = e => resolve(tx.result);
-				tx.onerror = e => reject('DB transaction failed');
-			});
+		async getCached(){
+			let tx = await db.tx('locales');
+			return await tx.objectStore('locales').getAllKeys().async();
 		},
 		set(id){
 			return new Promise((resolve, reject) => {
@@ -918,8 +917,8 @@
 	});
 
 	//pathfinding (using A*)
-	const path = {
-		Node: class{
+	const Path = class{
+		static Node = class{
 			position = Vector2.Zero();
 			parent = null;
 			constructor(...args){
@@ -937,71 +936,68 @@
 			equals(node){
 				return this.position.equals(node.position)
 			}
-		},
-		find(start, end, scene){
-			if(!(start instanceof Vector2 || start instanceof Vector3)) throw new TypeError('Start must be a Vector');
-			if(!(end instanceof Vector2 || start instanceof Vector3)) throw new TypeError('End must be a Vector');
-			let
-			startNode = new path.Node(start instanceof Vector3 ? new Vector2(start.x, start.z) : start),
-			endNode = new path.Node(end instanceof Vector3 ? new Vector2(end.x, end.z) : end),
-			openNodes = [startNode],
-			closedNodes = [];
-			while(openNodes.length > 0 && openNodes.length < 1e5 && closedNodes.length < 1e5){
-				let currentNode = openNodes.reduce((previous, current) => previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current, openNodes[0]);
-				openNodes.splice(openNodes.findIndex(node => node == currentNode), 1);
-				closedNodes.push(currentNode);
-				if(currentNode.equals(endNode)){
-					endNode = currentNode;
-					return path.trace(startNode, endNode);
-				}
-				let relatives = [0,1,-1].flatMap(x => [0,1,-1].map(y => new Vector2(x, y))).filter(v => v.x != 0 || v.y != 0);
-				neighbors = relatives.map(v => openNodes.some(node => node.position.equals(v)) ? openNodes.find(node => node.position.equals(v)) : new path.Node(currentNode.position.add(v), currentNode));
-				for(let neighbor of neighbors){
-					if(scene instanceof Level){
-						scene.bodies.forEach(body => {
-							if(Vector2.Distance(new Vector2(body.position.x, body.position.z), neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
-						});
-					}
-					if(!neighbor.intersects.length && !closedNodes.some(node => node.equals(neighbor))){
-						let costToNeighbor = currentNode.gCost + path.distance(currentNode, neighbor);
-						if(costToNeighbor < neighbor.gCost || !openNodes.some(node => node.equals(neighbor))){
-							neighbor.gCost = costToNeighbor;
-							neighbor.hCost = path.distance(neighbor, endNode);
-							if(!openNodes.some(node => node.equals(neighbor))) openNodes.push(neighbor);
-						}
-					}	
-				}
-			}
-		},
-		distance(nodeA, nodeB){
+		}
+		static nodeDistance(nodeA, nodeB){
 			if(!(nodeA instanceof path.Node && nodeB instanceof path.Node)) throw new TypeError('passed nodes must be path.Node');
 			let distance = nodeA.position.subtract(nodeB.position).abs();
 			return 1.4 * (distance.x > distance.y ? distance.y : distance.x) + (distance.x > distance.y ? 1 : -1) * (distance.x - distance.y);
-		},
-		trace(startNode, endNode){
+		}
+		static trace(startNode, endNode){
 			let path = [], currentNode = endNode;
 			while(!currentNode.equals(startNode)){
 				path.push(currentNode);
 				currentNode = currentNode.parent;
 			}
 			return path.reverse();
-		},
-		debugPath: null,
-		debugMark(x, y, scene = game.scene()){
-			let target = player.data().position.add(new Vector3(x, 0, y)).round();
-			if(this.debugPath || x === false){
-				this.debugPath.forEach(node => node.marker.dispose());
+		}
+		openNodes = [];
+		closedNodes = [];
+		startNode = null;
+		endNode = null;
+		gizmo = null;
+		constructor(){
+			if(!(start instanceof Vector2 || start instanceof Vector3)) throw new TypeError('Start must be a Vector');
+			if(!(end instanceof Vector2 || start instanceof Vector3)) throw new TypeError('End must be a Vector');
+			this.startNode = new path.Node(start instanceof Vector3 ? new Vector2(start.x, start.z) : start);
+			this.endNode = new path.Node(end instanceof Vector3 ? new Vector2(end.x, end.z) : end);
+			this.openNodes.psuh(startNode);
+			while(this.openNodes.length > 0 && this.openNodes.length < 1e6 && this.closedNodes.length < 1e6){
+				let currentNode = this.openNodes.reduce((previous, current) => previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current, this.openNodes[0]);
+				this.openNodes.splice(this.openNodes.findIndex(node => node == currentNode), 1);
+				this.closedNodes.push(currentNode);
+				if(currentNode.equals(this.endNode)){
+					this.endNode = currentNode;
+					this.path = Path.trace(this.startNode, this.endNode);
+				}
+				let relatives = [0,1,-1].flatMap(x => [0,1,-1].map(y => new Vector2(x, y))).filter(v => v.x != 0 || v.y != 0);
+				neighbors = relatives.map(v => this.openNodes.some(node => node.position.equals(v)) ? this.openNodes.find(node => node.position.equals(v)) : new path.Node(currentNode.position.add(v), currentNode));
+				for(let neighbor of neighbors){
+					if(scene instanceof Level){
+						scene.bodies.forEach(body => {
+							if(Vector2.Distance(new Vector2(body.position.x, body.position.z), neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
+						});
+					}
+					if(!neighbor.intersects.length && !this.closedNodes.some(node => node.equals(neighbor))){
+						let costToNeighbor = currentNode.gCost + Path.nodeDistance(currentNode, neighbor);
+						if(costToNeighbor < neighbor.gCost || !this.openNodes.some(node => node.equals(neighbor))){
+							neighbor.gCost = costToNeighbor;
+							neighbor.hCost = Path.nodeDistance(neighbor, this.endNode);
+							if(!this.openNodes.some(node => node.equals(neighbor))) this.openNodes.push(neighbor);
+						}
+					}	
+				}
 			}
-			if(x !== false){
-				
-				this.debugPath = path.find(player.data().position, target, scene);
-				this.debugPath.forEach(node => {
-					node.marker = MeshBuilder.CreateBox('pathmarker', {}, scene);
-					node.marker.position = new Vector3(node.position.x, 0, node.position.y);
-					node.marker.material = new StandardMaterial('matmarker', scene);
-					node.marker.material.emissiveColor = node.marker.position.equals(target) ? Color3.Green() : Color3.White();
-				});
-			}
+		}
+		drawGizmo(scene, color = Color3.White(), y = 0){
+			if(!(scene instanceof Scene)) throw new TypeError('scene must be a scene');
+			if(this.gizmo) console.warn('Path gizmo was already drawn!');
+			this.gizmo = Mesh.CreateLines('pathGizmo.' + rand.hex(16), this.path.map(node => new Vector3(node.position.x, y, node.position.y)), scene);					
+			this.debugMarker.color = color;
+			return this.gizmo;
+		}
+		disposeGizmo(){
+			if(!this.gizmo) throw new ReferenceError('Path gizmo cannot be disposed because it was not drawn.');
+			this.gizmo.dispose();
 		}
 	}
 
@@ -1083,7 +1079,7 @@
 			}else{
 				game.canvas.focus();
 				player.cam.attachControl(game.canvas, true);
-				player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+				player.cam.inputs.attached.pointers.buttons = [1];
 			}
 		},
 		getEntity: sel => {
@@ -1114,14 +1110,14 @@
 					saves.current.entities.delete(id);
 					for(let i in saves.current.levels){
 						for(let [id, body] of saves.current.levels[i].bodies){
-							if(body.fleet.includes(e)) body.fleet.splice(body.fleet.indexOf(e), 1);
+							body.fleet.spliceOut(e);
 						};
 					};
 				}
 				else{
 					console.warn(`Can't remove ${e?.name}: not an entity or does not exist`);
 				}
-				if (player.data().fleet.includes(e)) player.data().fleet.splice(player.data().fleet.indexOf(e), 1);
+				player.data().fleet.spliceOut(e);
 			}
 		},
 		getBody: sel => {
@@ -1162,8 +1158,8 @@
 		},
 		get currentLevel() { return saves.current ? saves.current.currentLevel : Vector2.Zero() },
 		set currentLevel(val) { return saves.current ? saves.current.currentLevel = val : console.warn('Tried to set currentLevel without a valid save') },
-		saveSettings: () => {
-			let settingsStore = db.transaction('settings', 'readwrite').objectStore('settings');
+		saveSettings: async () => {
+			let settingsStore = (await db.tx('settings', 'readwrite')).objectStore('settings');
 			settings = $("form.gen").formData();
 			settingsStore.put(settings, 'general');
 			settingsStore.put(keybind, 'keybinds');
@@ -1313,12 +1309,12 @@
 			if ($(selector).is(':visible')) {
 				game.canvas.focus();
 				player.cam.attachControl(game.canvas, true);
-				player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+				player.cam.inputs.attached.pointers.buttons = [1];
 				$(selector).hide();
 			} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
 				game.canvas.focus();
 				player.cam.attachControl(game.canvas, true);
-				player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+				player.cam.inputs.attached.pointers.buttons = [1];
 				$('[game-ui]').hide();
 			} else if (!$('[game-ui]').is(':visible')) {
 				player.cam.detachControl(game.canvas, true);
@@ -1349,9 +1345,7 @@
 			scene.genericEntities[this.type].instantiateModelsToScene().rootNodes[0] :
 			new TransformNode(this.id, scene);
 			instance.id = `${this.id}.${scene.id}`;
-			if(this.owner){
-				instance.setParent(this.owner);
-			}
+			instance.setParent(this);
 			this.meshes.set(scene.id, instance);
 			instance.onMeshReadyObservable = e => {
 				console.log('ready!')
@@ -1510,7 +1504,7 @@
 			ui.filter('span').eq(1).attr('clickable', '').click(e => {
 				confirm().then(() => {
 					this.marker.remove();
-					game.scene().waypoints.splice(this.getScene().waypoints.indexOf(this), 1);
+					this.getScene().waypoints.spliceOut(this);
 				});
 			});
 			return this.readonly ? ui.filter('span:gt(1)') : ui;
@@ -1639,6 +1633,24 @@
 		username: '', marker: {}, speed: 1, velocity: Vector3.Zero(), camIsActive: true, rcsIsActive: true,
 		cam: new ArcRotateCamera('player.cam', 0, 0, 5, Vector3.Zero(), game.scene()), targetBody: null,
 		arcMode: true,
+		getAuthData(){
+			$.ajax({url: web('api/user'), async: false, data: { token: cookie.token, session: true }, success: req => {
+				player.authData = req;
+				if (isJSON(req)) {
+					let res = JSON.parse(req);
+					Object.assign(player, res);
+					localStorage.auth = req.split('').map(e => e.charCodeAt(0).toString(16)).join(' ');
+					document.cookie = 'auth=' + btoa(req);
+					player.freezeProperty(...Object.keys(res));
+				}
+				else if (req == undefined) {
+					game.chat('Failed to connect to account servers.')
+				}
+				else if (req == 'ERROR 404') {
+					game.chat('Invalid token, please log in again and reload the game to play multiplayer.');
+				}
+			}});
+		},
 		updateFleet: () => {
 			
 			player.data().fleet.forEach((s, i) => {
@@ -1651,7 +1663,7 @@
 					s.addToScene();
 				}
 			});
-			if(player.data().fleet.length <= 0){
+			if(player.data().fleet.length <= 0 && false){
 				game.chat(locale.text.player.death);
 				player.reset();
 				player.wipe();
@@ -1661,14 +1673,37 @@
 			}
 		},
 		chat: (...msg) => { for (let m of msg) { game.chat((`${player.username}: ${m}`).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')) } },
-		stop: (delay = 0) => { setTimeout(e => { player.velocity = Vector3.Zero(); player.data().fleet.forEach(s => { s.velocity = Vector3.Zero() }) }, (+delay) || 0) },
-		reset: noStop => { player.data().position = rand.cords(rand.int(0, 50), true).add(new Vector3(0, 0, -1000)); player.data().rotation = Vector3.Zero(); player.cam.alpha = 0; player.cam.beta = 0; player.cam.target = player.position; if (!noStop) player.stop() },
+		stop: (delay = 0) => {
+			setTimeout(e => {
+				player.velocity = Vector3.Zero();
+				player.data().fleet.forEach(s => { s.velocity = Vector3.Zero() })
+			}, +delay || 0)
+		},
+		reset: noStop => {
+			player.data().position = rand.cords(rand.int(0, 50), true).add(new Vector3(0, 0, -1000));
+			player.data().rotation = Vector3.Zero();
+			player.cam.alpha = 0;
+			player.cam.beta = 0;
+			player.cam.target = player.data().position;
+			if (!noStop) player.stop()
+		},
 		wipe: () => { for (let i in item) { player.data().items[i] = 0 }; for (let i in tech) { player.data().tech[i] = 0 }; for (let i in player.data().fleet) { player.data().fleet[i].remove() } player.data().fleet = [] },
 		data: id => saves.current?.playerData?.[id ?? player.id] ?? playerData,
 		levelOf: xp => Math.sqrt(xp / 10),
 		xpOf: level => 10 * level ** 2
 	};
-	Object.assign(player.cam, { radius: 25, upperRadiusLimit: 50, lowerRadiusLimit: 5 });
+	Object.assign(player.cam, {
+		radius: 25,
+		upperRadiusLimit: 50,
+		lowerRadiusLimit: 5,
+		addVelocity(vector = Vector3.Zero(), computeMultiplyer){
+			let direction = player.cam.getDirection(vector);
+			direction.y = 0;
+			direction.normalize();
+			if(computeMultiplyer) direction.scaleInPlace(player.speed + player.data().tech.thrust / 10);
+			player.velocity.addInPlace(direction);
+		}
+	});
 	const Ship = class extends Entity{
 		static battle = null;
 		static generic = {
@@ -1783,13 +1818,16 @@
 				Object.assign(this, {
 					velocity: Vector3.Zero(),
 					level: 0,
-					position:  rand.cords(rand.int(1, faction.power)),
-					rotation: new Vector3(0, Math.PI, 0),
+					position:  rand.cords(rand.int(1, faction.power)), // Will be changed to shipyard location
 					storage: new StorageData({max: Ship.generic[typeOrData].storage}),
 					type: typeOrData,
 				});
 				this.copyFrom(Ship.generic[typeOrData], ['hp', 'damage', 'reload', 'power']);
 				this.reload += Math.random() * Ship.generic[typeOrData].reload;
+
+				if(faction instanceof CelestialBody || faction == player){
+					this.position.addInPlace(faction == player ? faction.data().position : faction.fleetLocation)
+				}
 			}
 			
 			if(faction instanceof CelestialBody || faction == player){
@@ -1832,22 +1870,7 @@
 	};
 	const ui = {};
 	if (cookie.token && navigator.onLine) {
-		$.get(web('api/user'), { token: cookie.token, session: true }, req => {
-			player.authData = req;
-			if (isJSON(req)) {
-				let res = JSON.parse(req);
-				Object.assign(player, res);
-				localStorage.auth = req.split('').map(e => e.charCodeAt(0).toString(16)).join(' ');
-				document.cookie = 'auth=' + btoa(req);
-				player.freezeProperty(...Object.keys(res));
-			}
-			else if (req == undefined) {
-				game.chat('Failed to connect to account servers.')
-			}
-			else if (req == 'ERROR 404') {
-				game.chat('Invalid token, please log in again and reload the game to play multiplayer.');
-			}
-		});
+		player.authData = player.getAuthData();
 	}
 	else if(cookie.auth && localStorage.auth){
 		let localJSON = localStorage.auth.split(' ').map(e => String.fromCharCode(parseInt(e, 16))).join('');
@@ -1863,9 +1886,10 @@
 		game.mpEnabled = false;
 		game.chat('You\'re not logged in, and will not be able to play multiplayer.')
 	}
-	let transaction = db.transaction('settings', 'readonly').objectStore('settings').get('general');
-	transaction.onsuccess = e => {
-		settings = transaction.result ?? settings;
+	db.tx('settings').then(tx => {
+		let req = tx.objectStore('settings').get('general');
+		req.async().then(result => {
+			settings = result ?? settings;
 		locale.getCached().then(locales => {
 			locales.forEach(lang => {
 				if(!locale.langs.has(lang)){
@@ -1879,15 +1903,11 @@
 		});
 		$('form.gen').formData(settings);
 		ui.update();
-		delete transaction;
-	}
-	transaction.onerror = e => {
+		})
+	}).catch(err => {
 		console.warn(`Couldn't find saved settings.`);
 		$('form.gen').formData(settings);
-		delete transaction;
-	}
-
-	
+	});
 
 	Object.defineProperties(tech, {
 		price: {
@@ -1925,19 +1945,25 @@
 	}
 
 	game.createKeybind('forward', {key: 'w'}, 'Forward', e => {
-		let n = player.camIsActive ? player : player.data().fleet[player.data().fleet.sel],
-			acceleration = (player.camIsActive ? 1 : -1) * (player.speed + player.data().tech.thrust / 10);
-		n.velocity.addInPlace((player.camIsActive ? n.data() : n).getDirection(new Vector3(0, 0, acceleration).divide(new Vector3(60, 60, 60))));
+		player.cam.addVelocity(Vector3.Forward(), true);
 	});
-	game.createKeybind('left', {key: 'a'}, 'Rotate Left', e => { (player.camIsActive ? player.data().rotation : player.data().fleet[player.data().fleet.sel].rotation).y -= (Math.PI / 40 * settings.sensitivity)});
-	game.createKeybind('right', {key: 'd'}, 'Rotate Right', e => { (player.camIsActive ? player.data().rotation : player.data().fleet[player.data().fleet.sel].rotation).y += (Math.PI / 40 * settings.sensitivity)});
+	game.createKeybind('left', {key: 'a'}, 'Strafe Left', e => {
+		player.cam.addVelocity(Vector3.Left(), true);
+	});
+	game.createKeybind('right', {key: 'd'}, 'Strafe Right', e => {
+		player.cam.addVelocity(Vector3.Right(), true);
+	});
 	game.createKeybind('back', {key: 's'}, 'Backward', e => {
-		let n = player.camIsActive ? player : player.data().fleet[player.data().fleet.sel],
-			acceleration = (player.camIsActive ? -1 : 1) * (player.speed + player.data().tech.thrust / 10);
-		n.velocity.addInPlace((player.camIsActive ? n.data() : n).getDirection(new Vector3(0, 0, acceleration).divide(new Vector3(60, 60, 60))));
+		player.cam.addVelocity(Vector3.Backward(), true);
 	});
-	game.createKeybind('chat', {key: 't'}, 'Toggle Chat', e => {e.preventDefault();game.toggleChat()});
-	game.createKeybind('command', {key: '/'}, 'Toggle Command', e => {e.preventDefault();game.toggleChat(true)});
+	game.createKeybind('chat', {key: 't'}, 'Toggle Chat', e => {
+		e.preventDefault();
+		game.toggleChat()
+	});
+	game.createKeybind('command', {key: '/'}, 'Toggle Command', e => {
+		e.preventDefault();
+		game.toggleChat(true)
+	});
 	game.createKeybind('rcs', {key: 'f'}, 'Toggle RCS', e => {
 		player.rcsIsActive = !player.rcsIsActive;
 		$('#hud .rcs').text(`RCS: ${player.rcsIsActive ? 'ON' : 'OFF'}`);
@@ -1978,23 +2004,27 @@
 	console.log(`%cBlankstorm ${game.versions.get(game.version).text}`, `color:#f55`);
 
 	//load mods & keybinds into the game
-	db.transaction('settings', 'readonly').objectStore('settings').get('keybinds').onsuccess = e => {
-		for (let i in e.target.result){
-			let bind = e.target.result[i];
-			if(typeof bind == 'string'){
-				bind = {
-					key: e.target.result[i],
-					ctrl: false,
-					alt: false
+	db.tx('settings').then(tx => {
+		tx.objectStore('settings').get('keybinds').async().then(result => {
+			for (let i in result){
+				let bind = result[i];
+				if(typeof bind == 'string'){
+					bind = {
+						key: result[i],
+						ctrl: false,
+						alt: false
+					}
 				}
+				keybind[i] = bind ?? keybind[i];
 			}
-			keybind[i] = bind ?? keybind[i];
-		}
-		$('form.key').formData(keybind);
-	};
-	db.transaction('mods', 'readonly').objectStore('mods').getAll().onsuccess = e => {
-		console.log('Loaded mods: ' +  (e.target.result.join('\n') || '(none)'));
-	};
+			$('form.key').formData(keybind);
+		});
+	});
+	db.tx('mods').then(tx => {
+		tx.objectStore('mods').getAll().async().then(result => {
+			console.log('Loaded mods: ' +  (result.join('\n') || '(none)'));
+		});
+	});
 	const gen = {
 		enemies: power => {//enemy spawning algorithm
 			let e = [], p = [];
@@ -2116,7 +2146,7 @@
 						}),
 						$('<button><svg><use href=image/icons.svg#trash /></svg> Delete</button>').click(e => {
 							confirm().then(result => {
-								game.screenshots.splice(game.screenshots.indexOf(s), 1);
+								game.screenshots.spliceOut(s);
 								ui.update();
 							});
 						}),
@@ -2353,7 +2383,7 @@
 				}else{
 					let ship = new Ship(shipOrType, this);
 					ship.addToScene(scene);
-					ship.position = rand.cords(rand.int(0, this.power));
+					ship.position = rand.cords(rand.int(0, this.power)).add(this.fleetLocation);
 				}
 			}
 		}
@@ -2398,7 +2428,9 @@
 					clearColor: new Color3(0.8, 0.75, 0.85),
 					genericEntities: {},
 					bodies: new Map(),
-					selectedEntities: [],
+					get selectedEntities(){
+						return [...save.entities.values()].filter(e => !!e.selected);
+					},
 					waypoints: []
 				});
 				this.xzPlane.rotation.x = Math.PI / 2;
@@ -2510,9 +2542,10 @@
 			gui.delete.click(e => {
 				confirm().then(() => {
 					gui.remove();
-					db.transaction('saves', 'readwrite').objectStore('saves').delete(save.data.id);
-					saves.delete(save.data.id);
-					
+					db.tx('saves', 'readwrite').then(tx => {
+						tx.objectStore('saves').delete(save.data.id);
+						saves.delete(save.data.id);
+					});
 				});
 			});
 			gui.download.click(e => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
@@ -2529,11 +2562,11 @@
 		};
 		static Live = class{
 			constructor(save){
-				this.ready = save instanceof Save ? this.init(save) : this.generate(save);
+				this.ready = this[save instanceof Save ? 'init' : 'generate'](save);
 			}
-			async init(save){
+	async init(save){
 				if(!(save instanceof Save)) throw new TypeError('save must be a Save');
-				let saveData = save.data
+				let saveData = save.data;
 				Object.assign(this, {
 					id: saveData.id,
 					name: saveData.name,
@@ -2546,6 +2579,18 @@
 					currentLevel: Vector2.FromArray(saveData.currentLevel),
 					playerData: {},
 				});
+				for(let id in saveData.playerData){
+					let data = {...saveData.playerData[id], id};
+					this.playerData[id] = new PlayerData({
+						position: Vector3.FromArray(data.position),
+						rotation: Vector3.FromArray(data.rotation),
+						fleet: [],
+						id,
+						xp: data.xp,
+						xpPoints: data.xpPoints,
+						tech: data.tech
+					});
+				}
 				for(let entityData of saveData.entities){
 					switch(entityData.type){
 						case 'ship':
@@ -2555,18 +2600,7 @@
 							new Entity(this);
 					}
 				}
-				for(let id in saveData.playerData){
-					let data = {...saveData.playerData[id], id};
-					this.playerData[id] = new PlayerData({
-						position: Vector3.FromArray(data.position),
-						rotation: Vector3.FromArray(data.rotation),
-						fleet: data.fleet.map(id => this.entities.get(id)),
-						id,
-						xp: data.xp,
-						xpPoints: data.xpPoints,
-						tech: data.tech
-					});
-				}
+				
 				for(let location in saveData.levels){
 					this.levels[location] = new Level(saveData.levels[location], null, null, level => {
 						for(let waypoint of level.waypoints){
@@ -2605,10 +2639,10 @@
 				}
 				return this
 			}
-			async generate(options){
+			async generate({name}){
 				Object.assign(this, {
 					id: rand.hex(16),
-					name: options.name,
+					name,
 					date: new Date(),
 					version: game.version,
 					difficulty: 1,
@@ -2632,8 +2666,8 @@
 					ships[0].position.z += 25;
 					ships.forEach(ship => ship.addToScene(lvl));
 				}, this);
-				saves.current = this
-				return this
+				this.serialize();
+				return this;
 			}
 			play(){
 				if(this.version == game.version){
@@ -2644,7 +2678,7 @@
 					saves.selected = this.id;
 					game.isPaused = false;
 					player.cam.attachControl(game.canvas, true);
-					player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+					player.cam.inputs.attached.pointers.buttons = [1];
 					player.cam.target = player.data().position;
 				}else{
 					alert('That save is in compatible with the current game version');
@@ -2760,12 +2794,10 @@
 		load(){
 			return new Save.Live(this);
 		}
-		saveToDB(){
-			return new Promise((result, reject) => {
-				let transaction = db.transaction('saves','readwrite').objectStore('saves').put(this, this.id);
-				transaction.onsuccess = () => result(transaction.result);
-				transaction.onerror = () => reject(transaction.error);
-			});
+		async saveToDB(){
+			let tx = await db.tx('saves','readwrite');
+			tx.objectStore('saves').put(this.data, this.data.id);
+			return tx.result;
 		}
 	}
 	const Server = class {
@@ -2804,7 +2836,7 @@
 				socket: null, 
 				gui: $(`<li ofn bg style=align-items:center;height:3em></li>`)
 			});
-			db.transaction('servers','readwrite').objectStore('servers').put(name, url);
+			db.tx('servers','readwrite').then(tx => tx.objectStore('servers').put(name, url));
 			this.socket = io(this.url, {reconnection: false, autoConnect: false, auth: {token: cookie.token, session: cookie.session}});
 			this.socket.on('connect', socket => {
 				$('#connect').hide();
@@ -2812,7 +2844,7 @@
 				$('#mp_message,#hud').show();
 				game.engine.resize();
 				player.cam.attachControl(game.canvas, true);
-				player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+				player.cam.inputs.attached.pointers.buttons = [1];
 				$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
 			});
 			this.socket.on('connect_error', err => {
@@ -2948,18 +2980,16 @@
 	});
 
 	//Load saves and servers into the game (from the IndexedDB)
-	db.transaction('saves', 'readonly').objectStore('saves').getAll().onsuccess = e => {
-		e.target.result.forEach(save => {
-			new Save(save);
+	db.tx('saves').then(tx => {
+		tx.objectStore('saves').getAll().async().then(result => {
+			result.forEach(save => new Save(save));
 		});
-	};
-	db.transaction('servers', 'readonly').objectStore('servers').getAllKeys().onsuccess = e => {
-		e.target.result.forEach(key => {
-			db.transaction('servers', 'readonly').objectStore('servers').get(key).onsuccess = e => {
-				let server = new Server(key, e.target.result);
-			}
+	});
+	db.tx('servers').then(tx => {
+		tx.objectStore('servers').getAllKeys().async().then(result => {
+		result.forEach(key => db.tx('servers').then(tx => tx.objectStore('servers').get(key).async().then(result => new Server(key, result))));
 		});
-	};
+	});
 
 	//Event Listeners (UI transitions, creating saves, etc.)
 	$("#main .sp").click(e => {
@@ -3018,19 +3048,22 @@
 	});
 	$('#save .new').click(e => {
 		$('#save')[0].close();
-		let save = new Save.Live({name: $('#save .name').val()});
+		saves.current = new Save.Live({name: $('#save .name').val()});
+		(new Save(saves.current.serialize())).saveToDB();
 		//handle UI
 	});
 	$('#esc .resume').click(e => {
 		$('#esc').hide();
 		player.cam.attachControl(game.canvas, true);
-		player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+		player.cam.inputs.attached.pointers.buttons = [1];
 		game.isPaused = false;
 	});
 	$('#esc .save').click(e => {
-		if(saves.get(saves.selected) instanceof Save){
+		if(saves.current instanceof Save.Live){
 			$('#esc .save').text('Saving...');
-			saves.get(saves.selected).saveToDB()
+			let save = saves.get(saves.current.id);
+			save.data = saves.current.serialize();
+			save.saveToDB()
 			.then(e => {
 				game.chat('Game Saved.');
 				$('#esc .save').text('Save Game');
@@ -3152,10 +3185,24 @@
 	game.canvas.click(e => {
 		if(!game.isPaused){
 			player.cam.attachControl(game.canvas, true);
-			player.cam.inputs.attached.pointers.buttons = [-1, 1, -1];
+			player.cam.inputs.attached.pointers.buttons = [1];
 		}
-		if(e.button == 2){
-
+		if(saves.current instanceof Save.Live && e.button == 0){
+			saves.current.entities.forEach(entity => {
+				let size = Mesh.sizeOf(entity.mesh());
+				if(Vector3.Distance(Vector3.screenToWorldPlane(game.scene().pointerX, game.scene().pointerY) || Vector3.Zero(), entity.mesh().getAbsolutePosition()) < Math.max(size.x, size.y, size.z)){
+					if(entity.selected){
+						entity.mesh().getChildMeshes().forEach(mesh => game.scene().hl.removeMesh(mesh));
+						entity.selected = false;
+					}else{
+						entity.mesh().getChildMeshes().forEach(mesh => game.scene().hl.addMesh(mesh, Color3.Green()));
+						entity.selected = true;
+					}
+				}else if(!entity.selected || !e.shiftKey){
+					entity.mesh().getChildMeshes().forEach(mesh => game.scene().hl.removeMesh(mesh));;
+					entity.selected = false;
+				}
+			})
 		}
 		ui.update();
 	});
@@ -3230,7 +3277,6 @@
 						warp.start(newLevel);
 						player.data().position.z *= -1;
 					};
-					if(player.rcsIsActive) player.velocity = player.velocity.multiplyByFloats(0.9, 0.9, 0.9);
 					player.cam.angularSensibilityX = player.cam.angularSensibilityY = 2000 / settings.sensitivity;
 					player.updateFleet();
 					game.scene().meshes.forEach(m => {
@@ -3296,13 +3342,11 @@
 					}
 					player.updateFleet();
 					player.data().fleet.forEach((ship, i) => {
-						ship.position.addInPlace(new Vector3(ship.velocity.x * game.scene().getAnimationRatio(), ship.velocity.y * game.scene().getAnimationRatio(), ship.velocity.z * game.scene().getAnimationRatio()));
-						if(player.rcsIsActive) ship.velocity = ship.velocity.multiplyByFloats(0.9, 0.9, 0.9);
-						ship.mesh().computeWorldMatrix(true);
-						ship.mesh().position = ship.position;
-						ship.mesh().rotation = ship.rotation;
+						ship.position.addInPlace(ship.velocity.scale(game.scene().getAnimationRatio()));
+						if(player.rcsIsActive) ship.velocity.scaleInPlace(0.9);
 					});
-					player.data().position.addInPlace(new Vector3(player.velocity.x * game.scene().getAnimationRatio(), player.velocity.y * game.scene().getAnimationRatio(), player.velocity.z * game.scene().getAnimationRatio()));
+					player.data().position.addInPlace(player.velocity.scale(game.scene().getAnimationRatio()));
+					if(player.rcsIsActive) player.velocity.scaleInPlace(0.9);
 					game.scene().waypoints.forEach(waypoint => {
 						let pos = waypoint.screenPos;
 						waypoint.marker
@@ -3325,14 +3369,9 @@
 						<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
 						<span>${game.engine._glRenderer}</span><br>
 						<span>${performance.memory ? `${(performance.memory.usedJSHeapSize / 1000000) .toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(performance.memory.totalJSHeapSize / 1000000).toFixed()}MB Allocated)` : 'Memory usage unknown' }</span><br>
-						<span>${navigator.hardwareConcurrency} CPU Threads</span><br><br>
+						<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
 						<span>${closestBody ? `${closestBody.name} ${closestBody.position.toFixed(1).display('xz')} ${Vector3.Distance(player.data().position, closestBody.position)?.toFixed(1)} | ${Vector3.Distance(player.data().position, closestBody.position.add(closestBody.fleetLocation.position)).toFixed(1)}` : `No Closest body`}</span><br>
 						<span>${player.targetBody ?? ''}</span><br><br>
-						<span>Selected ship: ${player.data().fleet[player.data().fleet.sel] ? `
-						<span>${player.data().fleet[player.data().fleet.sel].id} (${player.data().fleet[player.data().fleet.sel].type}) ${player.data().fleet.sel + 1}/${player.data().fleet.length}</span><br>
-						<span>P: ${player.data().fleet[player.data().fleet.sel].position.toFixed(1).display()} V: ${player.data().fleet[player.data().fleet.sel].velocity.toFixed(1).display()} R: ${player.data().fleet[player.data().fleet.sel].mesh().rotation.toFixed(2).display('xy')}</span><br>
-						<span>Lvl: ${player.data().fleet[player.data().fleet.sel].level}/${Ship.generic[player.data().fleet[player.data().fleet.sel].type].recipe.length - 1} Hp: ${player.data().fleet[player.data().fleet.sel].hp.toFixed(1)}/${Ship.generic[player.data().fleet[player.data().fleet.sel].type].hp.toFixed(1)}</span><br>
-						`: ' none'}
 					`);
 					
 					game.scene().render();

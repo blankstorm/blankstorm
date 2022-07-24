@@ -10,14 +10,12 @@ These are the changes for the next update[s].
 ## Future
 *For a furture release*
 
-- Economy [Stonks]
-- Weapon types [Pointy]
+- Economy
+- Hardpoints
 - Particles and laser collisions
 
 ## Planned
 
-- WASD are camera only
-- left click to move/attack
 - right click to see info
 
 ## Features and Changes
@@ -38,6 +36,8 @@ These are the changes for the next update[s].
 - Localization support
 - New ships: small and medium transport
 - Scroll (middle) click to rotate the camera
+- WASD are camera only
+- left click to move/attack
 
 ## Bugs
 
@@ -77,3 +77,4 @@ These are the changes for the next update[s].
 - Removed `navigator.platform` from debug screen
 - Change star materials to `StandardMaterial` and removed the materials library
 - Ships use relative cordinates with a parent
+- Added `Array.prototype.spliceOut`
