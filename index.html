@@ -508,7 +508,6 @@
 			<input type=hidden name=debug_tooltips value=false>
 			<input type=checkbox name=debug_tooltips label="Show Advanced Tooltips" value=true><br><br>
 			<input type=range name=gui_scale label="GUI Scale" display="${['auto','small','normal','large'][val]}" min=0 max=3 step=1 value=0><br><br>
-			<input type=range name=mesh_quality label='Mesh Quality' display='${{"32":"Low","64":"Low","96":"Low","128":"Normal","160":"Normal","196":"High","224":"High","256":"<dfn style=\"font-style: normal;border-bottom:1px dotted var(--text-color)\" title=\"Intended for high-end computers\">Ultra</dfn>"}[val]}' min=32 max=256 step=32 value=64><br><br>
 			<select name=locale label=Language></select>
 		</form>
 		<form class=key name=keybind nbs bg=none ofs=y hide>
@@ -1000,6 +999,10 @@
 			this.gizmo.dispose();
 		}
 	}
+
+	const config = {
+		mesh_segments: 32
+	};
 
 	const game = {
 		canvas: $('canvas.game'),
@@ -2211,7 +2214,7 @@
 	const Star = class extends CelestialBody{
 		constructor({name, position = Vector3.Zero(), radius = 1, color = Color3.Gray(), scene, id}) {
 			super(name ?? 'Unknown Star', id, scene);
-			CreateSphereVertexData({ diameter: radius*2, segments: settings.mesh_quality }).applyToMesh(this);
+			CreateSphereVertexData({ diameter: radius*2, segments: config.mesh_segments }).applyToMesh(this);
 			Object.assign(this, {
 				position,
 				light: Object.assign(
@@ -2219,7 +2222,7 @@
 					{intensity: 1, range: 10000}
 				),
 				material: Object.assign(new StandardMaterial(this.id + ".mat", scene), {
-					//emissiveTexture: new NoiseProceduralTexture(this.id + ".texture", settings.mesh_quality, scene),
+					//emissiveTexture: new NoiseProceduralTexture(this.id + ".texture", config.mesh_segments, scene),
 					emissiveColor: color,
 					disableLighting: true
 				}),
@@ -2363,7 +2366,7 @@
 		}
 		constructor({name, position = Vector3.Zero(), biome = 'earthlike', radius = 1, owner = null, fleet = [], rewards = {}, scene = game.scene(), id}){
 			super(name ?? 'Unknown Planet', id, scene);
-			CreateSphereVertexData({ diameter: radius * 2, segments: settings.mesh_quality }).applyToMesh(this);
+			CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
 			Object.assign(this, {
 				owner, radius, rewards, biome, position,
 				material: Planet.biomes.has(biome) ? new CelestialBodyMaterial(Planet.biomes.get(biome), scene) : new StandardMaterial('mat', scene)
