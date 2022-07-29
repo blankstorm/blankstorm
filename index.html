@@ -1785,7 +1785,7 @@
 				], requires: {}, model: 'model/corvette.gltf'
 			},
 			frigate: {
-				hp: 25, damage: 0.5, reload: 1, maxLevel: 5, speed: 1, agility: 1,
+				hp: 25, damage: 0.5, reload: 1, maxLevel: 5, speed: 1, agility: 1.5,
 				power: 2, enemy: true, camRadius: 15, xp: 7.5, storage: 250,
 				critChance: 0.25, critDamage: 1.25,
 				recipe: [
@@ -1798,7 +1798,7 @@
 				], requires: {}, model: 'model/corvette.gltf'
 			},
 			transport_small: {
-				hp: 5, damage: 0.1, reload: 5, maxLevel: 1, speed: 1, agility: 1,
+				hp: 5, damage: 0.1, reload: 5, maxLevel: 1, speed: 1, agility: .75,
 				power: 1, enemy: false, camRadius: 20, xp: 10, storage: 25000,
 				critChance:  0.1, critDamage: 1,
 				recipe: [
@@ -1876,7 +1876,7 @@
 					rotation: Vector3.FromArray(typeOrData.rotation),
 					storage: new StorageData(typeOrData.storage),
 					velocity: Vector3.Zero()
-				}).copyFrom(typeOrData, ['hp', 'damage', 'level', 'power', 'reload']);
+				}).copyFrom(typeOrData, ['hp', 'damage', 'level', 'power', 'reload', 'speed']);
 			}else{
 				
 				Object.assign(this, {
@@ -1886,7 +1886,7 @@
 					storage: new StorageData({max: Ship.generic[typeOrData].storage}),
 					type: typeOrData,
 				});
-				this.copyFrom(Ship.generic[typeOrData], ['hp', 'damage', 'reload', 'power']);
+				this.copyFrom(Ship.generic[typeOrData], ['hp', 'damage', 'reload', 'power', 'speed']);
 				this.reload += Math.random() * Ship.generic[typeOrData].reload;
 
 				if(faction instanceof CelestialBody || faction == player){
@@ -3443,7 +3443,7 @@
 							if(!iteration.done){
 								position = new Vector3(iteration.value.position.x, 0, iteration.value.position.y);
 								entity.lookAt(position);
-								entity.velocity.addInPlace(forward.scale(game.scene().getAnimationRatio()/60));
+								entity.velocity.addInPlace(forward.scale(entity.speed*game.scene().getAnimationRatio()/60));
 							}
 						}
 						
