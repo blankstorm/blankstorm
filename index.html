@@ -493,27 +493,30 @@
 			<svg><use href=image/icons.svg#puzzle-piece /></svg> 
 			Mods
 		</button>
+		<button plot=50px,150px,135px,35px,a class=debug>
+			<svg><use href=image/icons.svg#bug /></svg>
+			<span></span>
+		</button>
 		<button plot='50px,calc(100% - 85px),135px,35px,a' class=back>
 			<svg><use href=image/icons.svg#arrow-left /></svg> 
 			<span></span>
 		</button>
 		<form class=gen name=settings nbs bg=none ofs=y>
-			<h2 style=text-align:center>Settings - <span></span></h2>
 			<input type=range name=font_size label="Font Size" display=${val}px min=10 max=20 step=1 value=13><br><br>
 			<input type=range name=chat label="Chat Timeout" display='${val} seconds' min=5 max=15 step=1 value=10><br><br>
 			<input type=range name=sensitivity label="Camera Sensitivity" display=${(val*100).toFixed()}% min=0.1 max=2 step=0.05 value=1><br><br>
 			<input type=range name=music label="Music Volume" display=${(val*100).toFixed()}% min=0 max=1 step=0.05 value=1><br><br>
 			<input type=range name=sfx label="Sound Effect Volume" display="${(val*100).toFixed()}%" min=0 max=1 step=0.05 value=1><br><br>
-			<input type=range name=render_quality label='Render Quality' display="${['Low','Medium','High'][val]}" min=0 max=2 step=1 value=1><br><br>
-			<input type=hidden name=debug_tooltips value=false>
-			<input type=checkbox name=debug_tooltips label="Show Advanced Tooltips" value=true><br><br>
+			<input type=range name=render_quality label='Render Quality' display="${['Low','Medium','High'][val]}" min=0 max=2 step=1 value=1><br><br>	
 			<input type=range name=gui_scale label="GUI Scale" display="${['auto','small','normal','large'][val]}" min=0 max=3 step=1 value=0><br><br>
-			<select name=locale label=Language></select>
+			<select name=locale label=Language></select><br><br>
 		</form>
-		<form class=key name=keybind nbs bg=none ofs=y hide>
-			<h2 style=text-align:center>Settings - <span></span></h2>
+		<form class=key name=keybind nbs bg=none ofs=y hide></form>
+		<form class=debug name=debug nbs bg=none ofs=y hide>
+			<input type=checkbox name=show_path_gizmos label="Show Path Gizmos" value=true><br><br>
+			<input type=checkbox name=tooltips label="Show Advanced Tooltips" value=true><br><br>
+			<input type=checkbox name=reload_locales label="Reload Locales" value=true><br><br>
 		</form>
-		<ul class=dp nbs bg=none ofs=y hide lsn></ul>
 		<ul class=mod nbs bg=none ofs=y hide lsn></ul>
 	</div>
 </body>
@@ -773,7 +776,8 @@
 		return sizes.max.subtract(sizes.min);
 	};
 	
-	let settings = $("form.gen").formData(),
+	let settings = $('#settings form.gen').formData(),
+	debug = $('#settings form.debug').formData(),
 	worldgen = $("#save form").formData(),
 	keybind = {};
 	const servers = new Map(),
@@ -829,6 +833,13 @@
 		}
 		
 	}
+
+	//add HTML for settings to work (the title and defaults for checkboxes)
+	$('#settings form').prepend('<h2 style=text-align:center>Settings - <span></span></h2>')
+	$('#settings form checkbox').each((i, e) => {
+		$(`<input type=hidden ${e.name} value=${!e.value}>`).insertBefore(e);
+	});
+
 	const locale = {
 		async get(url){
 				let request = $.ajax(url, {async: false}), json = request.responseJSON;
@@ -890,6 +901,7 @@
 				$('#connect button.back span').text(lang.menu.cancel ?? 'Cancel');
 				$('#settings :where(button.gen,form.gen h2) span').text(lang.menu.general ?? 'General');
 				$('#settings :where(button.key,form.key h2) span').text(lang.menu.keybinds ?? 'Keybinds');
+				$('#settings :where(button.debug,form.debug h2) span').text(lang.menu.debug ?? 'Debug');
 				$('#q div.warp button.warp').text(lang.menu.warp ?? 'Warp');
 				$('#q div.nav button.inv span').text(lang.menu.items ?? 'Inventory');
 				$('#q div.nav button.map span').text(lang.menu.map ?? 'Waypoints');
@@ -910,7 +922,7 @@
 
 	//load locales
 	locale.isCached('en').then(is => {
-		if(!is){
+		if(!is || debug.reload_locales){
 			locale.get('locales/en.json').then(lang => locale.set('en'));
 		}
 	});
@@ -922,8 +934,8 @@
 			parent = null;
 			constructor(...args){
 				this.position = args[0] instanceof Vector2 ? args[0].round() : new Vector2(args[0], args[1]);
-				if(args[1] instanceof path.Node) this.parent = args[1];
-				if(args[2] instanceof path.Node) this.parent = args[2];
+				if(args[1] instanceof Path.Node) this.parent = args[1];
+				if(args[2] instanceof Path.Node) this.parent = args[2];
 			}
 			gCost = 0;
 			hCost = 0;
@@ -936,8 +948,32 @@
 				return this.position.equals(node.position)
 			}
 		}
+		static Iterator = class {
+			path = null;
+			index = 0;
+			#resolve;
+			#reject;
+			constructor(path){
+				if(!(path instanceof Path)) throw new TypeError('path must be a path');
+				this.path = path.path;
+				this.done = new Promise((resolve, reject) => {
+					this.#resolve = resolve;
+					this.#reject = reject;
+				});
+			}
+			next(){
+				if(this.index < this.path.length){
+					let node = this.path[this.index];
+					this.index++;
+					return {value: node, done: false}
+				}
+				let returnValue = {value: this.index, done: true};
+				this.#resolve(returnValue);
+				return returnValue;
+			}
+		}
 		static nodeDistance(nodeA, nodeB){
-			if(!(nodeA instanceof path.Node && nodeB instanceof path.Node)) throw new TypeError('passed nodes must be path.Node');
+			if(!(nodeA instanceof Path.Node && nodeB instanceof Path.Node)) throw new TypeError('passed nodes must be path.Node');
 			let distance = nodeA.position.subtract(nodeB.position).abs();
 			return 1.4 * (distance.x > distance.y ? distance.y : distance.x) + (distance.x > distance.y ? 1 : -1) * (distance.x - distance.y);
 		}
@@ -954,22 +990,25 @@
 		startNode = null;
 		endNode = null;
 		gizmo = null;
-		constructor(){
+		path = [];
+		#pathFound = false;
+		constructor(start, end, scene = game.scene()){
 			if(!(start instanceof Vector2 || start instanceof Vector3)) throw new TypeError('Start must be a Vector');
 			if(!(end instanceof Vector2 || start instanceof Vector3)) throw new TypeError('End must be a Vector');
-			this.startNode = new path.Node(start instanceof Vector3 ? new Vector2(start.x, start.z) : start);
-			this.endNode = new path.Node(end instanceof Vector3 ? new Vector2(end.x, end.z) : end);
-			this.openNodes.psuh(startNode);
-			while(this.openNodes.length > 0 && this.openNodes.length < 1e6 && this.closedNodes.length < 1e6){
+			this.startNode = new Path.Node(start instanceof Vector3 ? new Vector2(start.x, start.z) : start);
+			this.endNode = new Path.Node(end instanceof Vector3 ? new Vector2(end.x, end.z) : end);
+			this.openNodes.push(this.startNode);
+			while(!this.#pathFound && this.openNodes.length > 0 && this.openNodes.length < 1e4 && this.closedNodes.length < 1e4){
 				let currentNode = this.openNodes.reduce((previous, current) => previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current, this.openNodes[0]);
 				this.openNodes.splice(this.openNodes.findIndex(node => node == currentNode), 1);
 				this.closedNodes.push(currentNode);
 				if(currentNode.equals(this.endNode)){
 					this.endNode = currentNode;
 					this.path = Path.trace(this.startNode, this.endNode);
+					this.#pathFound = true;
 				}
 				let relatives = [0,1,-1].flatMap(x => [0,1,-1].map(y => new Vector2(x, y))).filter(v => v.x != 0 || v.y != 0);
-				neighbors = relatives.map(v => this.openNodes.some(node => node.position.equals(v)) ? this.openNodes.find(node => node.position.equals(v)) : new path.Node(currentNode.position.add(v), currentNode));
+				let neighbors = relatives.map(v => this.openNodes.some(node => node.position.equals(v)) ? this.openNodes.find(node => node.position.equals(v)) : new Path.Node(currentNode.position.add(v), currentNode));
 				for(let neighbor of neighbors){
 					if(scene instanceof Level){
 						scene.bodies.forEach(body => {
@@ -991,7 +1030,7 @@
 			if(!(scene instanceof Scene)) throw new TypeError('scene must be a scene');
 			if(this.gizmo) console.warn('Path gizmo was already drawn!');
 			this.gizmo = Mesh.CreateLines('pathGizmo.' + rand.hex(16), this.path.map(node => new Vector3(node.position.x, y, node.position.y)), scene);					
-			this.debugMarker.color = color;
+			this.gizmo.color = color;
 			return this.gizmo;
 		}
 		disposeGizmo(){
@@ -1163,9 +1202,10 @@
 		set currentLevel(val) { return saves.current ? saves.current.currentLevel = val : console.warn('Tried to set currentLevel without a valid save') },
 		saveSettings: async () => {
 			let settingsStore = (await db.tx('settings', 'readwrite')).objectStore('settings');
-			settings = $("form.gen").formData();
+			settings = $("form.gen").formData(), debug = $('form.debug').formData();
 			settingsStore.put(settings, 'general');
 			settingsStore.put(keybind, 'keybinds');
+			settingsStore.put(debug, 'debug')
 		},
 		commands: {
 			help: name => {
@@ -1333,6 +1373,7 @@
 				model: null
 			});
 		}
+		speed = 1;
 		constructor(save, id = rand.hex(32), owner = null){
 			super(id);
 			this.id = id;
@@ -1340,6 +1381,7 @@
 			this.meshes = new Map();
 			if(save instanceof Save.Live) save.entities.set(this.id, this);
 		}
+		
 		addToScene(scene = game.scene()){
 			if(!(scene instanceof Level)) throw new TypeError('passed scene must be a level');
 			if(this.meshes.has(scene.id)) return console.warn('Mesh already exists');
@@ -1349,6 +1391,7 @@
 			new TransformNode(this.id, scene);
 			instance.id = `${this.id}.${scene.id}`;
 			instance.setParent(this);
+			instance.position = Vector3.Zero()
 			this.meshes.set(scene.id, instance);
 			instance.onMeshReadyObservable = e => {
 				console.log('ready!')
@@ -1367,6 +1410,21 @@
 		toString(){
 			return `Entity #${this.id}`
 		}
+		async followPath(path, scene){
+			if(!(path instanceof Path)) throw new TypeError('path must be a Path');
+			if(!(scene instanceof Level)) throw new TypeError('scene must be a Level');
+			let iterator = new Path.Iterator(path);
+			scene.activePaths.push({entity: this, iterator, iteration: null});
+			return await iterator.done;
+		}
+		moveTo(location, locationIsRelative, scene = game.scene()){
+			if(!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
+			this.currentPath = new Path(this.position, location.add(locationIsRelative ? this.position : Vector3.Zero()), scene);
+			if(debug.show_path_gizmos) this.currentPath.drawGizmo(scene, Color3.Green());
+			this.followPath(this.currentPath, scene).then(path => {
+				if(debug.show_path_gizmos) this.currentPath.disposeGizmo();
+			});
+		}
 	}
 	const CelestialBody = class extends Mesh {
 		getSave(){
@@ -1374,7 +1432,7 @@
 		}
 		fleet = [];
 		owner = null;
-		fleetLocation = new TransformNode(Vector3.Zero());
+		fleetLocation = Vector3.Zero();
 		constructor(name, id = rand.hex(32), scene) {
 			super(name, scene);
 			this.id = id;
@@ -1634,7 +1692,7 @@
 	const playerData = new Player({id: 'DEFAULT'}, game.scene());
 	const player = {
 		username: '', marker: {}, speed: 1, velocity: Vector3.Zero(), camIsActive: true, rcsIsActive: true,
-		cam: new ArcRotateCamera('player.cam', 0, 0, 5, Vector3.Zero(), game.scene()), targetBody: null,
+		cam: new ArcRotateCamera('player.cam', -Math.PI/2, Math.PI/2, 5, Vector3.Zero(), game.scene()), targetBody: null,
 		arcMode: true,
 		getAuthData(){
 			$.ajax({url: web('api/user'), async: false, data: { token: cookie.token, session: true }, success: req => {
@@ -1685,8 +1743,8 @@
 		reset: noStop => {
 			player.data().position = rand.cords(rand.int(0, 50), true).add(new Vector3(0, 0, -1000));
 			player.data().rotation = Vector3.Zero();
-			player.cam.alpha = 0;
-			player.cam.beta = 0;
+			player.cam.alpha = -Math.PI/2;
+			player.cam.beta = Math.PI;
 			player.cam.target = player.data().position;
 			if (!noStop) player.stop()
 		},
@@ -1711,7 +1769,7 @@
 		static battle = null;
 		static generic = {
 			corvette: {
-				hp: 10, damage: 0.1, reload: 0.5, maxLevel: 5,
+				hp: 10, damage: 0.1, reload: 0.5, maxLevel: 5, speed: 2, agility: 2,
 				power: 1, enemy: true, camRadius: 10, xp: 5, storage: 100,
 				critChance: 0.1, critDamage: 1.5,
 				recipe: [
@@ -1724,7 +1782,7 @@
 				], requires: {}, model: 'model/corvette.gltf'
 			},
 			frigate: {
-				hp: 25, damage: 0.5, reload: 1, maxLevel: 5,
+				hp: 25, damage: 0.5, reload: 1, maxLevel: 5, speed: 1, agility: 1,
 				power: 2, enemy: true, camRadius: 15, xp: 7.5, storage: 250,
 				critChance: 0.25, critDamage: 1.25,
 				recipe: [
@@ -1737,7 +1795,7 @@
 				], requires: {}, model: 'model/corvette.gltf'
 			},
 			transport_small: {
-				hp: 5, damage: 0.1, reload: 5, maxLevel: 1,
+				hp: 5, damage: 0.1, reload: 5, maxLevel: 1, speed: 1, agility: 1,
 				power: 1, enemy: false, camRadius: 20, xp: 10, storage: 25000,
 				critChance:  0.1, critDamage: 1,
 				recipe: [
@@ -1745,7 +1803,7 @@
 				], requires: {storage: 3}, model: 'model/transport_small.glb'
 			},
 			crusier: {
-				hp: 50, damage: 1, reload: 2, maxLevel: 5,
+				hp: 50, damage: 1, reload: 2, maxLevel: 5, speed: 1, agility: 1,
 				power: 5, enemy: true, camRadius: 20, xp: 10, storage: 250,
 				critChance: 0.1, critDamage: 1.25,
 				recipe: [
@@ -1758,7 +1816,7 @@
 				], requires: {}, model: 'model/crusier.gltf'
 			},
 			destroyer: {
-				hp: 100, damage: 2.5, reload: 1, maxLevel: 5,
+				hp: 100, damage: 2.5, reload: 1, maxLevel: 5, speed: 1, agility: 1,
 				power: 10, enemy: true, camRadius: 30, xp: 20, storage: 1000,
 				critChance: 0.25, critDamage: 1.5,
 				recipe: [
@@ -1771,7 +1829,7 @@
 				], requires: {}, model: 'model/destroyer.gltf'
 			},
 			transport_medium: {
-				hp: 50, damage: 1, reload: 5, maxLevel: 1,
+				hp: 50, damage: 1, reload: 5, maxLevel: 1, speed: 2/3, agility: 0.5,
 				power: 10, enemy: false, camRadius: 50, xp: 10, storage: 100000,
 				critChance:  0.1, critDamage: 1,
 				recipe: [
@@ -1779,7 +1837,7 @@
 				], requires: {storage: 5}, model: 'model/transport_small.glb'
 			},
 			battleship: {
-				hp: 250, damage: 10, reload: 2, maxLevel: 5,
+				hp: 250, damage: 10, reload: 2, maxLevel: 5, speed: 2/3, agility: 1,
 				power: 25, enemy: true, camRadius: 40, xp: 50, storage: 2500,
 				critChance: 0.2, critDamage: 1.25,
 				recipe: [
@@ -1792,7 +1850,7 @@
 				], requires: {}, model: 'model/battleship.gltf'
 			},
 			dreadnought: {
-				hp: 2000, damage: 100, reload: 4, maxLevel: 5,
+				hp: 2000, damage: 100, reload: 4, maxLevel: 5, speed: 1/3, agility: 1,
 				power: 100, enemy: true, camRadius: 65, xp: 100, storage: 10000,
 				critChance: 0.2, critDamage: 1.5,
 				recipe: [
@@ -1890,22 +1948,26 @@
 		game.chat('You\'re not logged in, and will not be able to play multiplayer.')
 	}
 	db.tx('settings').then(tx => {
-		let req = tx.objectStore('settings').get('general');
-		req.async().then(result => {
+		let store = tx.objectStore('settings');
+		store.get('general').async().then(result => {
 			settings = result ?? settings;
-		locale.getCached().then(locales => {
-			locales.forEach(lang => {
-				if(!locale.langs.has(lang)){
-					locale.load(lang).then(() => {
-						if('en' == lang){
-							locale.set('en');
-						}
-					})
-				}
+			locale.getCached().then(locales => {
+				locales.forEach(lang => {
+					if(!locale.langs.has(lang)){
+						locale.load(lang).then(() => {
+							if('en' == lang){
+								locale.set('en');
+							}
+						})
+					}
+				});
 			});
+			$('form.gen').formData(settings);
+			ui.update();
 		});
-		$('form.gen').formData(settings);
-		ui.update();
+		store.get('debug').async().then(result => {
+			debug = result ?? debug;
+			$('form.debug').formData(debug);
 		})
 	}).catch(err => {
 		console.warn(`Couldn't find saved settings.`);
@@ -2073,7 +2135,7 @@
 					}
 					ui.update();
 				})
-				.tooltip(`${locale.text.entity[shiptype].description}<br><colorbr><strong>Material Cost</strong>${buildCost}<br>${Object.keys(s.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${settings?.debug_tooltips ? '<br>type: ' + shiptype : ''}`);
+				.tooltip(`${locale.text.entity[shiptype].description}<br><colorbr><strong>Material Cost</strong>${buildCost}<br>${Object.keys(s.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug?.tooltips ? '<br>type: ' + shiptype : ''}`);
 			return gui;
 		},
 		lab: (t, row) => {
@@ -2094,7 +2156,7 @@
 			
 			let upgradeCost = Object.entries(tech.price(t)).reduce((a, [k, v]) => a + `<br>${locale.text.item[k].name}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
 			techRequires = Object.entries(tech[t].requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locale.text.tech[k].name}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locale.text.tech[k].name}`, '');
-			gui.eq(-1).children('svg').tooltip(`<strong>${locale.text.tech[t].name}</strong><br>${locale.text.tech[t].description}<br>${player.data().tech[t] >= tech[t].max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=image/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech[t].requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${settings.debug_tooltips ? '<br>type: ' + t : ''}`);
+			gui.eq(-1).children('svg').tooltip(`<strong>${locale.text.tech[t].name}</strong><br>${locale.text.tech[t].description}<br>${player.data().tech[t] >= tech[t].max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=image/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech[t].requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
 			return gui
 		},
 		inv: (i, row) => {
@@ -2371,7 +2433,7 @@
 				owner, radius, rewards, biome, position,
 				material: Planet.biomes.has(biome) ? new CelestialBodyMaterial(Planet.biomes.get(biome), scene) : new StandardMaterial('mat', scene)
 			});
-			this.fleetLocation.position = rand.cords(rand.int(radius + 5, radius * 1.2), true);
+			this.fleetLocation = rand.cords(rand.int(radius + 5, radius * 1.2), true);
 			this.waypoint = new Waypoint({
 				name: this.name,
 				position,
@@ -2403,6 +2465,12 @@
 		getSave(){
 			return this._save
 		}
+		activePaths = [];
+		waypoints = [];
+		activeCamera = player.cam;
+		clearColor = new Color3(0.8, 0.75, 0.85);
+		genericEntities = {};
+		bodies = new Map();
 		constructor(nameOrData, location = new Vector2(rand.int(-25, 25), rand.int(-25, 25)), hasStar = true, onready = () => null, save = saves.current) {
 			(async () => {
 				super(game.engine);
@@ -2427,10 +2495,6 @@
 					onReady: onready,
 					_save: save,
 					probe: new ReflectionProbe('probe#' + id, 256, this),
-					activeCamera: player.cam,
-					clearColor: new Color3(0.8, 0.75, 0.85),
-					genericEntities: {},
-					bodies: new Map(),
 					get selectedEntities(){
 						return [...save.entities.values()].filter(e => !!e.selected);
 					},
@@ -2543,13 +2607,14 @@
 			.dblclick(loadAndPlay);
 			if(!game.mp) gui.prependTo('#load');
 			gui.delete.click(e => {
-				confirm().then(() => {
+				let remove = () => {
 					gui.remove();
 					db.tx('saves', 'readwrite').then(tx => {
 						tx.objectStore('saves').delete(save.data.id);
 						saves.delete(save.data.id);
 					});
-				});
+				}
+				e.shiftKey ? remove() : confirm().then(remove);
 			});
 			gui.download.click(e => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
 			gui.play.click(loadAndPlay);
@@ -2747,7 +2812,7 @@
 									position: body.position.asArray().map(num => +num.toFixed(3)),
 									name: body.name,
 									id: body.id,
-									fleetLocation: body.fleetLocation.position.asArray().map(num => +num.toFixed(3)),
+									fleetLocation: body.fleetLocation.asArray().map(num => +num.toFixed(3)),
 									fleet: body.fleet.map(f => f.id),
 									owner: body.owner
 								};
@@ -3103,11 +3168,12 @@
 	$('button.map.new').click(e => {
 		Waypoint.dialog();
 	});
-	$("#settings button.gen").click(e => { game.saveSettings(); $("#settings form,#settings ul").hide(); $("#settings form.gen").show() });
-	$("#settings button.key").click(e => { game.saveSettings(); $("#settings form,#settings ul").hide(); $("#settings form.key").show() });
-	$("#settings button.mod").click(e => {
+	$('#settings>button:not(.back)').click(e => {
 		game.saveSettings();
-		$('#settings form,#settings ul').hide();
+		let target = $(e.target);
+		$('#settings form').hide().filter('.' + (target.is('button') ? target : target.parent('button')).attr('class')).show();
+	});
+	$("#settings button.mod").click(e => {
 		$('#settings ul.mod').show().empty().append(
 			$('<h2 style=text-align:center>Mods</h2>'),
 			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=image/icons.svg#trash /></svg>&nbsp;Reset</button>').click(e => {
@@ -3190,7 +3256,7 @@
 			player.cam.attachControl(game.canvas, true);
 			player.cam.inputs.attached.pointers.buttons = [1];
 		}
-		if(saves.current instanceof Save.Live && e.button == 0){
+		if(saves.current instanceof Save.Live){
 			saves.current.entities.forEach(entity => {
 				let size = Mesh.sizeOf(entity.mesh());
 				if(Vector3.Distance(Vector3.screenToWorldPlane(game.scene().pointerX, game.scene().pointerY) || Vector3.Zero(), entity.mesh().getAbsolutePosition()) < Math.max(size.x, size.y, size.z)){
@@ -3205,9 +3271,19 @@
 					entity.mesh().getChildMeshes().forEach(mesh => game.scene().hl.removeMesh(mesh));;
 					entity.selected = false;
 				}
-			})
+			});
 		}
 		ui.update();
+	});
+	game.canvas.contextmenu(e => {
+		if(saves.current instanceof Save.Live){
+			saves.current.entities.forEach(entity => {
+				if(entity.selected){
+					let newPosition = Vector3.screenToWorldPlane(e.clientX, e.clientY, game.scene());
+					entity.moveTo(newPosition, false, game.scene());
+				}
+			});
+		}
 	});
 	game.canvas.keydown(e => {
 		switch(e.key){
@@ -3289,7 +3365,7 @@
 					for(let [id, body] of game.scene().bodies){
 						if (body instanceof CelestialBody){
 							closestBody = game.scene().closestBody = closestBody == null || Vector3.Distance(player.data().position, body.position) < Vector3.Distance(player.data().position, closestBody.position) ? body : closestBody;
-							let distance = Vector3.Distance(player.data().position, closestBody.position.add(closestBody.fleetLocation.position));
+							let distance = Vector3.Distance(player.data().position, closestBody.position.add(closestBody.fleetLocation));
 							if(distance < 200 && !Ship.battle && closestBody.owner != player.id && closestBody == body){
 								Ship.battle = id;
 							}else if(distance > 200){
@@ -3350,6 +3426,25 @@
 					});
 					player.data().position.addInPlace(player.velocity.scale(game.scene().getAnimationRatio()));
 					if(player.rcsIsActive) player.velocity.scaleInPlace(0.9);
+					game.scene().activePaths.forEach(activePath => {
+						let {entity, iterator, iteration} = activePath;
+						if(iteration?.done){
+							game.scene().activePaths.spliceOut(activePath);
+						}else{
+							if(!iteration?.value) activePath.iteration = iteration = iterator.next();
+							let forward = entity.getDirection(Vector3.Forward()), position = new Vector3(iteration.value.position.x, 0, iteration.value.position.y);
+							entity.lookAt(position);
+							if(Vector3.Distance(position, entity.position) < Vector3.Distance(position, entity.position.add(forward))){
+								activePath.iteration = iteration = iterator.next();
+							}
+							if(!iteration.done){
+								position = new Vector3(iteration.value.position.x, 0, iteration.value.position.y);
+								entity.lookAt(position);
+								entity.velocity.addInPlace(forward.scale(game.scene().getAnimationRatio()/60));
+							}
+						}
+						
+					});
 					game.scene().waypoints.forEach(waypoint => {
 						let pos = waypoint.screenPos;
 						waypoint.marker
@@ -3363,7 +3458,7 @@
 						<span>${game.version} ${game.mods.length ? `[${game.mods.join(", ")}]` : `(vanilla)`}</span><br>
 						<span>FPS ${game.engine.getFps().toFixed()}</span><br>
 						<span>${saves.selected} (${saves.current.date.toLocaleString()}) L: ${Object.keys(saves.current.levels).length} S: ${Object.keys(saves.current.systems).length}</span><br><br>
-						<span>P: ${player.data().position.toFixed(1).display()} V: ${player.velocity.toFixed(1).display()} R: ${player.data().rotation.toFixed(2).display('xy')}</span><br>
+						<span>P: ${player.data().position.toFixed(1).display()} V: ${player.velocity.toFixed(1).display()} R: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)})</span><br>
 						<span>C: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)}) r: ${player.cam.radius.toFixed(1)} m: ${player.camIsActive ? 'player' : 'ship'}</span><br><br>
 						<span>LVL ${game.currentLevel.display()} ${game.scene().name} B: ${game.scene().bodies.size}</span><br>
 						<span>${Ship.battle} ${Ship.battle ? game.scene().bodies.get(Ship.battle).fleet.length : 0}/${[...game.scene().bodies.values()].reduce((a, c) => a + c.fleet.length, 0)}</span><br>
@@ -3373,7 +3468,7 @@
 						<span>${game.engine._glRenderer}</span><br>
 						<span>${performance.memory ? `${(performance.memory.usedJSHeapSize / 1000000) .toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(performance.memory.totalJSHeapSize / 1000000).toFixed()}MB Allocated)` : 'Memory usage unknown' }</span><br>
 						<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
-						<span>${closestBody ? `${closestBody.name} ${closestBody.position.toFixed(1).display('xz')} ${Vector3.Distance(player.data().position, closestBody.position)?.toFixed(1)} | ${Vector3.Distance(player.data().position, closestBody.position.add(closestBody.fleetLocation.position)).toFixed(1)}` : `No Closest body`}</span><br>
+						<span>${closestBody ? `${closestBody.name} ${closestBody.position.toFixed(1).display('xz')} ${Vector3.Distance(player.data().position, closestBody.position)?.toFixed(1)} | ${Vector3.Distance(player.data().position, closestBody.position.add(closestBody.fleetLocation)).toFixed(1)}` : `No Closest body`}</span><br>
 						<span>${player.targetBody ?? ''}</span><br><br>
 					`);
 					
@@ -3382,6 +3477,7 @@
 			}
 		}
 		settings = $('#settings form.gen').formData();
+		debug = $('#settings form.debug').formData();
 		worldgen = $('#save form').formData();
 	};
 	ui.update()

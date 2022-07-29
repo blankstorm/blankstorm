@@ -38,6 +38,7 @@ These are the changes for the next update[s].
 - Scroll (middle) click to rotate the camera
 - WASD are camera only
 - left click to move/attack
+- Shift clicking delete on a save will skip the confirmation dialog
 
 ## Bugs
 
