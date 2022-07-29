@@ -1419,6 +1419,7 @@
 		}
 		moveTo(location, locationIsRelative, scene = game.scene()){
 			if(!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
+			if(this.currentPath && debug.show_path_gizmos) this.currentPath.disposeGizmo();
 			this.currentPath = new Path(this.position, location.add(locationIsRelative ? this.position : Vector3.Zero()), scene);
 			if(debug.show_path_gizmos) this.currentPath.drawGizmo(scene, Color3.Green());
 			this.followPath(this.currentPath, scene).then(path => {
