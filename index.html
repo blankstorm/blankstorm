@@ -656,11 +656,13 @@
 		abs(){return new Vector2(Math.abs(this.x), Math.abs(this.y))},
 		round(){return new Vector2(Math.round(this.x), Math.round(this.y))},
 	});
-	Array.prototype.spliceOut = function(element){
-		let i = this.indexOf(element);
-		if(i != -1) this.splice(i, 1);
-		return i != -1;
-	};
+	Object.defineProperty(Array.prototype, 'spliceOut', {
+		value: function(element){
+			let i = this.indexOf(element);
+			if(i != -1) this.splice(i, 1);
+			return i != -1;
+		}
+	});
 
 	//JQuery plugins
 	$.ajaxSetup({timeout:3000});
