@@ -3296,7 +3296,7 @@
 				break;
 			case 'F9':
 				e.preventDefault();
-				download(debugLog[e.shiftKey ? 'toJSON' : 'toString'](), 'debug.' + e.shiftKey ? 'json' : 'log');
+				download(debugLog[e.shiftKey ? 'toJSON' : 'toString'](), 'debug.' + (e.shiftKey ? 'json' : 'log'));
 				break;
 			case 'b' :
 				if(e.ctrlKey) game.strobe(100);
