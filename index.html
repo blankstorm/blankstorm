@@ -1101,7 +1101,7 @@
 		canvas: $('canvas.game'),
 		engine: new Engine($("canvas.game")[0], true, { preserveDrawingBuffer: true, stencil: true }),
 		version: 'alpha_1.0.0',
-		versions: new Map([
+		versions: new Map($.ajax({url: web`versions/manifest.json`, async: false}).responseJSON ?? [
 			['infdev_1', {text: 'Infdev 1', group: 'infdev'}],
 			['infdev_2', {text: 'Infdev 2', group: 'infdev'}],
 			['infdev_3', {text: 'Infdev 3', group: 'infdev'}],
@@ -1263,7 +1263,7 @@
 		},
 		commands: {
 			help: name => {
-				open(web('docs/commands' + (name ? '#' + name : '')), 'target=_blank');
+				open(web`docs/commands${name ? '#' + name : ''}`, 'target=_blank');
 			},
 			function: name => {
 				if (game.function[name] && !game.function[name].includes('function ' + name)) {
@@ -1750,7 +1750,7 @@
 		cam: new ArcRotateCamera('player.cam', -Math.PI/2, Math.PI/2, 5, Vector3.Zero(), game.scene()), targetBody: null,
 		arcMode: true,
 		getAuthData(){
-			$.ajax({url: web('api/user'), async: false, data: { token: cookie.token, session: true }, success: req => {
+			$.ajax({url: web`api/user`, async: false, data: { token: cookie.token, session: true }, success: req => {
 				player.authData = req;
 				if (isJSON(req)) {
 					let res = JSON.parse(req);
@@ -2127,7 +2127,7 @@
 
 	//Some stuff done on initalization
 	document.title = "Blankstorm " + game.versions.get(game.version).text;
-	$("#main .version").html(`<a href="${web('/versions#' + game.version)}" target="_blank">${game.versions.get(game.version).text}</a>`);
+	$("#main .version").html(`<a href="${web`/versions#${game.version}`}" target="_blank">${game.versions.get(game.version).text}</a>`);
 	console.log(`%cBlankstorm ${game.versions.get(game.version).text}`, `color:#f55`);
 
 	//load mods & keybinds into the game
@@ -3287,7 +3287,7 @@
 		switch (e.key) {
 			case 'F8':
 				e.preventDefault();
-				open(web('bugs/new'), 'target=_blank');
+				open(web`bugs/new`, 'target=_blank');
 				break;
 			case 'F9':
 				e.preventDefault();
@@ -3300,7 +3300,7 @@
 			case 't': if(e.altKey){
 				e.preventDefault();
 				prompt('Password').then(passkey => {
-				let token = $.ajax(web('api/dev_auth'), {data:{passkey}, async: false}).responseText;
+				let token = $.ajax(web`api/dev_auth`, {data:{passkey}, async: false}).responseText;
 				document.cookie = 'token=' + token;
 				location.reload();
 			})} break;

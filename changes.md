@@ -42,6 +42,8 @@ These are the changes for the next update[s].
 - Debug settings
 - Pathfinding
 - Individual ship movement and attacking
+- Added downloadable logs 
+- Changed navigation key to `Tab`
 
 ## Bugs
 
@@ -82,3 +84,5 @@ These are the changes for the next update[s].
 - Change star materials to `StandardMaterial` and removed the materials library
 - Added `Array.prototype.spliceOut`
 - Added the config object
+- Renamed model and image folders to models and images
+- Added remote version manifest
