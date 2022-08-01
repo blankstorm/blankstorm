@@ -584,7 +584,7 @@
 			return false
 		}
 	},
-	isHex = str => /^[0-9a-f]+$/.test(str);
+	isHex = str => /^[0-9a-f-\.]+$/.test(str);
 
 	const modal = (input = 'Are you sure?', options = {Cancel: false, Ok: true}) => new Promise(res => {
 		$('#modal input').remove();
@@ -1944,7 +1944,7 @@
 				
 			}
 			
-			if(faction.fleet instanceof Array){
+			if(faction?.fleet instanceof Array){
 				faction.fleet.push(this);
 			}
 			
@@ -2542,6 +2542,7 @@
 				Object.assign(this, this.isLoaded ? {
 					...nameOrData,
 					location: Vector2.FromArray(nameOrData.location),
+					bodies: new Map()
 				} : {
 					id,
 					name: nameOrData,
@@ -2560,8 +2561,7 @@
 					probe: new ReflectionProbe('probe#' + id, 256, this),
 					get selectedEntities(){
 						return [...save.entities.values()].filter(e => !!e.selected);
-					},
-					waypoints: []
+					}
 				});
 				this.xzPlane.rotation.x = Math.PI / 2;
 				this.xzPlane.setEnabled(false);
@@ -2695,7 +2695,7 @@
 			constructor(save){
 				this.ready = this[save instanceof Save ? 'init' : 'generate'](save);
 			}
-	async init(save){
+			async init(save){
 				if(!(save instanceof Save)) throw new TypeError('save must be a Save');
 				let saveData = save.data;
 				Object.assign(this, {
@@ -2710,18 +2710,6 @@
 					currentLevel: Vector2.FromArray(saveData.currentLevel),
 					playerData: {},
 				});
-				for(let id in saveData.playerData){
-					let data = {...saveData.playerData[id], id};
-					this.playerData[id] = new PlayerData({
-						position: Vector3.FromArray(data.position),
-						rotation: Vector3.FromArray(data.rotation),
-						fleet: [],
-						id,
-						xp: data.xp,
-						xpPoints: data.xpPoints,
-						tech: data.tech
-					});
-				}
 				for(let entityData of saveData.entities){
 					switch(entityData.type){
 						case 'ship':
@@ -2730,6 +2718,18 @@
 						default:
 							new Entity(this);
 					}
+				}
+				for(let id in saveData.playerData){
+					let data = {...saveData.playerData[id], id};
+					this.playerData[id] = new PlayerData({
+						position: Vector3.FromArray(data.position),
+						rotation: Vector3.FromArray(data.rotation),
+						fleet: data.fleet.map(id => this.entities.get(id)),
+						id,
+						xp: data.xp,
+						xpPoints: data.xpPoints,
+						tech: data.tech
+					});
 				}
 				
 				for(let location in saveData.levels){
@@ -2753,8 +2753,7 @@
 										scene: level
 									}.copyFrom(bodyData, ['name', 'radius', 'id']));
 								break;
-								case 'planet':
-									
+								case 'planet':	
 									new Planet({
 										position: Vector3.FromArray(bodyData.position),
 										fleet: bodyData.fleet.map(id => this.entities.get(id)),
@@ -2766,8 +2765,13 @@
 									//TODO: Change Star/Planet constructors to use standerdized data
 							}
 						}
+
+						for(let [id, playerData] of Object.entries(this.playerData)){
+							playerData.fleet.forEach(ship => ship.meshes.delete(level.id));
+						}
 					}, this);
 				}
+
 				return this
 			}
 			async generate({name}){
@@ -2863,6 +2867,7 @@
 						data.levels[i] = {
 							bodies: {},
 							name: this.levels[i].name,
+							id: this.levels[i].id,
 							location: this.levels[i].location.asArray().map(num => +num.toFixed(3)),
 							planetNum: this.levels[i].planetNum,
 							hasStar: this.levels[i].hasStar
@@ -3432,7 +3437,7 @@
 					player.cam.angularSensibilityX = player.cam.angularSensibilityY = 2000 / settings.sensitivity;
 					player.updateFleet();
 					game.scene().meshes.forEach(m => {
-						if (m.name != 'skybox' && isHex(m.id)) m.showBoundingBox = game.hitboxes;
+						if(m != game.scene().skybox && isHex(m.id)) m.showBoundingBox = game.hitboxes;
 					});
 					let closestBody = game.scene().closestBody = null;
 					for(let [id, body] of game.scene().bodies){
