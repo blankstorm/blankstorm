@@ -455,11 +455,12 @@
 				<rect fill=var(--button-color) x=0 y=0 width=0 height=100%></rect>
 			</svg>
 		</div>
-		<div class=map ofs=y bg=none style='margin-top:10px;display:grid;grid-auto-rows:3em;grid-template-columns:repeat(4, 1fr) 6fr;column-gap: 10px'></div>
-		<button class='map new' plot=r25px,b25px,125px,36px,a>
-			<svg><use href=images/icons.svg#plus /></svg> 
-			<span></span>
-		</button>
+		<div class=map ofs=y bg=none style='margin-top:10px;display:grid;grid-auto-rows:3em;grid-template-columns:repeat(4, 1fr) 6fr;column-gap: 10px'>
+			<button class='map new' plot=r25px,b25px,125px,36px,a>
+				<svg><use href=images/icons.svg#plus /></svg> 
+				<span></span>
+			</button>
+		</div>
 		<div class=screenshots bg=none ofs=y style='display:grid;grid-auto-rows:144px;grid-template-columns:repeat(auto-fill,256px);gap:1em;'></div>
 		<div class=warp ofs=y bg=none>
 			<center>
@@ -810,7 +811,7 @@
 		planets: 'music/planets.mp3',
 		destroy_ship: 'sfx/destroy_ship.mp3',
 		warp_start: 'sfx/warp_start.mp3',
-		warp_end: 'sfx/warp_end.mp3',
+		//warp_end: 'sfx/warp_end.mp3',
 		laser_fire: 'sfx/laser_fire.mp3',
 		laser_hit: 'sfx/laser_hit.mp3',
 		ui: 'sfx/ui.mp3'
@@ -1795,7 +1796,6 @@
 		}
 	});
 	const Ship = class extends Entity{
-		static battle = null;
 		static generic = {
 			corvette: {
 				hp: 10, damage: 0.1, reload: 0.5, maxLevel: 5, speed: 2, agility: 2, range: 125,
@@ -1944,9 +1944,7 @@
 			else if(distance > warp.energy){game.chat('That location is out of range')}
 			else{
 				function done(){
-					
 					warp.cooldown = new Action(distance * 1000, 100, i => {
-
 					});
 					game.currentLevel = destination;
 					player.cam._scene = game.scene(destination);
@@ -1954,7 +1952,6 @@
 					player.reset();
 					player.cam.target = player.data().position;
 					ui.update();
-					playsound(sound.warp_end, settings.sfx);
 				}
 				if(!(saves.current.levels[destination.asArray()] instanceof Level)){
 					new Level(saves.current.systems[destination.asArray()] || 'Empty Space', destination, !!saves.current.systems[destination.asArray()], lvl => {
@@ -2207,7 +2204,8 @@
 			return gui
 		},
 		update: (scene = game.scene()) => {
-			$('div.inv,div.lab,div.map,div.yrd,div.screenshots').empty();
+			$('div.inv,div.lab,div.yrd,div.screenshots').empty();
+			$('div.map>:not(button)').remove();
 			let invRows = 1, yardRows = 0, labRows = 0, mapRows = 0;
 			for (let i in item) {
 				item[i].gui = ui.inv(i, ++invRows);
@@ -3232,7 +3230,7 @@
 		$(ui.LastScene).show();
 		ui.update();
 	});
-	$("#q div.warp button.warp").click(e => { warp.start(new Vector2(+$("input.warp.x").val(), +$("input.warp.y").val())); $("#q").toggle(); warp.end() });
+	$("#q div.warp button.warp").click(e => { warp.start(new Vector2(+$("input.warp.x").val(), +$("input.warp.y").val())); $("#q").toggle();});
 	$('#hud_ship .upgrade').click(e => {
 		let s = player.data().fleet[player.data().fleet.sel], g = Ship.generic[player.data().fleet[player.data().fleet.sel].type], upCost = '';
 		for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locale.text.item[m].name}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
@@ -3482,7 +3480,6 @@
 						<span>P: ${player.data().position.toFixed(1).display()} V: ${player.velocity.toFixed(1).display()} R: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)})</span><br>
 						<span>C: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)}) r: ${player.cam.radius.toFixed(1)} m: ${player.camIsActive ? 'player' : 'ship'}</span><br><br>
 						<span>LVL ${game.currentLevel.display()} ${game.scene().name} B: ${game.scene().bodies.size}</span><br>
-						<span>${Ship.battle} ${Ship.battle ? game.scene().bodies.get(Ship.battle).fleet.length : 0}/${[...game.scene().bodies.values()].reduce((a, c) => a + c.fleet.length, 0)}</span><br>
 					`);
 					$("#debug .right").html(`
 						<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
