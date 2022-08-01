@@ -540,9 +540,13 @@
 	isHex = str => /^[0-9a-f]+$/.test(str);
 
 	const modal = (input = 'Are you sure?', options = {Cancel: false, Ok: true}) => new Promise(res => {
+		$('#modal input').remove();
 		if(input instanceof Array){
 			$('#modal').attr('plot', `0,0,350px,${6 + 2*input.length}em`);
-			$('#modal p.info').attr('plot',`c,c-${2*input.length}em,300px,1em,a`).html(input.reduce((a, {name, text, value}) => a + `<input name=${name} placeholder='${text??''}' value='${value??''}'><br>`, ''));
+			$('#modal p.info').attr('plot',`c,c-${2*input.length}em,300px,1em,a`);
+			input.forEach(data => {
+				$('<input><br>').attr(data).appendTo('#modal');
+			});
 		}else{
 			$('#modal').attr('plot', '0,0,350px,8em');
 			$('#modal p.info').attr('plot', 'c,c-2em,300px,1em,a').text(input);
@@ -575,7 +579,7 @@
 		}
 	},
 	prompt = async (text, value) => {
-		let data = await modal([{name: 'data', text, value}]);
+		let data = await modal([{name: 'data', placeholder: text, value}]);
 		if(JSON.parse(data.result)){
 			return data.data;
 		}else{
@@ -1523,11 +1527,11 @@
 		#readonly = false;
 		static dialog(wp){
 			modal([
-				{name: 'name', text: 'Name', value: wp instanceof Waypoint ? wp.name : null},
-				{name: 'color', text: 'Color', value: wp instanceof Waypoint ? wp.color.toHexString() : null},
-				{name: 'x', text: 'X', value: wp instanceof Waypoint ? wp.position.x : null},
-				{name: 'y', text: 'Y', value: wp instanceof Waypoint ? wp.position.y : null},
-				{name: 'z', text: 'Z', value: wp instanceof Waypoint ? wp.position.z : null},
+				{name: 'name', placeholder: 'Name', value: wp instanceof Waypoint ? wp.name : null},
+				{name: 'color', label: 'Color', value: wp instanceof Waypoint ? wp.color.toHexString() : null, type: 'color'},
+				{name: 'x', placeholder: 'X', value: wp instanceof Waypoint ? wp.position.x : null},
+				{name: 'y', placeholder: 'Y', value: wp instanceof Waypoint ? wp.position.y : null},
+				{name: 'z', placeholder: 'Z', value: wp instanceof Waypoint ? wp.position.z : null},
 			], {Cancel: false, Save: true}).then(data => {
 				if(data.result){
 					if(!isHex(data.color.slice(1))){
@@ -2637,7 +2641,7 @@
 			gui.download.click(e => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
 			gui.play.click(loadAndPlay);
 			gui.edit.click(e => {
-				modal([{name: 'name', text: 'New name', value: save.data.name}], {Cancel: false, Save: true}).then(result => {
+				modal([{name: 'name', placeholder: 'New name', value: save.data.name}], {Cancel: false, Save: true}).then(result => {
 				if(result.result){
 						save.data.name = result.name;
 						ui.update();
@@ -2889,8 +2893,8 @@
 	const Server = class {
 		static dialog(server){
 			modal([
-				{name: 'name', text: 'Display name', value: server instanceof Server ? server.name : null},
-				{name: 'url', text: 'Server URL or IP Address', value: server instanceof Server ? server.url : null}
+				{name: 'name', placeholder: 'Display name', value: server instanceof Server ? server.name : null},
+				{name: 'url', placeholder: 'Server URL or IP Address', value: server instanceof Server ? server.url : null}
 			], {Cancel: false, Save: true}).then(result => {
 				if(result.result){
 					let transaction = db.transaction('servers','readwrite').objectStore('servers');
