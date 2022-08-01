@@ -317,6 +317,22 @@
 		[bg=star]{
 			background-image: url('image/menu.png');
 		}
+		progress{
+			background-color: var(--button-color);
+			border-radius: var(--bg-radius);
+		}
+		progress::-webkit-progress-bar{
+			background-color: #0000;
+			border-radius: var(--bg-radius);
+		}
+		progress::-moz-progress-bar{
+			background-color: var(--text-color);
+			border-radius: var(--bg-radius);
+		}
+		progress::-webkit-progress-value{
+			background-color: var(--text-color);
+			border-radius: var(--bg-radius);
+		}
 	</style>
 </head>
 <body oncontextmenu='e=>false' bg=star>
@@ -810,7 +826,7 @@
 			return 'Action';
 		}
 		abort(){
-			return false
+			throw new ReferenceError('abort called to soon!');
 		}
 		onupdate(){}
 		onabort(){}
