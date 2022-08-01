@@ -34,7 +34,7 @@
 		db.promise.catch(e => console.error('Failed to open IndexedDB: ' + e));
 		
 	</script>
-	<link rel=icon href=image/icon.png type=image/png>
+	<link rel=icon href=images/icon.png type=image/png>
 	<style>
 		:root{
 			--hue: 200;
@@ -315,7 +315,7 @@
 			transform-origin: center;
 		}
 		[bg=star]{
-			background-image: url('image/menu.png');
+			background-image: url('images/menu.png');
 		}
 		progress{
 			background-color: var(--button-color);
@@ -353,7 +353,7 @@
 	<ul lsn id=chat style=position:fixed;left:15px;bottom:50px;width:30%;height:fit-content;max-height:35%;background:#2225;padding:0;margin:0;z-index:9 nbs ofn bw></ul>
 	<ul lsn ingame id=chat_history hide style=position:fixed;left:15px;bottom:50px;width:30%;height:fit-content;max-height:35%;background:#2225;padding:0;margin:0;z-index:9 nbs ofs=y bw></ul>
 	<div id=main cover bg=none center-flex>
-		<img src=image/title.png plot=c,90px,475px,75px />
+		<img src=images/title.png plot=c,90px,475px,75px />
 		<button class=sp plot=c,260px,350px,50px></button>
 		<button class=mp plot=c,360px,350px,50px></button>
 		<button class=options plot=c,460px,350px,50px></button>
@@ -363,26 +363,26 @@
 	</div>
 	<ul id=load hide lsn content ofs=y style=padding:2.5%>
 		<button class=back plot=25px,b25px,125px,36px,a>
-			<svg><use href=image/icons.svg#arrow-left /></svg> 
+			<svg><use href=images/icons.svg#arrow-left /></svg> 
 			<span></span>
 		</button>
 		<button class=new plot=r25px,b25px,125px,36px,a>
-			<svg><use href=image/icons.svg#plus /></svg> 
+			<svg><use href=images/icons.svg#plus /></svg> 
 			<span></span>
 		</button>
 		<button class='refresh upload' plot=r175px,b25px,125px,36px,a>
-			<svg><use href=image/icons.svg#upload /></svg> 
+			<svg><use href=images/icons.svg#upload /></svg> 
 			<span></span>
 		</button>
 	</ul>
 	<dialog id=save ofs=y plot=0,0,400px,300px>
 		<input placeholder="save name" class=name plot=c,50px,250px,2em,a>
 		<button class=back plot=c-75px,b62.5px,150px,36.6px,a>
-			<svg><use href=image/icons.svg#arrow-left /></svg> 
+			<svg><use href=images/icons.svg#arrow-left /></svg> 
 			<span></span>
 		</button>
 		<button class=new plot=c+75px,b62.5px,150px,36.6px,a>
-			<svg><use href=image/icons.svg#plus /></svg> 
+			<svg><use href=images/icons.svg#plus /></svg> 
 			<span></span>
 		</button>
 		<form name=worldgen bg=none plot='c,calc(2em + 75px),80%,100px,a'>
@@ -413,15 +413,15 @@
 	<div ingame id=e content hide game-ui style=z-index:5 tabindex=-1>
 		<div class=nav bg=none plot=5%,25px,90%,45px,a>
 			<button class=trade plot=c-225px,5px,200px,35px,a>
-				<svg><use href=image/icons.svg#money-check-dollar /></svg> 
+				<svg><use href=images/icons.svg#money-check-dollar /></svg> 
 				<span></span>
 			</button>
 			<button class=yrd plot=c,5px,200px,35px,a>
-				<svg><use href=image/icons.svg#wrench /></svg> 
+				<svg><use href=images/icons.svg#wrench /></svg> 
 				<span></span>
 			</button>
 			<button class=lab plot=c+225px,5px,200px,35px,a>
-				<svg><use href=image/icons.svg#flask /></svg> 
+				<svg><use href=images/icons.svg#flask /></svg> 
 				<span></span>
 			</button>
 		</div>
@@ -432,19 +432,19 @@
 	<div ingame id=q content hide game-ui style=z-index:5 tabindex=-1>
 		<div class=nav bg=none plot=5%,25px,90%,45px,a>
 			<button class=inv plot=c-300px,5px,175px,35px,a>
-				<svg><use href=image/icons.svg#box /></svg> 
+				<svg><use href=images/icons.svg#box /></svg> 
 				<span></span>
 			</button>
 			<button class=map plot=c-100px,5px,175px,35px,a>
-				<svg><use href=image/icons.svg#location-dot /></svg> 
+				<svg><use href=images/icons.svg#location-dot /></svg> 
 				<span></span>
 			</button>
 			<button class=screenshots plot=c+100px,5px,175px,35px,a>
-				<svg><use href=image/icons.svg#image /></svg> 
+				<svg><use href=images/icons.svg#image /></svg> 
 				<span></span>
 			</button>
 			<button class=warp plot=c+300px,5px,175px,35px,a>
-				<svg><use href=image/icons.svg#rocket-launch /></svg> 
+				<svg><use href=images/icons.svg#rocket-launch /></svg> 
 				<span></span>
 			</button>
 		</div>
@@ -457,7 +457,7 @@
 		</div>
 		<div class=map ofs=y bg=none style='margin-top:10px;display:grid;grid-auto-rows:3em;grid-template-columns:repeat(4, 1fr) 6fr;column-gap: 10px'></div>
 		<button class='map new' plot=r25px,b25px,125px,36px,a>
-			<svg><use href=image/icons.svg#plus /></svg> 
+			<svg><use href=images/icons.svg#plus /></svg> 
 			<span></span>
 		</button>
 		<div class=screenshots bg=none ofs=y style='display:grid;grid-auto-rows:144px;grid-template-columns:repeat(auto-fill,256px);gap:1em;'></div>
@@ -485,8 +485,8 @@
 		</div>
 	</div>
 	<div ingame id=hud_ship hide bg=none>
-		<svg class=lock style=position:fixed;right:2%;top:2.5%;><use href=image/icons.svg#lock /></svg>
-		<svg class=upgrade style=position:fixed;right:2%;top:55%;font-size:20px;><use href=image/icons.svg#circle-up /></svg>
+		<svg class=lock style=position:fixed;right:2%;top:2.5%;><use href=images/icons.svg#lock /></svg>
+		<svg class=upgrade style=position:fixed;right:2%;top:55%;font-size:20px;><use href=images/icons.svg#circle-up /></svg>
 	</div>
 	<div ingame  id=esc hide cover bg=none tabindex=-1>
 		<div class=content plot=c,c,250px,300px style=z-index:10>
@@ -498,23 +498,23 @@
 	</div>
 	<div id=settings hide content>
 		<button plot=50px,50px,135px,35px,a class=gen>
-			<svg><use href=image/icons.svg#gear /></svg> 
+			<svg><use href=images/icons.svg#gear /></svg> 
 			<span></span>
 		</button>
 		<button plot=50px,100px,135px,35px,a class=key>
-			<svg><use href=image/icons.svg#keyboard /></svg> 
+			<svg><use href=images/icons.svg#keyboard /></svg> 
 			<span></span>
 		</button>
 		<button plot=50px,150px,135px,35px,a class=mod hide>
-			<svg><use href=image/icons.svg#puzzle-piece /></svg> 
+			<svg><use href=images/icons.svg#puzzle-piece /></svg> 
 			Mods
 		</button>
 		<button plot=50px,150px,135px,35px,a class=debug>
-			<svg><use href=image/icons.svg#bug /></svg>
+			<svg><use href=images/icons.svg#bug /></svg>
 			<span></span>
 		</button>
 		<button plot='50px,calc(100% - 85px),135px,35px,a' class=back>
-			<svg><use href=image/icons.svg#arrow-left /></svg> 
+			<svg><use href=images/icons.svg#arrow-left /></svg> 
 			<span></span>
 		</button>
 		<form class=gen name=settings nbs bg=none ofs=y>
@@ -1578,9 +1578,9 @@
 		}
 		gui(row){
 			let ui = $(`
-				<span style=text-align:center;grid-row:${row};grid-column:2;><svg><use href=image/icons.svg#pencil /></svg></span>
-				<span style=text-align:center;grid-row:${row};grid-column:3;><svg><use href=image/icons.svg#trash /></svg></span>
-				<span style=text-align:center;grid-row:${row};grid-column:4;><svg><use href=image/icons.svg#${this.icon} /></svg></span>
+				<span style=text-align:center;grid-row:${row};grid-column:2;><svg><use href=images/icons.svg#pencil /></svg></span>
+				<span style=text-align:center;grid-row:${row};grid-column:3;><svg><use href=images/icons.svg#trash /></svg></span>
+				<span style=text-align:center;grid-row:${row};grid-column:4;><svg><use href=images/icons.svg#${this.icon} /></svg></span>
 				<span style=text-align:left;grid-row:${row};grid-column:5;color:${this.color.toHexString()}>${this.name}</span>
 			`).attr('bg','none');
 			ui.filter('span').eq(0).attr('clickable', '').click(e => {
@@ -1609,7 +1609,7 @@
 			scene.waypoints.push(this);
 			this.#readonly = readonly;
 			Object.assign(this, {name, position, color, icon});
-			this.marker = $(`<svg ingame><use href=image/icons.svg#${icon} /></svg><p ingame style=justify-self:center></p>`).addClass('marker').hide().appendTo('body');
+			this.marker = $(`<svg ingame><use href=images/icons.svg#${icon} /></svg><p ingame style=justify-self:center></p>`).addClass('marker').hide().appendTo('body');
 			this.marker.filter('p').css('text-shadow', '1px 1px 1px #000')
 		}
 	}
@@ -2161,9 +2161,9 @@
 				techRequires += (s.requires[i] > 0) ? `<br>${locale.text.tech[i].name}: ${player.data().tech[i]}/${s.requires[i]}` : `<br>Incompatible with ${locale.text.tech[i].name}`
 			}
 			let gui = $(`
-				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=image/icons.svg#lock /></svg></span>
+				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
 				<span style=text-align:center;grid-row:${row};grid-column:2;>[${player.data().shipNum(shiptype)}] ${locale.text.entity[shiptype].name}</span>
-				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=image/icons.svg#circle-plus /></svg></span>
+				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
 			`);
 			gui.eq(-1).children('svg')
 				.click(e => {
@@ -2179,9 +2179,9 @@
 		lab: (t, row) => {
 			if (tech[t] == undefined) throw new ReferenceError(`UI: Lab: techtype "${t}" is undefined`);
 			let gui = $(`
-				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=image/icons.svg#lock /></svg></span>
+				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
 				<span style=text-align:center;grid-row:${row};grid-column:2;>${locale.text.tech[t].name}</span>
-				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=image/icons.svg#circle-up /></svg></span>
+				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
 			`);
 			gui.click(e => {
 				if(player.data().hasItems(tech.price(t)) && player.data().tech[t] < tech[t].max && !tech.locked(t) && player.data().xpPoints >= 1){
@@ -2194,7 +2194,7 @@
 			
 			let upgradeCost = Object.entries(tech.price(t)).reduce((a, [k, v]) => a + `<br>${locale.text.item[k].name}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
 			techRequires = Object.entries(tech[t].requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locale.text.tech[k].name}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locale.text.tech[k].name}`, '');
-			gui.eq(-1).children('svg').tooltip(`<strong>${locale.text.tech[t].name}</strong><br>${locale.text.tech[t].description}<br>${player.data().tech[t] >= tech[t].max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=image/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech[t].requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
+			gui.eq(-1).children('svg').tooltip(`<strong>${locale.text.tech[t].name}</strong><br>${locale.text.tech[t].description}<br>${player.data().tech[t] >= tech[t].max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech[t].requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
 			return gui
 		},
 		inv: (i, row) => {
@@ -2244,10 +2244,10 @@
 				$(`<img src=${s} width=256></img>`)
 					.appendTo('#q div.screenshots')
 					.cm(
-						$('<button><svg><use href=image/icons.svg#download /></svg> Download</button>').click(e => {
+						$('<button><svg><use href=images/icons.svg#download /></svg> Download</button>').click(e => {
 							$('<a download=screenshot.png></a>').attr('href', s)[0].click()
 						}),
-						$('<button><svg><use href=image/icons.svg#trash /></svg> Delete</button>').click(e => {
+						$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').click(e => {
 							confirm().then(result => {
 								game.screenshots.spliceOut(s);
 								ui.update();
@@ -2556,7 +2556,7 @@
 				this.skybox.material = Object.assign(new StandardMaterial('skybox.mat', this), {
 					backFaceCulling: false,
 					disableLighting: true,
-					reflectionTexture: CubeTexture.CreateFromImages(Array(6).fill('image/skybox.jpg'), this)
+					reflectionTexture: CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), this)
 				});
 				this.skybox.material.reflectionTexture.coordinatesMode = 5;
 				for(let i in Ship.generic){
@@ -2621,10 +2621,10 @@
 		static current = {location:Vector2.Zero()}
 		static GUI = function(save){
 			const gui = $(`<li ofn bg bw style=align-items:center;height:3em;></li>`);
-			gui.delete = $(`<p style=position:absolute;left:10%><svg><use href=image/icons.svg#trash /></svg></p>`).appendTo(gui);
-			gui.download = $(`<p style=position:absolute;left:15%><svg><use href=image/icons.svg#download /></svg></p>`).appendTo(gui);
-			gui.play = $(`<p style=position:absolute;left:20%><svg><use href=image/icons.svg#play /></svg></p>`).appendTo(gui);
-			gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=image/icons.svg#pencil /></svg></p>`).appendTo(gui);
+			gui.delete = $(`<p style=position:absolute;left:10%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(gui);
+			gui.download = $(`<p style=position:absolute;left:15%><svg><use href=images/icons.svg#download /></svg></p>`).appendTo(gui);
+			gui.play = $(`<p style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(gui);
+			gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=images/icons.svg#pencil /></svg></p>`).appendTo(gui);
 			gui.name = $(`<p style=position:absolute;left:30%>${save.data.name}</p>`).appendTo(gui);
 			gui.version = $(`<p style=position:absolute;left:55%>${game.versions.get(save.data.version) ? game.versions.get(save.data.version).text : save.data.version}</p>`).appendTo(gui);
 			gui.date = $(`<p style=position:absolute;left:65%>${new Date(save.data.date).toLocaleString()}</p>`).appendTo(gui);
@@ -2987,9 +2987,9 @@
 				$('[ingame]').hide();
 				$(reason == 'io client disconnect' ? '#load' : '#connect').show();
 			});
-			this.gui.delete = $(`<p style=position:absolute;left:15%><svg><use href=image/icons.svg#trash /></svg></p>`).appendTo(this.gui);
-			this.gui.play = $(`<p style=position:absolute;left:20%><svg><use href=image/icons.svg#play /></svg></p>`).appendTo(this.gui);
-			this.gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=image/icons.svg#pencil /></svg></p>`).appendTo(this.gui);
+			this.gui.delete = $(`<p style=position:absolute;left:15%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(this.gui);
+			this.gui.play = $(`<p style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(this.gui);
+			this.gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=images/icons.svg#pencil /></svg></p>`).appendTo(this.gui);
 			this.gui.name = $(`<p style=position:absolute;left:30%>${this.name}</p>`).appendTo(this.gui);
 			this.gui.info = $(`<p style=position:absolute;left:75%></p>`).appendTo(this.gui);
 			$('<p> </p>').appendTo(this.gui);
@@ -3032,7 +3032,7 @@
 		}
 		ping(){
 			this.gui.info
-			.html('<svg><use href=image/icons.svg#arrows-rotate /></svg>')
+			.html('<svg><use href=images/icons.svg#arrows-rotate /></svg>')
 			.css('animation', '2s linear infinite rotate');
 			let beforeTime = Date.now();
 			let url = /.+:(\d){1,5}/.test(this.url) ? this.url : this.url + ':1123';
@@ -3045,13 +3045,13 @@
 					.tooltip(`${this.url}<br><br>${this.pingData.version.text}<br><br>${this.pingData.message}`)
 				}else{
 					this.gui.info
-					.html('<svg><use href=image/icons.svg#xmark /></svg>')
+					.html('<svg><use href=images/icons.svg#xmark /></svg>')
 					.tooltip(`Invalid response`);
 				}
 			})
 			.fail(data => {
 				this.gui.info
-				.html('<svg><use href=image/icons.svg#xmark /></svg>')
+				.html('<svg><use href=images/icons.svg#xmark /></svg>')
 				.tooltip(`Can't connect to server`);
 			})
 			.always(data => {
@@ -3104,14 +3104,14 @@
 		saves.forEach(save => save.gui.prependTo('#load'));
 		saves.forEach(save => save.gui.prependTo('#load'));
 		$("#main").hide();
-		$('#load button.upload use').attr('href', 'image/icons.svg#upload');
+		$('#load button.upload use').attr('href', 'images/icons.svg#upload');
 		$('#load button.upload span').text(locale.text.menu.upload);
 		$("#load").show()
 	});
 	$("#main .mp").click(e => {
 		game.mp = true;
 		$('#main').hide();
-		$('#load button.refresh use').attr('href', 'image/icons.svg#arrows-rotate');
+		$('#load button.refresh use').attr('href', 'images/icons.svg#arrows-rotate');
 		$('#load button.refresh span').text(locale.text.menu.refresh);
 		$('#load').show();
 		$("#load li").detach();
@@ -3214,12 +3214,12 @@
 	$("#settings button.mod").click(e => {
 		$('#settings ul.mod').show().empty().append(
 			$('<h2 style=text-align:center>Mods</h2>'),
-			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=image/icons.svg#trash /></svg>&nbsp;Reset</button>').click(e => {
+			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=images/icons.svg#trash /></svg>&nbsp;Reset</button>').click(e => {
 				db.transaction('mods', 'readwrite').objectStore('mods').clear().onsuccess = e => {
 					location.reload();
 				}
 			}),
-			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=image/icons.svg#plus /></svg></i>&nbsp;${locale.text.menu.upload}</button>`).click(e => {
+			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locale.text.menu.upload}</button>`).click(e => {
 				//upload('.js').then(files => [...files].forEach(file => file.text().then(mod => game.loadMod(mod))));
 				alert('Mods are not supported.');
 			})
@@ -3242,7 +3242,7 @@
 		if (player.data().fleet.sel > -1) {
 			let s = player.data().fleet[player.data().fleet.sel], g = Ship.generic[player.data().fleet[player.data().fleet.sel].type], upCost = '';
 			for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locale.text.item[m].name}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
-			return s.level == g.recipe.length - 1 ? `<p style=padding:10px>Max Level</p>` : `${s.level} <svg><use href=image/icons.svg#arrow-right /></svg> ${s.level + 1}<br><br><strong>Upgrade Cost:</strong>${upCost}`;
+			return s.level == g.recipe.length - 1 ? `<p style=padding:10px>Max Level</p>` : `${s.level} <svg><use href=images/icons.svg#arrow-right /></svg> ${s.level + 1}<br><br><strong>Upgrade Cost:</strong>${upCost}`;
 		}
 	});
 	$('[label]').each((i, e) => {
