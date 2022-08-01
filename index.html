@@ -11,14 +11,18 @@
 		debugLog.toJSON = () => {
 			return JSON.stringify([...debugLog]);
 		}
+		debugLog.verbose = (...args) => {
+			if(debug.log_level == 'verbose') debugLog.push({type: 'verbose', time: performance.now().toFixed(), args});
+		}
 		onerror = err => {
 			debugLog.push({type: 'error', time: performance.now().toFixed(), args: [err]});
 		}
 		let _console = console;
 		console = new Proxy(_console, {
 			get(obj, prop){
+				let level = debug ? debug.log_level : 'warn';
 				return function(...args){
-					debugLog.push({type: prop, time: performance.now().toFixed(), args});
+					if(prop != 'warn' || debug.log_level != 'error') debugLog.push({type: prop, time: performance.now().toFixed(), args});
 					return obj[prop](...args);
 				}
 			}	
@@ -555,6 +559,11 @@
 			<input type=checkbox name=tooltips label="Show Advanced Tooltips" value=true><br><br>
 			<input type=checkbox name=reload_locales label="Reload Locales" value=true><br><br>
 			<input type=checkbox name=disable_saves label="Disable Saves" value=true><br><br>
+			<select name=log_level label="Log Level">
+				<option value=warn>Warn</option>
+				<option value=error>Error</option>
+				<option value=verbose>Verbose</option>
+			</select><br><br>
 		</form>
 		<ul class=mod nbs bg=none ofs=y hide lsn></ul>
 	</div>
