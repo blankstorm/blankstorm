@@ -1528,7 +1528,7 @@
 		static dialog(wp){
 			modal([
 				{name: 'name', placeholder: 'Name', value: wp instanceof Waypoint ? wp.name : null},
-				{name: 'color', label: 'Color', value: wp instanceof Waypoint ? wp.color.toHexString() : null, type: 'color'},
+				{name: 'color', type: 'color', value: wp instanceof Waypoint ? wp.color.toHexString() : null},
 				{name: 'x', placeholder: 'X', value: wp instanceof Waypoint ? wp.position.x : null},
 				{name: 'y', placeholder: 'Y', value: wp instanceof Waypoint ? wp.position.y : null},
 				{name: 'z', placeholder: 'Z', value: wp instanceof Waypoint ? wp.position.z : null},
@@ -2055,10 +2055,10 @@
 		player.rcsIsActive = !player.rcsIsActive;
 		$('#hud .rcs').text(`RCS: ${player.rcsIsActive ? 'ON' : 'OFF'}`);
 	});
-	game.createKeybind('nav', {key: 'q'}, 'Toggle Navigation', e => {
+	game.createKeybind('nav', {key: 'Tab'}, 'Toggle Inventory', e => {
 		game.changeUI('#q');
 	});
-	game.createKeybind('inv', {key: 'e'}, 'Toggle Inventory', e => {
+	game.createKeybind('inv', {key: 'e'}, 'Toggle Shipyard/Lab', e => {
 		game.changeUI('#e');
 	});
 	game.createKeybind('view',{key: 'r'}, 'Toggle View Mode', e => {
