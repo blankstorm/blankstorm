@@ -1808,7 +1808,7 @@
 					{ ancient_tech: 4, code_snippets: 5 },
 					{ ancient_tech: 8, code_snippets: 10 }, 
 					{ ancient_tech: 16, code_snippets: 20 }
-				], requires: {}, model: 'model/corvette.gltf'
+				], requires: {}, model: 'models/corvette.gltf'
 			},
 			frigate: {
 				hp: 25, damage: 0.5, reload: 1, maxLevel: 5, speed: 1, agility: 1.5, range: 150,
@@ -1821,7 +1821,7 @@
 					{ ancient_tech: 7, code_snippets: 20 },
 					{ ancient_tech: 9, code_snippets: 30 },
 					{ ancient_tech: 12, code_snippets: 35 }
-				], requires: {}, model: 'model/corvette.gltf'
+				], requires: {}, model: 'models/corvette.gltf'
 			},
 			transport_small: {
 				hp: 5, damage: 0.1, reload: 5, maxLevel: 1, speed: 1, agility: .75, range: 75,
@@ -1829,7 +1829,7 @@
 				critChance:  0.1, critDamage: 1,
 				recipe: [
 					{ metal: 5000, minerals: 1000, fuel: 2500}
-				], requires: {storage: 3}, model: 'model/transport_small.glb'
+				], requires: {storage: 3}, model: 'models/transport_small.glb'
 			},
 			crusier: {
 				hp: 50, damage: 1, reload: 2, maxLevel: 5, speed: 1, agility: 1, range: 200,
@@ -1842,7 +1842,7 @@
 					{ ancient_tech: 8, code_snippets: 30 },
 					{ ancient_tech: 12, code_snippets: 40 },
 					{ ancient_tech: 18, code_snippets: 50 }
-				], requires: {}, model: 'model/crusier.gltf'
+				], requires: {}, model: 'models/crusier.gltf'
 			},
 			destroyer: {
 				hp: 100, damage: 2.5, reload: 1, maxLevel: 5, speed: 1, agility: 1, range: 200,
@@ -1855,7 +1855,7 @@
 					{ ancient_tech: 20, code_snippets: 60 },
 					{ ancient_tech: 35, code_snippets: 85 },
 					{ ancient_tech: 60, code_snippets: 100 }
-				], requires: {}, model: 'model/destroyer.gltf'
+				], requires: {}, model: 'models/destroyer.gltf'
 			},
 			transport_medium: {
 				hp: 50, damage: 1, reload: 5, maxLevel: 1, speed: 2/3, agility: 0.5, range: 75,
@@ -1863,7 +1863,7 @@
 				critChance:  0.1, critDamage: 1,
 				recipe: [
 					{ metal: 10000, minerals: 2000, fuel: 5000}
-				], requires: {storage: 5}, model: 'model/transport_small.glb'
+				], requires: {storage: 5}, model: 'models/transport_small.glb'
 			},
 			battleship: {
 				hp: 250, damage: 10, reload: 2, maxLevel: 5, speed: 2/3, agility: 1, range: 250,
@@ -1876,7 +1876,7 @@
 					{ ancient_tech: 45, code_snippets: 40 },
 					{ ancient_tech: 70, code_snippets: 55 },
 					{ ancient_tech: 100, code_snippets: 70 }
-				], requires: {}, model: 'model/battleship.gltf'
+				], requires: {}, model: 'models/battleship.gltf'
 			},
 			dreadnought: {
 				hp: 2000, damage: 100, reload: 4, maxLevel: 5, speed: 1/3, agility: 1, range: 250,
@@ -1889,7 +1889,7 @@
 					{ ancient_tech: 100, code_snippets: 88 },
 					{ ancient_tech: 150, code_snippets: 100 },
 					{ ancient_tech: 250, code_snippets: 125 }
-				], requires: { build: 5 }, model: 'model/dreadnought.gltf'
+				], requires: { build: 5 }, model: 'models/dreadnought.gltf'
 			}
 		}
 		constructor(typeOrData, faction = player.data(), save){
