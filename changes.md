@@ -37,8 +37,11 @@ These are the changes for the next update[s].
 - New ships: small and medium transport
 - Scroll (middle) click to rotate the camera
 - WASD are camera only
-- left click to move/attack
+- right click to move ships
 - Shift clicking delete on a save will skip the confirmation dialog
+- Debug settings
+- Pathfinding
+- Individual ship movement and attacking
 
 ## Bugs
 
@@ -77,5 +80,5 @@ These are the changes for the next update[s].
 - Changed message for when game is fully loaded
 - Removed `navigator.platform` from debug screen
 - Change star materials to `StandardMaterial` and removed the materials library
-- Ships use relative cordinates with a parent
 - Added `Array.prototype.spliceOut`
+- Added the config object
