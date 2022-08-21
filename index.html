@@ -1659,7 +1659,7 @@
 		}
 	});
 	Object.defineProperty(item, 'multiplyer', { value: 1 + (1 - settings.difficulty), enumerable: false });
-	game.freezeProperty('version', 'versions', 'mpEnabled', 'scene', 'log', 'chat');
+	game.freezeProperty('mpEnabled', 'scene', 'chat');
 	player.freezeProperty('updateFleet', 'move', 'stop', 'reset', 'hasItems', 'removeItems', 'giveItems', 'wipe', 'chat');
 	onresize = e => { game.engine.resize(); console.warn('Do not paste any code someone gave you, as they may be trying to steal your information') };
 	if (!game.mpEnabled) {
