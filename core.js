@@ -911,6 +911,17 @@ const Level = class extends BABYLON.Scene {
 		
 		this.#loadEntityMeshesPromise = this.#loadEntityMeshes();
 		this.#initPromise = isJSON(nameOrData) ? this.load(JSON.parse(nameOrData)) : this.init(nameOrData);
+		this.registerBeforeRender(()=>{
+			let ratio = this.getAnimationRatio();
+			for(let [id, body] of this.bodies){
+				if(body instanceof Planet && body.material instanceof CelestialBodyMaterial){
+					body.rotation.y += 0.0001 * ratio * body.material.rotationFactor;
+					body.material.setMatrix("rotation", Matrix.RotationY(body.matrixAngle));
+					body.matrixAngle -= 0.0004 * ratio;
+					body.material.setVector3("options", new Vector3(body.material.generationOptions.clouds, body.material.generationOptions.groundAlbedo, body.material.generationOptions.cloudAlbedo))
+				}
+			}
+		});
 	}
 	serialize(){
 		let data = {
