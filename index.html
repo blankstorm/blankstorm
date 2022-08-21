@@ -1159,76 +1159,6 @@
 				player.cam.inputs.attached.pointers.buttons = [1];
 			}
 		},
-		getEntity: sel => {
-			if (typeof sel != 'string') throw new TypeError('getEntity: selector must be of type string');
-			if (typeof saves.selected != 'string') throw new TypeError('getEntity: you must have a save selected');
-			switch (sel[0]) {
-				case '@':
-					return (sel.slice(1) == player.username || sel.slice(1) == player.id) ? player :
-						new ReferenceError('getEntity: multi-player entity selection not implemented');
-					break;
-				case '*':
-					return [...saves.current.entities.values()];
-					break;
-				case '#':
-					if(saves.current.entities.has(sel.slice(1))){
-						return saves.current.entities.get(sel.slice(1))
-					}else{
-						console.warn(`Entity ${sel} does not exist`);
-					}
-					break;
-			}
-		},
-		removeEntity: (...args) => {
-			for(let e of args){
-				let id = [...saves.current.entities].find(en => en[1] == e)?.[0];
-				if(e instanceof Entity && id){
-					e.remove();
-					saves.current.entities.delete(id);
-					for(let i in saves.current.levels){
-						for(let [id, body] of saves.current.levels[i].bodies){
-							body.fleet.spliceOut(e);
-						};
-					};
-				}
-				else{
-					console.warn(`Can't remove ${e?.name}: not an entity or does not exist`);
-				}
-				player.data().fleet.spliceOut(e);
-			}
-		},
-		getBody: sel => {
-			if (typeof sel != 'string') throw new TypeError('getBody: selector must be of type string');
-			if (typeof saves.selected != 'string') throw new TypeError('getBody: you must have a save selected');
-			switch (sel[0]) {
-				case '*':
-					let total = [];
-					for(let i in saves.current.levels){
-						total.push(...saves.current.levels[i].bodies.values())
-					}
-					return total
-					break;
-				case '#':
-					for(let i in saves.current.levels){
-						for(let [id, body] of saves.current.levels[i].bodies){
-							if(id == sel.slice(1)) return body;
-						}
-					};
-					break;
-			}
-		},
-		removeBody: (...args) => {
-			for(let body of args){
-				if(body instanceof CelestialBody){
-					for(let i in saves.current.levels){
-						saves.current.levels[i].bodies.delete(id);
-					};
-				}
-				else{
-					console.warn(`Can't remove ${body?.name}: not a CelestialBody`);
-				}	
-			}
-		},
 		cli: { line: 0, currentInput: "", i: $("#cli").val(), prev: [] },
 		scene: (location = game.currentLevel) => {
 			return saves.current || game.scene.default;
@@ -1246,7 +1176,7 @@
 			if(game.mp){
 				servers.get(servers.sel).socket.emit('command', command);
 			}else{
-				return runCommand(command);
+				return runCommand(command, saves.current);
 			}
 		},
 		chat: (...msg) => { for (let m of msg) { $(`<li bg=none></li>`).text(m).appendTo('#chat').fadeOut(1000 * settings.chat); $(`<li bg=none></li>`).text(m).appendTo('#chat_history')}},
@@ -1353,7 +1283,7 @@
 		}
 	}
 
-	const playerData = new PlayerData({id: 'DEFAULT'}, game.scene());
+	const playerData = new PlayerData({id: 'DEFAULT', name: 'DEFAULT'});
 	const player = {
 		username: '', speed: 1, velocity: Vector3.Zero(),
 		cam: new ArcRotateCamera('player.cam', -Math.PI/2, Math.PI/2, 5, Vector3.Zero(), game.scene()),
@@ -1783,7 +1713,7 @@
 			let loadAndPlay = async () => {
 				$('#loading_cover').show();
 				let live = save.load();
-				await live.ready;
+				await live.ready();
 				saves.current = live;
 				live.play();
 				$('#loading_cover').hide();
@@ -1819,7 +1749,7 @@
 		static Live = class extends Level{
 			waypoints = [];
 			constructor(save){
-				super(save.data, game.engine)
+				super(save.data ?? save, game.engine)
 			}
 			play(){
 				if(this.version == version){
@@ -1852,7 +1782,7 @@
 					id: waypoint.id,
 					name: waypoint.name,
 					color: Color3.FromArray(waypoint.color),
-					position: Vector3.FromArray(waypoint)
+					position: Vector3.FromArray(waypoint.position)
 				});
 			}
 
@@ -2091,14 +2021,13 @@
 	});
 	$('#save .new').click(e => {
 		$('#save')[0].close();
-		saves.current = new Save.Live({name: $('#save .name').val()}, game.engine);
+		saves.current = new Save.Live($('#save .name').val(), game.engine);
 		saves.current.ready().then(lvl => {
 			lvl.addCamera(player.cam);
 			lvl.activeCamera = player.cam;
-			lvl.playerData[player.id] = new PlayerData({id: player.id, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true))}, lvl);
+			lvl.playerData[player.id] = new PlayerData({id: player.id, name: player.username, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true))}, lvl);
 			lvl.play();
 			for(let [id, body] of lvl.bodies){
-				//if(body instanceof Planet) body.material.setVector3('cameraPosition', lvl.activeCamera.position);
 				body.waypoint = new Waypoint({
 					name: body.name,
 					position: body.position,
@@ -2111,7 +2040,8 @@
 			new Ship('frigate', player.data(), lvl)
 			new Ship('transport_small', player.data(), lvl);
 			lvl.playerData[player.id].addItems(generate.items(5000));
-			if(!debug.disable_saves) (new Save(lvl.serialize())).saveToDB();
+			let save = new Save(lvl.serialize());
+			if(!debug.disable_saves) save.saveToDB();
 		})
 		
 		//handle UI
@@ -2355,8 +2285,10 @@
 					};
 					player.cam.angularSensibilityX = player.cam.angularSensibilityY = 2000 / settings.sensitivity;
 					player.updateFleet();
-					game.scene().meshes.forEach(m => {
-						if(m != game.scene().skybox && isHex(m.id)) m.showBoundingBox = game.hitboxes;
+					game.scene().meshes.forEach(mesh => {
+						if(mesh instanceof CelestialBody) mesh.showBoundingBox = game.hitboxes;
+						if(mesh.parent instanceof Entity) mesh.getChildMeshes().forEach(child => child.showBoundingBox = game.hitboxes);
+						if(mesh != game.scene().skybox && isHex(mesh.id)) mesh.showBoundingBox = game.hitboxes;
 					});
 					let closestBody = game.scene().closestBody = null;
 					for(let [id, body] of game.scene().bodies){
@@ -2387,7 +2319,7 @@
 						ship.position.addInPlace(ship.velocity.scale(game.scene().getAnimationRatio()));
 						ship.velocity.scaleInPlace(0.9);	
 					});
-					game.scene().closestBody.fleet.forEach((ship, i) => {
+					(game.scene().closestBody?.fleet ?? []).forEach((ship, i) => {
 						player.updateFleet();
 						if(player.data().fleet.length > 0){
 							if (ship.hp <= 0) {

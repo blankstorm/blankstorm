@@ -97,6 +97,27 @@ Object.defineProperty(Object.prototype, 'filter', {
 	}
 });
 
+const item = {
+	metal: {rare: false, value: 1 },
+	minerals: {rare: false, value: 2 },
+	fuel: {rare: false, value: 4 },
+	ancient_tech: {rare: true, drop: 0.1, value: 1000 },
+	code_snippets: {rare: true, drop: 0.1, value: 1000 }
+};
+const tech = {
+	armor: { recipe: { metal: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
+	laser: { recipe: { minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
+	reload: { recipe: { metal: 4000, minerals: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {}},
+	thrust: { recipe: { fuel: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
+	energy: { recipe: { fuel: 5000, minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
+	shields: { recipe: { metal: 2500, minerals: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 }},
+	storage: { recipe: { metal: 10000, minerals: 10000, fuel: 10000}, xp: 2, scale: 10, requires: {}},
+	missle: { recipe: { metal: 10000, minerals: 1000, fuel: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 }},
+	regen: { recipe: { metal: 50000, minerals: 10000, fuel: 10000 }, xp: 1, scale: 1.5, max: 25, requires: { reload: 5, armor: 15 }},
+	build: { recipe: { metal: 100000 }, xp: 2, scale: 1.5, max: 50, requires: { armor: 10, thrust: 10, reload: 10 }},
+	salvage: { recipe: { metal: 250000, minerals: 50000, fuel: 100000 }, xp: 5, scale: 1.25, max: 25, requires: { build: 5 }}
+};
+
 const Path = class{
 	static Node = class{
 		position = BABYLON.Vector2.Zero();
@@ -225,7 +246,7 @@ const StorageData = class extends Map{
 		}
 	}
 	serialize(){
-		return Object.fromEntries([...this]);
+		return {items: Object.fromEntries([...this]), max: this.baseMax};
 	}
 	add(item, amount){
 		this.set(item, this.get(item) + amount);
@@ -299,9 +320,9 @@ const PlayerData = class extends BABYLON.TransformNode{
 	get power(){
 		return this.fleet.reduce((a, ship) => a + ship.power, 0);
 	}
-	constructor(data, save){
-		//if(!(save instanceof Save.Live)) throw new TypeError('passed save not a Save');
-		super(data.id || 'player');
+	constructor(data, level){
+		if(!(level instanceof Level) && level) throw new TypeError('passed level not a Level');
+		super(data.name);
 		this.position = random.cords(random.int(0, 50), true).add(new BABYLON.Vector3(0, 0, -1000));
 		this.rotation.z = Math.PI;
 		Object.assign(this, data);
@@ -316,22 +337,28 @@ const Entity = class extends BABYLON.TransformNode{
 		});
 	}
 	speed = 1;
+	async #createInstance(type, save){
+		await save.loadedEntityMeshes;
+		if(typeof save.genericEntities[type].instantiateModelsToScene == 'function'){
+			this.mesh = save.genericEntities[type].instantiateModelsToScene().rootNodes[0]
+		}else{
+			this.mesh = new BABYLON.TransformNode(id);
+			console.warn(`Failed to create entity mesh instance for #${id} of type ${type} owned by ${owner}: Mesh does not exist`)
+		}
+		this.mesh.setParent(this);
+		this.mesh.position = BABYLON.Vector3.Zero()
+	}
 	constructor(type, owner, save, id = random.hex(32)){
-		
 		if(!(save instanceof Level)) throw new TypeError('passed save must be a level');
 		super();
 		this.id = id;
 		this.owner = owner;
-		this.mesh = 
-		typeof save.genericEntities[type].instantiateModelsToScene == 'function' ?
-		save.genericEntities[type].instantiateModelsToScene().rootNodes[0]:
-		new BABYLON.TransformNode(id);
-		this.mesh.setParent(this);
-		this.mesh.position = BABYLON.Vector3.Zero()
+		this.#createInstance(type, save);
 		save.entities.set(this.id, this);
 	}
 	remove(){
-		this.mesh.dispose()
+		this.mesh.dispose();
+		this.getScene().entities.delete(this.id);
 	}
 	toString(){
 		return `Entity #${this.id}`
@@ -451,14 +478,14 @@ const Ship = class extends Entity{
 		}
 	}
 	constructor(typeOrData, faction, save){
-		window.args = arguments;
+		if(!(faction instanceof PlayerData)) window.args = arguments;
 		if(typeof typeOrData == 'object'){
 			super(typeOrData.shipType, faction, save ?? faction.getScene(), typeOrData.id);
 			Object.assign(this, {
 				type: typeOrData.shipType ?? typeOrData.type,
 				position: BABYLON.Vector3.FromArray(typeOrData.position),
 				rotation: BABYLON.Vector3.FromArray(typeOrData.rotation),
-				storage: new StorageData(typeOrData.storage),
+				storage: new StorageData({max: Ship.generic[typeOrData.shipType].storage, items: typeOrData.storage}),
 				velocity: BABYLON.Vector3.Zero(),
 				...typeOrData.filter('hp', 'damage', 'level', 'power', 'reload', 'speed', 'range')
 			})
@@ -480,6 +507,11 @@ const Ship = class extends Entity{
 			faction.fleet.push(this);
 		}
 
+	}
+	remove(){
+		this.dispose();
+		this.owner.fleet.spliceOut(this);
+		this.getScene().entities.delete(this.id);
 	}
 	//this will be replaced with hardpoints!
 	attack(body){
@@ -555,6 +587,10 @@ const CelestialBody = class extends BABYLON.Mesh {
 		super(name, level);
 		this.id = id;
 		level.bodies.set(id, this)
+	}
+	remove(){
+		this.dispose();
+		this.getScene().bodies.delete(this.id);
 	}
 }
 const Star = class extends CelestialBody{
@@ -733,6 +769,9 @@ const Level = class extends BABYLON.Scene {
 	static upgrade(data){
 		while(version != data.version && Level.upgrades.has(data.version)){
 			data = Level.upgrades.get(data.version)(data);
+			if(version != data.version && !Level.upgrades.has(data.version)){
+				alert(`Can't upgrade save from ${versions.get(data.version).text} to ${versions.get(version).text}.`);
+			}
 		}
 		return data;
 	}
@@ -740,6 +779,33 @@ const Level = class extends BABYLON.Scene {
 		names: ["Abrigato", "Kerali", "Kaltez", "Suzum", "Vespa", "Coruscare", "Vulca", "Jaeger", "Kashyyyk", "Outpost42", "Victoria", "Gesht", "Sanctuary", "Snowmass", "Ja", "Keeg", "Haemeiguli", "Borebalae", "Albataetarius", "Hataerius", "Achernaiphoros", "Antadrophei", "Hoemeirai", "Antabalis", "Hoereo", "Pazadam", "Equidor", "Pax", "Xena", "Titan", "Oturn", "Thuamia", "Heuthea", "Ditharus", "Muxater", "Trukovis", "Bichotune", "Etis", "Leorus", "Aphus", "Harophos", "Athena", "Hades", "Icarus", "Ureus", "Xentos Prime", "Ketlak", "Aerox", "Thryox", "Stratus", "Nox", "Sanctum", "Pastūra", "Tinctus", "Morbus", "Neos", "Nomen", "Numerus", "Pax", "Fornax", "Skorda", "Alli", "Resurs", "Home"],
 		size: 5000,
 		maxPlanets: 9
+	}
+	static generate = {
+		system: (name, position, level) => {
+			let star = new Star({
+				name,
+				position,
+				radius: random.int(300, 500),
+				color: new BABYLON.Color3(Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4)),
+				scene: level
+			})
+			let nameMode = random.bool,
+			planetNum = random.int(1, Level.system.maxPlanets),
+			names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
+			planets = [];
+			for (let i in names) {
+				let planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i], radius = random.int(25, 50);
+				planets[i] = new Planet({
+					name: random.int(0, 9999) == 0 ? 'Jude' : planetName,
+					position: random.cords(random.int((star.radius + radius) * 1.5, Level.system.size), true),
+					radius,
+					biome: ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)],
+					fleet: generate.enemies(level.difficulty * (i + 1)),
+					rewards: generate.items(1000 * i * (2 - level.difficulty)),
+					scene: level,
+				});
+			}
+		}
 	}
 	id = random.hex(16)
 	name = '';
@@ -752,8 +818,8 @@ const Level = class extends BABYLON.Scene {
 	bodies = new Map();
 	entities = new Map();
 	playerData = {};
-	#initPromise;
-	#loadEntityMeshesPromise;
+	#initPromise = new Promise(res => {});
+	loadedEntityMeshes = new Promise(res => {});
 	async #loadEntityMeshes(){
 		for(let i in Ship.generic){
 			let container = this.genericEntities[i] = await SceneLoader.LoadAssetContainerAsync('', Ship.generic[i].model, this);
@@ -773,103 +839,113 @@ const Level = class extends BABYLON.Scene {
 			this.probe.renderList.push(container.meshes[1]);
 		}
 	}
-	async init(config){
-		this.name = config;
-		let sys = await this.generateSystem('Crash Site', BABYLON.Vector3.Zero())
+	async init(name){
+		this.name = name;
+		let sys = await Level.generate.system('Crash Site', BABYLON.Vector3.Zero(), this);
 	}
 	async load(saveData){
+		if(saveData.version != version){
+			alert(`Can't load save: wrong version`);
+			throw new Error(`Can't load save from data: wrong version (${saveData.version})`)
+		}
 		Object.assign(this, {
 			date: new Date(saveData.date),
-			levels: new Map(),
+			bodies: new Map(),
 			entities: new Map(),
 			playerData: {},
 			...saveData.filter('id', 'name', 'versions', 'difficulty')
 		});
-		for(let entityData of saveData.entities){
-			switch(entityData.type){
-				case 'ship':
-					new Ship(entityData, this.playerData[entityData.owner] ?? null, this);
-					break;
-				default:
-					new Entity(null, null, this);
-			}
-		}
+		
 		for(let id in saveData.playerData){
 			let data = {...saveData.playerData[id], id};
 			this.playerData[id] = new PlayerData({
 				position: BABYLON.Vector3.FromArray(data.position),
 				rotation: BABYLON.Vector3.FromArray(data.rotation),
-				fleet: data.fleet.map(id => this.entities.get(id)),
 				id,
 				...data.filter('xp', 'xpPoints', 'tech')
 			});
 		}
 
 		for(let id in saveData.bodies){
-			let bodyData = saveData.bodies[id], body = null;
+			let bodyData = saveData.bodies[id], body;
 			switch(bodyData.type){
 				case 'star':
-					new Star({
+					body = new Star({
 						position: BABYLON.Vector3.FromArray(bodyData.position),
-						fleet: bodyData.fleet.map(id => this.entities.get(id)),
 						color: BABYLON.Color3.FromArray(bodyData.color),
 						scene: this,
 						...bodyData.filter('name', 'radius', 'id')
 					});
 				break;
 				case 'planet':	
-					new Planet({
+					body = new Planet({
 						position: BABYLON.Vector3.FromArray(bodyData.position),
-						fleet: bodyData.fleet.map(id => this.entities.get(id)),
 						scene: this,
-						...bodyData.filter('name','radius','id','biome','owner','rewards')
+						...bodyData.filter('name', 'radius', 'id', 'biome', 'owner', 'rewards')
 					})
 				break;
 				default:
-					new CelestialBody(bodyData.name, bodyData.id, level);
+					body = new CelestialBody(bodyData.name, bodyData.id, this);
 					//TODO: Change Star/Planet constructors to use standerdized data
 			}
 		}
-		for(let [id, playerData] of Object.entries(this.playerData)){
-			playerData.fleet.forEach(ship => ship.meshes.delete(level.id));
+		for(let entityData of saveData.entities){
+			switch(entityData.type){
+				case 'ship':
+					new Ship(entityData, this.bodies.get(entityData.owner) ?? this.playerData[entityData.owner], this);
+					break;
+				default:
+					new Entity(null, null, this);
+			}
 		}
 	}
-	async generateSystem(name = 'Unknown System', position = BABYLON.Vector3.Zero()){
-		await this.ready();
-		let star = new Star({
-			name,
-			position,
-			radius: random.int(300, 500),
-			color: new BABYLON.Color3(Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4)),
-			scene: this
-		})
-		let nameMode = random.bool,
-		planetNum = random.int(1, Level.system.maxPlanets),
-		names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1);
-		for (let i in names) {
-			let planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i], radius = random.int(25, 50);
-			let planet = new Planet({
-				name: random.int(0, 9999) == 0 ? 'Jude' : planetName,
-				position: random.cords(random.int((star.radius + radius) * 1.5, Level.system.size), true),
-				radius,
-				biome: ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)],
-				fleet: generate.enemies(this.difficulty * (i + 1)),
-				rewards: generate.items(1000 * i * (2 - this.difficulty)),
-				scene: this,
-			});
-		}
-
-	}	
 	async generateRegion(x, y, size){
 		await this.ready();
 	}
-	
 	async ready(){
-		await Promise.allSettled([this.#initPromise, this.#loadEntityMeshesPromise]);
+		await Promise.allSettled([this.#initPromise, this.loadedEntityMeshes]);
 		return this
 	}
 	get selectedEntities(){
 		return [...this.entities.values()].filter(e => e.selected);
+	}
+	getPlayerData(nameOrID){
+		return Object.entries(this.playerData).filter(([id, data]) => data.name == nameOrID || id == nameOrID)[0]?.[1]
+	}
+	getEntities(selector){
+		if (typeof selector != 'string') throw new TypeError('getEntity: selector must be of type string');
+		switch (selector[0]) {
+			case '@':
+				if(this.getPlayerData(selector.slice(1)) instanceof PlayerData){
+					return this.getPlayerData(selector.slice(1))
+				}else{
+					console.warn(`Player ${selector} does not exist`);
+				}
+				break;
+			case '*':
+				return [...this.entities.values()];
+				break;
+			case '#':
+				if(this.entities.has(selector.slice(1))){
+					return this.entities.get(selector.slice(1))
+				}else{
+					console.warn(`Entity ${selector} does not exist`);
+				}
+				break;
+		}
+	}
+	getBodies(selector){
+		if (typeof selector != 'string') throw new TypeError('getBody: selector must be of type string');
+		switch (selector[0]) {
+			case '*':
+				return [...this.bodies.values()]
+				break;
+			case '#':
+				for(let [id, body] of this.bodies){
+					if(id == selector.slice(1)) return body;
+				}
+				break;
+		}
 	}
 	constructor(nameOrData, engine){
 		super(engine);
@@ -891,7 +967,7 @@ const Level = class extends BABYLON.Scene {
 		});
 		this.skybox.material.reflectionTexture.coordinatesMode = 5;
 		
-		this.#loadEntityMeshesPromise = this.#loadEntityMeshes();
+		this.loadedEntityMeshes = this.#loadEntityMeshes();
 		this.#initPromise = isJSON(nameOrData) ? this.load(JSON.parse(nameOrData)) : this.init(nameOrData);
 		this.registerBeforeRender(()=>{
 			let ratio = this.getAnimationRatio();
@@ -920,6 +996,7 @@ const Level = class extends BABYLON.Scene {
 				let entityData = {
 					position: entity.position.asArray().map(num => +num.toFixed(3)),
 					rotation: entity.rotation.asArray().map(num => +num.toFixed(3)),
+					owner: entity.owner?.id, 
 					...entity.filter('name', 'id')
 				};
 				switch(entity.constructor.name){
@@ -927,8 +1004,7 @@ const Level = class extends BABYLON.Scene {
 					Object.assign(entityData, {
 						type: 'ship',
 						shipType: entity.type,
-						owner: entity.owner?.id, 
-						storage: entity.storage.serialize(),
+						storage: entity.storage.serialize().items,
 						reload: +entity.reload.toFixed(3),
 						hp: +entity.hp.toFixed(3),
 						...entity.filter('damage', 'level', 'power')
@@ -949,10 +1025,9 @@ const Level = class extends BABYLON.Scene {
 			if(!body instanceof CelestialBody){
 				console.warn(`body #${body?.id} not saved: invalid type`);
 			}else{
-				let bodyData = this.bodies[id] = {
+				let bodyData = data.bodies[id] = {
 					position: body.position.asArray().map(num => +num.toFixed(3)),
 					fleetLocation: body.fleetLocation.asArray().map(num => +num.toFixed(3)),
-					fleet: body.fleet.map(f => f.id),
 					...body.filter('name', 'id', 'owner')
 				};
 				switch(body.constructor.name){
@@ -986,41 +1061,12 @@ const Level = class extends BABYLON.Scene {
 		return data;
 	}
 }
-const item = {
-	metal: {rare: false, value: 1 },
-	minerals: {rare: false, value: 2 },
-	fuel: {rare: false, value: 4 },
-	ancient_tech: {rare: true, drop: 0.1, value: 1000 },
-	code_snippets: {rare: true, drop: 0.1, value: 1000 }
-};
-const tech = {
-	armor: { recipe: { metal: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	laser: { recipe: { minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	reload: { recipe: { metal: 4000, minerals: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {}},
-	thrust: { recipe: { fuel: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	energy: { recipe: { fuel: 5000, minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	shields: { recipe: { metal: 2500, minerals: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 }},
-	storage: { recipe: { metal: 10000, minerals: 10000, fuel: 10000}, xp: 2, scale: 10, requires: {}},
-	missle: { recipe: { metal: 10000, minerals: 1000, fuel: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 }},
-	regen: { recipe: { metal: 50000, minerals: 10000, fuel: 10000 }, xp: 1, scale: 1.5, max: 25, requires: { reload: 5, armor: 15 }},
-	build: { recipe: { metal: 100000 }, xp: 2, scale: 1.5, max: 50, requires: { armor: 10, thrust: 10, reload: 10 }},
-	salvage: { recipe: { metal: 250000, minerals: 50000, fuel: 100000 }, xp: 5, scale: 1.25, max: 25, requires: { build: 5 }}
-};
 const commands = {
-	help: name => {
+	help: () => {
 		open(web`docs/commands`, 'target=_blank');
 	},
-	function: name => {
-		if (game.function[name] && !game.function[name].includes('function ' + name)) {
-			game.function[name].split('\n').forEach(game.runCommand);
-		} else if (game.function[name].includes('function ' + name)) {
-			throw new SyntaxError(`can not run function "${name}": functions can not run themselves`);
-		} else {
-			throw new ReferenceError(`function "${name}" does not exist`);
-		}
-	},
-	kill: selector => {
-		let e = game.getEntity(selector);
+	kill: (level, selector) => {
+		let e = level.getEntities(selector);
 		if(e.constructor.name == 'Array'){
 			game.removeEntity(...e);
 			return `killed ${e.length} entities`;
@@ -1029,69 +1075,34 @@ const commands = {
 			return `killed entity #${e.id} ("${e.name}")`;
 		}
 	},
-	spawn: (type, selector, x, y, z) => {
-		let entity = game.getEntity(selector);
+	spawn: (level, type, selector, x, y, z) => {
+		let entity = level.getEntities(selector);
 		entity = entity == player ? entity.data() : entity,
 		spawned = new Ship(type, entity);
-		spawned.position.addInPlace(Vector3.FromArray(+x, +y, +z))
+		spawned.position.addInPlace(BABYLON.Vector3.FromArray(+x, +y, +z))
 	},
 	data: {
-		get: {
-			entity: (selector, path = '') => {
-				let entity = game.getEntity(selector);
-				if(entity instanceof Array){
-					throw new SyntaxError('passed selector can only return one entity');
-				}else{
-					let entityData = (entity == player ? entity.data() : entity).getByString(path),
-						entityName = entity == player ? '@' + entity.username : '#' + entity.id,
-						data = entityData;
-					if (typeof entityData == 'object' || typeof entityData == 'function') {
-						data = {};
-						for (let p of Object.getOwnPropertyNames(entityData)) {
-							data[p] = entityData[p];
-						}
-					}
-					return `Data of entity ${entityName}: ${data}`
-				}
-			},
-			object: (selector, path = '') => {
-				let object = game.getBody(path);
-				if(object instanceof Array){
-					throw new SyntaxError('passed selector can only return one object');
-				}else{
-					let objectData = object.getByString(path), data = objectData;
-					if(typeof objectData == 'object' || typeof objectData == 'function'){
-						data = {};
-						for(let p of Object.getOwnPropertyNames(objectData)){
-							data[p] = objectData[p];
-						}
-					}
-					return `Data of object #${object.id}: ` + data;
+		get: (level, selector, path = '') => {
+			let entityOrBody = level.getEntities(selector) ?? level.getBodies(selector);
+			if(entityOrBody instanceof Array) throw new SyntaxError('passed selector can only return one entity or body');
+			let data = entityOrBody.getByString(path), output = data;
+			if (typeof data == 'object' || typeof data == 'function') {
+					output = {};
+				for (let p of Object.getOwnPropertyNames(data)) {
+					output[p] = data[p];
 				}
 			}
+			return `Data of entity #${entityOrBody.id}: ${output}`
 		},
-		set: {
-			entity: (selector, path, value) => {
-				let entity = game.getEntity(selector);
-				if(entity instanceof Array){
-					throw new SyntaxError('passed selector can only return one entity');
-				}else{
-					(entity == player ? entity.data() : entity).setByString(path, eval?.(value));
-				}
-			},
-			object: (selector, path, value) => {
-				let object = game.getBody(selector);
-				if (object instanceof Array) {
-					throw new SyntaxError('passed selector can only return one object');
-				} else {
-					object.setByString(path, eval?.(value));
-				}
-			}
+		set: (level, selector, path, value) => {
+			let entityOrBody = level.getEntities(selector) ?? level.getBodies(selector);
+			if(entityOrBody instanceof Array) throw new SyntaxError('passed selector can only return one entity or body');
+			entityOrBody.setByString(path, eval?.(value));
 		}
 	},
-	tp: (selector, x, y, z) => {
-		let entities = game.getEntity(selector),
-			location = new Vector3(+x || player.data().position.x, +y || player.data().position.y, +z || player.data().position.z);
+	tp: (level, selector, x, y, z) => {
+		let entities = level.getEntities(selector),
+			location = new BABYLON.Vector3(+x || player.data().position.x, +y || player.data().position.y, +z || player.data().position.z);
 		if (entities instanceof Array) {
 			entities.forEach(entity => {
 				entity.position = location;
@@ -1115,10 +1126,10 @@ const commands = {
 			player.wipe();
 		}
 	},
-	warp: (x, y) => {
-		warp.start(new Vector2(parseFloat(x || 0), parseFloat(y || 0)))
+	warp: (level, x, y) => {
+		level.warpTo(new BABYLON.Vector2(parseFloat(x || 0), parseFloat(y || 0)))
 	},
-	playsound: (name, volume = settings.sfx) => {
+	playsound: (level, name, volume = settings.sfx) => {
 		if (sound[name]) {
 			playsound(name, volume)
 		} else {
@@ -1130,10 +1141,10 @@ const commands = {
 		game.engine.resize();
 	}
 };
-const runCommand = command => {
+const runCommand = (command, level) => {
 	if (!saves.selected && !(saves.current instanceof Level)) throw new TypeError('Failed to run command: no level selected');
 	let splitCmd = command.split(' '), hasRun = false;
-	let result = (splitCmd.filter(p => p).reduce((o, p, i) => typeof o?.[p] == 'function' ? (hasRun = true, o?.[p](...splitCmd.slice(i + 1))) : hasRun ? o : o?.[p] ? o?.[p] : new ReferenceError('Command does not exist'), commands) ?? '');
+	let result = (splitCmd.filter(p => p).reduce((o, p, i) => typeof o?.[p] == 'function' ? (hasRun = true, o?.[p](level, ...splitCmd.slice(i + 1))) : hasRun ? o : o?.[p] ? o?.[p] : new ReferenceError('Command does not exist'), commands) ?? '');
 	return result;
 };
 console.log(`Blankstorm Core (${versions.get(version).text}) loaded successfully`)

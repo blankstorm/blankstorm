@@ -23,13 +23,20 @@ These are the changes for the next update[s].
 
 ### Features
 
+- Moved to using a core (for shared code between client and server)
+- Saves now only use one scene and generate regions of the scene
 - Removed RCS
-- Removed local difficulty
 
 ### Bugs
 
+- Issues with `level.getEntities` and `level.getBodies`
+- Entities' hitboxes to F4
+- Fixed loading storagedata
+- Fixed some issues with commands
+
 ### Technical Changes
 
-- Moved to using a core (for shared code between client and server)
-- Saves now only use one scene and generate regions of the scene
 - Changed locale version format
+- Moved `game.getEntity` and `game.getBody` to `level.getEntities` and `level.getBodies`
+- Removed `game.removeEntity` and `game.removeBody` (use `(Entity).remove`)
+- Removed local difficulty
