@@ -23,9 +23,13 @@ These are the changes for the next update[s].
 
 ### Features
 
+- Removed RCS
+- Removed local difficulty
+
 ### Bugs
 
 ### Technical Changes
 
 - Moved to using a core (for shared code between client and server)
 - Saves now only use one scene and generate regions of the scene
+- Changed locale version format

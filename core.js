@@ -96,26 +96,6 @@ Object.defineProperty(Object.prototype, 'filter', {
 		return Object.fromEntries(Object.entries(this).filter(([key, value]) => keys.includes(key)));
 	}
 });
-const item = {
-	metal: {rare: false, value: 1 },
-	minerals: {rare: false, value: 2 },
-	fuel: {rare: false, value: 4 },
-	ancient_tech: {rare: true, drop: 0.1, value: 1000 },
-	code_snippets: {rare: true, drop: 0.1, value: 1000 }
-};
-const tech = {
-	armor: { recipe: { metal: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	laser: { recipe: { minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	reload: { recipe: { metal: 4000, minerals: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {}},
-	thrust: { recipe: { fuel: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	energy: { recipe: { fuel: 5000, minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	shields: { recipe: { metal: 2500, minerals: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 }},
-	storage: { recipe: { metal: 10000, minerals: 10000, fuel: 10000}, xp: 2, scale: 10, requires: {}},
-	missle: { recipe: { metal: 10000, minerals: 1000, fuel: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 }},
-	regen: { recipe: { metal: 50000, minerals: 10000, fuel: 10000 }, xp: 1, scale: 1.5, max: 25, requires: { reload: 5, armor: 15 }},
-	build: { recipe: { metal: 100000 }, xp: 2, scale: 1.5, max: 50, requires: { armor: 10, thrust: 10, reload: 10 }},
-	salvage: { recipe: { metal: 250000, minerals: 50000, fuel: 100000 }, xp: 5, scale: 1.25, max: 25, requires: { build: 5 }}
-};
 
 const Path = class{
 	static Node = class{
@@ -1006,4 +986,154 @@ const Level = class extends BABYLON.Scene {
 		return data;
 	}
 }
+const item = {
+	metal: {rare: false, value: 1 },
+	minerals: {rare: false, value: 2 },
+	fuel: {rare: false, value: 4 },
+	ancient_tech: {rare: true, drop: 0.1, value: 1000 },
+	code_snippets: {rare: true, drop: 0.1, value: 1000 }
+};
+const tech = {
+	armor: { recipe: { metal: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
+	laser: { recipe: { minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
+	reload: { recipe: { metal: 4000, minerals: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {}},
+	thrust: { recipe: { fuel: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
+	energy: { recipe: { fuel: 5000, minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
+	shields: { recipe: { metal: 2500, minerals: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 }},
+	storage: { recipe: { metal: 10000, minerals: 10000, fuel: 10000}, xp: 2, scale: 10, requires: {}},
+	missle: { recipe: { metal: 10000, minerals: 1000, fuel: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 }},
+	regen: { recipe: { metal: 50000, minerals: 10000, fuel: 10000 }, xp: 1, scale: 1.5, max: 25, requires: { reload: 5, armor: 15 }},
+	build: { recipe: { metal: 100000 }, xp: 2, scale: 1.5, max: 50, requires: { armor: 10, thrust: 10, reload: 10 }},
+	salvage: { recipe: { metal: 250000, minerals: 50000, fuel: 100000 }, xp: 5, scale: 1.25, max: 25, requires: { build: 5 }}
+};
+const commands = {
+	help: name => {
+		open(web`docs/commands`, 'target=_blank');
+	},
+	function: name => {
+		if (game.function[name] && !game.function[name].includes('function ' + name)) {
+			game.function[name].split('\n').forEach(game.runCommand);
+		} else if (game.function[name].includes('function ' + name)) {
+			throw new SyntaxError(`can not run function "${name}": functions can not run themselves`);
+		} else {
+			throw new ReferenceError(`function "${name}" does not exist`);
+		}
+	},
+	kill: selector => {
+		let e = game.getEntity(selector);
+		if(e.constructor.name == 'Array'){
+			game.removeEntity(...e);
+			return `killed ${e.length} entities`;
+		}else{
+			game.removeEntity(e);
+			return `killed entity #${e.id} ("${e.name}")`;
+		}
+	},
+	spawn: (type, selector, x, y, z) => {
+		let entity = game.getEntity(selector);
+		entity = entity == player ? entity.data() : entity,
+		spawned = new Ship(type, entity);
+		spawned.position.addInPlace(Vector3.FromArray(+x, +y, +z))
+	},
+	data: {
+		get: {
+			entity: (selector, path = '') => {
+				let entity = game.getEntity(selector);
+				if(entity instanceof Array){
+					throw new SyntaxError('passed selector can only return one entity');
+				}else{
+					let entityData = (entity == player ? entity.data() : entity).getByString(path),
+						entityName = entity == player ? '@' + entity.username : '#' + entity.id,
+						data = entityData;
+					if (typeof entityData == 'object' || typeof entityData == 'function') {
+						data = {};
+						for (let p of Object.getOwnPropertyNames(entityData)) {
+							data[p] = entityData[p];
+						}
+					}
+					return `Data of entity ${entityName}: ${data}`
+				}
+			},
+			object: (selector, path = '') => {
+				let object = game.getBody(path);
+				if(object instanceof Array){
+					throw new SyntaxError('passed selector can only return one object');
+				}else{
+					let objectData = object.getByString(path), data = objectData;
+					if(typeof objectData == 'object' || typeof objectData == 'function'){
+						data = {};
+						for(let p of Object.getOwnPropertyNames(objectData)){
+							data[p] = objectData[p];
+						}
+					}
+					return `Data of object #${object.id}: ` + data;
+				}
+			}
+		},
+		set: {
+			entity: (selector, path, value) => {
+				let entity = game.getEntity(selector);
+				if(entity instanceof Array){
+					throw new SyntaxError('passed selector can only return one entity');
+				}else{
+					(entity == player ? entity.data() : entity).setByString(path, eval?.(value));
+				}
+			},
+			object: (selector, path, value) => {
+				let object = game.getBody(selector);
+				if (object instanceof Array) {
+					throw new SyntaxError('passed selector can only return one object');
+				} else {
+					object.setByString(path, eval?.(value));
+				}
+			}
+		}
+	},
+	tp: (selector, x, y, z) => {
+		let entities = game.getEntity(selector),
+			location = new Vector3(+x || player.data().position.x, +y || player.data().position.y, +z || player.data().position.z);
+		if (entities instanceof Array) {
+			entities.forEach(entity => {
+				entity.position = location;
+				//TODO: properly implement with checks for ships
+			});
+			return `Teleported ${entities.length} to ${location.display()}`;
+		} else {
+			entities.position = location;
+			return `Teleported entities #${entities.id} to ${location.display()}`;
+		}
+	},
+	player: {
+		stop: () => {
+			player.stop();
+		},
+		reset: () => {
+			player.reset();
+		},
+		wipe: () => {
+			player.reset();
+			player.wipe();
+		}
+	},
+	warp: (x, y) => {
+		warp.start(new Vector2(parseFloat(x || 0), parseFloat(y || 0)))
+	},
+	playsound: (name, volume = settings.sfx) => {
+		if (sound[name]) {
+			playsound(name, volume)
+		} else {
+			throw new ReferenceError(`sound "${name}" does not exist`)
+		}
+	},
+	reload: () => {
+		//maybe also reload mods in the future
+		game.engine.resize();
+	}
+};
+const runCommand = command => {
+	if (!saves.selected && !(saves.current instanceof Level)) throw new TypeError('Failed to run command: no level selected');
+	let splitCmd = command.split(' '), hasRun = false;
+	let result = (splitCmd.filter(p => p).reduce((o, p, i) => typeof o?.[p] == 'function' ? (hasRun = true, o?.[p](...splitCmd.slice(i + 1))) : hasRun ? o : o?.[p] ? o?.[p] : new ReferenceError('Command does not exist'), commands) ?? '');
+	return result;
+};
 console.log(`Blankstorm Core (${versions.get(version).text}) loaded successfully`)
