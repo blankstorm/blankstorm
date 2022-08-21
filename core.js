@@ -863,7 +863,9 @@ const Level = class extends BABYLON.Scene {
 			color: new BABYLON.Color3(Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4)),
 			scene: this
 		})
-		let nameMode = random.bool, planetNum = random.int(1, Level.system.maxPlanets), names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1);
+		let nameMode = random.bool,
+		planetNum = random.int(1, Level.system.maxPlanets),
+		names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1);
 		for (let i in names) {
 			let planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i], radius = random.int(25, 50);
 			let planet = new Planet({
@@ -871,8 +873,8 @@ const Level = class extends BABYLON.Scene {
 				position: random.cords(random.int((star.radius + radius) * 1.5, Level.system.size), true),
 				radius,
 				biome: ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)],
-				fleet: generate.enemies((this.difficulty + 1) * (i + 1) * this.difficulty),
-				rewards: generate.items(1000 * i * (2 - worldgen.difficulty)),
+				fleet: generate.enemies(this.difficulty * (i + 1)),
+				rewards: generate.items(1000 * i * (2 - this.difficulty)),
 				scene: this,
 			});
 		}

@@ -521,7 +521,6 @@
 	</div>
 	<div ingame id=hud hide bg=none>
 		<p class=level plot=c,b1em,150px,1em style=text-align:center;line-height:3em></p>
-		<p class=rcs plot=1em,100px,150px,50px bg=trans style=text-align:center;line-height:50px;font-size:20px;border-radius:var(--bg-radius)>RCS: ON</p>
 		<div class=xp plot=c,b1em,300px,1em bg=none>
 			<svg class=xp style=width:100%;height:100% preserveAspectRatio=none viewBox='0 0 100 1' border>
 				<rect fill=var(--button-color) x=0 y=0 width=0 height=100%></rect>
@@ -1486,7 +1485,7 @@
 
 	const playerData = new PlayerData({id: 'DEFAULT'}, game.scene());
 	const player = {
-		username: '', speed: 1, velocity: Vector3.Zero(), rcsIsActive: true,
+		username: '', speed: 1, velocity: Vector3.Zero(),
 		cam: new ArcRotateCamera('player.cam', -Math.PI/2, Math.PI/2, 5, Vector3.Zero(), game.scene()),
 		targetBody: null,
 		getAuthData(){
@@ -1687,10 +1686,6 @@
 	game.createKeybind('command', {key: '/'}, 'Toggle Command', e => {
 		e.preventDefault();
 		game.toggleChat(true)
-	});
-	game.createKeybind('rcs', {key: 'f'}, 'Toggle RCS', e => {
-		player.rcsIsActive = !player.rcsIsActive;
-		$('#hud .rcs').text(`RCS: ${player.rcsIsActive ? 'ON' : 'OFF'}`);
 	});
 	game.createKeybind('nav', {key: 'Tab'}, 'Toggle Inventory', e => {
 		game.changeUI('#q');
@@ -2520,7 +2515,7 @@
 							if(ship.hp + healAmount <= Ship.generic[ship.type].hp) ship.hp += healAmount;
 						}
 						ship.position.addInPlace(ship.velocity.scale(game.scene().getAnimationRatio()));
-						if(player.rcsIsActive) ship.velocity.scaleInPlace(0.9);	
+						ship.velocity.scaleInPlace(0.9);	
 					});
 					game.scene().closestBody.fleet.forEach((ship, i) => {
 						player.updateFleet();
@@ -2540,7 +2535,7 @@
 					});
 					player.updateFleet();
 					player.data().position.addInPlace(player.velocity.scale(game.scene().getAnimationRatio()));
-					if(player.rcsIsActive) player.velocity.scaleInPlace(0.9);
+					player.velocity.scaleInPlace(0.9);
 					game.scene().activePaths.forEach(activePath => {
 						let {entity, iterator, iteration} = activePath;
 						if(iteration?.done){
