@@ -1,7 +1,7 @@
 {
 	"language": "en",
 	"name": "English",
-	"version": "alpha_1.0.0",
+	"versions": ["alpha_1.0.0"],
 	"menu": {
 		"singleplayer": "Singleplayer",
 		"multiplayer": "Multiplayer",
