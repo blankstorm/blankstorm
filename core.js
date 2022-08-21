@@ -554,7 +554,7 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial{
 		this.rotationFactor = Math.random();
 		this.matrixAngle = 0;
 
-		this.setVector3('cameraPosition', BABYLON.Vector3.Zero());
+		this.setVector3('cameraPosition', player.cam.position);
 		this.setVector3('lightPosition', BABYLON.Vector3.Zero());
 		
 		this.noiseTexture = this.generateTexture(id, './shader/noise', {...options, options: new BABYLON.Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y)}, scene);
