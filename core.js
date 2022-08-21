@@ -404,7 +404,7 @@ const Ship = class extends Entity{
 		transport_small: {
 			hp: 5, damage: 0.1, reload: 5, maxLevel: 1, speed: 1, agility: .75, range: 75,
 			power: 1, enemy: false, camRadius: 20, xp: 10, storage: 25000,
-			critChance:  0.1, critDamage: 1,
+			critChance: 0.1, critDamage: 1,
 			recipe: [
 				{ metal: 5000, minerals: 1000, fuel: 2500}
 			], requires: {storage: 3}, model: 'models/transport_small.glb'
@@ -438,7 +438,7 @@ const Ship = class extends Entity{
 		transport_medium: {
 			hp: 50, damage: 1, reload: 5, maxLevel: 1, speed: 2/3, agility: 0.5, range: 75,
 			power: 10, enemy: false, camRadius: 50, xp: 10, storage: 100000,
-			critChance:  0.1, critDamage: 1,
+			critChance: 0.1, critDamage: 1,
 			recipe: [
 				{ metal: 10000, minerals: 2000, fuel: 5000}
 			], requires: {storage: 5}, model: 'models/transport_small.glb'
@@ -487,7 +487,7 @@ const Ship = class extends Entity{
 			Object.assign(this, {
 				velocity: BABYLON.Vector3.Zero(),
 				level: 0,
-				position:  faction.position.add(random.cords(random.int(1, faction.power))), // Will be changed to shipyard location
+				position: faction.position.add(random.cords(random.int(1, faction.power))), // Will be changed to shipyard location
 				storage: new StorageData({max: Ship.generic[typeOrData].storage}),
 				type: typeOrData,
 				...Ship.generic[typeOrData].filter('hp', 'damage', 'reload', 'power', 'speed', 'range')
@@ -518,12 +518,12 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial{
 	static updateRandom(texture){
 		if(!(texture instanceof BABYLON.DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
 		let context = texture.getContext(),
-       	imageData = context.getImageData(0, 0, 512, 512);
+		imageData = context.getImageData(0, 0, 512, 512);
 		for(let i = 0; i < 1048576; i++){
 			imageData.data[i] = (Math.random() * 256) | 0
 		}
 		context.putImageData(imageData, 0, 0);
-       	texture.update();
+		texture.update();
 	}
 	generateTexture(id, path, options, scene){
 		let sampler = new BABYLON.DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
@@ -808,7 +808,7 @@ const Level = class extends BABYLON.Scene {
 		for(let entityData of saveData.entities){
 			switch(entityData.type){
 				case 'ship':
-					new Ship(entityData,  this.playerData[entityData.owner] ?? null, this);
+					new Ship(entityData, this.playerData[entityData.owner] ?? null, this);
 					break;
 				default:
 					new Entity(null, null, this);
