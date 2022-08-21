@@ -1245,7 +1245,7 @@
 		},
 		commands: {
 			help: name => {
-				open(web`docs/commands${name ? '#' + name : ''}`, 'target=_blank');
+				open(web`docs/commands`, 'target=_blank');
 			},
 			function: name => {
 				if (game.function[name] && !game.function[name].includes('function ' + name)) {
