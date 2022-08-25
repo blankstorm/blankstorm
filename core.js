@@ -416,7 +416,7 @@ const Ship = class extends Entity{
 				{ metal: 5000, minerals: 1000, fuel: 2500}
 			], requires: {storage: 3}, model: 'models/transport_small.glb'
 		},
-		crusier: {
+		cruiser: {
 			hp: 50, damage: 1, reload: 2, maxLevel: 5, speed: 1, agility: 1, range: 200,
 			power: 5, enemy: true, camRadius: 20, xp: 10, storage: 250,
 			critChance: 0.1, critDamage: 1.25,
@@ -427,7 +427,7 @@ const Ship = class extends Entity{
 				{ ancient_tech: 8, code_snippets: 30 },
 				{ ancient_tech: 12, code_snippets: 40 },
 				{ ancient_tech: 18, code_snippets: 50 }
-			], requires: {}, model: 'models/crusier.gltf'
+			], requires: {}, model: 'models/cruiser.gltf'
 		},
 		destroyer: {
 			hp: 100, damage: 2.5, reload: 1, maxLevel: 5, speed: 1, agility: 1, range: 200,

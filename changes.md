@@ -33,6 +33,7 @@ These are the changes for the next update[s].
 - Entities' hitboxes to F4
 - Fixed loading storagedata
 - Fixed some issues with commands
+- Fixed cruiser mispelled as crusier
 
 ### Technical Changes
 
