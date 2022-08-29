@@ -8,18 +8,18 @@
 			toString(){
 				let timeLength = Math.max(...logger.map(e => ('' + e.time).length));
 				return `
-				Blankstorm Debug Log
+Blankstorm Debug Log
 
-				Platform: ${navigator?.userAgentData?.platform ?? navigator.platform}
-				User Agent: ${navigator.userAgent}
-				CPU Threads: ${navigator.hardwareConcurrency}
-				Memory Limit: ${performance?.memory?.jsHeapSizeLimit}
-				Language: ${navigator.language}
+Platform: ${navigator?.userAgentData?.platform ?? navigator.platform}
+User Agent: ${navigator.userAgent}
+CPU Threads: ${navigator.hardwareConcurrency}
+Memory Limit: ${(+performance?.memory?.jsHeapSizeLimit / 1000000 || 'Unknown') + 'MB'}
+Language: ${navigator.language}
 
-				Log starts at ${(new Date()).toLocaleString()}
-				----- Start of Log -----
-				${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpperCase()}] ${e.args.join('\n')}`).join('\n')}
-				----- End of Log -----`
+Log starts at ${(new Date()).toLocaleString()}
+----- Start of Log -----
+${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpperCase()}] ${e.count ? `(${e.count})` : ''} ${e.msg}`).join('\n')}
+----- End of Log -----`
 			},
 			toJSON(){
 				return JSON.stringify({info: {
@@ -31,8 +31,8 @@
 				}, log: [...logger]});
 			}
 		});
-		onerror = e => {
-			logger.push({type: 'error', time: performance.now().toFixed(), args: [e]});
+		onerror = (message, file, line, column, err) => {
+			logger.at(-1)?.msg == err.stack ? logger.at(-1).count++ : logger.push({type: 'error', time: performance.now().toFixed(), msg: err.stack, count: 0});
 		}
 		let _console = console;
 		console = new Proxy(_console, {
@@ -40,7 +40,7 @@
 				let level = config?.log_level || 'verbose',
 				levels = ['error', 'warn', 'debug', 'verbose'];
 				return function(...args){
-					if(levels.indexOf(prop) <= levels.indexOf(level)) logger.push({type: prop, time: performance.now().toFixed(), args});
+					if(levels.indexOf(prop) <= levels.indexOf(level)) logger.at(-1)?.msg == args ? logger.at(-1).count++ : logger.push({type: prop, time: performance.now().toFixed(), msg: args, count: 0});
 					return obj[prop] ? obj[prop](...args) : undefined;
 				}
 			}	
@@ -53,19 +53,20 @@
 		}
 		const db = {
 			promise: new Promise((resolve, reject) => {
-				let req = indexedDB.open('blankstorm', 2);
+				let req = indexedDB.open('blankstorm', 3);
 				req.onsuccess = e => resolve(req.result);
 				req.onerror = e => reject(req.error);
 				req.onupgradeneeded = e => {
 					let db = req.result;
 					switch(e.oldVersion){
+						case 2:
+							db.deleteObjectStore('locales');
+							break;
 						case 0:
-						db.createObjectStore('saves');
-						db.createObjectStore('settings');
-						db.createObjectStore('servers');
-						db.createObjectStore('mods');
-						case 1:
-						db.createObjectStore('locales');
+							db.createObjectStore('saves');
+							db.createObjectStore('settings');
+							db.createObjectStore('servers');
+							db.createObjectStore('mods');
 					}
 				}
 			}),
@@ -574,7 +575,6 @@
 		<form class=debug name=debug nbs bg=none ofs=y hide>
 			<input type=checkbox name=show_path_gizmos label="Show Path Gizmos" value=true><br><br>
 			<input type=checkbox name=tooltips label="Show Advanced Tooltips" value=true><br><br>
-			<input type=checkbox name=reload_locales label="Reload Locales" value=true><br><br>
 			<input type=checkbox name=disable_saves label="Disable Saves" value=true><br><br>
 			<select name=log_level label="Log Level">
 				<option value=warn>Warn</option>
@@ -686,44 +686,6 @@
 	Math.log = (num, base = Math.E) => Math._log(num)/Math._log(base);
 	
 	Object.assign(window, BABYLON);
-
-	Object.assign(Vector3.prototype, {
-		abs(){return new Vector3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z))},
-		toFixed(num = 1){return new Vector3(this.x.toFixed(num), this.y.toFixed(num), this.z.toFixed(num))},
-		round(){return new Vector3(Math.round(this.x), Math.round(this.y), Math.round(this.z))},
-		toPolar(){return Math.sqrt(this.x ** 2 + this.y ** 2 + this.z ** 2)},
-		display(mode = 'xyz', ...options){
-			return mode == 'xyz' ? `(${this.x}, ${this.y}, ${this.z})` :
-			mode == 'xy' ? `(${this.x}, ${this.y})` :
-			mode == 'xz' ? `(${this.x}, ${this.z})` :
-			mode == 'yz' ? `(${this.y}, ${this.z})` :
-			new SyntaxError('Vector3().display: Invalid mode: ' + mode);
-		},
-		worldToScreen(scene = game.scene()){
-			return Vector3.Project(this, Matrix.Identity(), scene.getTransformMatrix(), {x: 0, y: 0, width: innerWidth, height: innerHeight});
-		},
-		
-	});
-	Object.assign(Vector3, {
-		screenToWorld(x, y, depth, scene = game.scene()){
-			return Vector3.Unproject(new Vector3(x, y, depth), innerWidth, innerHeight, Matrix.Identity(), scene.getViewMatrix(), scene.getProjectionMatrix());
-		},
-		screenToWorldPlane(x, y, scene = game.scene()){
-			return scene.pick(x, y, mesh => mesh == scene.xzPlane).pickedPoint;
-		}
-	});
-	Object.assign(Vector2.prototype, {
-		display(){return `(${this.x}, ${this.y})`;},
-		abs(){return new Vector2(Math.abs(this.x), Math.abs(this.y))},
-		round(){return new Vector2(Math.round(this.x), Math.round(this.y))},
-	});
-	Object.defineProperty(Array.prototype, 'spliceOut', {
-		value: function(element){
-			let i = this.indexOf(element);
-			if(i != -1) this.splice(i, 1);
-			return i != -1;
-		}
-	});
 
 	//JQuery plugins
 	$.ajaxSetup({timeout:3000});
@@ -863,236 +825,146 @@
 	$('#settings form checkbox').each((i, e) => {
 		$(`<input type=hidden ${e.name} value=${!e.value}>`).insertBefore(e);
 	});
-	const locale = {
-		async get(url){
-				let request = $.ajax(url, {async: false}), json = request.responseJSON;
-				json.language ||= json.lang;
-				if(request.status != 200){
-					reject(request.statusText);
-				}else if(typeof json != 'object' || !json.language|| !(json.version || json.versions) || !json.menu || !json.player){
-					reject('Incorrect format');
-				}else if(json.version != version && ![...json.versions].includes(version)){
-					reject('Wrong game version');
-				}else{
-					this.langs.set(json.language, json);
-					$('<option></option>')
-					.attr('value', json.language)
-					.text(json.name)
-					.appendTo('#settings form.gen select[name=locale]');
-					let tx = await db.tx('locales', 'readwrite'),
-					result = await tx.objectStore('locales').put(json, json.language).async();
-					return result;
-				}
-		},
-		async load(id){
-			let tx = await db.tx('locales'),
-			result = await tx.objectStore('locales').get(id).async();
-			this.langs.set(id, result);
+	const locales = new Map();
+	Object.assign(locales, {
+		async fetch(url){
+			let
+			request = isJSON(url) ? {status: 200, responseJSON: JSON.parse(url)} : await $.ajax(url),
+			locale = request.responseJSON,
+			err = msg => {throw new Error(`Failed to load locale from ${url}: ${msg}`)};
+			locale.language ||= locale.lang;
+			if(request.status != 200) err(request.statusText);
+			if(typeof locale != 'object') err('Not an object');
+			if(!locale.language) err('Does not have a language');
+			if(!(locale.version || locale.versions)) err('Does not have a version');
+			if(!locale?.text) err('Missing data');
+			if(locale.version != version && ![...locale.versions].includes(version)) err('Wrong game version');
+			
+			this.set(locale.language, locale)
 			$('<option></option>')
-			.attr('value', result.language)
-			.text(result.name)
+			.attr('value', locale.language)
+			.text(locale.name)
 			.appendTo('#settings form.gen select[name=locale]');
-			return result;
+			return locale;
 		},
-		async clearCache(){
-			let tx = await db.tx('locales', 'readwrite');
-			return await tx.objectStore('locales').clear().async();
+		load(id){
+			if(!this.has(id)) throw new Error(`Locale ${id} does not exist`);
+			let lang = this.get(id);
+			this.currentLang = id;
+			$('#main button.sp').text(lang['menu.singleplayer'] ?? 'Singleplayer');
+			$('#main button.mp').text(lang['menu.multiplayer'] ?? 'Multiplayer');
+			$('#main button.options,#esc button.options').text(lang['menu.options'] ?? 'Options');
+			$('#main button.exit').text(lang['menu.exit'] ?? 'Exit');
+			$('#esc button.resume').text(lang['menu.resume'] ?? 'Resume Game');
+			$('#esc button.save').text(lang['menu.save'] ?? 'Save Game');
+			$('#esc button.quit').text(lang['menu.quit'] ?? 'Main Menu');
+			$('#load button.upload span').text(lang['menu.upload'] ?? 'Upload');
+			$(':where(#load,#save,#settings) button.back span').text(lang['menu.back'] ?? 'Back');
+			$(':where(#load,#q) button.new span').text(lang['menu.new'] ?? 'New');
+			$('#save button.new span').text(lang['menu.start'] ?? 'Start');
+			$('#connect button.back span').text(lang['menu.cancel'] ?? 'Cancel');
+			$('#settings :where(button.gen,form.gen h2) span').text(lang['menu.general'] ?? 'General');
+			$('#settings :where(button.key,form.key h2) span').text(lang['menu.keybinds'] ?? 'Keybinds');
+			$('#settings :where(button.debug,form.debug h2) span').text(lang['menu.debug'] ?? 'Debug');
+			$('#q div.warp button.warp').text(lang['menu.warp'] ?? 'Warp');
+			$('#q div.nav button.inv span').text(lang['menu.items'] ?? 'Inventory');
+			$('#q div.nav button.map span').text(lang['menu.map'] ?? 'Waypoints');
+			$('#q div.nav button.screenshots span').text(lang['menu.screenshots'] ?? 'Screenshots');
+			$('#q div.nav button.warp span').text(lang['menu.hyperspace'] ?? 'Hyperspace');
+			$('#e div.nav button.trade span').text(lang['menu.trade'] ?? 'Trade');
+			$('#e div.nav button.yrd span').text(lang['menu.shipyard'] ?? 'Shipyard');
+			$('#e div.nav button.lab span').text(lang['menu.lab'] ?? 'Laboratory');
 		},
-		async isCached(id){
-			let tx = await db.tx('locales');
-			return !!(await tx.objectStore('locales').count(id).async());
+		text(key){
+			return this.get(this.has(settings.locale) ? settings.locale : 'en')?.text?.[key] || 'Unknown';
 		},
-		async getCached(){
-			let tx = await db.tx('locales');
-			return await tx.objectStore('locales').getAllKeys().async();
-		},
-		set(id){
-			return new Promise((resolve, reject) => {
-				if(!this.langs.has(id)) reject('Locale does not exist');
-				let lang = this.langs.get(id);
-				$('#main button.sp').text(lang.menu.singleplayer ?? 'Singleplayer');
-				$('#main button.mp').text(lang.menu.multiplayer ?? 'Multiplayer');
-				$('#main button.options,#esc button.options').text(lang.menu.options ?? 'Options');
-				$('#main button.exit').text(lang.menu.exit ?? 'Exit');
-				$('#esc button.resume').text(lang.menu.resume ?? 'Resume Game');
-				$('#esc button.save').text(lang.menu.save ?? 'Save Game');
-				$('#esc button.quit').text(lang.menu.quit ?? 'Main Menu');
-				$('#load button.upload span').text(lang.menu.upload ?? 'Upload');
-				$(':where(#load,#save,#settings) button.back span').text(lang.menu.back ?? 'Back');
-				$(':where(#load,#q) button.new span').text(lang.menu.new ?? 'New');
-				$('#save button.new span').text(lang.menu.start ?? 'Start');
-				$('#connect button.back span').text(lang.menu.cancel ?? 'Cancel');
-				$('#settings :where(button.gen,form.gen h2) span').text(lang.menu.general ?? 'General');
-				$('#settings :where(button.key,form.key h2) span').text(lang.menu.keybinds ?? 'Keybinds');
-				$('#settings :where(button.debug,form.debug h2) span').text(lang.menu.debug ?? 'Debug');
-				$('#q div.warp button.warp').text(lang.menu.warp ?? 'Warp');
-				$('#q div.nav button.inv span').text(lang.menu.items ?? 'Inventory');
-				$('#q div.nav button.map span').text(lang.menu.map ?? 'Waypoints');
-				$('#q div.nav button.screenshots span').text(lang.menu.screenshots ?? 'Screenshots');
-				$('#q div.nav button.warp span').text(lang.menu.hyperspace ?? 'Hyperspace');
-				$('#e div.nav button.trade span').text(lang.menu.trade ?? 'Trade');
-				$('#e div.nav button.yrd span').text(lang.menu.shipyard ?? 'Shipyard');
-				$('#e div.nav button.lab span').text(lang.menu.lab ?? 'Laboratory');
-				this.currentLang = id;
-			});
-		},
-		get text(){
-			return this.langs.get(this.langs.has(settings.locale) ? settings.locale : 'default');
-		},
-		currentLang: null,
-		langs: new Map([['default', {
-			"language": "en",
-			"name": "English",
-			"version": "alpha_1.0.0",
-			"menu": {
-				"singleplayer": "Singleplayer",
-				"multiplayer": "Multiplayer",
-				"options": "Options",
-				"exit": "Exit",
-				"resume": "Resume Game",
-				"back": "Back",
-				"new": "New",
-				"save": "Save Game",
-				"quit": "Main Menu",
-				"start": "Start",
-				"cancel": "Cancel",
-				"general": "General",
-				"debug": "Debug",
-				"keybinds": "Keybinds",
-				"upload": "Upload",
-				"refresh": "Refresh",
-				"warp": "Warp",
-				"hyperspace": "Hyperspace",
-				"map": "Waypoints",
-				"items": "Inventory",
-				"screenshots": "Screenshots",
-				"trade": "Trade",
-				"shipyard": "Shipyard",
-				"lab": "Laboratory"
-			},
-			"error": {
-				"waypoint": {
-					"color": "That color is not supported (use hex)",
-					"range": "That location is out of range"
-				},
-				"warp": {
-					
-				}
-			},
-			"player": {
-				"death": "You died!"
-			},
-			"entity": {
-				"corvette": {
-					"name": "Corvette",
-					"description": "A light, fast blockade runner"
-				},
-				"frigate": {
-					"name": "Frigate",
-					"description": ""
-				},
-				"cruiser": {
-					"name": "Cruiser",
-					"description": ""
-				},
-				"destroyer": {
-					"name": "Destroyer",
-					"description": "A versitile ship, it can hold its own in battle."
-				},
-				"battleship": {
-					"name": "Battleship",
-					"description": "Once in a battle, in can stay there and deal out damage for a long time"
-				},
-				"dreadnought": {
-					"name": "Dreadnought",
-					"description": "The mother of all ships. Dominates everything it touches"
-				},
-				"transport_small": {
-					"name": "Small Transpot",
-					"description": "A smaller transport, it can move a small amount of resources"
-				},
-				"transport_medium": {
-					"name": "Medium Transpot",
-					"description": "Larger than a small transport, it can carry many resources"
-				}
-			},
-			"item": {
-				"metal": {
-					"name": "Titanium",
-					"description": "A strong, durable metal"
-				},
-				"minerals": {
-					"name": "Minerals",
-					"description": "A crystal perfect for making lasers and shield generators"
-				},
-				"fuel": {
-					"name": "Fuel",
-					"description": "Incredably reactive"
-				},
-				"ancient_tech": {
-					"name": "Anicent Tech",
-					"description": "Technology lost by a long forgot civilization"
-				},
-				"code_snippets": {
-					"name": "Code Snippets",
-					"description": "Pieces of AIs and starship control programs"
-				}
-			},
-			"tech": {
-				"armor": {
-					"name": "Armor",
-					"description": "Increases health <br>+10% / level"
-				},
-				"laser": {
-					"name": "Laser Turrets",
-					"description": "Increases base damage <br>+10% / level"
-				},
-				"reload": {
-					"name": "Auto Reloaders",
-					"description": "Increases rate of fire"
-				},
-				"thrust": {
-					"name": "Propulsion",
-					"description": "Improves the efficiency of drives, allowing your fleet to go faster"
-				},
-				"energy": {
-					"name": "Hyperdrive",
-					"description": "Increases hyperdrive energy capacity and decreases cooldown<br>+5% energy / level<br>-2% / level"
-				},
-				"shields": {
-					"name": "Shields",
-					"description": "Increases shields<br>+10% / level"
-				},
-				"missle": {
-					"name": "Missles",
-					"description": "Increases crit chance and crit damage<br>+1% crit chance<br>+5% crit damage"
-				},
-				"regen": {
-					"name": "Repair Bots",
-					"description": "Increases regen rate<br>+1% / level"
-				},
-				"build": {
-					"name": "Construction",
-					"description": "Decreases ship material cost"
-				},
-				"salvage": {
-					"name": "Salvage",
-					"description": "Increases chance for rare items by 2% / level"
-				},
-				"storage": {
-					"name": "Storage",
-					"description": "Increases storage capacity by 5% / level"
-				}
-			}
-		}]])
-	};
-
-	//load locales
-	locale.isCached('en').then(is => {
-		if(!is || debug.reload_locales){
-			locale.get('locales/en.json').then(lang => locale.set(lang ? 'en' : 'default')).catch(() => locale.set('default'))
-		}
+		currentLang: ''
 	});
+	locales.fetch(`{
+		"language": "en",
+		"name": "English",
+		"versions": ["alpha_1.1.0"],
+		"text": {
+			"menu.singleplayer": "Singleplayer",
+			"menu.multiplayer": "Multiplayer",
+			"menu.options": "Options",
+			"menu.exit": "Exit",
+			"menu.resume": "Resume Game",
+			"menu.back": "Back",
+			"menu.new": "New",
+			"menu.save": "Save Game",
+			"menu.quit": "Main Menu",
+			"menu.start": "Start",
+			"menu.cancel": "Cancel",
+			"menu.general": "General",
+			"menu.debug": "Debug",
+			"menu.keybinds": "Keybinds",
+			"menu.upload": "Upload",
+			"menu.refresh": "Refresh",
+			"menu.warp": "Warp",
+			"menu.hyperspace": "Hyperspace",
+			"menu.map": "Waypoints",
+			"menu.items": "Inventory",
+			"menu.screenshots": "Screenshots",
+			"menu.trade": "Trade",
+			"menu.shipyard": "Shipyard",
+			"menu.lab": "Laboratory",
+			"error.color": "That color is not supported (use hex)",
+			"error.range": "That location is out of range",
+			"player.death": "You died!",
+			"entity.corvette.name": "Corvette",
+			"entity.corvette.description": "A light, fast blockade runner",
+			"entity.frigate.name": "Frigate",
+			"entity.frigate.description": "",
+			"entity.cruiser.name": "Cruiser",
+			"entity.cruiser.description": "",
+			"entity.destroyer.name": "Destroyer",
+			"entity.destroyer.description": "A versitile ship, it can hold its own in battle.",
+			"entity.battleship.name": "Battleship",
+			"entity.battleship.description": "Once in a battle, in can stay there and deal out damage for a long time",
+			"entity.dreadnought.name": "Dreadnought",
+			"entity.dreadnought.description": "The mother of all ships. Dominates everything it touches",
+			"entity.transport_small.name": "Small Transpot",
+			"entity.transport_small.description": "A smaller transport, it can move a small amount of resources",
+			"entity.transport_medium.name": "Medium Transpot",
+			"entity.transport_medium.description": "Larger than a small transport, it can carry many resources",
+			"item.metal.name": "Titanium",
+			"item.metal.description": "A strong, durable metal",
+			"item.minerals.name": "Minerals",
+			"item.minerals.description": "A crystal perfect for making lasers and shield generators",
+			"item.fuel.name": "Fuel",
+			"item.fuel.description": "Incredably reactive",
+			"item.ancient_tech.name": "Anicent Tech",
+			"item.ancient_tech.description": "Technology lost by a long forgot civilization",
+			"item.code_snippets.name": "Code Snippets",
+			"item.code_snippets.description": "Pieces of AIs and starship control programs",
+			"tech.armor.name": "Armor",
+			"tech.armor.description": "Increases health <br>+10% / level",
+			"tech.laser.name": "Laser Turrets",
+			"tech.laser.description": "Increases base damage <br>+10% / level",
+			"tech.reload.name": "Auto Reloaders",
+			"tech.reload.description": "Increases rate of fire",
+			"tech.thrust.name": "Propulsion",
+			"tech.thrust.description": "Improves the efficiency of drives, allowing your fleet to go faster",
+			"tech.energy.name": "Hyperdrive",
+			"tech.energy.description": "Increases hyperdrive energy capacity and decreases cooldown<br>+5% energy / level<br>-2% / level",
+			"tech.shields.name": "Shields",
+			"tech.shields.description": "Increases shields<br>+10% / level",
+			"tech.missle.name": "Missles",
+			"tech.missle.description": "Increases crit chance and crit damage<br>+1% crit chance<br>+5% crit damage",
+			"tech.regen.name": "Repair Bots",
+			"tech.regen.description": "Increases regen rate<br>+1% / level",
+			"tech.build.name": "Construction",
+			"tech.build.description": "Decreases ship material cost",
+			"tech.salvage.name": "Salvage",
+			"tech.salvage.description": "Increases chance for rare items by 2% / level",
+			"tech.storage.name": "Storage",
+			"tech.storage.description": "Increases storage capacity by 5% / level"
+		}
+	}`).then(() => locales.load('en'))
+	//load locales
+	
+	//locales.fetch('locales/en.json').then(locale => locales.load('en'));
 
 	const game = {
 		canvas: $('canvas.game'),
@@ -1220,9 +1092,9 @@
 			], {Cancel: false, Save: true}).then(data => {
 				if(data.result){
 					if(!isHex(data.color.slice(1))){
-						alert(locale.text.error.waypoint.color);
+						alert(locales.text`error.waypoint.color`);
 					}else if(Math.abs(data.x) > 99999 || Math.abs(data.y) > 99999 || Math.abs(data.z) > 99999){
-						alert(locale.text.error.waypoint.range);
+						alert(locales.text`error.waypoint.range`);
 					}else if(wp instanceof Waypoint){
 						Object.assign(wp, {
 							name: data.name,
@@ -1316,7 +1188,7 @@
 				}
 			});
 			if(player.data().fleet.length <= 0 && false){
-				game.chat(locale.text.player.death);
+				game.chat(locales.text`player.death`);
 				player.reset();
 				player.wipe();
 				new Ship('frigate', player.data())
@@ -1409,17 +1281,6 @@
 		let store = tx.objectStore('settings');
 		store.get('general').async().then(result => {
 			settings = result ?? settings;
-			locale.getCached().then(locales => {
-				locales.forEach(lang => {
-					if(!locale.langs.has(lang)){
-						locale.load(lang).then(() => {
-							if('en' == lang){
-								locale.set('en');
-							}
-						})
-					}
-				});
-			});
 			$('form.gen').formData(settings);
 			ui.update();
 		});
@@ -1538,14 +1399,14 @@
 		yrd: (shiptype, row) => {
 			let s = Ship.generic[shiptype], buildCost = '', upgradeCost = '', techRequires = '';
 			for (let m in s.recipe[0]) {
-				buildCost += `<br>${locale.text.item[m].name}: ${minimize(player.data().items[m])}/${minimize(s.recipe[0][m])}`
+				buildCost += `<br>${locales.text`item.${m}.name`}: ${minimize(player.data().items[m])}/${minimize(s.recipe[0][m])}`
 			}
 			for (let i in s.requires) {
-				techRequires += (s.requires[i] > 0) ? `<br>${locale.text.tech[i].name}: ${player.data().tech[i]}/${s.requires[i]}` : `<br>Incompatible with ${locale.text.tech[i].name}`
+				techRequires += (s.requires[i] > 0) ? `<br>${locales.text`tech.${i}.name`}: ${player.data().tech[i]}/${s.requires[i]}` : `<br>Incompatible with ${locales.text`tech.${i}.name`}`
 			}
 			let gui = $(`
 				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-				<span style=text-align:center;grid-row:${row};grid-column:2;>[${player.data().shipNum(shiptype)}] ${locale.text.entity[shiptype].name}</span>
+				<span style=text-align:center;grid-row:${row};grid-column:2;>[${player.data().shipNum(shiptype)}] ${locales.text`entity.${shiptype}.name`}</span>
 				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
 			`);
 			gui.eq(-1).children('svg')
@@ -1556,14 +1417,14 @@
 					}
 					ui.update();
 				})
-				.tooltip(`${locale.text.entity[shiptype].description}<br><colorbr><strong>Material Cost</strong>${buildCost}<br>${Object.keys(s.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug?.tooltips ? '<br>type: ' + shiptype : ''}`);
+				.tooltip(`${locales.text`entity.${shiptype}.description`}<br><colorbr><strong>Material Cost</strong>${buildCost}<br>${Object.keys(s.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug?.tooltips ? '<br>type: ' + shiptype : ''}`);
 			return gui;
 		},
 		lab: (t, row) => {
 			if (tech[t] == undefined) throw new ReferenceError(`UI: Lab: techtype "${t}" is undefined`);
 			let gui = $(`
 				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-				<span style=text-align:center;grid-row:${row};grid-column:2;>${locale.text.tech[t].name}</span>
+				<span style=text-align:center;grid-row:${row};grid-column:2;>${locales.text`tech.${t}.name`}</span>
 				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
 			`);
 			gui.click(e => {
@@ -1575,14 +1436,14 @@
 				ui.update();
 			});
 			
-			let upgradeCost = Object.entries(tech.price(t)).reduce((a, [k, v]) => a + `<br>${locale.text.item[k].name}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
-			techRequires = Object.entries(tech[t].requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locale.text.tech[k].name}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locale.text.tech[k].name}`, '');
-			gui.eq(-1).children('svg').tooltip(`<strong>${locale.text.tech[t].name}</strong><br>${locale.text.tech[t].description}<br>${player.data().tech[t] >= tech[t].max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech[t].requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
+			let upgradeCost = Object.entries(tech.price(t)).reduce((a, [k, v]) => a + `<br>${locales.text`item.${k}.name`}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
+			techRequires = Object.entries(tech[t].requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locales.text`tech.${k}.name`}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locales.text`tech.${k}.name`}`, '');
+			gui.eq(-1).children('svg').tooltip(`<strong>${locales.text`tech.${t}.name`}</strong><br>${locales.text`tech.${t}.description`}<br>${player.data().tech[t] >= tech[t].max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech[t].requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
 			return gui
 		},
 		inv: (i, row) => {
 			let gui = $(`
-				<span style=text-align:right;grid-row:${row};grid-coloumn:1;>${locale.text.item[i].name}${item[i].rare ? ` (rare)` : ``}: </span>
+				<span style=text-align:right;grid-row:${row};grid-coloumn:1;>${locales.text`item.${i}.name`}${item[i].rare ? ` (rare)` : ``}: </span>
 				<span style=text-align:left;grid-row:${row};grid-coloumn:2;>${minimize(player.data().items[i])}</span>
 			`)
 				.click(e => { if (item[i].recipe && player.data().hasItems(item[i].recipe)) { player.data().removeItems(item[i].recipe); player.data().items[i]++ } })
@@ -1972,14 +1833,14 @@
 		saves.forEach(save => save.gui.prependTo('#load'));
 		$("#main").hide();
 		$('#load button.upload use').attr('href', 'images/icons.svg#upload');
-		$('#load button.upload span').text(locale.text.menu.upload);
+		$('#load button.upload span').text(locales.text`menu.upload`);
 		$("#load").show()
 	});
 	$("#main .mp").click(e => {
 		game.mp = true;
 		$('#main').hide();
 		$('#load button.refresh use').attr('href', 'images/icons.svg#arrows-rotate');
-		$('#load button.refresh span').text(locale.text.menu.refresh);
+		$('#load button.refresh span').text(locales.text`menu.refresh`);
 		$('#load').show();
 		$("#load li").detach();
 		servers.forEach(server => {
@@ -2107,7 +1968,7 @@
 					location.reload();
 				}
 			}),
-			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locale.text.menu.upload}</button>`).click(e => {
+			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locales.text`menu.upload`}</button>`).click(e => {
 				//upload('.js').then(files => [...files].forEach(file => file.text().then(mod => game.loadMod(mod))));
 				alert('Mods are not supported.');
 			})
@@ -2123,13 +1984,13 @@
 	$("#q div.warp button.warp").click(e => { warp.start(new Vector2(+$("input.warp.x").val(), +$("input.warp.y").val())); $("#q").toggle();});
 	$('#hud_ship .upgrade').click(e => {
 		let s = player.data().fleet[player.data().fleet.sel], g = Ship.generic[player.data().fleet[player.data().fleet.sel].type], upCost = '';
-		for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locale.text.item[m].name}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
+		for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locales.text`item.${m}.name`}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
 		if (s.level < g.recipe.length - 1 && player.data().hasItems(g.recipe[s.level + 1])) { player.data().removeItems(g.recipe[s.level + 1]); s.level++ }
 		ui.update();
 	}).tooltip(e => {
 		if (player.data().fleet.sel > -1) {
 			let s = player.data().fleet[player.data().fleet.sel], g = Ship.generic[player.data().fleet[player.data().fleet.sel].type], upCost = '';
-			for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locale.text.item[m].name}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
+			for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locales.text`item.${m}.name`}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
 			return s.level == g.recipe.length - 1 ? `<p style=padding:10px>Max Level</p>` : `${s.level} <svg><use href=images/icons.svg#arrow-right /></svg> ${s.level + 1}<br><br><strong>Upgrade Cost:</strong>${upCost}`;
 		}
 	});
@@ -2142,9 +2003,12 @@
 	$('#settings form.gen input').change(e => ui.update());
 	$('#settings form.gen select[name=locale]').change(e => {
 		let lang = e.target.value;
-		locale.isCached(lang).then(is => {
-			if(is) locale.set(lang);
-		});
+		if(locales.has(lang)){
+			locales.load(lang)
+		}else{
+			alert('That locale is not loaded.');
+			console.warn(`Failed to load locale ${lang}`);
+		}
 	});
 	$('html').keydown(e => {
 		switch (e.key) {
@@ -2195,7 +2059,7 @@
 		if(saves.current instanceof Save.Live){
 			saves.current.entities.forEach(entity => {
 				let size = Mesh.sizeOf(entity.mesh);
-				if(Vector3.Distance(Vector3.screenToWorldPlane(game.scene().pointerX, game.scene().pointerY) || Vector3.Zero(), entity.mesh.getAbsolutePosition()) < Math.max(size.x, size.y, size.z)){
+				if(Vector3.Distance(Vector3.screenToWorldPlane(game.scene().pointerX, game.scene().pointerY, saves.current) || Vector3.Zero(), entity.mesh.getAbsolutePosition()) < Math.max(size.x, size.y, size.z)){
 					if(entity.selected){
 						entity.mesh.getChildMeshes().forEach(mesh => game.scene().hl.removeMesh(mesh));
 						entity.selected = false;

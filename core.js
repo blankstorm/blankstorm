@@ -2,10 +2,11 @@
 const config = {
 	mesh_segments: 32,
 	render_quality: 0,
+	load_remote_manifest: false,
 	log_level: 'verbose'
 };
-const version = 'alpha_1.0.0',
-versions = new Map($.ajax({url: 'https://blankstorm.drvortex.dev/versions/manifest.json', async: false}).responseJSON ?? [
+const version = 'alpha_1.1.0',
+versions = new Map(config.load_remote_manifest ? $.ajax({url: 'https://blankstorm.drvortex.dev/versions/manifest.json', async: false}).responseJSON : [
 	['infdev_1', {text: 'Infdev 1', group: 'infdev'}],
 	['infdev_2', {text: 'Infdev 2', group: 'infdev'}],
 	['infdev_3', {text: 'Infdev 3', group: 'infdev'}],
@@ -18,7 +19,8 @@ versions = new Map($.ajax({url: 'https://blankstorm.drvortex.dev/versions/manife
 	['infdev_10', {text: 'Infdev 10', group: 'infdev'}],
 	['infdev_11', {text: 'Infdev 11', group: 'infdev'}],
 	['infdev_12', {text: 'Infdev 12', group: 'infdev'}],
-	['alpha_1.0.0', {text: 'Alpha 1.0.0', group: 'alpha'}]
+	['alpha_1.0.0', {text: 'Alpha 1.0.0', group: 'alpha'}],
+	['alpha_1.1.0', {text: 'Alpha 1.1.0', group: 'alpha'}]
 ]);
 const init = (options = config) => {
 
@@ -91,9 +93,48 @@ const generate = {
 		return r;
 	}
 };
+
+//custom stuff
 Object.defineProperty(Object.prototype, 'filter', {
 	value: function(...keys){
 		return Object.fromEntries(Object.entries(this).filter(([key, value]) => keys.includes(key)));
+	}
+});
+Object.assign(BABYLON.Vector3.prototype, {
+	abs(){return new BABYLON.Vector3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z))},
+	toFixed(num = 1){return new BABYLON.Vector3(this.x.toFixed(num), this.y.toFixed(num), this.z.toFixed(num))},
+	round(){return new BABYLON.Vector3(Math.round(this.x), Math.round(this.y), Math.round(this.z))},
+	toPolar(){return Math.sqrt(this.x ** 2 + this.y ** 2 + this.z ** 2)},
+	display(mode = 'xyz', ...options){
+		return mode == 'xyz' ? `(${this.x}, ${this.y}, ${this.z})` :
+		mode == 'xy' ? `(${this.x}, ${this.y})` :
+		mode == 'xz' ? `(${this.x}, ${this.z})` :
+		mode == 'yz' ? `(${this.y}, ${this.z})` :
+		new SyntaxError('Vector3().display: Invalid mode: ' + mode);
+	},
+	worldToScreen(scene = game.scene(), width, height){
+		return BABYLON.Vector3.Project(this, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), {x: 0, y: 0, width, height});
+	},
+	
+});
+Object.assign(BABYLON.Vector3, {
+	screenToWorld(x, y, width, height, depth, scene){
+		return BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, depth), width, height, BABYLON.Matrix.Identity(), scene.getViewMatrix(), scene.getProjectionMatrix());
+	},
+	screenToWorldPlane(x, y, scene){
+		return scene.pick(x, y, mesh => mesh == scene.xzPlane).pickedPoint;
+	}
+});
+Object.assign(BABYLON.Vector2.prototype, {
+	display(){return `(${this.x}, ${this.y})`;},
+	abs(){return new BABYLON.Vector2(Math.abs(this.x), Math.abs(this.y))},
+	round(){return new BABYLON.Vector2(Math.round(this.x), Math.round(this.y))},
+});
+Object.defineProperty(Array.prototype, 'spliceOut', {
+	value: function(element){
+		let i = this.indexOf(element);
+		if(i != -1) this.splice(i, 1);
+		return i != -1;
 	}
 });
 
@@ -828,9 +869,7 @@ const Level = class extends BABYLON.Scene {
 				material: Object.assign(container.materials[0], {
 					realTimeFiltering: true,
 					realTimeFilteringQuality: [2, 8, 32][+settings.render_quality],
-					reflectionTexture: this.probe.cubeTexture,
-					roughness: 0,
-					metallic: 1
+					reflectionTexture: this.probe.cubeTexture
 				}),
 				position: Vector3.Zero(),
 				isVisible: false,
