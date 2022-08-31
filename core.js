@@ -26,8 +26,6 @@ const init = (options = config) => {
 
 }
 
-Math.PHI = 1.618033988749894;
-Math.G = 6.67 * (10 ** -11);
 Math.clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 const greek = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"],
 numeral = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVII", "XXVII", "XXVIII", "XXIX", "XXX", "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL", "XLI", "XLII", "XLIII", "XLIV", "XLV", "XLVI", "XLVII", "XLVIII", "XLIX", "L", "LI", "LII", "LIII", "LIV", "LV", "LVI", "LVII", "LVIII", "LIX", "LX", "LXI", "LXII", "LXIII", "LXIV", "LXV", "LXVI", "LXVII", "LXVIII", "nice", "LXX", "LXXI", "LXXII", "LXXIII", "LXXIV", "LXXV", "LXXVI", "LXXVII", "LXXVIII", "LXXIX", "LXXX", "LXXXI", "LXXXII", "LXXXIII", "LXXXIV", "LXXXV", "LXXXVI", "LXXXVII", "LXXXVIII", "LXXXIX", "XC", "XCI", "XCII", "XCIII", "XCIV", "XCV", "XCVI", "XCVII", "XCVIII", "XCIX", "C"],
@@ -57,7 +55,8 @@ isJSON = str => {
 	} catch (e) {
 		return false
 	}
-};
+},
+isCraftable = obj => typeof obj?.recipe == 'object' && typeof obj?.requires == 'object' && typeof obj?.buildTime == 'numbers' && isNaN(obj?.buildTime);
 const random = {
 	float: (min = 0, max = 1) => Math.random() * (max - min) + min,
 	hex: (length = 1) => { let s = ""; for (let i = 0; i < length; i++) { s += Math.floor(Math.random() * 16).toString(16) } return s; },
@@ -66,7 +65,8 @@ const random = {
 	int: (min = 0, max = 1) => Math.round(Math.random() * (max - min) + min),
 	char: (len = 1, min = 33, max = 126) => { let s = ''; for (let i = 0; i < len; i++) { s += String.fromCharCode(random.int(min, max)) }; return s },
 	cords: (dis = 1, y0) => {
-		let angle = Math.random() * Math.PI * 2, angle2 = Math.random() * Math.PI * 2;
+		let angle = Math.random() * Math.PI * 2,
+			angle2 = Math.random() * Math.PI * 2;
 		return y0 ? new BABYLON.Vector3(dis * Math.cos(angle), 0, dis * Math.sin(angle)) : new BABYLON.Vector3(dis * Math.cos(angle), dis * Math.sin(angle) * Math.cos(angle2), dis * Math.sin(angle) * Math.sin(angle2))
 	},
 }
@@ -88,7 +88,7 @@ const generate = {
 		let q = quantity;
 		let r = {};
 		for (let i in item) {
-			(item[i].rare) ? (Math.random() < item[i].drop && rares) ? r[i] = quantity / item[i].value : r[i] = 0 : r[i] = quantity / item[i].value;
+			(item.get(i).rare) ? (Math.random() < item.get(i).drop && rares) ? r[i] = quantity / item.get(i).value : r[i] = 0 : r[i] = quantity / item.get(i).value;
 		}
 		return r;
 	}
@@ -138,25 +138,44 @@ Object.defineProperty(Array.prototype, 'spliceOut', {
 	}
 });
 
-const item = {
-	metal: {rare: false, value: 1 },
-	minerals: {rare: false, value: 2 },
-	fuel: {rare: false, value: 4 },
-	ancient_tech: {rare: true, drop: 0.1, value: 1000 },
-	code_snippets: {rare: true, drop: 0.1, value: 1000 }
+const item = new Map([
+	['metal', { rare: false, value: 1}],
+	['minerals', { rare: false, value: 2}],
+	['fuel', { rare: false, value: 4}],
+	['ancient_tech', { rare: true, drop: 0.1, value: 1000}],
+	['code_snippets', { rare: true, drop: 0.1, value: 1000}]
+]);
+const tech = new Map([
+	['armor', { recipe: { metal: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}}],
+	['laser', { recipe: { minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}}],
+	['reload', { recipe: { metal: 4000, minerals: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {}}],
+	['thrust', { recipe: { fuel: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}}],
+	['energy', { recipe: { fuel: 5000, minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}}],
+	['shields', { recipe: { metal: 2500, minerals: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 }}],
+	['storage', { recipe: { metal: 10000, minerals: 10000, fuel: 10000}, xp: 2, scale: 10, requires: {}}],
+	['missle', { recipe: { metal: 10000, minerals: 1000, fuel: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 }}],
+	['regen', { recipe: { metal: 50000, minerals: 10000, fuel: 10000 }, xp: 1, scale: 1.5, max: 25, requires: { reload: 5, armor: 15 }}],
+	['build', { recipe: { metal: 100000 }, xp: 2, scale: 1.5, max: 50, requires: { armor: 10, thrust: 10, reload: 10 }}],
+	['salvage', { recipe: { metal: 250000, minerals: 50000, fuel: 100000 }, xp: 5, scale: 1.25, max: 25, requires: { build: 5 }}]
+]);
+
+
+tech.priceOf = type => {
+	let recipe = { ...tech.get(type).recipe };
+	for (let p in tech.get(type).recipe) {
+		for (let i = 1; i < player.data().tech[type]; i++) {
+			recipe[p] *= tech.get(type).scale
+		};
+	}
+	return recipe
 };
-const tech = {
-	armor: { recipe: { metal: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	laser: { recipe: { minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	reload: { recipe: { metal: 4000, minerals: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {}},
-	thrust: { recipe: { fuel: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	energy: { recipe: { fuel: 5000, minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}},
-	shields: { recipe: { metal: 2500, minerals: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 }},
-	storage: { recipe: { metal: 10000, minerals: 10000, fuel: 10000}, xp: 2, scale: 10, requires: {}},
-	missle: { recipe: { metal: 10000, minerals: 1000, fuel: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 }},
-	regen: { recipe: { metal: 50000, minerals: 10000, fuel: 10000 }, xp: 1, scale: 1.5, max: 25, requires: { reload: 5, armor: 15 }},
-	build: { recipe: { metal: 100000 }, xp: 2, scale: 1.5, max: 50, requires: { armor: 10, thrust: 10, reload: 10 }},
-	salvage: { recipe: { metal: 250000, minerals: 50000, fuel: 100000 }, xp: 5, scale: 1.25, max: 25, requires: { build: 5 }}
+tech.isLocked = type => {
+	for (let i in tech.get(type).requires) {
+		if ((tech.get(type).requires[i] > 0 && player.data().tech[i] < tech.get(type).requires[i]) || (tech.get(type).requires[i] == 0 && player.data().tech[i] > 0)) {
+			return true
+		}
+	}
+	return false
 };
 
 const Path = class{
@@ -279,7 +298,7 @@ const StorageData = class extends Map{
 		return this.baseMax * (1 + player.data().tech.storage / 20)
 	}
 	get total(){
-		return [...this.entries()].reduce((total, [name, amount]) => total + amount * item[name].value, 0);
+		return [...this.entries()].reduce((total, [name, amount]) => total + amount * item.get(name).value, 0);
 	}
 	empty(filter){
 		for(let name of this.keys()){
@@ -335,6 +354,9 @@ const PlayerData = class extends BABYLON.TransformNode{
 				items[item] -= stored;
 			});
 		});
+	}
+	removeAllItems(){
+		this.removeItems(Object.fromEntries([...item.keys()].map(i => [i, Infinity])));
 	}
 	hasItems(items){
 		this.fleet.forEach(ship => {
@@ -427,95 +449,57 @@ const Ship = class extends Entity{
 			hp: 10, damage: 0.1, reload: 0.5, maxLevel: 5, speed: 2, agility: 2, range: 125,
 			power: 1, enemy: true, camRadius: 10, xp: 5, storage: 100,
 			critChance: 0.1, critDamage: 1.5,
-			recipe: [
-				{ metal: 1000, minerals: 500, fuel: 250 },
-				{ ancient_tech: 1, code_snippets: 1 },
-				{ ancient_tech: 2, code_snippets: 2 },
-				{ ancient_tech: 4, code_snippets: 5 },
-				{ ancient_tech: 8, code_snippets: 10 }, 
-				{ ancient_tech: 16, code_snippets: 20 }
-			], requires: {}, model: 'models/corvette.gltf'
+			recipe: { metal: 1000, minerals: 500, fuel: 250 },
+			requires: {}, model: 'models/corvette.gltf'
 		},
 		frigate: {
 			hp: 25, damage: 0.5, reload: 1, maxLevel: 5, speed: 1, agility: 1.5, range: 150,
 			power: 2, enemy: true, camRadius: 15, xp: 7.5, storage: 250,
 			critChance: 0.25, critDamage: 1.25,
-			recipe: [
-				{ metal: 2000, minerals: 2000, fuel: 500 },
-				{ ancient_tech: 2, code_snippets: 5 },
-				{ ancient_tech: 4, code_snippets: 10 },
-				{ ancient_tech: 7, code_snippets: 20 },
-				{ ancient_tech: 9, code_snippets: 30 },
-				{ ancient_tech: 12, code_snippets: 35 }
-			], requires: {}, model: 'models/corvette.gltf'
+			recipe: { metal: 2000, minerals: 2000, fuel: 500 },
+			requires: {}, model: 'models/corvette.gltf'
 		},
 		transport_small: {
 			hp: 5, damage: 0.1, reload: 5, maxLevel: 1, speed: 1, agility: .75, range: 75,
 			power: 1, enemy: false, camRadius: 20, xp: 10, storage: 25000,
 			critChance: 0.1, critDamage: 1,
-			recipe: [
-				{ metal: 5000, minerals: 1000, fuel: 2500}
-			], requires: {storage: 3}, model: 'models/transport_small.glb'
+			recipe: { metal: 5000, minerals: 1000, fuel: 2500},
+			requires: {storage: 3}, model: 'models/transport_small.glb'
 		},
 		cruiser: {
 			hp: 50, damage: 1, reload: 2, maxLevel: 5, speed: 1, agility: 1, range: 200,
 			power: 5, enemy: true, camRadius: 20, xp: 10, storage: 250,
 			critChance: 0.1, critDamage: 1.25,
-			recipe: [
-				{ metal: 4000, minerals: 1000, fuel: 1000 },
-				{ ancient_tech: 3, code_snippets: 10 },
-				{ ancient_tech: 5, code_snippets: 20 },
-				{ ancient_tech: 8, code_snippets: 30 },
-				{ ancient_tech: 12, code_snippets: 40 },
-				{ ancient_tech: 18, code_snippets: 50 }
-			], requires: {}, model: 'models/cruiser.gltf'
+			recipe: { metal: 4000, minerals: 1000, fuel: 1000 },
+			requires: {}, model: 'models/cruiser.gltf'
 		},
 		destroyer: {
 			hp: 100, damage: 2.5, reload: 1, maxLevel: 5, speed: 1, agility: 1, range: 200,
 			power: 10, enemy: true, camRadius: 30, xp: 20, storage: 1000,
 			critChance: 0.25, critDamage: 1.5,
-			recipe: [
-				{ metal: 10000, minerals: 4000, fuel: 2500 },
-				{ ancient_tech: 8, code_snippets: 25 },
-				{ ancient_tech: 12, code_snippets: 40 },
-				{ ancient_tech: 20, code_snippets: 60 },
-				{ ancient_tech: 35, code_snippets: 85 },
-				{ ancient_tech: 60, code_snippets: 100 }
-			], requires: {}, model: 'models/destroyer.gltf'
+			recipe: { metal: 10000, minerals: 4000, fuel: 2500 },
+			requires: {}, model: 'models/destroyer.gltf'
 		},
 		transport_medium: {
 			hp: 50, damage: 1, reload: 5, maxLevel: 1, speed: 2/3, agility: 0.5, range: 75,
 			power: 10, enemy: false, camRadius: 50, xp: 10, storage: 100000,
 			critChance: 0.1, critDamage: 1,
-			recipe: [
-				{ metal: 10000, minerals: 2000, fuel: 5000}
-			], requires: {storage: 5}, model: 'models/transport_small.glb'
+			recipe: { metal: 10000, minerals: 2000, fuel: 5000},
+			requires: {storage: 5}, model: 'models/transport_small.glb'
 		},
 		battleship: {
 			hp: 250, damage: 10, reload: 2, maxLevel: 5, speed: 2/3, agility: 1, range: 250,
 			power: 25, enemy: true, camRadius: 40, xp: 50, storage: 2500,
 			critChance: 0.2, critDamage: 1.25,
-			recipe: [
-				{ metal: 25000, minerals: 10000, fuel: 5000 },
-				{ ancient_tech: 10, code_snippets: 20 },
-				{ ancient_tech: 25, code_snippets: 25 },
-				{ ancient_tech: 45, code_snippets: 40 },
-				{ ancient_tech: 70, code_snippets: 55 },
-				{ ancient_tech: 100, code_snippets: 70 }
-			], requires: {}, model: 'models/battleship.gltf'
+			recipe: { metal: 25000, minerals: 10000, fuel: 5000 },
+			requires: {}, model: 'models/battleship.gltf'
 		},
 		dreadnought: {
 			hp: 2000, damage: 100, reload: 4, maxLevel: 5, speed: 1/3, agility: 1, range: 250,
 			power: 100, enemy: true, camRadius: 65, xp: 100, storage: 10000,
 			critChance: 0.2, critDamage: 1.5,
-			recipe: [
-				{ metal: 1000000, minerals: 500000, fuel: 250000 },
-				{ ancient_tech: 25, code_snippets: 50 },
-				{ ancient_tech: 50, code_snippets: 75 },
-				{ ancient_tech: 100, code_snippets: 88 },
-				{ ancient_tech: 150, code_snippets: 100 },
-				{ ancient_tech: 250, code_snippets: 125 }
-			], requires: { build: 5 }, model: 'models/dreadnought.gltf'
+			recipe: { metal: 1000000, minerals: 500000, fuel: 250000 },
+			requires: { build: 5 }, model: 'models/dreadnought.gltf'
 		}
 	}
 	constructor(typeOrData, faction, save){
@@ -1046,7 +1030,7 @@ const Level = class extends BABYLON.Scene {
 						storage: entity.storage.serialize().items,
 						reload: +entity.reload.toFixed(3),
 						hp: +entity.hp.toFixed(3),
-						...entity.filter('damage', 'level', 'power')
+						...entity.filter('damage', 'power')
 					});
 					break;
 					default:

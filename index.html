@@ -37,7 +37,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		let _console = console;
 		console = new Proxy(_console, {
 			get(obj, prop){
-				let level = config?.log_level || 'verbose',
+				let level = (config??{})?.log_level || 'verbose',
 				levels = ['error', 'warn', 'debug', 'verbose'];
 				return function(...args){
 					if(levels.indexOf(prop) <= levels.indexOf(level)) logger.at(-1)?.msg == args ? logger.at(-1).count++ : logger.push({type: prop, time: performance.now().toFixed(), msg: args, count: 0});
@@ -118,12 +118,12 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			color: var(--text-color);
 			font-size: var(--font-size);
 		}
-		p, a, span, h1, h2, h3, h4, h5, h6, li{
+		p,a,span,h1,h2,h3,h4,h5,h6,li{
 			color: var(--text-color);
 			font-family: var(--font-family);
 			font-size: var(--font-size);
 		}
-		h1, h2, h3, h4, h5, h6, [text-shadow]{
+		h1,h2,h3,h4,h5,h6,[text-shadow]{
 			text-shadow: var(--text-shadow);
 		}
 		[bg=alt]{
@@ -190,13 +190,13 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		input[type=checkbox]:hover{
 			cursor: pointer
 		}
-		:where(div, dialog, ol, ul, nav, form, li[bg]):not([bg=none],[bg=alt]){
+		:where(div,dialog,ol,ul,nav,form,li[bg]):not([bg=none],[bg=alt]){
 			background-color: var(--bg-color);
 			border-radius: var(--bg-radius);
 			box-shadow: var(--bg-shadow);
 			color: var(--text-color);
 		}
-		body>:where(div, ol, ul, nav, form):not([bg=none],[bg=alt]), [bg=trans]{
+		body>:where(div,ol,ul,nav,form):not([bg=none],[bg=alt]), [bg=trans]{
 			--bg-color-seethru: hsl(var(--_bg-color), 0.33);
 			background: 
 			linear-gradient(to right, var(--bg-color) 0%, var(--bg-color-seethru) 10%, var(--bg-color-seethru) 50%, var(--bg-color-seethru) 90%, var(--bg-color) 100%),
@@ -342,12 +342,8 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			height: 100%;
 		}
 		[content]{
-			position: fixed;
+			position: absolute;
 			inset: 10% 10% 10% 10%;
-		}
-		ul[content]{
-			height: 70%;
-			padding: 5%
 		}
 		[clickable]:hover{
 			cursor: pointer
@@ -391,7 +387,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			<path fill=var(--text-color) d="m60,50c0,5.5 -4.5,10 -10,10c-5.5,0 -10,-4.5 -10,-10c0,-5.5 4.5,-10 10,-10c5.5,0 10,4.5 10,10z" />
 			<path fill=url(#gradient) d="m73,50c0,-12.7 -10.3,-23 -23,-23s-23,10.3 -23,23m0.47001,0c0,-10.5 11.50746,-20.6493 22.10746,-20.6493s19.52254,10.1493 19.52254,20.6493" />
 		</svg>
-		<p style=position:absolute;font-size:25px;top:50%;font-family:sans-serif; text-shadow>Loading</p>
+		<p style=position:absolute;font-size:25px;top:50%; text-shadow>Loading</p>
 	</div>
 	<input ingame id=cli style=position:fixed;left:15px;bottom:15px;width:30%;height:30px;padding:0;margin:0;z-index:10 hide ofs=x>
 	<ul lsn id=chat style=position:fixed;left:15px;bottom:50px;width:30%;height:fit-content;max-height:35%;background:#2225;padding:0;margin:0;z-index:9 nbs ofn bw></ul>
@@ -551,7 +547,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		</button>
 		<button plot=50px,150px,135px,35px,a class=mod hide>
 			<svg><use href=images/icons.svg#puzzle-piece /></svg> 
-			Mods
+			<span>Mods</span>
 		</button>
 		<button plot=50px,150px,135px,35px,a class=debug>
 			<svg><use href=images/icons.svg#bug /></svg>
@@ -576,7 +572,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			<input type=checkbox name=show_path_gizmos label="Show Path Gizmos" value=true><br><br>
 			<input type=checkbox name=tooltips label="Show Advanced Tooltips" value=true><br><br>
 			<input type=checkbox name=disable_saves label="Disable Saves" value=true><br><br>
-			<select name=log_level label="Log Level">
+			<select name=log_level label="Log ">
 				<option value=warn>Warn</option>
 				<option value=error>Error</option>
 				<option value=debug>Debug</option>
@@ -584,6 +580,12 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			</select><br><br>
 		</form>
 		<ul class=mod nbs bg=none ofs=y hide lsn></ul>
+	</div>
+	<div id=debug_log hide content>
+		<ul content bg=none style=list-style:none;--font-family:monospace;overflow-y:scroll;>
+			
+		</ul>
+		<input style=position:absolute;bottom:1em;height:1em;left:10%;width:80%;--font-family:monospace>
 	</div>
 </body>
 <script class=jquery src=libraries/jquery.js></script>
@@ -758,8 +760,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 	width = innerWidth,
 	height = innerHeight,
 	mouse = { x: 0, y: 0, pressed: false },
-	trigger = event => { dispatchEvent(event) },
-	playsound = (url, vol = 1) => { let a = new Audio(url); a.volume = +vol; a.play() },
+	playsound = (url, vol = 1) => { if(vol > 0){ let a = new Audio(url); a.volume = +vol; a.play() }},
 	date = new Date();
 	onmousemove = e => { mouse.x = e.clientX; mouse.y = e.clientY };
 	document.cookie.split("; ").forEach(e => { cookie[e.split("=")[0]] = e.split("=")[1] });
@@ -1032,11 +1033,9 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			}
 		},
 		cli: { line: 0, currentInput: "", i: $("#cli").val(), prev: [] },
-		scene: (location = game.currentLevel) => {
+		scene: () => {
 			return saves.current || game.scene.default;
 		},
-		get currentLevel() { return saves.current ? saves.current.currentLevel : Vector2.Zero() },
-		set currentLevel(val) { return saves.current ? saves.current.currentLevel = val : console.warn('Tried to set currentLevel without a valid save') },
 		saveSettings: async () => {
 			let settingsStore = (await db.tx('settings', 'readwrite')).objectStore('settings');
 			settings = $("form.gen").formData(), debug = $('form.debug').formData();
@@ -1210,7 +1209,15 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			player.cam.target = player.data().position;
 			if (!noStop) player.stop()
 		},
-		wipe: () => { for (let i in item) { player.data().items[i] = 0 }; for (let i in tech) { player.data().tech[i] = 0 }; for (let i in player.data().fleet) { player.data().fleet[i].remove() } player.data().fleet = [] },
+		wipe: () => {
+			player.data().removeAllItems();
+			for(let type of tech.keys()){
+				player.data().tech[type] = 0
+			};
+			for(let ship of player.data().fleet){
+				ship.remove();
+			}
+		},
 		data: id => saves.current?.playerData?.[id ?? player.id] ?? playerData,
 		levelOf: xp => Math.sqrt(xp / 10),
 		xpOf: level => 10 * level ** 2,
@@ -1293,32 +1300,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		$('form.gen').formData(settings);
 	});
 
-	Object.defineProperties(tech, {
-		price: {
-			value: type => {
-				let recipe = { ...tech[type].recipe };
-				for (let p in tech[type].recipe) {
-					for (let i = 1; i < player.data().tech[type]; i++) {
-						recipe[p] *= tech[type].scale
-					};
-				}
-				return recipe
-			},
-			enumerable: false
-		},
-		locked: {
-			value: type => {
-				for (let i in tech[type].requires) {
-					if ((tech[type].requires[i] > 0 && player.data().tech[i] < tech[type].requires[i]) || (tech[type].requires[i] == 0 && player.data().tech[i] > 0)) {
-						return true
-					}
-				}
-				return false
-			},
-			enumerable: false
-		}
-	});
-	Object.defineProperty(item, 'multiplyer', { value: 1 + (1 - settings.difficulty), enumerable: false });
 	game.freezeProperty('mpEnabled', 'scene', 'chat');
 	player.freezeProperty('updateFleet', 'move', 'stop', 'reset', 'hasItems', 'removeItems', 'giveItems', 'wipe', 'chat');
 	onresize = e => { game.engine.resize(); console.warn('Do not paste any code someone gave you, as they may be trying to steal your information') };
@@ -1397,7 +1378,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 	});
 	Object.assign(ui, {
 		yrd: (shiptype, row) => {
-			let s = Ship.generic[shiptype], buildCost = '', upgradeCost = '', techRequires = '';
+			let s = Ship.generic[shiptype], buildCost = '', techRequires = '';
 			for (let m in s.recipe[0]) {
 				buildCost += `<br>${locales.text`item.${m}.name`}: ${minimize(player.data().items[m])}/${minimize(s.recipe[0][m])}`
 			}
@@ -1421,54 +1402,78 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			return gui;
 		},
 		lab: (t, row) => {
-			if (tech[t] == undefined) throw new ReferenceError(`UI: Lab: techtype "${t}" is undefined`);
+			if (!tech.has(t)) throw new ReferenceError(`UI: Lab: techtype "${t}" does not exist`);
 			let gui = $(`
 				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
 				<span style=text-align:center;grid-row:${row};grid-column:2;>${locales.text`tech.${t}.name`}</span>
 				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
 			`);
 			gui.click(e => {
-				if(player.data().hasItems(tech.price(t)) && player.data().tech[t] < tech[t].max && !tech.locked(t) && player.data().xpPoints >= 1){
-					player.data().removeItems(tech.price(t));
+				if(player.data().hasItems(tech.priceOf(t)) && player.data().tech[t] < tech.get(t).max && !tech.isLocked(t) && player.data().xpPoints >= 1){
+					player.data().removeItems(tech.priceOf(t));
 					player.data().tech[t]++;
 					player.data().xpPoints--;
 				}
 				ui.update();
 			});
 			
-			let upgradeCost = Object.entries(tech.price(t)).reduce((a, [k, v]) => a + `<br>${locales.text`item.${k}.name`}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
-			techRequires = Object.entries(tech[t].requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locales.text`tech.${k}.name`}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locales.text`tech.${k}.name`}`, '');
-			gui.eq(-1).children('svg').tooltip(`<strong>${locales.text`tech.${t}.name`}</strong><br>${locales.text`tech.${t}.description`}<br>${player.data().tech[t] >= tech[t].max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech[t].requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
+			let upgradeCost = Object.entries(tech.priceOf(t)).reduce((a, [k, v]) => a + `<br>${locales.text`item.${k}.name`}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
+			techRequires = Object.entries(tech.get(t).requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locales.text`tech.${k}.name`}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locales.text`tech.${k}.name`}`, '');
+			gui.eq(-1).children('svg').tooltip(`<strong>${locales.text`tech.${t}.name`}</strong><br>${locales.text`tech.${t}.description`}<br>${player.data().tech[t] >= tech.get(t).max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech.get(t).requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
 			return gui
 		},
 		inv: (i, row) => {
 			let gui = $(`
-				<span style=text-align:right;grid-row:${row};grid-coloumn:1;>${locales.text`item.${i}.name`}${item[i].rare ? ` (rare)` : ``}: </span>
+				<span style=text-align:right;grid-row:${row};grid-coloumn:1;>${locales.text(`item.${i}.name`)}${item.get(i).rare ? ` (rare)` : ``}: </span>
 				<span style=text-align:left;grid-row:${row};grid-coloumn:2;>${minimize(player.data().items[i])}</span>
 			`)
-				.click(e => { if (item[i].recipe && player.data().hasItems(item[i].recipe)) { player.data().removeItems(item[i].recipe); player.data().items[i]++ } })
+				.click(e => { if (item.get(i).recipe && player.data().hasItems(item.get(i).recipe)) { player.data().removeItems(item.get(i).recipe); player.data().items[i]++ } })
 				.removeAttr('clickable');
 			return gui
 		},
 		update: (scene = game.scene()) => {
+			try{
+			$('#debug_log ul').html(logger
+			.toString()
+			.split('\n')
+			.map(e => `<li>${e}</li>`)
+			.join('')
+			.replaceAll(/\[[A-Z]+\]/g, match => {
+				let color = 'var(--text-color)';
+				switch(match.slice(1, -1)){
+					case 'VERBOSE':
+						color = 'hsl(var(--hue), 100, 50, .8)';
+						break;
+					case 'DEBUG':
+						color = 'hsl(var(--hue), 100, 60, .8)';
+						break;
+					case 'WARN':
+						color = '#bb4';
+						break;
+					case 'ERROR':
+						color = '#b44';
+						break;
+				}
+				return `<span style=color:${color}>${match}</span>`
+			}));
 			$('div.inv,div.lab,div.yrd,div.screenshots').empty();
 			$('div.map>:not(button)').remove();
 			let invRows = 1, yardRows = 0, labRows = 0, mapRows = 0;
-			for (let i in item) {
-				item[i].gui = ui.inv(i, ++invRows);
-				$('div.inv').append(item[i].gui)
+			for (let [name, i] of item){
+				i.gui = ui.inv(name, ++invRows);
+				$('div.inv').append(i.gui)
 			};
 			$('svg.item-bar rect').attr('width', player.data().totalItems / player.data().maxItems * 100 || 0);
 			$('div.item-bar p.label').text(`${minimize(player.data().totalItems)} / ${minimize(player.data().maxItems)}`)
-			for(let i in tech) {
-				tech[i].gui = ui.lab(i, ++labRows);
-				$('div.lab').append(tech[i].gui);
-				tech[i].gui.eq(0)[tech.locked(i) ? 'show' : 'hide']();
+			for(let [type, t] of tech){
+				t.gui = ui.lab(type, ++labRows);
+				$('div.lab').append(t.gui);
+				t.gui.eq(0)[tech.isLocked(type) ? 'show' : 'hide']();
 			}
 			for(let i in Ship.generic) {
 				let locked = false;
 				for (let t in Ship.generic[i].requires) {
-					if (tech.locked(t)) locked = true;
+					if (tech.isLocked(t)) locked = true;
 				}
 				Ship.generic[i].gui = ui.yrd(i, ++yardRows);
 				$('div.yrd').append(Ship.generic[i].gui);
@@ -1551,6 +1556,9 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					position: ['absolute', 'fixed', 'relative', 'sticky'].includes(plot[4]) ? plot[4] : /^(a|s|f|r)$/.test(plot[4]) ? { a: 'absolute', f: 'fixed', r: 'relative', s: 'sticky' }[plot[4]] : 'fixed'
 				});
 			});
+			}catch(err){
+				console.error('Failed to update UI: ' + err.stack);
+			}
 		},
 		lastScene: "#main"
 	});
@@ -1826,6 +1834,34 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 	});
 
 	//Event Listeners (UI transitions, creating saves, etc.)
+	const debugInput = [];
+	debugInput.index = 0
+	$('#debug_log input').keydown(e => {
+			try{
+				switch(e.key){
+					case 'Enter':
+						let input = $('#debug_log input').val();
+						console.debug(eval?.(input));
+						if(debugInput.at(-1) != input) debugInput.push(input);
+						debugInput.index = 0;
+						$('#debug_log input').val('');
+						ui.update();
+						break;
+					case 'ArrowUp':
+						if(-debugInput.index < debugInput.length){
+							$('#debug_log input').val(debugInput.at(--debugInput.index))
+						}
+						break;
+					case 'ArrowDown':
+						if(debugInput.index < -1){
+							$('#debug_log input').val(debugInput.at(++debugInput.index))
+						}
+						break;
+				}
+			}catch(err){
+				console.error(err);
+			}
+	});
 	$("#main .sp").click(e => {
 		game.mp = false;
 		$("#load li").detach();
@@ -1940,7 +1976,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		if(game.mp){
 			servers.get(servers.sel).disconnect();
 		}else{
-			game.currentLevel = Vector2.Zero();
 			saves.selected = null;
 			$('#main').show();
 		}
@@ -1982,18 +2017,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		ui.update();
 	});
 	$("#q div.warp button.warp").click(e => { warp.start(new Vector2(+$("input.warp.x").val(), +$("input.warp.y").val())); $("#q").toggle();});
-	$('#hud_ship .upgrade').click(e => {
-		let s = player.data().fleet[player.data().fleet.sel], g = Ship.generic[player.data().fleet[player.data().fleet.sel].type], upCost = '';
-		for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locales.text`item.${m}.name`}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
-		if (s.level < g.recipe.length - 1 && player.data().hasItems(g.recipe[s.level + 1])) { player.data().removeItems(g.recipe[s.level + 1]); s.level++ }
-		ui.update();
-	}).tooltip(e => {
-		if (player.data().fleet.sel > -1) {
-			let s = player.data().fleet[player.data().fleet.sel], g = Ship.generic[player.data().fleet[player.data().fleet.sel].type], upCost = '';
-			for (let m in g.recipe[s.level + 1]) { upCost += `<br>${locales.text`item.${m}.name`}: ${minimize(player.data().items[m])}/${minimize(g.recipe[s.level + 1][m])}` }
-			return s.level == g.recipe.length - 1 ? `<p style=padding:10px>Max Level</p>` : `${s.level} <svg><use href=images/icons.svg#arrow-right /></svg> ${s.level + 1}<br><br><strong>Upgrade Cost:</strong>${upCost}`;
-		}
-	});
 	$('[label]').each((i, e) => {
 		let val = e.value;
 		$(e).attr('ui-label', random.hex(32))
@@ -2020,9 +2043,12 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				e.preventDefault();
 				download(logger[e.shiftKey ? 'toJSON' : 'toString'](), 'debug.' + (e.shiftKey ? 'json' : 'log'));
 				break;
+			case 'F10':
+				e.preventDefault();
+				$('#debug_log').toggle();
+				break;
 			case 'b' :
 				if(e.ctrlKey) game.strobe(100);
-			
 				break;
 			case 't': if(e.altKey){
 				e.preventDefault();
@@ -2128,7 +2154,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					game.frames++;
 					warp.cooltime = Math.max(0, warp.cooltime - (1 - player.data().tech.energy / 100));
 					warp.energy = Math.clamp(warp.energy + (1 + player.data().tech.energy / 20) * .06 * game.scene().getAnimationRatio(), 0, warp.maxEnergy);
-					item.multiplyer = 1 + (1 - game.difficulty);
+
 					Ship.multiplyer = {
 						damage: 1 + (1 - game.difficulty) + player.data().tech.laser * 0.1,
 						hp: 1 + (1 - game.difficulty) + player.data().tech.armor * 0.15
@@ -2137,16 +2163,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					if(player.data().rotation.y < -Math.PI) player.data().rotation.y += 2 * Math.PI;
 					if(player.cam.alpha > Math.PI) player.cam.alpha -= 2 * Math.PI;
 					if(player.cam.alpha < -Math.PI) player.cam.alpha += 2 * Math.PI;
-					if(Math.abs(player.data().position.x) > 99999){
-						let newLevel = new Vector2(game.currentLevel.x + Math.clamp(player.data().position.x, -1, 1), game.currentLevel.y);
-						warp.start(newLevel);
-						player.data().position.x *= -1;
-					};
-					if(Math.abs(player.data().position.z) > 99999){
-						let newLevel = new Vector2(game.currentLevel.x, game.currentLevel.y + Math.clamp(player.data().position.z, -1, 1));
-						warp.start(newLevel);
-						player.data().position.z *= -1;
-					};
 					player.cam.angularSensibilityX = player.cam.angularSensibilityY = 2000 / settings.sensitivity;
 					player.updateFleet();
 					game.scene().meshes.forEach(mesh => {

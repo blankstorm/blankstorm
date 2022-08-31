@@ -15,9 +15,13 @@ These are the changes for the next update[s].
 - Particles and laser collisions
 
 ## Planned
-*For the next release*
+*For the next release[s]*
 
-- right click ships to see info
+- Hover over ships to see info
+- Better stars (see https://www.babylonjs-playground.com/#MX2Z99#7)
+- Hardpoints (see https://playground.babylonjs.com/#PU4WYI#291)
+- New ships with better artwork (see https://www.youtube.com/watch?v=qJEkhSXMTj4)
+- Fix warp
 
 ## Changes since Alpha 1.0.0 release
 
@@ -26,6 +30,7 @@ These are the changes for the next update[s].
 - Moved to using a core (for shared code between client and server)
 - Saves now only use one scene and generate regions of the scene
 - Removed RCS
+- remove locale caching
 
 ### Bugs
 
@@ -41,3 +46,4 @@ These are the changes for the next update[s].
 - Moved `game.getEntity` and `game.getBody` to `level.getEntities` and `level.getBodies`
 - Removed `game.removeEntity` and `game.removeBody` (use `(Entity).remove`)
 - Removed local difficulty
+- `item` and `tech` are maps 
