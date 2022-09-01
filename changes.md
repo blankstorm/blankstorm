@@ -20,7 +20,7 @@ These are the changes for the next update[s].
 - Hover over ships to see info
 - Better stars (see https://www.babylonjs-playground.com/#MX2Z99#7)
 - Hardpoints (see https://playground.babylonjs.com/#PU4WYI#291)
-- New ships with better artwork (see https://www.youtube.com/watch?v=qJEkhSXMTj4)
+- New ships with better artwork
 - Fix warp
 
 ## Changes since Alpha 1.0.0 release
@@ -30,15 +30,17 @@ These are the changes for the next update[s].
 - Moved to using a core (for shared code between client and server)
 - Saves now only use one scene and generate regions of the scene
 - Removed RCS
-- remove locale caching
+- Removed locale caching
+- Added debug log viewer & console (F12)
 
 ### Bugs
 
 - Issues with `level.getEntities` and `level.getBodies`
 - Entities' hitboxes to F4
 - Fixed loading storagedata
-- Fixed some issues with commands
-- Fixed cruiser mispelled as crusier
+- Some issues with commands
+- Cruiser was mispelled as crusier
+- Loading the IndexedDB from a version before 2 to 3 (the locales objectStore wouldn't exist)
 
 ### Technical Changes
 

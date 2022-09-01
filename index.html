@@ -18,7 +18,7 @@ Language: ${navigator.language}
 
 Log starts at ${(new Date()).toLocaleString()}
 ----- Start of Log -----
-${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpperCase()}] ${e.count ? `(${e.count})` : ''} ${e.msg}`).join('\n')}
+${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpperCase()}] ${e.count ? `(x${e.count+1})` : ''} ${e.msg}`).join('\n')}
 ----- End of Log -----`
 			},
 			toJSON(){
@@ -29,10 +29,13 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					platform: navigator.platform,
 					language: navigator.language
 				}, log: [...logger]});
+			},
+			log(type, msg){
+				logger.at(-1)?.msg.toString() == msg.toString() ? logger.at(-1).count++ : logger.push({type, time: performance.now().toFixed(), msg, count: 0});
 			}
 		});
 		onerror = (message, file, line, column, err) => {
-			logger.at(-1)?.msg == err.stack ? logger.at(-1).count++ : logger.push({type: 'error', time: performance.now().toFixed(), msg: err.stack, count: 0});
+			logger.log('error', err.stack)
 		}
 		let _console = console;
 		console = new Proxy(_console, {
@@ -40,7 +43,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				let level = (config??{})?.log_level || 'verbose',
 				levels = ['error', 'warn', 'debug', 'verbose'];
 				return function(...args){
-					if(levels.indexOf(prop) <= levels.indexOf(level)) logger.at(-1)?.msg == args ? logger.at(-1).count++ : logger.push({type: prop, time: performance.now().toFixed(), msg: args, count: 0});
+					if(levels.indexOf(prop) <= levels.indexOf(level)) logger.log(prop, args);
 					return obj[prop] ? obj[prop](...args) : undefined;
 				}
 			}	
@@ -60,7 +63,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					let db = req.result;
 					switch(e.oldVersion){
 						case 2:
-							db.deleteObjectStore('locales');
+							if(db.objectStoreNames.contains('locales')) db.deleteObjectStore('locales');
 							break;
 						case 0:
 							db.createObjectStore('saves');
@@ -506,6 +509,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			<center>
 				<input label="Warp To: " class="warp x" maxlength=4 style=width:50px>
 				<input class="warp y" maxlength=4 style=width:50px>
+				<select></select>
 				<button style=margin:1% class=warp></button>
 			</center>
 		</div>
@@ -782,44 +786,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		laser_hit: 'sfx/laser_hit.mp3',
 		ui: 'sfx/ui.mp3'
 	};
-	const Action = class extends Promise{
-		static get [Symbol.species]() {
-			return Promise;
-		}
-		get [Symbol.toStringTag]() {
-			return 'Action';
-		}
-		abort(){
-			throw new ReferenceError('abort called to soon!');
-		}
-		onupdate(){}
-		onabort(){}
-		constructor(time, intervals, onupdate = () => {}){
-			if(!Number.isInteger(intervals)) throw new TypeError('Intervals must be an integer');
-			if(intervals < 1) throw new Error('Intervals must be greater than 0');
-			if(typeof onupdate != 'function') throw new TypeError('onupdate must be a function');
-			let abort;
-			super((resolve, reject) => {
-				let i = 0,
-				interval = setInterval(() => {
-					this.onupdate(i++);
-				}, (time-1)/intervals),
-				timeout = setTimeout(() => {
-					clearInterval(interval);
-					resolve(i);
-				}, time);
-				abort = msg => {
-					clearInterval(interval);
-					clearTimeout(timeout);
-					this.onabort(msg);
-					reject(msg);
-				};
-			});
-			this.abort = abort;
-			this.onupdate = onupdate;
-		}
-		
-	}
 
 	//add HTML for settings to work (the title and defaults for checkboxes)
 	$('#settings form').prepend('<h2 style=text-align:center>Settings - <span></span></h2>')
@@ -1156,7 +1122,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 
 	const playerData = new PlayerData({id: 'DEFAULT', name: 'DEFAULT'});
 	const player = {
-		username: '', speed: 1, velocity: Vector3.Zero(),
+		username: '', speed: 1,
 		cam: new ArcRotateCamera('player.cam', -Math.PI/2, Math.PI/2, 5, Vector3.Zero(), game.scene()),
 		targetBody: null,
 		getAuthData(){
@@ -1197,8 +1163,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		chat: (...msg) => { for (let m of msg) { game.chat((`${player.username}: ${m}`).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')) } },
 		stop: (delay = 0) => {
 			setTimeout(e => {
-				player.velocity = Vector3.Zero();
-				player.data().fleet.forEach(s => { s.velocity = Vector3.Zero() })
+				player.data().velocity = Vector3.Zero();
 			}, +delay || 0)
 		},
 		reset: noStop => {
@@ -1234,7 +1199,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			direction.y = 0;
 			direction.normalize();
 			if(computeMultiplyer) direction.scaleInPlace(player.speed + player.data().tech.thrust / 10);
-			player.velocity.addInPlace(direction);
+			player.data().velocity.addInPlace(direction);
 		}
 	});
 	const warp = {
@@ -1455,7 +1420,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 						break;
 				}
 				return `<span style=color:${color}>${match}</span>`
-			}));
+			})).scrollTop($('#debug_log ul')[0].scrollHeight);
 			$('div.inv,div.lab,div.yrd,div.screenshots').empty();
 			$('div.map>:not(button)').remove();
 			let invRows = 1, yardRows = 0, labRows = 0, mapRows = 0;
@@ -2193,8 +2158,8 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 								if((game.scene().getAnimationRatio() * ship.reload).toFixed(1) == Math.floor(game.scene().getAnimationRatio() * ship.reload)) ship.attack(game.scene().bodies.get(ship.battle));
 							}
 						}else{
-							let healAmount = Ship.generic[ship.type].hp / (1000 - player.data().tech.regen * 10);
-							if(ship.hp + healAmount <= Ship.generic[ship.type].hp) ship.hp += healAmount;
+							let healAmount = ship._generic.hp / (1000 - player.data().tech.regen * 10);
+							if(ship.hp + healAmount <= ship._generic.hp) ship.hp += healAmount;
 						}
 						ship.position.addInPlace(ship.velocity.scale(game.scene().getAnimationRatio()));
 						ship.velocity.scaleInPlace(0.9);	
@@ -2203,22 +2168,22 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 						player.updateFleet();
 						if(player.data().fleet.length > 0){
 							if (ship.hp <= 0) {
-								player.data().addItems(Ship.generic[ship.type].recipe[0]);
-								if(Math.floor(player.levelOf(player.data().xp  + Ship.generic[ship.type].xp)) > Math.floor(player.levelOf(player.data().xp))){
+								player.data().addItems(ship._generic.recipe[0]);
+								if(Math.floor(player.levelOf(player.data().xp  + ship._generic.xp)) > Math.floor(player.levelOf(player.data().xp))){
 									/*level up*/
 									player.data().xpPoints++;
 								}
-								player.data().xp += Ship.generic[ship.type].xp;
+								player.data().xp += ship._generic.xp;
 								ship.remove();
 								game.scene().closestBody.fleet.splice(i, 1);
 							}
-							else if ((game.scene().getAnimationRatio() * ship.reload).toFixed(1) == Math.floor(game.scene().getAnimationRatio() * ship.reload)) ship.attack(player.data())
+							else if ((game.scene().getAnimationRatio() * ship._generic.reload).toFixed(1) == Math.floor(game.scene().getAnimationRatio() * ship.reload)) ship.attack(player.data())
 						}
 					});
 					player.updateFleet();
-					player.data().position.addInPlace(player.velocity.scale(game.scene().getAnimationRatio()));
-					player.velocity.scaleInPlace(0.9);
-					game.scene().activePaths.forEach(activePath => {
+					player.data().position.addInPlace(player.data().velocity.scale(game.scene().getAnimationRatio()));
+					player.data().velocity.scaleInPlace(0.9);
+					/*.scene().activePaths.forEach(activePath => {
 						let {entity, iterator, iteration} = activePath;
 						if(iteration?.done){
 							game.scene().activePaths.spliceOut(activePath);
@@ -2232,11 +2197,11 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 							if(!iteration.done){
 								position = new Vector3(iteration.value.position.x, 0, iteration.value.position.y);
 								entity.lookAt(position);
-								entity.velocity.addInPlace(forward.scale(entity.speed*game.scene().getAnimationRatio()/60));
+								entity.velocity.addInPlace(forward.scale(entity._generic?.speed ?? 1 * game.scene().getAnimationRatio()/60));
 							}
 						}
 						
-					});
+					});*/
 					game.scene().waypoints.forEach(waypoint => {
 						let pos = waypoint.screenPos;
 						waypoint.marker
@@ -2250,7 +2215,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 						<span>${version} ${game.mods.length ? `[${game.mods.join(", ")}]` : `(vanilla)`}</span><br>
 						<span>FPS ${game.engine.getFps().toFixed()}</span><br>
 						<span>${saves.selected} (${saves.current.date.toLocaleString()})</span><br><br>
-						<span>P: ${player.data().position.toFixed(1).display()} V: ${player.velocity.toFixed(1).display()} R: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)})</span><br>
+						<span>P: ${player.data().position.toFixed(1).display()} V: ${player.data().velocity.toFixed(1).display()} R: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)})</span><br>
 						<span>C: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)}) r: ${player.cam.radius.toFixed(1)}</span><br><br>
 					`);
 					$("#debug .right").html(`
