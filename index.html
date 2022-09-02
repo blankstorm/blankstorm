@@ -589,7 +589,11 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		<ul content bg=none style=list-style:none;--font-family:monospace;overflow-y:scroll;>
 			
 		</ul>
-		<input style=position:absolute;bottom:1em;height:1em;left:10%;width:80%;--font-family:monospace>
+		<input plot=10%,b1em,60%,1em,a style=--font-family:monospace>
+		<button class=download plot=r10%,b1em,125px,2em,a>
+			<svg><use href=images/icons.svg#download /></svg>
+			<span></span>
+		</button>
 	</div>
 </body>
 <script class=jquery src=libraries/jquery.js></script>
@@ -841,6 +845,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			$('#e div.nav button.trade span').text(lang['menu.trade'] ?? 'Trade');
 			$('#e div.nav button.yrd span').text(lang['menu.shipyard'] ?? 'Shipyard');
 			$('#e div.nav button.lab span').text(lang['menu.lab'] ?? 'Laboratory');
+			$('#debug_log button.download span').text(lang['menu.download'] ?? 'Download')
 		},
 		text(key){
 			return this.get(this.has(settings.locale) ? settings.locale : 'en')?.text?.[key] || 'Unknown';
@@ -876,6 +881,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			"menu.trade": "Trade",
 			"menu.shipyard": "Shipyard",
 			"menu.lab": "Laboratory",
+			"menu.download": "Download",
 			"error.color": "That color is not supported (use hex)",
 			"error.range": "That location is out of range",
 			"player.death": "You died!",
@@ -1998,6 +2004,9 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			console.warn(`Failed to load locale ${lang}`);
 		}
 	});
+	$('#debug_log button.download').click(e => {
+		download(logger[e.shiftKey ? 'toJSON' : 'toString'](), 'debug.' + (e.shiftKey ? 'json' : 'log'));
+	});
 	$('html').keydown(e => {
 		switch (e.key) {
 			case 'F8':
@@ -2183,25 +2192,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					player.updateFleet();
 					player.data().position.addInPlace(player.data().velocity.scale(game.scene().getAnimationRatio()));
 					player.data().velocity.scaleInPlace(0.9);
-					/*.scene().activePaths.forEach(activePath => {
-						let {entity, iterator, iteration} = activePath;
-						if(iteration?.done){
-							game.scene().activePaths.spliceOut(activePath);
-						}else{
-							if(!iteration?.value) activePath.iteration = iteration = iterator.next();
-							let forward = entity.getDirection(Vector3.Forward()), position = new Vector3(iteration.value.position.x, 0, iteration.value.position.y);
-							entity.lookAt(position);
-							if(Vector3.Distance(position, entity.position) < Vector3.Distance(position, entity.position.add(forward))){
-								activePath.iteration = iteration = iterator.next();
-							}
-							if(!iteration.done){
-								position = new Vector3(iteration.value.position.x, 0, iteration.value.position.y);
-								entity.lookAt(position);
-								entity.velocity.addInPlace(forward.scale(entity._generic?.speed ?? 1 * game.scene().getAnimationRatio()/60));
-							}
-						}
-						
-					});*/
 					game.scene().waypoints.forEach(waypoint => {
 						let pos = waypoint.screenPos;
 						waypoint.marker

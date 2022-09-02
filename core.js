@@ -124,6 +124,13 @@ Object.assign(BABYLON.Vector3, {
 	},
 	screenToWorldPlane(x, y, scene){
 		return scene.pick(x, y, mesh => mesh == scene.xzPlane).pickedPoint;
+	},
+	getRotation(origin, target){
+		let diff = target.subtract(origin),
+		distance = Math.sqrt(diff.x**2 + diff.y**2 + diff.z**2),
+		phi = Math.acos(diff.z / distance) || 0,
+		theta = Math.asin(diff.y / (Math.sin(phi) * distance)) || 0;
+		return new BABYLON.Vector3(theta, Math.sign(diff.x||1) * phi, 0);
 	}
 });
 Object.assign(BABYLON.Vector2.prototype, {
@@ -179,14 +186,14 @@ tech.isLocked = type => {
 	return false
 };
 
-const Path = class{
+const Path = class extends BABYLON.Path3D{
 	static Node = class{
-		position = BABYLON.Vector2.Zero();
+		position = BABYLON.Vector3.Zero();
 		parent = null;
 		constructor(...args){
-			this.position = args[0] instanceof BABYLON.Vector2 ? args[0].round() : new BABYLON.Vector2(args[0], args[1]);
+			this.position = args[0] instanceof BABYLON.Vector3 ? args[0].round() : new BABYLON.Vector3(args[0], args[1]), args[2];
 			if(args[1] instanceof Path.Node) this.parent = args[1];
-			if(args[2] instanceof Path.Node) this.parent = args[2];
+			if(args.at(-1) instanceof Path.Node) this.parent = args.at(-1);
 		}
 		gCost = 0;
 		hCost = 0;
@@ -199,34 +206,10 @@ const Path = class{
 			return this.position.equals(node.position)
 		}
 	}
-	static Iterator = class {
-		path = null;
-		index = 0;
-		#resolve;
-		#reject;
-		constructor(path){
-			if(!(path instanceof Path)) throw new TypeError('path must be a path');
-			this.path = path.path;
-			this.done = new Promise((resolve, reject) => {
-				this.#resolve = resolve;
-				this.#reject = reject;
-			});
-		}
-		next(){
-			if(this.index < this.path.length){
-				let node = this.path[this.index];
-				this.index++;
-				return {value: node, done: false}
-			}
-			let returnValue = {value: this.index, done: true};
-			this.#resolve(returnValue);
-			return returnValue;
-		}
-	}
 	static nodeDistance(nodeA, nodeB){
 		if(!(nodeA instanceof Path.Node && nodeB instanceof Path.Node)) throw new TypeError('passed nodes must be path.Node');
 		let distance = nodeA.position.subtract(nodeB.position).abs();
-		return 1.4 * (distance.x > distance.y ? distance.y : distance.x) + (distance.x > distance.y ? 1 : -1) * (distance.x - distance.y);
+		return Math.SQRT2 * (distance.x > distance.z ? distance.z : distance.x) + (distance.x > distance.z ? 1 : -1) * (distance.x - distance.z);
 	}
 	static trace(startNode, endNode){
 		let path = [], currentNode = endNode;
@@ -243,11 +226,13 @@ const Path = class{
 	gizmo = null;
 	path = [];
 	#pathFound = false;
-	constructor(start, end, scene = game.scene()){
-		if(!(start instanceof BABYLON.Vector2 || start instanceof BABYLON.Vector3)) throw new TypeError('Start must be a Vector');
-		if(!(end instanceof BABYLON.Vector2 || start instanceof BABYLON.Vector3)) throw new TypeError('End must be a Vector');
-		this.startNode = new Path.Node(start instanceof BABYLON.Vector3 ? new BABYLON.Vector2(start.x, start.z) : start);
-		this.endNode = new Path.Node(end instanceof BABYLON.Vector3 ? new BABYLON.Vector2(end.x, end.z) : end);
+	constructor(start, end, scene){
+		super([]);
+		try{
+		if(!(start instanceof BABYLON.Vector3)) throw new TypeError('Start must be a Vector');
+		if(!(end instanceof BABYLON.Vector3)) throw new TypeError('End must be a Vector');
+		this.startNode = new Path.Node(start);
+		this.endNode = new Path.Node(end);
 		this.openNodes.push(this.startNode);
 		while(!this.#pathFound && this.openNodes.length > 0 && this.openNodes.length < 1e4 && this.closedNodes.length < 1e4){
 			let currentNode = this.openNodes.reduce((previous, current) => previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current, this.openNodes[0]);
@@ -258,12 +243,12 @@ const Path = class{
 				this.path = Path.trace(this.startNode, this.endNode);
 				this.#pathFound = true;
 			}
-			let relatives = [0,1,-1].flatMap(x => [0,1,-1].map(y => new BABYLON.Vector2(x, y))).filter(v => v.x != 0 || v.y != 0);
+			let relatives = [0,1,-1].flatMap(x => [0,1,-1].map(y => new BABYLON.Vector3(x, 0, y))).filter(v => v.x != 0 || v.z != 0);
 			let neighbors = relatives.map(v => this.openNodes.some(node => node.position.equals(v)) ? this.openNodes.find(node => node.position.equals(v)) : new Path.Node(currentNode.position.add(v), currentNode));
 			for(let neighbor of neighbors){
 				if(scene instanceof Level){
 					scene.bodies.forEach(body => {
-						if(BABYLON.Vector2.Distance(new BABYLON.Vector2(body.position.x, body.position.z), neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
+						if(BABYLON.Vector3.Distance(body.position, neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
 					});
 				}
 				if(!neighbor.intersects.length && !this.closedNodes.some(node => node.equals(neighbor))){
@@ -276,17 +261,22 @@ const Path = class{
 				}	
 			}
 		}
+		}catch(e){
+			throw e.stack
+		}
 	}
 	drawGizmo(scene, color = BABYLON.Color3.White(), y = 0){
 		if(!(scene instanceof BABYLON.Scene)) throw new TypeError('scene must be a scene');
 		if(this.gizmo) console.warn('Path gizmo was already drawn!');
-		this.gizmo = BABYLON.Mesh.CreateLines('pathGizmo.' + random.hex(16), this.path.map(node => new BABYLON.Vector3(node.position.x, y, node.position.y)), scene);					
+		this.gizmo = BABYLON.Mesh.CreateLines('pathGizmo.' + random.hex(16), this.path.map(node => node.position), scene);					
 		this.gizmo.color = color;
 		return this.gizmo;
 	}
 	disposeGizmo(){
-		if(!this.gizmo) throw new ReferenceError('Path gizmo cannot be disposed because it was not drawn.');
-		this.gizmo.dispose();
+		if(this.gizmo){
+			this.gizmo.dispose();
+			this.gizmo = null;
+		}
 	}
 }
 const StorageData = class extends Map{
@@ -424,7 +414,7 @@ const Entity = class extends BABYLON.TransformNode{
 		this.id = id;
 		this.owner = owner;
 		this.#save = save;
-		this.#createInstance(type).catch(err => console.warn(`Failed to create entity mesh instance for #${id} of type ${type} owned by ${owner?.name ?? owner}: ${err.stack}`));
+		this.#createInstance(type).catch(err => console.warn(`Failed to create entity mesh instance for #${id} of type ${type} owned by ${owner?.name ?? owner}: ${err}`));
 		save.entities.set(this.id, this);
 	}
 	remove(){
@@ -437,9 +427,25 @@ const Entity = class extends BABYLON.TransformNode{
 	followPath(path){
 		if(!(path instanceof Path)) throw new TypeError('path must be a Path');
 		return new Promise(resolve => {
-			let animation = new BABYLON.Animation('pathFollow', 'position', this.#save.getAnimationRatio() * 60 * this._generic.speed, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT)
-			animation.setKeys(path.path.map((node, i) => ({frame: i * 60, value: new BABYLON.Vector3(node.position.x, 0, node.position.y)})));
+			let animation = new BABYLON.Animation('pathFollow', 'position', 60 * this._generic.speed, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT),
+			rotateAnimation = new BABYLON.Animation('pathRotate', 'rotation', 60 * this._generic.agility, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+			
+			animation.setKeys(path.path.map((node, i) => ({frame: i * 60 * this._generic.speed, value: node.position})));
+			rotateAnimation.setKeys(path.path.flatMap((node, i) => {
+				if(i != 0){
+					let value = BABYLON.Vector3.getRotation(path.path[i - 1].position, node.position);
+					return [
+						{frame: i * 60 * this._generic.agility - 30, value},
+						{frame: i * 60 * this._generic.agility - 10, value}
+					]
+				}else{
+					return [{frame: 0, value: this.rotation}];
+				}
+			}));
+
 			this.animations.push(animation);
+			this.animations.push(rotateAnimation);
+
 			let result = this.#save.beginAnimation(this, 0, path.path.length * 60);
 			result.disposeOnEnd = true;
 			result.onAnimationEnd = resolve;
@@ -449,10 +455,11 @@ const Entity = class extends BABYLON.TransformNode{
 		if(!(location instanceof BABYLON.Vector3)) throw new TypeError('location must be a Vector3');
 		if(this.currentPath && debug.show_path_gizmos) this.currentPath.disposeGizmo();
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.#save);
-		this.lookAt(isRelative ? this.position.add(location) : location);
 		if(debug.show_path_gizmos) this.currentPath.drawGizmo(this.#save, BABYLON.Color3.Green());
 		this.followPath(this.currentPath).then(path => {
-			if(debug.show_path_gizmos) this.currentPath.disposeGizmo();
+			if(debug.show_path_gizmos && this.currentPath){
+				this.currentPath.disposeGizmo();
+			}
 		});
 	}
 	warpTo(location, isRelative){
