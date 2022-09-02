@@ -437,7 +437,7 @@ const Entity = class extends BABYLON.TransformNode{
 	followPath(path){
 		if(!(path instanceof Path)) throw new TypeError('path must be a Path');
 		return new Promise(resolve => {
-			let animation = new BABYLON.Animation('pathFollow', "position", this.#save.getAnimationRatio() * 60 * this._generic.speed, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT)
+			let animation = new BABYLON.Animation('pathFollow', 'position', this.#save.getAnimationRatio() * 60 * this._generic.speed, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT)
 			animation.setKeys(path.path.map((node, i) => ({frame: i * 60, value: new BABYLON.Vector3(node.position.x, 0, node.position.y)})));
 			this.animations.push(animation);
 			let result = this.#save.beginAnimation(this, 0, path.path.length * 60);
@@ -449,6 +449,7 @@ const Entity = class extends BABYLON.TransformNode{
 		if(!(location instanceof BABYLON.Vector3)) throw new TypeError('location must be a Vector3');
 		if(this.currentPath && debug.show_path_gizmos) this.currentPath.disposeGizmo();
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.#save);
+		this.lookAt(isRelative ? this.position.add(location) : location);
 		if(debug.show_path_gizmos) this.currentPath.drawGizmo(this.#save, BABYLON.Color3.Green());
 		this.followPath(this.currentPath).then(path => {
 			if(debug.show_path_gizmos) this.currentPath.disposeGizmo();
