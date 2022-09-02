@@ -31,7 +31,8 @@ These are the changes for the next update[s].
 - Saves now only use one scene and generate regions of the scene
 - Removed RCS
 - Removed locale caching
-- Added debug log viewer & console (F12)
+- Added debug log viewer & console (F10)
+- Smooth ship movement
 
 ### Bugs
 
