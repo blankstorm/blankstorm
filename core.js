@@ -29,15 +29,7 @@ const init = (options = config) => {
 Math.clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 const greek = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"],
 numeral = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVII", "XXVII", "XXVIII", "XXIX", "XXX", "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL", "XLI", "XLII", "XLIII", "XLIV", "XLV", "XLVI", "XLVII", "XLVIII", "XLIX", "L", "LI", "LII", "LIII", "LIV", "LV", "LVI", "LVII", "LVIII", "LIX", "LX", "LXI", "LXII", "LXIII", "LXIV", "LXV", "LXVI", "LXVII", "LXVIII", "nice", "LXX", "LXXI", "LXXII", "LXXIII", "LXXIV", "LXXV", "LXXVI", "LXXVII", "LXXVIII", "LXXIX", "LXXX", "LXXXI", "LXXXII", "LXXXIII", "LXXXIV", "LXXXV", "LXXXVI", "LXXXVII", "LXXXVIII", "LXXXIX", "XC", "XCI", "XCII", "XCIII", "XCIV", "XCV", "XCVI", "XCVII", "XCVIII", "XCIX", "C"],
-minimize = number => {
-	let n = number, l = ["", "K", "M", "B", "T", "q", "Q", "s", "S", "O", "N", "D"];
-	if (typeof n != "number") { n = (+n) }
-	if (n < 0 || n > (+`1e${(l.length - 1) * 3}`)) return n
-	for (let i = 0; i < l.length; i++) {
-		let d = (+`1e${i * 3}`);
-		if (n / d < 1000) { return ((n / d).toFixed() + l[i]) }
-	}
-},
+minimize = Intl.NumberFormat('en',  {notation: 'compact'}).format,
 range = (min, max) => { let a = []; for (let i = min; i < max; i++) { a.push(i) } return a };
 
 BABYLON.Mesh.sizeOf = mesh => {
@@ -273,10 +265,9 @@ const Path = class extends BABYLON.Path3D{
 		return this.gizmo;
 	}
 	disposeGizmo(){
-		if(this.gizmo){
-			this.gizmo.dispose();
-			this.gizmo = null;
-		}
+		if(!this.gizmo) throw new ReferenceError('Path gizmo cannot be disposed because it was not drawn.');
+		this.gizmo.dispose();
+		this.gizmo = null;
 	}
 }
 const StorageData = class extends Map{
@@ -373,7 +364,7 @@ const PlayerData = class extends BABYLON.TransformNode{
 	xpPoints = 0;
 	velocity = BABYLON.Vector3.Zero();
 	get power(){
-		return this.fleet.reduce((a, ship) => a + ship.power, 0);
+		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);
 	}
 	constructor(data, level){
 		if(!(level instanceof Level) && level) throw new TypeError('passed level not a Level');
@@ -457,7 +448,7 @@ const Entity = class extends BABYLON.TransformNode{
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.#save);
 		if(debug.show_path_gizmos) this.currentPath.drawGizmo(this.#save, BABYLON.Color3.Green());
 		this.followPath(this.currentPath).then(path => {
-			if(debug.show_path_gizmos && this.currentPath){
+			if(debug.show_path_gizmos){
 				this.currentPath.disposeGizmo();
 			}
 		});
@@ -527,7 +518,6 @@ const Ship = class extends Entity{
 		}
 	}
 	constructor(typeOrData, faction, save){
-		if(!(faction instanceof PlayerData)) window.args = arguments;
 		if(!Ship.generic[typeOrData] && !(isJSON(typeOrData) && Ship.generic[typeOrData.shipType])) throw new ReferenceError(`Ship type ${typeOrData} does not exist`);
 		if(typeof typeOrData == 'object'){
 			super(typeOrData.shipType, faction, save ?? faction.getScene(), typeOrData.id);

@@ -40,7 +40,8 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		let _console = console;
 		console = new Proxy(_console, {
 			get(obj, prop){
-				let level = (config??{})?.log_level || 'verbose',
+				let _config = config ?? {log_level: 'verbose'};
+				let level = _config.log_level,
 				levels = ['error', 'warn', 'debug', 'verbose'];
 				return function(...args){
 					if(levels.indexOf(prop) <= levels.indexOf(level)) logger.log(prop, args);
@@ -596,10 +597,11 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		</button>
 	</div>
 </body>
-<script class=jquery src=libraries/jquery.js></script>
-<script class=babylon src=libraries/babylon/5.4.0/core.js></script>
-<script class=loaders src=libraries/babylon/5.4.0/loaders.js></script>
-<script class=socketio src=libraries/socket.io/4.5.0.js></script>
+
+<script version=5.4.0 class=babylon src=libraries/babylon.core.js></script>
+<script version=5.4.0 class=loaders src=libraries/babylon.loaders.js></script>
+<script version=4.5.0 class=socketio src=libraries/socket.io.js></script>
+<script version=3.6.0 class=jquery src=libraries/jquery.js></script>
 <script class=core src=core.js></script>
 <script class=game async defer>
 	const web = url => `https://blankstorm.drvortex.dev/` + url,
