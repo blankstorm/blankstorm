@@ -2130,18 +2130,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 						if(mesh.parent instanceof Entity) mesh.getChildMeshes().forEach(child => child.showBoundingBox = game.hitboxes);
 						if(mesh != game.scene().skybox && isHex(mesh.id)) mesh.showBoundingBox = game.hitboxes;
 					});
-					player.data().fleet.forEach(ship => {
-						if(game.scene().bodies.get(ship.battle) instanceof CelestialBody && game.scene().bodies.get(ship.battle).owner != player.id){
-							if(game.scene().bodies.get(ship.battle).fleet.length == 0){
-								game.scene().bodies.get(ship.battle).owner = player.id;
-							}else{
-								if((game.scene().getAnimationRatio() * ship.reload).toFixed(1) == Math.floor(game.scene().getAnimationRatio() * ship.reload)) ship.attack(game.scene().bodies.get(ship.battle));
-							}
-						}else{
-							let healAmount = ship._generic.hp / (1000 - player.data().tech.regen * 10);
-							if(ship.hp + healAmount <= ship._generic.hp) ship.hp += healAmount;
-						}	
-					});
 					for(let [id, ship] of saves.current.entities){
 						if(player.data().fleet.length > 0){
 							if (ship.hp <= 0) {
