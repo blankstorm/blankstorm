@@ -410,7 +410,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		<button class=mp plot=c,360px,350px,50px></button>
 		<button class=options plot=c,460px,350px,50px></button>
 		<a class=exit href= /><button class=exit plot=c,560px,350px,50px></button></a>
-		<p class=version plot=r2em,b1em,fit-content,1em style=text-align:right></p>
+		<p class=version plot=r2em,b1em,fit-content,1em style=text-align:right><a target="_blank">Version</a></p>
 		<p class=copyright plot=2em,b1em,fit-content,1em>&copy; 2022 Dr. Vortex. All Rights Reserved.</p>
 	</div>
 	<ul id=load hide lsn content ofs=y style=padding:2.5%>
@@ -1229,7 +1229,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 
 	//Some stuff done on initalization
 	document.title = "Blankstorm " + versions.get(version).text;
-	$("#main .version").html(`<a href="${web`/versions#${version}`}" target="_blank">${versions.get(version).text}</a>`);
+	$("#main .version a").text(versions.get(version).text).attr('href', web('versions#' + version));
 	console.log(`%cBlankstorm ${versions.get(version).text}`, `color:#f55`);
 
 	//load mods & keybinds into the game

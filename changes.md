@@ -27,6 +27,7 @@ These are the changes for the next update[s].
 - Logger would try to check the log level before it was defined
 - Path gizmos would throw an error when being disposed
 - `Vector3.ScreenToWorldPlane` will return `Vector3.Zero()` instead of null if a point isn't picked
+- The link to the current changelog would not open to the correct version
 
 ### Technical Changes
 - Removed the embeded en locale
