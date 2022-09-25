@@ -5,6 +5,7 @@
 		const logger = [];
 		Number.prefixZeros = (num, length) => '0'.repeat(Math.max(0, length - ('' + num).length)) + num;
 		Object.assign(logger, {
+			level: 'warn',
 			toString(){
 				let timeLength = Math.max(...logger.map(e => ('' + e.time).length));
 				return `
@@ -31,6 +32,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				}, log: [...logger]});
 			},
 			log(type, msg){
+				msg = msg.toString() == '[object Object]' ? JSON.stringify(msg) : msg;
 				logger.at(-1)?.msg.toString() == msg.toString() ? logger.at(-1).count++ : logger.push({type, time: performance.now().toFixed(), msg, count: 0});
 			}
 		});
@@ -40,11 +42,9 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		let _console = console;
 		console = new Proxy(_console, {
 			get(obj, prop){
-				let _config = config ?? {log_level: 'verbose'};
-				let level = _config.log_level,
 				levels = ['error', 'warn', 'debug', 'verbose'];
 				return function(...args){
-					if(levels.indexOf(prop) <= levels.indexOf(level)) logger.log(prop, args);
+					if(levels.indexOf(prop) <= levels.indexOf(logger.level)) logger.log(prop, args);
 					return obj[prop] ? obj[prop](...args) : undefined;
 				}
 			}	
@@ -529,10 +529,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			</svg>
 		</div>
 	</div>
-	<div ingame id=hud_ship hide bg=none>
-		<svg class=lock style=position:fixed;right:2%;top:2.5%;><use href=images/icons.svg#lock /></svg>
-		<svg class=upgrade style=position:fixed;right:2%;top:55%;font-size:20px;><use href=images/icons.svg#circle-up /></svg>
-	</div>
 	<div ingame  id=esc hide cover bg=none tabindex=-1>
 		<div class=content plot=c,c,250px,300px style=z-index:10>
 			<button plot=12.5px,62.5px,225px,50px,a class=resume></button>
@@ -598,8 +594,8 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 	</div>
 </body>
 
-<script version=5.4.0 class=babylon src=libraries/babylon.core.js></script>
-<script version=5.4.0 class=loaders src=libraries/babylon.loaders.js></script>
+<script version=5.25.0 class=babylon src=libraries/babylon.core.js></script>
+<script version=5.25.0 class=loaders src=libraries/babylon.loaders.js></script>
 <script version=4.5.0 class=socketio src=libraries/socket.io.js></script>
 <script version=3.6.0 class=jquery src=libraries/jquery.js></script>
 <script class=core src=core.js></script>
@@ -988,7 +984,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 						$(this).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key)
 					})
 			);
-			$('canvas.game,[ingame-ui],#hud,#hud_ship,#tablist').keydown(e => {
+			$('canvas.game,[ingame-ui],#hud,#tablist').keydown(e => {
 				if(e.key == keybind[name].key && (!keybind[name].alt || e.altKey) && (!keybind[name].ctrl || e.ctrlKey)) onTrigger(e);
 			});
 		},
@@ -1152,14 +1148,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			}});
 		},
 		updateFleet: () => {
-			
-			player.data().fleet.forEach((s, i) => {
-				if(s.hp <= 0){
-					s.remove();
-					player.data().fleet.splice(i, 1);
-					playsound(sound.destroy_ship, settings.sfx)
-				}
-			});
+
 			if(player.data().fleet.length <= 0 && false){
 				game.chat(locales.text`player.death`);
 				player.reset();
@@ -1191,7 +1180,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				ship.remove();
 			}
 		},
-		data: id => saves.current?.playerData?.[id ?? player.id] ?? playerData,
+		data: id => saves.current?.playerData?.get(id ?? player.id) ?? playerData,
 		levelOf: xp => Math.sqrt(xp / 10),
 		xpOf: level => 10 * level ** 2,
 		get isInBattle(){
@@ -1895,7 +1884,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		saves.current.ready().then(lvl => {
 			lvl.addCamera(player.cam);
 			lvl.activeCamera = player.cam;
-			lvl.playerData[player.id] = new PlayerData({id: player.id, name: player.username, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true))}, lvl);
+			lvl.playerData.set(player.id, new PlayerData({id: player.id, name: player.username, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true))}, lvl));
 			lvl.play();
 			for(let [id, body] of lvl.bodies){
 				body.waypoint = new Waypoint({
@@ -1909,7 +1898,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 
 			new Ship('frigate', player.data(), lvl)
 			new Ship('transport_small', player.data(), lvl);
-			lvl.playerData[player.id].addItems(generate.items(5000));
+			lvl.playerData.get(player.id).addItems(generate.items(5000));
 			let save = new Save(lvl.serialize());
 			if(!debug.disable_saves) save.saveToDB();
 		})
@@ -2127,16 +2116,11 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		if (saves.current instanceof Save.Live){
 			if(!game.isPaused){
 				try {
-					game.frames++;
-					warp.cooltime = Math.max(0, warp.cooltime - (1 - player.data().tech.energy / 100));
-					warp.energy = Math.clamp(warp.energy + (1 + player.data().tech.energy / 20) * .06 * game.scene().getAnimationRatio(), 0, warp.maxEnergy);
-
+					
 					Ship.multiplyer = {
 						damage: 1 + (1 - game.difficulty) + player.data().tech.laser * 0.1,
 						hp: 1 + (1 - game.difficulty) + player.data().tech.armor * 0.15
 					};
-					if(player.data().rotation.y > Math.PI) player.data().rotation.y -= 2 * Math.PI;
-					if(player.data().rotation.y < -Math.PI) player.data().rotation.y += 2 * Math.PI;
 					if(player.cam.alpha > Math.PI) player.cam.alpha -= 2 * Math.PI;
 					if(player.cam.alpha < -Math.PI) player.cam.alpha += 2 * Math.PI;
 					player.cam.angularSensibilityX = player.cam.angularSensibilityY = 2000 / settings.sensitivity;
@@ -2146,21 +2130,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 						if(mesh.parent instanceof Entity) mesh.getChildMeshes().forEach(child => child.showBoundingBox = game.hitboxes);
 						if(mesh != game.scene().skybox && isHex(mesh.id)) mesh.showBoundingBox = game.hitboxes;
 					});
-					let closestBody = game.scene().closestBody = null;
-					for(let [id, body] of game.scene().bodies){
-						if (body instanceof CelestialBody){
-							closestBody = game.scene().closestBody = closestBody == null || Vector3.Distance(player.data().position, body.position) < Vector3.Distance(player.data().position, closestBody.position) ? body : closestBody;
-							player.data().fleet.forEach(ship => {
-								let distance = Vector3.Distance(ship.position, closestBody.position.add(closestBody.fleetLocation));
-								if(distance < 200 && !ship.battle && closestBody.owner != player.data() && closestBody == body){
-									ship.battle = id;
-								}else if(distance > 200){
-									ship.battle = null;
-								}
-							});
-							
-						}
-					};
 					player.data().fleet.forEach(ship => {
 						if(game.scene().bodies.get(ship.battle) instanceof CelestialBody && game.scene().bodies.get(ship.battle).owner != player.id){
 							if(game.scene().bodies.get(ship.battle).fleet.length == 0){
@@ -2171,26 +2140,21 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 						}else{
 							let healAmount = ship._generic.hp / (1000 - player.data().tech.regen * 10);
 							if(ship.hp + healAmount <= ship._generic.hp) ship.hp += healAmount;
-						}
-						ship.position.addInPlace(ship.velocity.scale(game.scene().getAnimationRatio()));
-						ship.velocity.scaleInPlace(0.9);	
+						}	
 					});
-					(game.scene().closestBody?.fleet ?? []).forEach((ship, i) => {
-						player.updateFleet();
+					for(let [id, ship] of saves.current.entities){
 						if(player.data().fleet.length > 0){
 							if (ship.hp <= 0) {
-								player.data().addItems(ship._generic.recipe[0]);
+								player.data().addItems(ship._generic.recipe);
 								if(Math.floor(player.levelOf(player.data().xp  + ship._generic.xp)) > Math.floor(player.levelOf(player.data().xp))){
 									/*level up*/
 									player.data().xpPoints++;
 								}
 								player.data().xp += ship._generic.xp;
-								ship.remove();
-								game.scene().closestBody.fleet.splice(i, 1);
 							}
-							else if ((game.scene().getAnimationRatio() * ship._generic.reload).toFixed(1) == Math.floor(game.scene().getAnimationRatio() * ship.reload)) ship.attack(player.data())
 						}
-					});
+					}
+					saves.current.tick();
 					player.updateFleet();
 					player.data().position.addInPlace(player.data().velocity.scale(game.scene().getAnimationRatio()));
 					player.data().velocity.scaleInPlace(0.9);
@@ -2215,8 +2179,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 						<span>${game.engine._glRenderer}</span><br>
 						<span>${performance.memory ? `${(performance.memory.usedJSHeapSize / 1000000) .toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(performance.memory.totalJSHeapSize / 1000000).toFixed()}MB Allocated)` : 'Memory usage unknown' }</span><br>
 						<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
-						<span>${closestBody ? `${closestBody.name} ${closestBody.position.toFixed(1).display('xz')} ${Vector3.Distance(player.data().position, closestBody.position)?.toFixed(1)} | ${Vector3.Distance(player.data().position, closestBody.position.add(closestBody.fleetLocation)).toFixed(1)}` : `No Closest body`}</span><br>
-						<span>${player.targetBody ?? ''}</span><br><br>
 					`);
 					
 					game.scene().render();

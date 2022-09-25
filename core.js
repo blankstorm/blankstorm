@@ -78,12 +78,11 @@ const generate = {
 		return e
 	},
 	items: (quantity = 0, rares) => {
-		let q = quantity;
-		let r = {};
-		for (let i in item) {
-			(item.get(i).rare) ? (Math.random() < item.get(i).drop && rares) ? r[i] = quantity / item.get(i).value : r[i] = 0 : r[i] = quantity / item.get(i).value;
+		let result = {};
+		for (let name of item.keys()) {
+			(item.get(name).rare) ? (Math.random() < item.get(name).drop && rares) ? result[name] = quantity / item.get(result).value : result[name] = 0 : result[name] = quantity / item.get(name).value;
 		}
-		return r;
+		return result;
 	}
 };
 
@@ -271,13 +270,14 @@ const Path = class extends BABYLON.Path3D{
 	}
 }
 const StorageData = class extends Map{
-	constructor({max = 1, items = {}}){
-		super(Object.keys(item).map(i => [i, 0]));
-		this.baseMax = max;
-		Object.entries(items).forEach(args => this.add(...args));
+	#max = 1;
+	constructor(max = 1, items = {}){
+		super([...item.keys()].map(i => [i, 0]));
+		this.#max = max;
+		Object.entries(items).forEach(([item, amount]) => this.add(item, +amount || 0));
 	}
 	get max(){
-		return this.baseMax * (1 + player.data().tech.storage / 20)
+		return this.#max * (1 + player.data().tech.storage / 20)
 	}
 	get total(){
 		return [...this.entries()].reduce((total, [name, amount]) => total + amount * item.get(name).value, 0);
@@ -299,14 +299,13 @@ const StorageData = class extends Map{
 };
 const PlayerData = class extends BABYLON.TransformNode{
 	get items(){
-		let items = {};
-		Object.keys(item).forEach(item => {
-			items[item] = 0;
-			this.fleet.forEach(ship => {
-				items[item] += ship.storage.get(item);
-			});
+		let items = Object.fromEntries([...item.keys()].map(i => [i, 0]));
+		this.fleet.forEach(ship => {
+			for(let [name, amount] of Object.entries(items)){
+				items[name] = +ship.storage.get(name) + amount;
+			}
 		});
-		return items;
+		return items
 	}
 
 	set items(value){
@@ -319,11 +318,15 @@ const PlayerData = class extends BABYLON.TransformNode{
 		this.fleet.forEach(ship => {
 			let space = ship.storage.max - ship.storage.total;
 			if(space > 0){
-				Object.entries(items).forEach(([item, amount]) => {
-					let stored = Math.min(space, amount);
-					ship.storage.add(item, stored)
-					items[item] -= stored;
-					space -= stored;
+				Object.entries(items).forEach(([name, amount]) => {
+					if(item.has(name)){
+						let stored = Math.min(space, amount);
+						ship.storage.add(name, stored);
+						items[name] -= stored;
+						space -= stored;
+					}else{
+						console.warn(`Failed to add ${amount} ${name} to player items: Invalid item`);
+					}
 				});
 			}
 		});
@@ -373,6 +376,14 @@ const PlayerData = class extends BABYLON.TransformNode{
 		this.rotation.z = Math.PI;
 		Object.assign(this, data);
 	}
+	serialize(){
+		return {
+			position: this.position.asArray().map(num => +num.toFixed(3)),
+			rotation: this.rotation.asArray().map(num => +num.toFixed(3)),
+			fleet: this.fleet.map(s => s.id),
+			...this.filter('tech', 'items', 'xp', 'xpPoints')
+		}
+	}
 }
 const Entity = class extends BABYLON.TransformNode{
 	static generic = new Map();
@@ -384,29 +395,28 @@ const Entity = class extends BABYLON.TransformNode{
 	}
 	_generic = {speed: 1}
 	async #createInstance(type){
-		await this.#save.loadedEntityMeshes;
-		if(typeof this.#save.genericEntities[type]?.instantiateModelsToScene == 'function'){
-			this.mesh = this.#save.genericEntities[type].instantiateModelsToScene().rootNodes[0];
+		await this.level.loadedEntityMeshes;
+		if(typeof this.level.genericEntities[type]?.instantiateModelsToScene == 'function'){
+			this.mesh = this.level.genericEntities[type].instantiateModelsToScene().rootNodes[0];
 			this.mesh.setParent(this);
 			this.mesh.position = BABYLON.Vector3.Zero(); 
 		}else{
-			this.mesh = BABYLON.MeshBuilder.CreateBox('error_mesh', {size: 1}, this.#save);
-			this.mesh.material = new BABYLON.StandardMaterial('error_material', this.#save);
+			this.mesh = BABYLON.MeshBuilder.CreateBox('error_mesh', {size: 1}, this.level);
+			this.mesh.material = new BABYLON.StandardMaterial('error_material', this.level);
 			this.mesh.material.emissiveColor = BABYLON.Color3.Red();
 			this.mesh.setParent(this);
 			this.mesh.position = BABYLON.Vector3.Zero();
 			throw 'Origin mesh does not exist';
 		}
 	}
-	#save;
-	constructor(type, owner, save, id = random.hex(32)){
-		if(!(save instanceof Level)) throw new TypeError('passed save must be a level');
+	constructor(type, owner, level, id = random.hex(32)){
+		if(!(level instanceof Level)) throw new TypeError('passed level must be a Level');
 		super();
 		this.id = id;
 		this.owner = owner;
-		this.#save = save;
+		this.level = level;
 		this.#createInstance(type).catch(err => console.warn(`Failed to create entity mesh instance for #${id} of type ${type} owned by ${owner?.name ?? owner}: ${err}`));
-		save.entities.set(this.id, this);
+		level.entities.set(this.id, this);
 	}
 	remove(){
 		this.mesh.dispose();
@@ -437,7 +447,7 @@ const Entity = class extends BABYLON.TransformNode{
 			this.animations.push(animation);
 			this.animations.push(rotateAnimation);
 
-			let result = this.#save.beginAnimation(this, 0, path.path.length * 60);
+			let result = this.level.beginAnimation(this, 0, path.path.length * 60);
 			result.disposeOnEnd = true;
 			result.onAnimationEnd = resolve;
 		});
@@ -445,8 +455,8 @@ const Entity = class extends BABYLON.TransformNode{
 	moveTo(location, isRelative){
 		if(!(location instanceof BABYLON.Vector3)) throw new TypeError('location must be a Vector3');
 		if(this.currentPath && debug.show_path_gizmos) this.currentPath.disposeGizmo();
-		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.#save);
-		if(debug.show_path_gizmos) this.currentPath.drawGizmo(this.#save, BABYLON.Color3.Green());
+		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.level);
+		if(debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, BABYLON.Color3.Green());
 		this.followPath(this.currentPath).then(path => {
 			if(debug.show_path_gizmos){
 				this.currentPath.disposeGizmo();
@@ -461,58 +471,58 @@ const Entity = class extends BABYLON.TransformNode{
 const Ship = class extends Entity{
 	static generic = {
 		corvette: {
-			hp: 10, damage: 0.1, reload: 0.5, maxLevel: 5, speed: 2, agility: 2, range: 125,
+			hp: 10, speed: 2, agility: 2, range: 125,
 			power: 1, enemy: true, camRadius: 10, xp: 5, storage: 100,
-			critChance: 0.1, critDamage: 1.5,
+			critChance: 0.1, critDamage: 1.5, damage: 0.1, reload: 0.5, 
 			recipe: { metal: 1000, minerals: 500, fuel: 250 },
 			requires: {}, model: 'models/corvette.gltf'
 		},
 		frigate: {
-			hp: 25, damage: 0.5, reload: 1, maxLevel: 5, speed: 1, agility: 1.5, range: 150,
+			hp: 25, speed: 1, agility: 1.5, range: 150,
 			power: 2, enemy: true, camRadius: 15, xp: 7.5, storage: 250,
-			critChance: 0.25, critDamage: 1.25,
+			critChance: 0.25, critDamage: 1.25, damage: 0.5, reload: 1,
 			recipe: { metal: 2000, minerals: 2000, fuel: 500 },
 			requires: {}, model: 'models/corvette.gltf'
 		},
 		transport_small: {
-			hp: 5, damage: 0.1, reload: 5, maxLevel: 1, speed: 1, agility: .75, range: 75,
+			hp: 5, speed: 1, agility: .75, range: 75,
 			power: 1, enemy: false, camRadius: 20, xp: 10, storage: 25000,
-			critChance: 0.1, critDamage: 1,
+			critChance: 0.1, critDamage: 1, damage: 0.1, reload: 5,
 			recipe: { metal: 5000, minerals: 1000, fuel: 2500},
 			requires: {storage: 3}, model: 'models/transport_small.glb'
 		},
 		cruiser: {
-			hp: 50, damage: 1, reload: 2, maxLevel: 5, speed: 1, agility: 1, range: 200,
+			hp: 50, speed: 1, agility: 1, range: 200,
 			power: 5, enemy: true, camRadius: 20, xp: 10, storage: 250,
-			critChance: 0.1, critDamage: 1.25,
+			critChance: 0.1, critDamage: 1.25, damage: 1, reload: 2,
 			recipe: { metal: 4000, minerals: 1000, fuel: 1000 },
 			requires: {}, model: 'models/cruiser.gltf'
 		},
 		destroyer: {
-			hp: 100, damage: 2.5, reload: 1, maxLevel: 5, speed: 1, agility: 1, range: 200,
+			hp: 100, speed: 1, agility: 1, range: 200,
 			power: 10, enemy: true, camRadius: 30, xp: 20, storage: 1000,
-			critChance: 0.25, critDamage: 1.5,
+			critChance: 0.25, critDamage: 1.5, damage: 2.5, reload: 1,
 			recipe: { metal: 10000, minerals: 4000, fuel: 2500 },
 			requires: {}, model: 'models/destroyer.gltf'
 		},
 		transport_medium: {
-			hp: 50, damage: 1, reload: 5, maxLevel: 1, speed: 2/3, agility: 0.5, range: 75,
+			hp: 50, speed: 2/3, agility: 0.5, range: 75,
 			power: 10, enemy: false, camRadius: 50, xp: 10, storage: 100000,
-			critChance: 0.1, critDamage: 1,
+			critChance: 0.1, critDamage: 1, damage: 1, reload: 5,
 			recipe: { metal: 10000, minerals: 2000, fuel: 5000},
 			requires: {storage: 5}, model: 'models/transport_small.glb'
 		},
 		battleship: {
-			hp: 250, damage: 10, reload: 2, maxLevel: 5, speed: 2/3, agility: 1, range: 250,
+			hp: 250, speed: 2/3, agility: 1, range: 250,
 			power: 25, enemy: true, camRadius: 40, xp: 50, storage: 2500,
-			critChance: 0.2, critDamage: 1.25,
+			critChance: 0.2, critDamage: 1.25, damage: 10, reload: 2,
 			recipe: { metal: 25000, minerals: 10000, fuel: 5000 },
-			requires: {}, model: 'models/battleship.gltf'
+			requires: {}, model: 'models/hurricane.glb'
 		},
 		dreadnought: {
-			hp: 2000, damage: 100, reload: 4, maxLevel: 5, speed: 1/3, agility: 1, range: 250,
+			hp: 2000, speed: 1/3, agility: 1, range: 250,
 			power: 100, enemy: true, camRadius: 65, xp: 100, storage: 10000,
-			critChance: 0.2, critDamage: 1.5,
+			critChance: 0.2, critDamage: 1.5, damage: 100, reload: 4,
 			recipe: { metal: 1000000, minerals: 500000, fuel: 250000 },
 			requires: { build: 5 }, model: 'models/dreadnought.gltf'
 		}
@@ -525,19 +535,20 @@ const Ship = class extends Entity{
 				type: typeOrData.shipType,
 				position: BABYLON.Vector3.FromArray(typeOrData.position),
 				rotation: BABYLON.Vector3.FromArray(typeOrData.rotation),
-				storage: new StorageData({max: Ship.generic[typeOrData.shipType].storage, items: typeOrData.storage}),
-				velocity: BABYLON.Vector3.Zero(),
+				storage: new StorageData(Ship.generic[typeOrData.shipType].storage, typeOrData.storage),
 				hp: +typeOrData.hp,
+				reload: +typeOrData.reload,
 				_generic: Ship.generic[typeOrData.shipType]
 			})
 		}else{
 			super(typeOrData, faction, save ?? faction.getScene());
 			Object.assign(this, {
-				velocity: BABYLON.Vector3.Zero(),
+
 				position: faction.position.add(random.cords(random.int(1, faction.power))), // Will be changed to shipyard location
-				storage: new StorageData({max: Ship.generic[typeOrData].storage}),
+				storage: new StorageData(Ship.generic[typeOrData].storage),
 				type: typeOrData,
 				hp: Ship.generic[typeOrData].hp,
+				reload: Ship.generic[typeOrData].reload,
 				_generic: Ship.generic[typeOrData]
 			});
 		}
@@ -553,16 +564,12 @@ const Ship = class extends Entity{
 		this.getScene().entities.delete(this.id);
 	}
 	//this will be replaced with hardpoints!
-	attack(body){
-		if(!(body instanceof CelestialBody) && !(body instanceof PlayerData)) throw new TypeError('body must be a CelestialBody or PlayerData');
-		let possibleTargets = body.fleet.filter(enemy => BABYLON.Vector3.Distance(this.position, enemy.position) < this_generic.range);
-		let target = possibleTargets[random.int(0, possibleTargets.length - 1)];
-		if(target){
-			let laser = Mesh.CreateLines("laser." + random.hex(16), [this.mesh.getAbsolutePosition().add(Vector3.Up()).add(random.cords(1)), target.mesh.getAbsolutePosition().add(Vector3.Up()).add(random.cords(1))], body.getScene());
-			laser.color = this.owner == player.data() ? BABYLON.Color3.Teal() : BABYLON.Color3.Red();
-			target.hp -= this._generic.damage / 60 * body.getScene().getAnimationRatio() * !!(Math.random() < this._generic.critChance) ? this._generic.critDamage : 1;
-			setTimeout(e => laser.dispose(), this.reload * 10);
-		}
+	attack(entity){
+		if(!(entity instanceof Entity)) throw new TypeError('Target must be an entity');
+		let laser = Mesh.CreateLines("laser." + random.hex(16), [this.mesh.getAbsolutePosition().add(Vector3.Up()).add(random.cords(1)), target.mesh.getAbsolutePosition().add(Vector3.Up()).add(random.cords(1))], entity.getScene());
+		laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red(); 
+		target.hp -= this._generic.damage / 60 * entity.getScene().getAnimationRatio() * (!!(Math.random() < this._generic.critChance) ? this._generic.critDamage : 1);
+		setTimeout(e => laser.dispose(), 50);
 	}
 }
 const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial{
@@ -772,8 +779,7 @@ const Planet = class extends CelestialBody {
 		}]
 	]);
 	get power(){
-		//return this.fleet.reduce((total, ship) => total + ship.power, 0) || 0
-		return 1
+		return this.fleet.reduce((total, ship) => total + ship.power, 0) ?? 0
 	}
 	constructor({name, position = BABYLON.Vector3.Zero(), biome = 'earthlike', radius = 1, owner = null, fleet = [], rewards = {}, scene, id}){
 		super(name ?? 'Unknown Planet', id, scene);
@@ -803,7 +809,6 @@ const Level = class extends BABYLON.Scene {
 	static upgrades = new Map([
 		['infdev_11', data => ({...data, version: 'alpha_1.0.0'})],
 		['infdev_12', data => ({...data, version: 'alpha_1.0.0'})],
-		//['alpha_1.0.0', data => ({...data})]
 	]);
 	static upgrade(data){
 		while(version != data.version && Level.upgrades.has(data.version)){
@@ -855,9 +860,43 @@ const Level = class extends BABYLON.Scene {
 	genericEntities = {};
 	bodies = new Map();
 	entities = new Map();
-	playerData = {};
+	playerData = new Map();
 	#initPromise = new Promise(res => {});
 	loadedEntityMeshes = new Promise(res => {});
+	constructor(nameOrData, engine){
+		super(engine);
+		Object.assign(this, {
+			skybox: BABYLON.Mesh.CreateBox('skybox', Level.system.size * 2, this),
+			gl: Object.assign(new BABYLON.GlowLayer('glowLayer', this), { intensity: 0.9 }),
+			hl: new BABYLON.HighlightLayer('highlight', this),
+			xzPlane: BABYLON.MeshBuilder.CreatePlane('xzPlane', {size: Level.system.size * 2}, this),
+			probe: new BABYLON.ReflectionProbe('probe', 256, this),
+		});
+		this.xzPlane.rotation.x = Math.PI / 2;
+		this.xzPlane.setEnabled(false);
+		this.skybox.infiniteDistance = true;
+		this.skybox.isPickable = false;
+		this.skybox.material = Object.assign(new BABYLON.StandardMaterial('skybox.mat', this), {
+			backFaceCulling: false,
+			disableLighting: true,
+			reflectionTexture: BABYLON.CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), this)
+		});
+		this.skybox.material.reflectionTexture.coordinatesMode = 5;
+		
+		this.loadedEntityMeshes = this.#loadEntityMeshes();
+		this.#initPromise = isJSON(nameOrData) ? this.load(JSON.parse(nameOrData)) : this.init(nameOrData);
+		this.registerBeforeRender(()=>{
+			let ratio = this.getAnimationRatio();
+			for(let [id, body] of this.bodies){
+				if(body instanceof Planet && body.material instanceof CelestialBodyMaterial){
+					body.rotation.y += 0.0001 * ratio * body.material.rotationFactor;
+					body.material.setMatrix("rotation", Matrix.RotationY(body.matrixAngle));
+					body.matrixAngle -= 0.0004 * ratio;
+					body.material.setVector3("options", new Vector3(body.material.generationOptions.clouds, body.material.generationOptions.groundAlbedo, body.material.generationOptions.cloudAlbedo))
+				}
+			}
+		});
+	}
 	async #loadEntityMeshes(){
 		for(let i in Ship.generic){
 			try{
@@ -892,18 +931,17 @@ const Level = class extends BABYLON.Scene {
 			date: new Date(saveData.date),
 			bodies: new Map(),
 			entities: new Map(),
-			playerData: {},
+			playerData: new Map(),
 			...saveData.filter('id', 'name', 'versions', 'difficulty')
 		});
-		
-		for(let id in saveData.playerData){
-			let data = {...saveData.playerData[id], id};
-			this.playerData[id] = new PlayerData({
+
+		for(let [id, data] of saveData.playerData){
+			this.playerData.set(id, new PlayerData({
 				position: BABYLON.Vector3.FromArray(data.position),
 				rotation: BABYLON.Vector3.FromArray(data.rotation),
 				id,
 				...data.filter('xp', 'xpPoints', 'tech')
-			});
+			}));
 		}
 
 		for(let id in saveData.bodies){
@@ -932,7 +970,7 @@ const Level = class extends BABYLON.Scene {
 		for(let entityData of saveData.entities){
 			switch(entityData.type){
 				case 'ship':
-					new Ship(entityData, this.bodies.get(entityData.owner) ?? this.playerData[entityData.owner], this);
+					new Ship(entityData, this.bodies.get(entityData.owner) ?? this.playerData.get(entityData.owner), this);
 					break;
 				default:
 					new Entity(null, null, this);
@@ -950,7 +988,7 @@ const Level = class extends BABYLON.Scene {
 		return [...this.entities.values()].filter(e => e.selected);
 	}
 	getPlayerData(nameOrID){
-		return Object.entries(this.playerData).filter(([id, data]) => data.name == nameOrID || id == nameOrID)[0]?.[1]
+		return [...this.playerData].filter(([id, data]) => data.name == nameOrID || id == nameOrID)[0]?.[1]
 	}
 	getEntities(selector){
 		if (typeof selector != 'string') throw new TypeError('getEntity: selector must be of type string');
@@ -987,39 +1025,27 @@ const Level = class extends BABYLON.Scene {
 				break;
 		}
 	}
-	constructor(nameOrData, engine){
-		super(engine);
-		Object.assign(this, {
-			skybox: BABYLON.Mesh.CreateBox('skybox', Level.system.size * 2, this),
-			gl: Object.assign(new BABYLON.GlowLayer('glowLayer', this), { intensity: 0.9 }),
-			hl: new BABYLON.HighlightLayer('highlight', this),
-			xzPlane: BABYLON.MeshBuilder.CreatePlane('xzPlane', {size: Level.system.size * 2}, this),
-			probe: new BABYLON.ReflectionProbe('probe', 256, this),
-		});
-		this.xzPlane.rotation.x = Math.PI / 2;
-		this.xzPlane.setEnabled(false);
-		this.skybox.infiniteDistance = true;
-		this.skybox.isPickable = false;
-		this.skybox.material = Object.assign(new BABYLON.StandardMaterial('skybox.mat', this), {
-			backFaceCulling: false,
-			disableLighting: true,
-			reflectionTexture: BABYLON.CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), this)
-		});
-		this.skybox.material.reflectionTexture.coordinatesMode = 5;
-		
-		this.loadedEntityMeshes = this.#loadEntityMeshes();
-		this.#initPromise = isJSON(nameOrData) ? this.load(JSON.parse(nameOrData)) : this.init(nameOrData);
-		this.registerBeforeRender(()=>{
-			let ratio = this.getAnimationRatio();
-			for(let [id, body] of this.bodies){
-				if(body instanceof Planet && body.material instanceof CelestialBodyMaterial){
-					body.rotation.y += 0.0001 * ratio * body.material.rotationFactor;
-					body.material.setMatrix("rotation", Matrix.RotationY(body.matrixAngle));
-					body.matrixAngle -= 0.0004 * ratio;
-					body.material.setVector3("options", new Vector3(body.material.generationOptions.clouds, body.material.generationOptions.groundAlbedo, body.material.generationOptions.cloudAlbedo))
+	tick(){
+		for(let [id, playerData] of this.playerData){
+			if(Math.abs(playerData.rotation.y) > Math.PI){
+				playerData.rotation.y += Math.sign(playerData.rotation.y) * 2 * Math.PI;
+			}
+		}
+		for(let [id, entity] of this.entities){
+			entity.reload -= 1 / this.getAnimationRatio()
+			if(entity.hp <= 0){
+				entity.remove();
+				//Events: trigger event, for sounds
+			}
+			else if(entity instanceof Ship){
+				let targets = [...this.entities.values()].filter(e => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entity._generic.range);
+				let target = targets[random.int(0, targets.length - 1)];
+				if(target && this.reload <= 0){
+					entity.attack(target);
+					entity.reload = entity._generic.reload;
 				}
 			}
-		});
+		}
 	}
 	serialize(){
 		let data = {
@@ -1087,15 +1113,7 @@ const Level = class extends BABYLON.Scene {
 				}
 			}
 		};
-		for(let id in this.playerData){
-			let playerData = this.playerData[id];
-			data.playerData[id] = {
-				position: playerData.position.asArray().map(num => +num.toFixed(3)),
-				rotation: playerData.rotation.asArray().map(num => +num.toFixed(3)),
-				fleet: playerData.fleet.map(s => s.id),
-				...playerData.filter('tech', 'items', 'xp', 'xpPoints')
-			}
-		}
+		data.playerData = [...this.playerData].map(([id, player]) => [id, player.serialize()]);
 		return data;
 	}
 }
