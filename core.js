@@ -3,9 +3,9 @@ const config = {
 	mesh_segments: 32,
 	render_quality: 0,
 	load_remote_manifest: false,
-	log_level: 'verbose'
+	log_level: 'debug'
 };
-const version = 'alpha_1.1.0',
+const version = 'alpha_1.2.0',
 versions = new Map(config.load_remote_manifest ? $.ajax({url: 'https://blankstorm.drvortex.dev/versions/manifest.json', async: false}).responseJSON : [
 	['infdev_1', {text: 'Infdev 1', group: 'infdev'}],
 	['infdev_2', {text: 'Infdev 2', group: 'infdev'}],
@@ -20,7 +20,8 @@ versions = new Map(config.load_remote_manifest ? $.ajax({url: 'https://blankstor
 	['infdev_11', {text: 'Infdev 11', group: 'infdev'}],
 	['infdev_12', {text: 'Infdev 12', group: 'infdev'}],
 	['alpha_1.0.0', {text: 'Alpha 1.0.0', group: 'alpha'}],
-	['alpha_1.1.0', {text: 'Alpha 1.1.0', group: 'alpha'}]
+	['alpha_1.1.0', {text: 'Alpha 1.1.0', group: 'alpha'}],
+	['alpha_1.2.0', {text: 'Alpha 1.2.0', group: 'alpha'}]
 ]);
 const init = (options = config) => {
 
@@ -110,11 +111,14 @@ Object.assign(BABYLON.Vector3.prototype, {
 	
 });
 Object.assign(BABYLON.Vector3, {
-	screenToWorld(x, y, width, height, depth, scene){
+	ScreenToWorld(x, y, width, height, depth, scene){
 		return BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, depth), width, height, BABYLON.Matrix.Identity(), scene.getViewMatrix(), scene.getProjectionMatrix());
 	},
-	screenToWorldPlane(x, y, scene){
-		return scene.pick(x, y, mesh => mesh == scene.xzPlane).pickedPoint;
+	ScreenToWorldPlane(x, y, pickY, scene){
+		if(!(scene instanceof BABYLON.Scene)) throw new TypeError('not a Scene');
+		scene.xzPlane.position.y = pickY || 0;
+		let pickInfo = scene.pick(x, y, mesh => mesh == scene.xzPlane);
+		return pickInfo.pickedPoint || BABYLON.Vector3.Zero();
 	},
 	getRotation(origin, target){
 		let diff = target.subtract(origin),
@@ -264,9 +268,8 @@ const Path = class extends BABYLON.Path3D{
 		return this.gizmo;
 	}
 	disposeGizmo(){
-		if(!this.gizmo) throw new ReferenceError('Path gizmo cannot be disposed because it was not drawn.');
-		this.gizmo.dispose();
-		this.gizmo = null;
+		if(this.gizmo) this.gizmo.dispose();
+		this.gizmo = undefined;
 	}
 }
 const StorageData = class extends Map{
@@ -373,7 +376,6 @@ const PlayerData = class extends BABYLON.TransformNode{
 		if(!(level instanceof Level) && level) throw new TypeError('passed level not a Level');
 		super(data.name);
 		this.position = random.cords(random.int(0, 50), true).add(new BABYLON.Vector3(0, 0, -1000));
-		this.rotation.z = Math.PI;
 		Object.assign(this, data);
 	}
 	serialize(){
@@ -398,16 +400,16 @@ const Entity = class extends BABYLON.TransformNode{
 		await this.level.loadedEntityMeshes;
 		if(typeof this.level.genericEntities[type]?.instantiateModelsToScene == 'function'){
 			this.mesh = this.level.genericEntities[type].instantiateModelsToScene().rootNodes[0];
-			this.mesh.setParent(this);
-			this.mesh.position = BABYLON.Vector3.Zero(); 
+			
 		}else{
 			this.mesh = BABYLON.MeshBuilder.CreateBox('error_mesh', {size: 1}, this.level);
 			this.mesh.material = new BABYLON.StandardMaterial('error_material', this.level);
-			this.mesh.material.emissiveColor = BABYLON.Color3.Red();
-			this.mesh.setParent(this);
-			this.mesh.position = BABYLON.Vector3.Zero();
+			this.mesh.material.emissiveColor = BABYLON.Color3.Gray();
 			throw 'Origin mesh does not exist';
 		}
+		this.mesh.setParent(this);
+		this.mesh.position = BABYLON.Vector3.Zero();
+		this.mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI)
 	}
 	constructor(type, owner, level, id = random.hex(32)){
 		if(!(level instanceof Level)) throw new TypeError('passed level must be a Level');
@@ -491,19 +493,19 @@ const Ship = class extends Entity{
 			recipe: { metal: 5000, minerals: 1000, fuel: 2500},
 			requires: {storage: 3}, model: 'models/transport_small.glb'
 		},
-		cruiser: {
+		inca: {
 			hp: 50, speed: 1, agility: 1, range: 200,
 			power: 5, enemy: true, camRadius: 20, xp: 10, storage: 250,
 			critChance: 0.1, critDamage: 1.25, damage: 1, reload: 2,
 			recipe: { metal: 4000, minerals: 1000, fuel: 1000 },
-			requires: {}, model: 'models/cruiser.gltf'
+			requires: {}, model: 'models/inca.glb'
 		},
-		destroyer: {
+		pilsung: {
 			hp: 100, speed: 1, agility: 1, range: 200,
 			power: 10, enemy: true, camRadius: 30, xp: 20, storage: 1000,
 			critChance: 0.25, critDamage: 1.5, damage: 2.5, reload: 1,
 			recipe: { metal: 10000, minerals: 4000, fuel: 2500 },
-			requires: {}, model: 'models/destroyer.gltf'
+			requires: {}, model: 'models/pilsung.glb'
 		},
 		transport_medium: {
 			hp: 50, speed: 2/3, agility: 0.5, range: 75,
@@ -512,7 +514,7 @@ const Ship = class extends Entity{
 			recipe: { metal: 10000, minerals: 2000, fuel: 5000},
 			requires: {storage: 5}, model: 'models/transport_small.glb'
 		},
-		battleship: {
+		hurricane: {
 			hp: 250, speed: 2/3, agility: 1, range: 250,
 			power: 25, enemy: true, camRadius: 40, xp: 50, storage: 2500,
 			critChance: 0.2, critDamage: 1.25, damage: 10, reload: 2,
@@ -544,7 +546,7 @@ const Ship = class extends Entity{
 			super(typeOrData, faction, save ?? faction.getScene());
 			Object.assign(this, {
 
-				position: faction.position.add(random.cords(random.int(1, faction.power))), // Will be changed to shipyard location
+				position: faction.position.add(random.cords(random.int(1, faction.power), true)), // Will be changed to shipyard location
 				storage: new StorageData(Ship.generic[typeOrData].storage),
 				type: typeOrData,
 				hp: Ship.generic[typeOrData].hp,

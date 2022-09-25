@@ -6,6 +6,14 @@
 		Number.prefixZeros = (num, length) => '0'.repeat(Math.max(0, length - ('' + num).length)) + num;
 		Object.assign(logger, {
 			level: 'warn',
+			isJSON(json){
+				try{
+					JSON.stringify(json);
+					return true;
+				}catch(e){
+					return false
+				}
+			},
 			toString(){
 				let timeLength = Math.max(...logger.map(e => ('' + e.time).length));
 				return `
@@ -32,7 +40,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				}, log: [...logger]});
 			},
 			log(type, msg){
-				msg = msg.toString() == '[object Object]' ? JSON.stringify(msg) : msg;
+				msg = logger.isJSON(msg) ? JSON.stringify(msg) : msg;
 				logger.at(-1)?.msg.toString() == msg.toString() ? logger.at(-1).count++ : logger.push({type, time: performance.now().toFixed(), msg, count: 0});
 			}
 		});
@@ -42,7 +50,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		let _console = console;
 		console = new Proxy(_console, {
 			get(obj, prop){
-				levels = ['error', 'warn', 'debug', 'verbose'];
+				levels = ['error', 'warn', 'debug'];
 				return function(...args){
 					if(levels.indexOf(prop) <= levels.indexOf(logger.level)) logger.log(prop, args);
 					return obj[prop] ? obj[prop](...args) : undefined;
@@ -506,13 +514,11 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			</button>
 		</div>
 		<div class=screenshots bg=none ofs=y style='display:grid;grid-auto-rows:144px;grid-template-columns:repeat(auto-fill,256px);gap:1em;'></div>
-		<div class=warp ofs=y bg=none>
-			<center>
-				<input label="Warp To: " class="warp x" maxlength=4 style=width:50px>
-				<input class="warp y" maxlength=4 style=width:50px>
-				<select></select>
-				<button style=margin:1% class=warp></button>
-			</center>
+		<div class=warp ofs=y bg=none style="text-align:center">
+			<input label="Warp To: " class="warp x" maxlength=4 style=width:50px>
+			<input class="warp y" maxlength=4 style=width:50px>
+			<select></select>
+			<button style=margin:1% class=warp></button>
 		</div>
 	</div>
 	<div id=markers style=z-index:2></div>
@@ -577,7 +583,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				<option value=warn>Warn</option>
 				<option value=error>Error</option>
 				<option value=debug>Debug</option>
-				<option value=verbose>Verbose</option>
 			</select><br><br>
 		</form>
 		<ul class=mod nbs bg=none ofs=y hide lsn></ul>
@@ -797,12 +802,9 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 	const locales = new Map();
 	Object.assign(locales, {
 		async fetch(url){
-			let
-			request = isJSON(url) ? {status: 200, responseJSON: JSON.parse(url)} : await $.ajax(url),
-			locale = request.responseJSON,
+			let locale = isJSON(url) ? JSON.parse(url) : await $.ajax(url),
 			err = msg => {throw new Error(`Failed to load locale from ${url}: ${msg}`)};
 			locale.language ||= locale.lang;
-			if(request.status != 200) err(request.statusText);
 			if(typeof locale != 'object') err('Not an object');
 			if(!locale.language) err('Does not have a language');
 			if(!(locale.version || locale.versions)) err('Does not have a version');
@@ -850,101 +852,15 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		},
 		currentLang: ''
 	});
-	locales.fetch(`{
-		"language": "en",
-		"name": "English",
-		"versions": ["alpha_1.1.0"],
-		"text": {
-			"menu.singleplayer": "Singleplayer",
-			"menu.multiplayer": "Multiplayer",
-			"menu.options": "Options",
-			"menu.exit": "Exit",
-			"menu.resume": "Resume Game",
-			"menu.back": "Back",
-			"menu.new": "New",
-			"menu.save": "Save Game",
-			"menu.quit": "Main Menu",
-			"menu.start": "Start",
-			"menu.cancel": "Cancel",
-			"menu.general": "General",
-			"menu.debug": "Debug",
-			"menu.keybinds": "Keybinds",
-			"menu.upload": "Upload",
-			"menu.refresh": "Refresh",
-			"menu.warp": "Warp",
-			"menu.hyperspace": "Hyperspace",
-			"menu.map": "Waypoints",
-			"menu.items": "Inventory",
-			"menu.screenshots": "Screenshots",
-			"menu.trade": "Trade",
-			"menu.shipyard": "Shipyard",
-			"menu.lab": "Laboratory",
-			"menu.download": "Download",
-			"error.color": "That color is not supported (use hex)",
-			"error.range": "That location is out of range",
-			"player.death": "You died!",
-			"entity.corvette.name": "Corvette",
-			"entity.corvette.description": "A light, fast blockade runner",
-			"entity.frigate.name": "Frigate",
-			"entity.frigate.description": "",
-			"entity.cruiser.name": "Cruiser",
-			"entity.cruiser.description": "",
-			"entity.destroyer.name": "Destroyer",
-			"entity.destroyer.description": "A versitile ship, it can hold its own in battle.",
-			"entity.battleship.name": "Battleship",
-			"entity.battleship.description": "Once in a battle, in can stay there and deal out damage for a long time",
-			"entity.dreadnought.name": "Dreadnought",
-			"entity.dreadnought.description": "The mother of all ships. Dominates everything it touches",
-			"entity.transport_small.name": "Small Transpot",
-			"entity.transport_small.description": "A smaller transport, it can move a small amount of resources",
-			"entity.transport_medium.name": "Medium Transpot",
-			"entity.transport_medium.description": "Larger than a small transport, it can carry many resources",
-			"item.metal.name": "Titanium",
-			"item.metal.description": "A strong, durable metal",
-			"item.minerals.name": "Minerals",
-			"item.minerals.description": "A crystal perfect for making lasers and shield generators",
-			"item.fuel.name": "Fuel",
-			"item.fuel.description": "Incredably reactive",
-			"item.ancient_tech.name": "Anicent Tech",
-			"item.ancient_tech.description": "Technology lost by a long forgot civilization",
-			"item.code_snippets.name": "Code Snippets",
-			"item.code_snippets.description": "Pieces of AIs and starship control programs",
-			"tech.armor.name": "Armor",
-			"tech.armor.description": "Increases health <br>+10% / level",
-			"tech.laser.name": "Laser Turrets",
-			"tech.laser.description": "Increases base damage <br>+10% / level",
-			"tech.reload.name": "Auto Reloaders",
-			"tech.reload.description": "Increases rate of fire",
-			"tech.thrust.name": "Propulsion",
-			"tech.thrust.description": "Improves the efficiency of drives, allowing your fleet to go faster",
-			"tech.energy.name": "Hyperdrive",
-			"tech.energy.description": "Increases hyperdrive energy capacity and decreases cooldown<br>+5% energy / level<br>-2% / level",
-			"tech.shields.name": "Shields",
-			"tech.shields.description": "Increases shields<br>+10% / level",
-			"tech.missle.name": "Missles",
-			"tech.missle.description": "Increases crit chance and crit damage<br>+1% crit chance<br>+5% crit damage",
-			"tech.regen.name": "Repair Bots",
-			"tech.regen.description": "Increases regen rate<br>+1% / level",
-			"tech.build.name": "Construction",
-			"tech.build.description": "Decreases ship material cost",
-			"tech.salvage.name": "Salvage",
-			"tech.salvage.description": "Increases chance for rare items by 2% / level",
-			"tech.storage.name": "Storage",
-			"tech.storage.description": "Increases storage capacity by 5% / level"
-		}
-	}`).then(() => locales.load('en'))
 	//load locales
 	
-	//locales.fetch('locales/en.json').then(locale => locales.load('en'));
+	locales.fetch('locales/en.json').then(locale => locales.load('en'));
 
 	const game = {
 		canvas: $('canvas.game'),
 		engine: new Engine($("canvas.game")[0], true, { preserveDrawingBuffer: true, stencil: true }),
 		screenshots: [],
 		mods: new Map(),
-		function: {},
-		entityModels: new Map(),
-		frames: 0,
 		isPaused: true,
 		mp: false,
 		mpEnabled: true,
@@ -1403,9 +1319,6 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			.replaceAll(/\[[A-Z]+\]/g, match => {
 				let color = 'var(--text-color)';
 				switch(match.slice(1, -1)){
-					case 'VERBOSE':
-						color = 'hsl(var(--hue), 100, 50, .8)';
-						break;
 					case 'DEBUG':
 						color = 'hsl(var(--hue), 100, 60, .8)';
 						break;
@@ -1580,7 +1493,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		static Live = class extends Level{
 			waypoints = [];
 			constructor(save){
-				super(save.data ?? save, game.engine)
+				super(save.data ?? save, game.engine);
 			}
 			play(){
 				if(this.version == version){
@@ -2047,33 +1960,52 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			player.cam.attachControl(game.canvas, true);
 			player.cam.inputs.attached.pointers.buttons = [1];
 		}
+		
 		if(saves.current instanceof Save.Live){
-			saves.current.entities.forEach(entity => {
-				let size = Mesh.sizeOf(entity.mesh);
-				if(Vector3.Distance(Vector3.screenToWorldPlane(game.scene().pointerX, game.scene().pointerY, saves.current) || Vector3.Zero(), entity.mesh.getAbsolutePosition()) < Math.max(size.x, size.y, size.z)){
-					if(entity.selected){
-						entity.mesh.getChildMeshes().forEach(mesh => game.scene().hl.removeMesh(mesh));
-						entity.selected = false;
-					}else{
-						entity.mesh.getChildMeshes().forEach(mesh => game.scene().hl.addMesh(mesh, Color3.Green()));
-						entity.selected = true;
-					}
-				}else if(!entity.selected || !e.shiftKey){
-					entity.mesh.getChildMeshes().forEach(mesh => game.scene().hl.removeMesh(mesh));;
+			if(!e.shiftKey){
+				for(let [id, entity] of saves.current.entities){
+					entity.mesh.getChildMeshes().forEach(mesh => saves.current.hl.removeMesh(mesh));;
 					entity.selected = false;
 				}
+			}
+			let pickInfo = saves.current.pick(saves.current.pointerX, saves.current.pointerY, mesh => {
+				let node = mesh;
+				while(node.parent){
+					node = node.parent;
+					if(node instanceof Ship){
+						return true;
+					}
+				}
+				return false;
 			});
+			if(pickInfo.pickedMesh){
+				let node = pickInfo.pickedMesh;
+				while(node.parent){
+					node = node.parent;
+				}
+				if(node instanceof Ship){
+					if(node.selected){
+						node.mesh.getChildMeshes().forEach(mesh => saves.current.hl.removeMesh(mesh));
+						node.selected = false;
+					}else{
+						node.mesh.getChildMeshes().forEach(mesh => saves.current.hl.addMesh(mesh, Color3.Green()));
+						node.selected = true;
+					}
+				}
+				
+			}
+
 		}
 		ui.update();
 	});
 	game.canvas.contextmenu(e => {
 		if(saves.current instanceof Save.Live){
-			saves.current.entities.forEach(entity => {
+			for(let [id, entity] of saves.current.entities){
 				if(entity.selected){
-					let newPosition = Vector3.screenToWorldPlane(e.clientX, e.clientY, game.scene());
-					entity.moveTo(newPosition, false, game.scene());
+					let newPosition = Vector3.ScreenToWorldPlane(e.clientX, e.clientY, entity.position.y, saves.current);
+					entity.moveTo(newPosition, false);
 				}
-			});
+			}
 		}
 	});
 	game.canvas.keydown(e => {
