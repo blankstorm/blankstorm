@@ -809,7 +809,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			if(!locale.language) err('Does not have a language');
 			if(!(locale.version || locale.versions)) err('Does not have a version');
 			if(!locale?.text) err('Missing data');
-			if(locale.version != version && ![...locale.versions].includes(version)) err('Wrong game version');
+			if(locale.version != version && ![...locale.versions].some(v => version.match(v))) err('Wrong game version');
 			
 			this.set(locale.language, locale)
 			$('<option></option>')
@@ -1108,7 +1108,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		upperRadiusLimit: 50,
 		lowerRadiusLimit: 5,
 		addVelocity(vector = Vector3.Zero(), computeMultiplyer){
-			let direction = player.cam.getDirection(vector);
+			let direction = player.cam.getDirection(vector).scale(1/Math.PI);
 			direction.y = 0;
 			direction.normalize();
 			if(computeMultiplyer) direction.scaleInPlace(player.speed + player.data().tech.thrust / 10);
