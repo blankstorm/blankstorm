@@ -15,6 +15,9 @@ These are the changes for the next update[s].
 - Better stars (see https://www.babylonjs-playground.com/#MX2Z99#7)
 - Hardpoints (see https://playground.babylonjs.com/#PU4WYI#291)
 - Fix warp
+- Fix logger messages
+- Fix fleet distribution
+- Fix log levels and use of `console.verbose`
 
 ## Changes since Alpha 1.1.0 release
 
