@@ -472,19 +472,19 @@ const Entity = class extends BABYLON.TransformNode{
 }
 const Ship = class extends Entity{
 	static generic = {
-		corvette: {
+		wind: {
 			hp: 10, speed: 2, agility: 2, range: 125,
 			power: 1, enemy: true, camRadius: 10, xp: 5, storage: 100,
 			critChance: 0.1, critDamage: 1.5, damage: 0.1, reload: 0.5, 
 			recipe: { metal: 1000, minerals: 500, fuel: 250 },
-			requires: {}, model: 'models/corvette.gltf'
+			requires: {}, model: 'models/wind.glb'
 		},
-		frigate: {
+		mosquito: {
 			hp: 25, speed: 1, agility: 1.5, range: 150,
 			power: 2, enemy: true, camRadius: 15, xp: 7.5, storage: 250,
 			critChance: 0.25, critDamage: 1.25, damage: 0.5, reload: 1,
 			recipe: { metal: 2000, minerals: 2000, fuel: 500 },
-			requires: {}, model: 'models/corvette.gltf'
+			requires: {}, model: 'models/mosquito.glb'
 		},
 		transport_small: {
 			hp: 5, speed: 1, agility: .75, range: 75,

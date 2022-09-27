@@ -1809,7 +1809,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				}, lvl);
 			}
 
-			new Ship('frigate', player.data(), lvl)
+			new Ship('mosquito', player.data(), lvl)
 			new Ship('transport_small', player.data(), lvl);
 			lvl.playerData.get(player.id).addItems(generate.items(5000));
 			let save = new Save(lvl.serialize());
