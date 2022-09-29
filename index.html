@@ -5,7 +5,7 @@
 		const logger = [];
 		Number.prefixZeros = (num, length) => '0'.repeat(Math.max(0, length - ('' + num).length)) + num;
 		Object.assign(logger, {
-			level: 'warn',
+			level: 'debug',
 			isJSON(json){
 				try{
 					JSON.stringify(json);
@@ -40,7 +40,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				}, log: [...logger]});
 			},
 			log(type, msg){
-				msg = logger.isJSON(msg) ? JSON.stringify(msg) : msg;
+				msg = (msg.length ? [...msg] : [msg]).map(m => typeof m == 'object' && logger.isJSON(m) ? JSON.stringify(m) : m).join('');
 				logger.at(-1)?.msg.toString() == msg.toString() ? logger.at(-1).count++ : logger.push({type, time: performance.now().toFixed(), msg, count: 0});
 			}
 		});
@@ -1931,7 +1931,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			case 't': if(e.altKey){
 				e.preventDefault();
 				prompt('Password').then(passkey => {
-				let token = $.ajax(web`api/dev_auth`, {data:{passkey}, async: false}).responseText;
+				let token = $.ajax(web('api/dev_auth'), {data:{passkey}, async: false}).responseText;
 				document.cookie = 'token=' + token;
 				location.reload();
 			})} break;

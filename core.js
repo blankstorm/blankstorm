@@ -521,12 +521,12 @@ const Ship = class extends Entity{
 			recipe: { metal: 25000, minerals: 10000, fuel: 5000 },
 			requires: {}, model: 'models/hurricane.glb'
 		},
-		dreadnought: {
+		horizon: {
 			hp: 2000, speed: 1/3, agility: 1, range: 250,
 			power: 100, enemy: true, camRadius: 65, xp: 100, storage: 10000,
 			critChance: 0.2, critDamage: 1.5, damage: 100, reload: 4,
 			recipe: { metal: 1000000, minerals: 500000, fuel: 250000 },
-			requires: { build: 5 }, model: 'models/dreadnought.gltf'
+			requires: { build: 5 }, model: 'models/horizon.glb'
 		}
 	}
 	constructor(typeOrData, faction, save){
@@ -605,7 +605,7 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial{
 		options.mapSize = 1024;
 		options.maxResolution = [64, 256, 1024][config.render_quality];
 		let id = random.hex(8);
-		super('CelestialBodyMaterial.' + id, scene, './shader/planet', {
+		super('CelestialBodyMaterial.' + id, scene, './shaders/planet', {
 			attributes: ["position", "normal", "uv"],
 			uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
 			needAlphaBlending: true
@@ -617,10 +617,10 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial{
 		this.setVector3('cameraPosition', player.cam.position);
 		this.setVector3('lightPosition', BABYLON.Vector3.Zero());
 		
-		this.noiseTexture = this.generateTexture(id, './shader/noise', {...options, options: new BABYLON.Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y)}, scene);
+		this.noiseTexture = this.generateTexture(id, './shaders/noise', {...options, options: new BABYLON.Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y)}, scene);
 		this.setTexture("textureSampler", this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, './shader/cloud', {...options, options: new BABYLON.Vector3(1.0, 0, 0)}, scene);
+		this.cloudTexture = this.generateTexture(id, './shaders/cloud', {...options, options: new BABYLON.Vector3(1.0, 0, 0)}, scene);
 		this.setTexture("cloudSampler", this.cloudTexture);
 
 		this.setColor3("haloColor", options.haloColor);

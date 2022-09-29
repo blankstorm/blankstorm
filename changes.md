@@ -15,9 +15,8 @@ These are the changes for the next update[s].
 - Better stars (see https://www.babylonjs-playground.com/#MX2Z99#7)
 - Hardpoints (see https://playground.babylonjs.com/#PU4WYI#291)
 - Fix warp
-- Fix logger messages
 - Fix fleet distribution
-- Fix log levels and use of `console.verbose`
+
 
 ## Changes since Alpha 1.1.0 release
 
@@ -31,6 +30,8 @@ These are the changes for the next update[s].
 - Path gizmos would throw an error when being disposed
 - `Vector3.ScreenToWorldPlane` will return `Vector3.Zero()` instead of null if a point isn't picked
 - The link to the current changelog would not open to the correct version
+- Changed use of `console.verbose` to `console.debug`
+- Change the default logger log level to debug
 
 ### Technical Changes
 - Removed the embeded en locale
