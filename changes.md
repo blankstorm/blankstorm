@@ -16,6 +16,7 @@ These are the changes for the next update[s].
 - Hardpoints (see https://playground.babylonjs.com/#PU4WYI#291)
 - Fix warp
 - Fix fleet distribution
+- Fix `Server.dialog` using the old db transaction function
 
 
 ## Changes since Alpha 1.1.0 release
