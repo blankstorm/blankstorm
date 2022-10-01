@@ -486,12 +486,12 @@ const Ship = class extends Entity{
 			recipe: { metal: 2000, minerals: 2000, fuel: 500 },
 			requires: {}, model: 'models/mosquito.glb'
 		},
-		transport_small: {
+		cillus: {
 			hp: 5, speed: 1, agility: .75, range: 75,
 			power: 1, enemy: false, camRadius: 20, xp: 10, storage: 25000,
 			critChance: 0.1, critDamage: 1, damage: 0.1, reload: 5,
 			recipe: { metal: 5000, minerals: 1000, fuel: 2500},
-			requires: {storage: 3}, model: 'models/transport_small.glb'
+			requires: {storage: 3}, model: 'models/cillus.glb'
 		},
 		inca: {
 			hp: 50, speed: 1, agility: 1, range: 200,
