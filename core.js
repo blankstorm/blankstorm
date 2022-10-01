@@ -335,10 +335,11 @@ const PlayerData = class extends BABYLON.TransformNode{
 		});
 	}
 	removeItems(items){
+		items = {...items};
 		this.fleet.forEach(ship => {
 			Object.entries(items).forEach(([item, amount]) => {
 				let stored = Math.min(ship.storage.get(item), amount);
-				ship.storage.remove(item, stored)
+				ship.storage.remove(item, stored);
 				items[item] -= stored;
 			});
 		});
@@ -347,6 +348,7 @@ const PlayerData = class extends BABYLON.TransformNode{
 		this.removeItems(Object.fromEntries([...item.keys()].map(i => [i, Infinity])));
 	}
 	hasItems(items){
+		items = {...items};
 		this.fleet.forEach(ship => {
 			Object.entries(items).forEach(([item, amount]) => {
 				let stored = Math.min(ship.storage.get(item), amount);
@@ -512,7 +514,7 @@ const Ship = class extends Entity{
 			power: 10, enemy: false, camRadius: 50, xp: 10, storage: 100000,
 			critChance: 0.1, critDamage: 1, damage: 1, reload: 5,
 			recipe: { metal: 10000, minerals: 2000, fuel: 5000},
-			requires: {storage: 5}, model: 'models/transport_small.glb'
+			requires: {storage: 5}, model: 'models/cillus.glb'
 		},
 		hurricane: {
 			hp: 250, speed: 2/3, agility: 1, range: 250,
@@ -544,9 +546,10 @@ const Ship = class extends Entity{
 			})
 		}else{
 			super(typeOrData, faction, save ?? faction.getScene());
+			let x = random.int(0, faction.power),
+			distance = Math.log(x ** 2 + 1) ** 3;
 			Object.assign(this, {
-
-				position: faction.position.add(random.cords(random.int(1, faction.power), true)), // Will be changed to shipyard location
+				position: faction.position.add(random.cords(distance, true)), // Will be changed to shipyard location
 				storage: new StorageData(Ship.generic[typeOrData].storage),
 				type: typeOrData,
 				hp: Ship.generic[typeOrData].hp,

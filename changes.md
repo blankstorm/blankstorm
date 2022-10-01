@@ -15,9 +15,6 @@ These are the changes for the next update[s].
 - Better stars (see https://www.babylonjs-playground.com/#MX2Z99#7)
 - Hardpoints (see https://playground.babylonjs.com/#PU4WYI#291)
 - Fix warp
-- Fix fleet distribution
-- Fix `Server.dialog` using the old db transaction function
-
 
 ## Changes since Alpha 1.1.0 release
 
@@ -33,6 +30,9 @@ These are the changes for the next update[s].
 - The link to the current changelog would not open to the correct version
 - Changed use of `console.verbose` to `console.debug`
 - Change the default logger log level to debug
+- `Server.dialog` using the old db transaction function
+- Camera radius would be the maximum upon entering scene
+- Fleet distribution
 
 ### Technical Changes
 - Removed the embeded en locale

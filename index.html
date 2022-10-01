@@ -1104,9 +1104,8 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		}
 	};
 	Object.assign(player.cam, {
-		radius: 25,
 		upperRadiusLimit: 50,
-		lowerRadiusLimit: 5,
+		lowerRadiusLimit: 2.5,
 		addVelocity(vector = Vector3.Zero(), computeMultiplyer){
 			let direction = player.cam.getDirection(vector).scale(1/Math.PI);
 			direction.y = 0;
@@ -1257,33 +1256,33 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 	Object.assign(ui, {
 		yrd: (shiptype, row) => {
 			let s = Ship.generic[shiptype], buildCost = '', techRequires = '';
-			for (let m in s.recipe[0]) {
-				buildCost += `<br>${locales.text`item.${m}.name`}: ${minimize(player.data().items[m])}/${minimize(s.recipe[0][m])}`
+			for (let m in s.recipe) {
+				buildCost += `<br>${locales.text(`item.${m}.name`)}: ${minimize(player.data().items[m])}/${minimize(s.recipe[m])}`
 			}
 			for (let i in s.requires) {
-				techRequires += (s.requires[i] > 0) ? `<br>${locales.text`tech.${i}.name`}: ${player.data().tech[i]}/${s.requires[i]}` : `<br>Incompatible with ${locales.text`tech.${i}.name`}`
+				techRequires += (s.requires[i] > 0) ? `<br>${locales.text(`tech.${i}.name`)}: ${player.data().tech[i]}/${s.requires[i]}` : `<br>Incompatible with ${locales.text(`tech.${i}.name`)}`
 			}
 			let gui = $(`
 				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-				<span style=text-align:center;grid-row:${row};grid-column:2;>[${player.data().shipNum(shiptype)}] ${locales.text`entity.${shiptype}.name`}</span>
+				<span style=text-align:center;grid-row:${row};grid-column:2;>[${player.data().shipNum(shiptype)}] ${locales.text(`entity.${shiptype}.name`)}</span>
 				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
 			`);
 			gui.eq(-1).children('svg')
 				.click(e => {
-					if(player.data().hasItems(s.recipe[0])){
-						player.data().removeItems(s.recipe[0]);
+					if(player.data().hasItems(s.recipe)){
+						player.data().removeItems(s.recipe);
 						new Ship(shiptype, player.data());
 					}
 					ui.update();
 				})
-				.tooltip(`${locales.text`entity.${shiptype}.description`}<br><colorbr><strong>Material Cost</strong>${buildCost}<br>${Object.keys(s.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug?.tooltips ? '<br>type: ' + shiptype : ''}`);
+				.tooltip(`${locales.text(`entity.${shiptype}.description`)}<br><colorbr><strong>Material Cost</strong>${buildCost}<br>${Object.keys(s.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug?.tooltips ? '<br>type: ' + shiptype : ''}`);
 			return gui;
 		},
 		lab: (t, row) => {
 			if (!tech.has(t)) throw new ReferenceError(`UI: Lab: techtype "${t}" does not exist`);
 			let gui = $(`
 				<span style=text-align:right;grid-row:${row};grid-column:1;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-				<span style=text-align:center;grid-row:${row};grid-column:2;>${locales.text`tech.${t}.name`}</span>
+				<span style=text-align:center;grid-row:${row};grid-column:2;>${locales.text(`tech.${t}.name`)}</span>
 				<span style=text-align:left;grid-row:${row};grid-column:3;><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
 			`);
 			gui.click(e => {
@@ -1295,9 +1294,9 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				ui.update();
 			});
 			
-			let upgradeCost = Object.entries(tech.priceOf(t)).reduce((a, [k, v]) => a + `<br>${locales.text`item.${k}.name`}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
-			techRequires = Object.entries(tech.get(t).requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locales.text`tech.${k}.name`}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locales.text`tech.${k}.name`}`, '');
-			gui.eq(-1).children('svg').tooltip(`<strong>${locales.text`tech.${t}.name`}</strong><br>${locales.text`tech.${t}.description`}<br>${player.data().tech[t] >= tech.get(t).max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech.get(t).requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
+			let upgradeCost = Object.entries(tech.priceOf(t)).reduce((a, [k, v]) => a + `<br>${locales.text(`item.${k}.name`)}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
+			techRequires = Object.entries(tech.get(t).requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locales.text(`tech.${k}.name`)}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locales.text(`tech.${k}.name`)}`, '');
+			gui.eq(-1).children('svg').tooltip(`<strong>${locales.text(`tech.${t}.name`)}</strong><br>${locales.text(`tech.${t}.description`)}<br>${player.data().tech[t] >= tech.get(t).max ? `<strong>Max Level</strong>` : `${player.data().tech[t]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[t] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(tech.get(t).requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + t : ''}`);
 			return gui
 		},
 		inv: (i, row) => {
@@ -1538,31 +1537,31 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		}
 	}
 	const Server = class {
-		static dialog(server){
-			modal([
+		static async dialog(server){
+			const result = await modal([
 				{name: 'name', placeholder: 'Display name', value: server instanceof Server ? server.name : null},
 				{name: 'url', placeholder: 'Server URL or IP Address', value: server instanceof Server ? server.url : null}
-			], {Cancel: false, Save: true}).then(result => {
-				if(result.result){
-					let transaction = db.transaction('servers','readwrite').objectStore('servers');
-					if(server instanceof Server){
-						transaction.put(result.name, result.url);
-						server.name = result.name;
-						if(server.url != result.url){
-							transaction.delete(server.url);
-							server.url = result.url;
-						}
-					}else{
-						if(servers.has(result.url)){
-							alert('A server with that URL already exists.');
-						}else{
-							new Server(result.url, result.name);
-							
-						}
+			], {Cancel: false, Save: true})
+			if(result.result){
+				let tx = await db.tx('servers','readwrite')
+				let serverStore = tx.objectStore('servers');
+				if(server instanceof Server){
+					serverStore.put(result.name, result.url);
+					server.name = result.name;
+					if(server.url != result.url){
+						serverStore.delete(server.url);
+						server.url = result.url;
 					}
-					ui.update();
+				}else{
+					if(servers.has(result.url)){
+						alert('A server with that URL already exists.');
+					}else{
+						new Server(result.url, result.name);
+						
+					}
 				}
-			});
+				ui.update();
+			}
 			
 		}
 		constructor(url, name){
@@ -1810,7 +1809,8 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			}
 
 			new Ship('mosquito', player.data(), lvl)
-			new Ship('transport_small', player.data(), lvl);
+			new Ship('cillus', player.data(), lvl);
+			player.cam.radius = 10;
 			lvl.playerData.get(player.id).addItems(generate.items(5000));
 			let save = new Save(lvl.serialize());
 			if(!debug.disable_saves) save.saveToDB();
@@ -2032,7 +2032,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			game.changeUI('#e');
 		}
 
-	}).click(ui.update);
+	}).click(e => ui.update());
 	$('canvas.game,#esc,#hud').keydown(e => {
 		if (e.key == 'Escape') {
 			game.changeUI('#esc', true);
@@ -2041,7 +2041,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		ui.update();
 	});
 	$("button").click(e => { playsound(sound.ui, settings.sfx) })
-	$('#e>div,#q>div:not(.nav,.inv,.yrd,.item-bar)').hide();
+	$('#e>div:not(.nav,.yrd),#q>div:not(.nav,.inv,.item-bar)').hide();
 
 	// the loop ~~loop
 	const loop = () => {
