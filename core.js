@@ -571,9 +571,9 @@ const Ship = class extends Entity{
 	//this will be replaced with hardpoints!
 	attack(entity){
 		if(!(entity instanceof Entity)) throw new TypeError('Target must be an entity');
-		let laser = Mesh.CreateLines("laser." + random.hex(16), [this.mesh.getAbsolutePosition().add(Vector3.Up()).add(random.cords(1)), target.mesh.getAbsolutePosition().add(Vector3.Up()).add(random.cords(1))], entity.getScene());
+		let laser = Mesh.CreateLines("laser." + random.hex(16), [this.mesh.getAbsolutePosition(), entity.mesh.getAbsolutePosition()], entity.getScene());
 		laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red(); 
-		target.hp -= this._generic.damage / 60 * entity.getScene().getAnimationRatio() * (!!(Math.random() < this._generic.critChance) ? this._generic.critDamage : 1);
+		entity.hp -= this._generic.damage / 60 * entity.getScene().getAnimationRatio() * (!!(Math.random() < this._generic.critChance) ? this._generic.critDamage : 1);
 		setTimeout(e => laser.dispose(), 50);
 	}
 }
@@ -633,6 +633,9 @@ const CelestialBody = class extends BABYLON.Mesh {
 	fleet = [];
 	owner = null;
 	fleetLocation = BABYLON.Vector3.Zero();
+	get power(){
+		return this.fleet.reduce((total, ship) => total + ship._generic.power, 0) ?? 0
+	} 
 	constructor(name, id = random.hex(32), level){
 		if(!(level instanceof Level)) throw new TypeError('level must be a Level')
 		super(name, level);
@@ -783,9 +786,6 @@ const Planet = class extends CelestialBody {
 			icon: 'planet-ringed'
 		}]
 	]);
-	get power(){
-		return this.fleet.reduce((total, ship) => total + ship.power, 0) ?? 0
-	}
 	constructor({name, position = BABYLON.Vector3.Zero(), biome = 'earthlike', radius = 1, owner = null, fleet = [], rewards = {}, scene, id}){
 		super(name ?? 'Unknown Planet', id, scene);
 		BABYLON.CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
@@ -868,6 +868,7 @@ const Level = class extends BABYLON.Scene {
 	playerData = new Map();
 	#initPromise = new Promise(res => {});
 	loadedEntityMeshes = new Promise(res => {});
+	#performanceMonitor = new BABYLON.PerformanceMonitor(60);
 	constructor(nameOrData, engine){
 		super(engine);
 		Object.assign(this, {
@@ -1031,13 +1032,14 @@ const Level = class extends BABYLON.Scene {
 		}
 	}
 	tick(){
+		this.#performanceMonitor.sampleFrame();
 		for(let [id, playerData] of this.playerData){
 			if(Math.abs(playerData.rotation.y) > Math.PI){
 				playerData.rotation.y += Math.sign(playerData.rotation.y) * 2 * Math.PI;
 			}
 		}
 		for(let [id, entity] of this.entities){
-			entity.reload -= 1 / this.getAnimationRatio()
+			entity.reload--;
 			if(entity.hp <= 0){
 				entity.remove();
 				//Events: trigger event, for sounds
@@ -1045,12 +1047,15 @@ const Level = class extends BABYLON.Scene {
 			else if(entity instanceof Ship){
 				let targets = [...this.entities.values()].filter(e => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entity._generic.range);
 				let target = targets[random.int(0, targets.length - 1)];
-				if(target && this.reload <= 0){
+				if(target && entity.reload <= 0){
 					entity.attack(target);
 					entity.reload = entity._generic.reload;
 				}
 			}
 		}
+	}
+	get tps(){
+		return this.#performanceMonitor.averageFPS
 	}
 	serialize(){
 		let data = {

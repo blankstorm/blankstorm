@@ -1797,6 +1797,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			lvl.addCamera(player.cam);
 			lvl.activeCamera = player.cam;
 			lvl.playerData.set(player.id, new PlayerData({id: player.id, name: player.username, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true))}, lvl));
+			lvl.playerData.get(player.id)._shipLaserColor = BABYLON.Color3.Teal();
 			lvl.play();
 			for(let [id, body] of lvl.bodies){
 				body.waypoint = new Waypoint({
@@ -1808,7 +1809,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				}, lvl);
 			}
 
-			new Ship('mosquito', player.data(), lvl)
+			new Ship('mosquito', player.data(), lvl);
 			new Ship('cillus', player.data(), lvl);
 			player.cam.radius = 10;
 			lvl.playerData.get(player.id).addItems(generate.items(5000));
@@ -1983,7 +1984,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 				while(node.parent){
 					node = node.parent;
 				}
-				if(node instanceof Ship){
+				if(node instanceof Ship && node.owner == player.data()){
 					if(node.selected){
 						node.mesh.getChildMeshes().forEach(mesh => saves.current.hl.removeMesh(mesh));
 						node.selected = false;
@@ -2074,7 +2075,9 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 							}
 						}
 					}
-					saves.current.tick();
+					if(game.engine.frameId % 60 == 0){
+						saves.current.tick();
+					}
 					player.updateFleet();
 					player.data().position.addInPlace(player.data().velocity.scale(game.scene().getAnimationRatio()));
 					player.data().velocity.scaleInPlace(0.9);
@@ -2089,7 +2092,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					$('#hud svg.xp rect').attr('width', (player.levelOf(player.data().xp) % 1 * 100) + '%');
 					$("#debug .left").html(`
 						<span>${version} ${game.mods.length ? `[${game.mods.join(", ")}]` : `(vanilla)`}</span><br>
-						<span>FPS ${game.engine.getFps().toFixed()}</span><br>
+						<span>${game.engine.getFps().toFixed()} FPS | ${saves.current.tps.toFixed()} TPS</span><br>
 						<span>${saves.selected} (${saves.current.date.toLocaleString()})</span><br><br>
 						<span>P: ${player.data().position.toFixed(1).display()} V: ${player.data().velocity.toFixed(1).display()} R: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)})</span><br>
 						<span>C: (${player.cam.alpha.toFixed(2)}, ${player.cam.beta.toFixed(2)}) r: ${player.cam.radius.toFixed(1)}</span><br><br>
