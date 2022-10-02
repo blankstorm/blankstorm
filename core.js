@@ -96,8 +96,6 @@ Object.defineProperty(Object.prototype, 'filter', {
 Object.assign(BABYLON.Vector3.prototype, {
 	abs(){return new BABYLON.Vector3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z))},
 	toFixed(num = 1){return new BABYLON.Vector3(this.x.toFixed(num), this.y.toFixed(num), this.z.toFixed(num))},
-	round(){return new BABYLON.Vector3(Math.round(this.x), Math.round(this.y), Math.round(this.z))},
-	toPolar(){return Math.sqrt(this.x ** 2 + this.y ** 2 + this.z ** 2)},
 	display(mode = 'xyz', ...options){
 		return mode == 'xyz' ? `(${this.x}, ${this.y}, ${this.z})` :
 		mode == 'xy' ? `(${this.x}, ${this.y})` :
@@ -131,7 +129,6 @@ Object.assign(BABYLON.Vector3, {
 Object.assign(BABYLON.Vector2.prototype, {
 	display(){return `(${this.x}, ${this.y})`;},
 	abs(){return new BABYLON.Vector2(Math.abs(this.x), Math.abs(this.y))},
-	round(){return new BABYLON.Vector2(Math.round(this.x), Math.round(this.y))},
 });
 Object.defineProperty(Array.prototype, 'spliceOut', {
 	value: function(element){
@@ -186,8 +183,7 @@ const Path = class extends BABYLON.Path3D{
 		position = BABYLON.Vector3.Zero();
 		parent = null;
 		constructor(...args){
-			this.position = args[0] instanceof BABYLON.Vector3 ? args[0].round() : new BABYLON.Vector3(args[0], args[1]), args[2];
-			if(args[1] instanceof Path.Node) this.parent = args[1];
+			this.position = Path.Node.Round(args[0] instanceof BABYLON.Vector3 ? args[0] : new BABYLON.Vector3(args[0], args[1], args[2]));
 			if(args.at(-1) instanceof Path.Node) this.parent = args.at(-1);
 		}
 		gCost = 0;
@@ -199,6 +195,13 @@ const Path = class extends BABYLON.Path3D{
 		}
 		equals(node){
 			return this.position.equals(node.position)
+		}
+		static Round(vector) {
+			return new BABYLON.Vector3(
+				Math.round(vector.x),
+				Math.round(vector.y),
+				Math.round(vector.z)
+			)
 		}
 	}
 	static nodeDistance(nodeA, nodeB){
@@ -261,11 +264,13 @@ const Path = class extends BABYLON.Path3D{
 		}
 	}
 	drawGizmo(scene, color = BABYLON.Color3.White(), y = 0){
-		if(!(scene instanceof BABYLON.Scene)) throw new TypeError('scene must be a scene');
-		if(this.gizmo) console.warn('Path gizmo was already drawn!');
-		this.gizmo = BABYLON.Mesh.CreateLines('pathGizmo.' + random.hex(16), this.path.map(node => node.position), scene);					
-		this.gizmo.color = color;
-		return this.gizmo;
+		if(this.path.length > 0){
+			if(!(scene instanceof BABYLON.Scene)) throw new TypeError('scene must be a scene');
+			if(this.gizmo) console.warn('Path gizmo was already drawn!');
+			this.gizmo = BABYLON.Mesh.CreateLines('pathGizmo.' + random.hex(16), this.path.map(node => node.position), scene);					
+			this.gizmo.color = color;
+			return this.gizmo;
+		}
 	}
 	disposeGizmo(){
 		if(this.gizmo) this.gizmo.dispose();
@@ -450,7 +455,6 @@ const Entity = class extends BABYLON.TransformNode{
 
 			this.animations.push(animation);
 			this.animations.push(rotateAnimation);
-
 			let result = this.level.beginAnimation(this, 0, path.path.length * 60);
 			result.disposeOnEnd = true;
 			result.onAnimationEnd = resolve;
@@ -509,12 +513,12 @@ const Ship = class extends Entity{
 			recipe: { metal: 10000, minerals: 4000, fuel: 2500 },
 			requires: {}, model: 'models/pilsung.glb'
 		},
-		transport_medium: {
+		apis: {
 			hp: 50, speed: 2/3, agility: 0.5, range: 75,
 			power: 10, enemy: false, camRadius: 50, xp: 10, storage: 100000,
 			critChance: 0.1, critDamage: 1, damage: 1, reload: 5,
 			recipe: { metal: 10000, minerals: 2000, fuel: 5000},
-			requires: {storage: 5}, model: 'models/cillus.glb'
+			requires: {storage: 5}, model: 'models/apis.glb'
 		},
 		hurricane: {
 			hp: 250, speed: 2/3, agility: 1, range: 250,
@@ -532,7 +536,7 @@ const Ship = class extends Entity{
 		}
 	}
 	constructor(typeOrData, faction, save){
-		if(!Ship.generic[typeOrData] && !(isJSON(typeOrData) && Ship.generic[typeOrData.shipType])) throw new ReferenceError(`Ship type ${typeOrData} does not exist`);
+		if(!Ship.generic[typeOrData] && !Ship.generic[typeOrData.shipType]) throw new ReferenceError(`Ship type ${typeOrData} does not exist`);
 		if(typeof typeOrData == 'object'){
 			super(typeOrData.shipType, faction, save ?? faction.getScene(), typeOrData.id);
 			Object.assign(this, {
@@ -811,51 +815,6 @@ const Station = class extends CelestialBody{
 	}
 }
 const Level = class extends BABYLON.Scene {
-	static upgrades = new Map([
-		['infdev_11', data => ({...data, version: 'alpha_1.0.0'})],
-		['infdev_12', data => ({...data, version: 'alpha_1.0.0'})],
-	]);
-	static upgrade(data){
-		while(version != data.version && Level.upgrades.has(data.version)){
-			data = Level.upgrades.get(data.version)(data);
-			if(version != data.version && !Level.upgrades.has(data.version)){
-				alert(`Can't upgrade save from ${versions.get(data.version).text} to ${versions.get(version).text}.`);
-			}
-		}
-		return data;
-	}
-	static system = {
-		names: ["Abrigato", "Kerali", "Kaltez", "Suzum", "Vespa", "Coruscare", "Vulca", "Jaeger", "Kashyyyk", "Outpost42", "Victoria", "Gesht", "Sanctuary", "Snowmass", "Ja", "Keeg", "Haemeiguli", "Borebalae", "Albataetarius", "Hataerius", "Achernaiphoros", "Antadrophei", "Hoemeirai", "Antabalis", "Hoereo", "Pazadam", "Equidor", "Pax", "Xena", "Titan", "Oturn", "Thuamia", "Heuthea", "Ditharus", "Muxater", "Trukovis", "Bichotune", "Etis", "Leorus", "Aphus", "Harophos", "Athena", "Hades", "Icarus", "Ureus", "Xentos Prime", "Ketlak", "Aerox", "Thryox", "Stratus", "Nox", "Sanctum", "Pastūra", "Tinctus", "Morbus", "Neos", "Nomen", "Numerus", "Pax", "Fornax", "Skorda", "Alli", "Resurs", "Home"],
-		size: 5000,
-		maxPlanets: 9
-	}
-	static generate = {
-		system: (name, position, level) => {
-			let star = new Star({
-				name,
-				position,
-				radius: random.int(300, 500),
-				color: new BABYLON.Color3(Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4)),
-				scene: level
-			})
-			let nameMode = random.bool,
-			planetNum = random.int(1, Level.system.maxPlanets),
-			names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
-			planets = [];
-			for (let i in names) {
-				let planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i], radius = random.int(25, 50);
-				planets[i] = new Planet({
-					name: random.int(0, 9999) == 0 ? 'Jude' : planetName,
-					position: random.cords(random.int((star.radius + radius) * 1.5, Level.system.size), true),
-					radius,
-					biome: ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)],
-					fleet: generate.enemies(level.difficulty * (i + 1)),
-					rewards: generate.items(1000 * i * (2 - level.difficulty)),
-					scene: level,
-				});
-			}
-		}
-	}
 	id = random.hex(16)
 	name = '';
 	version = version;
@@ -869,7 +828,7 @@ const Level = class extends BABYLON.Scene {
 	#initPromise = new Promise(res => {});
 	loadedEntityMeshes = new Promise(res => {});
 	#performanceMonitor = new BABYLON.PerformanceMonitor(60);
-	constructor(nameOrData, engine){
+	constructor(name, engine, doNotGenerate){
 		super(engine);
 		Object.assign(this, {
 			skybox: BABYLON.Mesh.CreateBox('skybox', Level.system.size * 2, this),
@@ -888,25 +847,32 @@ const Level = class extends BABYLON.Scene {
 			reflectionTexture: BABYLON.CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), this)
 		});
 		this.skybox.material.reflectionTexture.coordinatesMode = 5;
+		this.name = name;
 		
 		this.loadedEntityMeshes = this.#loadEntityMeshes();
-		this.#initPromise = isJSON(nameOrData) ? this.load(JSON.parse(nameOrData)) : this.init(nameOrData);
+		this.#initPromise = !doNotGenerate ? this.init() : Promise.resolve(this);
 		this.registerBeforeRender(()=>{
 			let ratio = this.getAnimationRatio();
 			for(let [id, body] of this.bodies){
 				if(body instanceof Planet && body.material instanceof CelestialBodyMaterial){
 					body.rotation.y += 0.0001 * ratio * body.material.rotationFactor;
-					body.material.setMatrix("rotation", Matrix.RotationY(body.matrixAngle));
+					body.material.setMatrix("rotation", BABYLON.Matrix.RotationY(body.matrixAngle));
 					body.matrixAngle -= 0.0004 * ratio;
-					body.material.setVector3("options", new Vector3(body.material.generationOptions.clouds, body.material.generationOptions.groundAlbedo, body.material.generationOptions.cloudAlbedo))
+					body.material.setVector3("options", new BABYLON.Vector3(body.material.generationOptions.clouds, body.material.generationOptions.groundAlbedo, body.material.generationOptions.cloudAlbedo))
 				}
 			}
 		});
 	}
+	get selectedEntities(){
+		return [...this.entities.values()].filter(e => e.selected);
+	}
+	get tps(){
+		return this.#performanceMonitor.averageFPS
+	}
 	async #loadEntityMeshes(){
 		for(let i in Ship.generic){
 			try{
-			let container = this.genericEntities[i] = await SceneLoader.LoadAssetContainerAsync('', Ship.generic[i].model, this);
+			let container = this.genericEntities[i] = await BABYLON.SceneLoader.LoadAssetContainerAsync('', Ship.generic[i].model, this);
 			Object.assign(container.meshes[0], {
 				rotationQuaternion: null,
 				material: Object.assign(container.materials[0], {
@@ -924,64 +890,8 @@ const Level = class extends BABYLON.Scene {
 			}
 		}
 	}
-	async init(name){
-		this.name = name;
+	async init(){
 		let sys = await Level.generate.system('Crash Site', BABYLON.Vector3.Zero(), this);
-	}
-	async load(saveData){
-		if(saveData.version != version){
-			alert(`Can't load save: wrong version`);
-			throw new Error(`Can't load save from data: wrong version (${saveData.version})`)
-		}
-		Object.assign(this, {
-			date: new Date(saveData.date),
-			bodies: new Map(),
-			entities: new Map(),
-			playerData: new Map(),
-			...saveData.filter('id', 'name', 'versions', 'difficulty')
-		});
-
-		for(let [id, data] of saveData.playerData){
-			this.playerData.set(id, new PlayerData({
-				position: BABYLON.Vector3.FromArray(data.position),
-				rotation: BABYLON.Vector3.FromArray(data.rotation),
-				id,
-				...data.filter('xp', 'xpPoints', 'tech')
-			}));
-		}
-
-		for(let id in saveData.bodies){
-			let bodyData = saveData.bodies[id], body;
-			switch(bodyData.type){
-				case 'star':
-					body = new Star({
-						position: BABYLON.Vector3.FromArray(bodyData.position),
-						color: BABYLON.Color3.FromArray(bodyData.color),
-						scene: this,
-						...bodyData.filter('name', 'radius', 'id')
-					});
-				break;
-				case 'planet':	
-					body = new Planet({
-						position: BABYLON.Vector3.FromArray(bodyData.position),
-						scene: this,
-						...bodyData.filter('name', 'radius', 'id', 'biome', 'owner', 'rewards')
-					})
-				break;
-				default:
-					body = new CelestialBody(bodyData.name, bodyData.id, this);
-					//TODO: Change Star/Planet constructors to use standerdized data
-			}
-		}
-		for(let entityData of saveData.entities){
-			switch(entityData.type){
-				case 'ship':
-					new Ship(entityData, this.bodies.get(entityData.owner) ?? this.playerData.get(entityData.owner), this);
-					break;
-				default:
-					new Entity(null, null, this);
-			}
-		}
 	}
 	async generateRegion(x, y, size){
 		await this.ready();
@@ -989,9 +899,6 @@ const Level = class extends BABYLON.Scene {
 	async ready(){
 		await Promise.allSettled([this.#initPromise, this.loadedEntityMeshes]);
 		return this
-	}
-	get selectedEntities(){
-		return [...this.entities.values()].filter(e => e.selected);
 	}
 	getPlayerData(nameOrID){
 		return [...this.playerData].filter(([id, data]) => data.name == nameOrID || id == nameOrID)[0]?.[1]
@@ -1053,9 +960,6 @@ const Level = class extends BABYLON.Scene {
 				}
 			}
 		}
-	}
-	get tps(){
-		return this.#performanceMonitor.averageFPS
 	}
 	serialize(){
 		let data = {
@@ -1125,6 +1029,112 @@ const Level = class extends BABYLON.Scene {
 		};
 		data.playerData = [...this.playerData].map(([id, player]) => [id, player.serialize()]);
 		return data;
+	}
+
+	static upgrades = new Map([
+		['infdev_11', data => ({...data, version: 'alpha_1.0.0'})],
+		['infdev_12', data => ({...data, version: 'alpha_1.0.0'})],
+	]);
+
+	static upgrade(data){
+		while(version != data.version && Level.upgrades.has(data.version)){
+			data = Level.upgrades.get(data.version)(data);
+			if(version != data.version && !Level.upgrades.has(data.version)){
+				alert(`Can't upgrade save from ${versions.get(data.version).text} to ${versions.get(version).text}.`);
+			}
+		}
+		return data;
+	}
+
+	static system = {
+		names: ["Abrigato", "Kerali", "Kaltez", "Suzum", "Vespa", "Coruscare", "Vulca", "Jaeger", "Kashyyyk", "Outpost42", "Victoria", "Gesht", "Sanctuary", "Snowmass", "Ja", "Keeg", "Haemeiguli", "Borebalae", "Albataetarius", "Hataerius", "Achernaiphoros", "Antadrophei", "Hoemeirai", "Antabalis", "Hoereo", "Pazadam", "Equidor", "Pax", "Xena", "Titan", "Oturn", "Thuamia", "Heuthea", "Ditharus", "Muxater", "Trukovis", "Bichotune", "Etis", "Leorus", "Aphus", "Harophos", "Athena", "Hades", "Icarus", "Ureus", "Xentos Prime", "Ketlak", "Aerox", "Thryox", "Stratus", "Nox", "Sanctum", "Pastūra", "Tinctus", "Morbus", "Neos", "Nomen", "Numerus", "Pax", "Fornax", "Skorda", "Alli", "Resurs", "Home"],
+		size: 5000,
+		maxPlanets: 9
+	}
+
+	static generate = {
+		system: (name, position, level) => {
+			let star = new Star({
+				name,
+				position,
+				radius: random.int(300, 500),
+				color: new BABYLON.Color3(Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4), Math.random() ** 3 / 2 + random.float(0.3, 0.4)),
+				scene: level
+			})
+			let nameMode = random.bool,
+			planetNum = random.int(1, Level.system.maxPlanets),
+			names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
+			planets = [];
+			for (let i in names) {
+				let planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i], radius = random.int(25, 50);
+				planets[i] = new Planet({
+					name: random.int(0, 9999) == 0 ? 'Jude' : planetName,
+					position: random.cords(random.int((star.radius + radius) * 1.5, Level.system.size), true),
+					radius,
+					biome: ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)],
+					fleet: generate.enemies(level.difficulty * (i + 1)),
+					rewards: generate.items(1000 * i * (2 - level.difficulty)),
+					scene: level,
+				});
+			}
+		}
+	}
+
+	static Load(saveData, engine, save){
+		if(saveData.version != version){
+			alert(`Can't load save: wrong version`);
+			throw new Error(`Can't load save from data: wrong version (${saveData.version})`)
+		}
+		save ??= new Level(saveData.name, engine, true);
+		Object.assign(save, {
+			date: new Date(saveData.date),
+			bodies: new Map(),
+			entities: new Map(),
+			playerData: new Map(),
+			...saveData.filter('id', 'name', 'versions', 'difficulty')
+		});
+
+		for(let [id, data] of saveData.playerData){
+			save.playerData.set(id, new PlayerData({
+				position: BABYLON.Vector3.FromArray(data.position),
+				rotation: BABYLON.Vector3.FromArray(data.rotation),
+				id,
+				...data.filter('xp', 'xpPoints', 'tech')
+			}));
+		}
+
+		for(let id in saveData.bodies){
+			let bodyData = saveData.bodies[id], body;
+			switch(bodyData.type){
+				case 'star':
+					body = new Star({
+						position: BABYLON.Vector3.FromArray(bodyData.position),
+						color: BABYLON.Color3.FromArray(bodyData.color),
+						scene: save,
+						...bodyData.filter('name', 'radius', 'id')
+					});
+				break;
+				case 'planet':	
+					body = new Planet({
+						position: BABYLON.Vector3.FromArray(bodyData.position),
+						scene: save,
+						...bodyData.filter('name', 'radius', 'id', 'biome', 'owner', 'rewards')
+					})
+				break;
+				default:
+					body = new CelestialBody(bodyData.name, bodyData.id, save);
+					//TODO: Change Star/Planet constructors to use standerdized data
+			}
+		}
+		for(let entityData of saveData.entities){
+			switch(entityData.type){
+				case 'ship':
+					new Ship(entityData, save.bodies.get(entityData.owner) ?? save.playerData.get(entityData.owner), save);
+					break;
+				default:
+					new Entity(null, null, save);
+			}
+		}
 	}
 }
 const commands = {

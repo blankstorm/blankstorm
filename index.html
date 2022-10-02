@@ -1491,8 +1491,8 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 		};
 		static Live = class extends Level{
 			waypoints = [];
-			constructor(save){
-				super(save.data ?? save, game.engine);
+			constructor(name, doNotGenerate){
+				super(name, game.engine, doNotGenerate);
 			}
 			play(){
 				if(this.version == version){
@@ -1502,12 +1502,18 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					game.engine.resize();
 					saves.selected = this.id;
 					game.isPaused = false;
+					this.activeCamera = player.cam
 					player.cam.attachControl(game.canvas, true);
 					player.cam.inputs.attached.pointers.buttons = [1];
 					player.cam.target = player.data().position;
 				}else{
 					alert('That save is in compatible with the current game version');
 				}
+			}
+			static Load(saveData){
+				let save = new Save.Live(saveData.name, true);
+				Level.Load(saveData, game.engine, save);
+				return save;
 			}
 		}
 		constructor(data){
@@ -1519,7 +1525,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 			} catch (err) { console.error(err.stack) }
 		}
 		load(){
-			let save = new Save.Live(this.data);
+			let save = Save.Live.Load(this.data);
 			for(let waypoint of save.waypoints){
 				new Waypoint({
 					id: waypoint.id,
@@ -1528,7 +1534,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 					position: Vector3.FromArray(waypoint.position)
 				});
 			}
-
+			return save;
 		}
 		async saveToDB(){
 			let tx = await db.tx('saves','readwrite');
@@ -1792,7 +1798,7 @@ ${logger.map(e => `[${Number.prefixZeros(e.time, timeLength)}] [${e.type.toUpper
 	});
 	$('#save .new').click(e => {
 		$('#save')[0].close();
-		saves.current = new Save.Live($('#save .name').val(), game.engine);
+		saves.current = new Save.Live($('#save .name').val());
 		saves.current.ready().then(lvl => {
 			lvl.addCamera(player.cam);
 			lvl.activeCamera = player.cam;
