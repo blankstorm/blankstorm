@@ -452,12 +452,13 @@ const Entity = class extends BABYLON.TransformNode{
 					return [{frame: 0, value: this.rotation}];
 				}
 			}));
-
-			this.animations.push(animation);
-			this.animations.push(rotateAnimation);
-			let result = this.level.beginAnimation(this, 0, path.path.length * 60);
-			result.disposeOnEnd = true;
-			result.onAnimationEnd = resolve;
+			if(path.path.length > 0){
+				this.animations.push(animation);
+				this.animations.push(rotateAnimation);
+				let result = this.level.beginAnimation(this, 0, path.path.length * 60);
+				result.disposeOnEnd = true;
+				result.onAnimationEnd = resolve;
+			}
 		});
 	}
 	moveTo(location, isRelative){
@@ -575,10 +576,12 @@ const Ship = class extends Entity{
 	//this will be replaced with hardpoints!
 	attack(entity){
 		if(!(entity instanceof Entity)) throw new TypeError('Target must be an entity');
-		let laser = Mesh.CreateLines("laser." + random.hex(16), [this.mesh.getAbsolutePosition(), entity.mesh.getAbsolutePosition()], entity.getScene());
-		laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red(); 
-		entity.hp -= this._generic.damage / 60 * entity.getScene().getAnimationRatio() * (!!(Math.random() < this._generic.critChance) ? this._generic.critDamage : 1);
-		setTimeout(e => laser.dispose(), 50);
+		setTimeout(e => {
+			let laser = Mesh.CreateLines("laser." + random.hex(16), [this.mesh.getAbsolutePosition(), entity.mesh.getAbsolutePosition()], entity.getScene());
+			laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red(); 
+			entity.hp -= this._generic.damage / 60 * entity.getScene().getAnimationRatio() * (!!(Math.random() < this._generic.critChance) ? this._generic.critDamage : 1);
+			setTimeout(e => laser.dispose(), 50);
+		}, random.int(10, 100));
 	}
 }
 const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial{

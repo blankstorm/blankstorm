@@ -34,6 +34,7 @@ These are the changes for the next update[s].
 - Camera radius would be the maximum upon entering scene
 - Fleet distribution
 - Saves would not load (for multiple reasons)
+- Empty paths would throw errors
 
 ### Technical Changes
 - Removed the embeded en locale
