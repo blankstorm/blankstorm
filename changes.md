@@ -33,6 +33,7 @@ These are the changes for the next update[s].
 - `Server.dialog` using the old db transaction function
 - Camera radius would be the maximum upon entering scene
 - Fleet distribution
+- Saves would not load (for multiple reasons)
 
 ### Technical Changes
 - Removed the embeded en locale
