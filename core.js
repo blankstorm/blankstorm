@@ -3,7 +3,6 @@ const config = {
 	mesh_segments: 32,
 	render_quality: 0,
 	load_remote_manifest: false,
-	log_level: 'debug'
 };
 const version = 'alpha_1.2.0',
 versions = new Map(config.load_remote_manifest ? $.ajax({url: 'https://blankstorm.drvortex.dev/versions/manifest.json', async: false}).responseJSON : [
@@ -21,7 +20,8 @@ versions = new Map(config.load_remote_manifest ? $.ajax({url: 'https://blankstor
 	['infdev_12', {text: 'Infdev 12', group: 'infdev'}],
 	['alpha_1.0.0', {text: 'Alpha 1.0.0', group: 'alpha'}],
 	['alpha_1.1.0', {text: 'Alpha 1.1.0', group: 'alpha'}],
-	['alpha_1.2.0', {text: 'Alpha 1.2.0', group: 'alpha'}]
+	['alpha_1.2.0', {text: 'Alpha 1.2.0', group: 'alpha'}],
+	['alpha_1.3.0', {text: 'Alpha 1.3.0', group: 'alpha'}],
 ]);
 const init = (options = config) => {
 
