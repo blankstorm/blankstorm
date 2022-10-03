@@ -16,26 +16,10 @@ These are the changes for the next update[s].
 - Hardpoints (see https://playground.babylonjs.com/#PU4WYI#291)
 - Fix warp
 
-## Changes since Alpha 1.1.0 release
+## Changes since Alpha 1.2.0 release
 
 ### Features
-- Improved ship selection
-- New ships with better artwork
-- Added support for regex in locale version matches
 
 ### Bug Fixes
-- Logger would try to check the log level before it was defined
-- Path gizmos would throw an error when being disposed
-- `Vector3.ScreenToWorldPlane` will return `Vector3.Zero()` instead of null if a point isn't picked
-- The link to the current changelog would not open to the correct version
-- Changed use of `console.verbose` to `console.debug`
-- Change the default logger log level to debug
-- `Server.dialog` using the old db transaction function
-- Camera radius would be the maximum upon entering scene
-- Fleet distribution
-- Saves would not load (for multiple reasons)
-- Empty paths would throw errors
 
 ### Technical Changes
-- Removed the embeded en locale
-- Entities will always spawn at y=0
