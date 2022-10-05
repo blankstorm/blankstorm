@@ -1,0 +1,16 @@
+{
+		"env": {
+			"es2021": true,
+			"browser": true
+		},
+		"extends": "eslint:recommended",
+		"overrides": [
+		],
+		"parserOptions": {
+			"ecmaVersion": "latest"
+		},
+		"rules": {
+			"no-useless-escape": "warn",
+			"no-unused-vars": "warn"
+		}
+}
