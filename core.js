@@ -80,8 +80,8 @@ const generate = {
 	},
 	items: (quantity = 0, rares) => {
 		let result = {};
-		for (let name of item.keys()) {
-			(item.get(name).rare) ? (Math.random() < item.get(name).drop && rares) ? result[name] = quantity / item.get(result).value : result[name] = 0 : result[name] = quantity / item.get(name).value;
+		for (let name of Items.keys()) {
+			(Items.get(name).rare) ? (Math.random() < Items.get(name).drop && rares) ? result[name] = quantity / Items.get(result).value : result[name] = 0 : result[name] = quantity / Items.get(name).value;
 		}
 		return result;
 	}
@@ -103,7 +103,7 @@ Object.assign(BABYLON.Vector3.prototype, {
 		mode == 'yz' ? `(${this.y}, ${this.z})` :
 		new SyntaxError('Vector3().display: Invalid mode: ' + mode);
 	},
-	worldToScreen(scene = game.scene(), width, height){
+	worldToScreen(scene, width, height){
 		return BABYLON.Vector3.Project(this, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), {x: 0, y: 0, width, height});
 	},
 	
@@ -138,14 +138,14 @@ Object.defineProperty(Array.prototype, 'spliceOut', {
 	}
 });
 
-const item = new Map([
+const Items = new Map([
 	['metal', { rare: false, value: 1}],
 	['minerals', { rare: false, value: 2}],
 	['fuel', { rare: false, value: 4}],
 	['ancient_tech', { rare: true, drop: 0.1, value: 1000}],
 	['code_snippets', { rare: true, drop: 0.1, value: 1000}]
 ]);
-const tech = new Map([
+const Tech = new Map([
 	['armor', { recipe: { metal: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}}],
 	['laser', { recipe: { minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {}}],
 	['reload', { recipe: { metal: 4000, minerals: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {}}],
@@ -160,18 +160,18 @@ const tech = new Map([
 ]);
 
 
-tech.priceOf = type => {
-	let recipe = { ...tech.get(type).recipe };
-	for (let p in tech.get(type).recipe) {
-		for (let i = 1; i < player.data().tech[type]; i++) {
-			recipe[p] *= tech.get(type).scale
+Tech.priceOf = (type, level) => {
+	let recipe = { ...Tech.get(type).recipe };
+	for (let p in Tech.get(type).recipe) {
+		for (let i = 1; i < level; i++) {
+			recipe[p] *= Tech.get(type).scale
 		};
 	}
 	return recipe
 };
-tech.isLocked = type => {
-	for (let i in tech.get(type).requires) {
-		if ((tech.get(type).requires[i] > 0 && player.data().tech[i] < tech.get(type).requires[i]) || (tech.get(type).requires[i] == 0 && player.data().tech[i] > 0)) {
+Tech.isLocked = (type, current) => {
+	for (let i in Tech.get(type).requires) {
+		if ((Tech.get(type).requires[i] > 0 && current.tech[i] < Tech.get(type).requires[i]) || (Tech.get(type).requires[i] == 0 && current.tech[i] > 0)) {
 			return true
 		}
 	}
@@ -280,15 +280,15 @@ const Path = class extends BABYLON.Path3D{
 const StorageData = class extends Map{
 	#max = 1;
 	constructor(max = 1, items = {}){
-		super([...item.keys()].map(i => [i, 0]));
+		super([...Items.keys()].map(i => [i, 0]));
 		this.#max = max;
 		Object.entries(items).forEach(([item, amount]) => this.add(item, +amount || 0));
 	}
 	get max(){
-		return this.#max * (1 + player.data().tech.storage / 20)
+		return this.#max
 	}
 	get total(){
-		return [...this.entries()].reduce((total, [name, amount]) => total + amount * item.get(name).value, 0);
+		return [...this.entries()].reduce((total, [name, amount]) => total + amount * Items.get(name).value, 0);
 	}
 	empty(filter){
 		for(let name of this.keys()){
@@ -307,7 +307,7 @@ const StorageData = class extends Map{
 };
 const PlayerData = class extends BABYLON.TransformNode{
 	get items(){
-		let items = Object.fromEntries([...item.keys()].map(i => [i, 0]));
+		let items = Object.fromEntries([...Items.keys()].map(i => [i, 0]));
 		this.fleet.forEach(ship => {
 			for(let [name, amount] of Object.entries(items)){
 				items[name] = +ship.storage.get(name) + amount;
@@ -324,10 +324,10 @@ const PlayerData = class extends BABYLON.TransformNode{
 	}
 	addItems(items){
 		this.fleet.forEach(ship => {
-			let space = ship.storage.max - ship.storage.total;
+			let space = ship.storage.max * (1 + this.tech.storage / 20) - ship.storage.total;
 			if(space > 0){
 				Object.entries(items).forEach(([name, amount]) => {
-					if(item.has(name)){
+					if(Items.has(name)){
 						let stored = Math.min(space, amount);
 						ship.storage.add(name, stored);
 						items[name] -= stored;
@@ -350,7 +350,7 @@ const PlayerData = class extends BABYLON.TransformNode{
 		});
 	}
 	removeAllItems(){
-		this.removeItems(Object.fromEntries([...item.keys()].map(i => [i, Infinity])));
+		this.removeItems(Object.fromEntries([...Items.keys()].map(i => [i, Infinity])));
 	}
 	hasItems(items){
 		items = {...items};
@@ -366,12 +366,12 @@ const PlayerData = class extends BABYLON.TransformNode{
 		return this.fleet.reduce((total, ship) => total + ship.storage.total, 0)
 	}
 	get maxItems(){
-		return this.fleet.reduce((total, ship) => total + ship.storage.max, 0);
+		return this.fleet.reduce((total, ship) => total + ship.storage.max * (1 + this.tech.storage / 20), 0);
 	}
 	shipNum(type){
 		return this.fleet.reduce((total, ship) => total + ship.type == type ? 1 : 0, 0)
 	}
-	tech = Object.fromEntries([...tech.keys()].map(item => [item, 0]));
+	tech = Object.fromEntries([...Tech.keys()].map(item => [item, 0]));
 	fleet = [];
 	xp = 0;
 	xpPoints = 0;
