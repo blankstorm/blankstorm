@@ -12,6 +12,7 @@
 		"rules": {
 			"no-useless-escape": "warn",
 			"no-unused-vars": "warn",
-			"no-mixed-spaces-and-tabs": "warn"
+			"no-mixed-spaces-and-tabs": "warn",
+			"no-unreachable": "warn"
 		}
 }

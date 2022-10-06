@@ -509,6 +509,8 @@ const PlayerData = class extends BABYLON.ArcRotateCamera {
 	velocity = BABYLON.Vector3.Zero();
 	upperRadiusLimit = 50;
 	lowerRadiusLimit = 2.5;
+	velocity = BABYLON.Vector3.Zero();
+	speed = 1;
 	get power() {
 		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);
 	}
@@ -526,11 +528,11 @@ const PlayerData = class extends BABYLON.ArcRotateCamera {
 		};
 	}
 	addVelocity(vector = BABYLON.Vector3.Zero(), computeMultiplyer) {
-		let direction = player.cam.getDirection(vector).scale(1 / Math.PI);
+		let direction = this.getDirection(vector).scale(1 / Math.PI);
 		direction.y = 0;
 		direction.normalize();
-		if (computeMultiplyer) direction.scaleInPlace(player.speed + player.data().tech.thrust / 10);
-		player.data().velocity.addInPlace(direction);
+		if (computeMultiplyer) direction.scaleInPlace(this.speed + this.tech.thrust / 10);
+		this.velocity.addInPlace(direction);
 	}
 };
 const Entity = class extends BABYLON.TransformNode {
@@ -815,7 +817,7 @@ const Ship = class extends Entity {
 	attack(entity) {
 		if (!(entity instanceof Entity)) throw new TypeError('Target must be an entity');
 		setTimeout((e) => {
-			let laser = Mesh.CreateLines('laser.' + random.hex(16), [this.mesh.getAbsolutePosition(), entity.mesh.getAbsolutePosition()], entity.getScene());
+			let laser = BABYLON.Mesh.CreateLines('laser.' + random.hex(16), [this.mesh.getAbsolutePosition(), entity.mesh.getAbsolutePosition()], entity.getScene());
 			laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red();
 			entity.hp -= (this._generic.damage / 60) * entity.getScene().getAnimationRatio() * (Math.random() < this._generic.critChance ? this._generic.critDamage : 1);
 			setTimeout((e) => laser.dispose(), 50);
@@ -862,7 +864,7 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
 		this.rotationFactor = Math.random();
 		this.matrixAngle = 0;
 
-		this.setVector3('cameraPosition', player.cam.position);
+		this.setVector3('cameraPosition', scene.activeCamera.position);
 		this.setVector3('lightPosition', BABYLON.Vector3.Zero());
 
 		this.noiseTexture = this.generateTexture(
@@ -1038,11 +1040,9 @@ const Planet = class extends CelestialBody {
 			{
 				upperColor: new BABYLON.Color3(2.0, 1.0, 0),
 				lowerColor: new BABYLON.Color3(0, 0.2, 1.0),
-				haloColor: new BABYLON.Color3(0, 0.2, 1.0),
 				cloudSeed: 0.6,
 				lowerClamp: new BABYLON.Vector2(0.6, 1),
 				cloudAlbedo: 0.9,
-				lowerClip: new BABYLON.Vector2(0, 0),
 				range: new BABYLON.Vector2(0.3, 0.35),
 				haloColor: new BABYLON.Color3(0, 0, 0),
 				seed: 0.5,
