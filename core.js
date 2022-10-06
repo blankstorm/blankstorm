@@ -1,3 +1,4 @@
+/* global BABYLON */
 //core info and setup
 const config = {
 	mesh_segments: 32,
@@ -1553,7 +1554,7 @@ const commands = {
 	},
 };
 const runCommand = (command, level) => {
-	if (!saves.selected && !(saves.current instanceof Level)) throw new TypeError('Failed to run command: no level selected');
+	if (!(level instanceof Level)) throw new TypeError('Failed to run command: no level selected');
 	let splitCmd = command.split(' '),
 		hasRun = false;
 	let result =
