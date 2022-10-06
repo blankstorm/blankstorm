@@ -789,105 +789,6 @@
 	
 	locales.fetch('locales/en.json').then(locale => locales.load('en'));
 
-	const game = {
-		canvas: $('canvas.game'),
-		engine: new Engine($("canvas.game")[0], true, { preserveDrawingBuffer: true, stencil: true }),
-		screenshots: [],
-		mods: new Map(),
-		isPaused: true,
-		mp: false,
-		mpEnabled: true,
-		hitboxes: false,
-		difficulty: 1,
-		strobeInterval: null,
-		strobe: rate => {
-			if(game.strobeInterval){
-				clearInterval(game.strobeInterval);
-				$(':root').css('--hue', 200);
-				game.strobeInterval = null;
-			}else{
-				game.strobeInterval = setInterval(e => {
-					let hue = $(':root').css('--hue');
-					if(hue > 360) hue -= 360;
-					$(':root').css('--hue', ++hue);
-				}, 1000/rate);
-			}
-		},
-		createKeybind: (name, val, label, onTrigger) => {
-			keybind[name] = val;
-			$('#settings form.key').append(
-				$(`<label>${label}&nbsp;&nbsp;</label>`).attr('for', 'keybind.' + name),
-				$(`<button !sub name=${name}></button><br><br>`)
-					.text((keybind[name].ctrl ? 'Ctrl + ' : '') + (keybind[name].alt ? 'Alt + ' : '') + keybind[name].key)
-					.click(function(e){
-						e.preventDefault();
-						$(this).focus()
-					})
-					.on('keydown', function(e){
-						e.preventDefault();
-						let bind = keybind[this.name] = {
-							key: e.key,
-							ctrl: e.ctrlKey,
-							alt: e.altKey
-						};
-						$(this).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key)
-					})
-			);
-			$('canvas.game,[ingame-ui],#hud,#tablist').keydown(e => {
-				if(e.key == keybind[name].key && (!keybind[name].alt || e.altKey) && (!keybind[name].ctrl || e.ctrlKey)) onTrigger(e);
-			});
-		},
-		toggleChat: command => {
-			$('#chat,#chat_history').toggle();
-			if ($('#cli').toggle().is(':visible')){
-				player.cam.detachControl(game.canvas, true);
-				$('#cli').focus();
-				if(command){
-					$('#cli').val('/');
-				}
-			}else{
-				game.canvas.focus();
-				player.cam.attachControl(game.canvas, true);
-				player.cam.inputs.attached.pointers.buttons = [1];
-			}
-		},
-		cli: { line: 0, currentInput: "", i: $("#cli").val(), prev: [] },
-		scene: () => {
-			return saves.current;
-		},
-		saveSettings: async () => {
-			let settingsStore = (await db.tx('settings', 'readwrite')).objectStore('settings');
-			settings = $("form.gen").formData(), debug = $('form.debug').formData();
-			settingsStore.put(settings, 'general');
-			settingsStore.put(keybind, 'keybinds');
-			settingsStore.put(debug, 'debug')
-		},
-		runCommand: command => {
-			if(game.mp){
-				servers.get(servers.sel).socket.emit('command', command);
-			}else{
-				return runCommand(command, saves.current);
-			}
-		},
-		chat: (...msg) => { for (let m of msg) { $(`<li bg=none></li>`).text(m).appendTo('#chat').fadeOut(1000 * settings.chat); $(`<li bg=none></li>`).text(m).appendTo('#chat_history')}},
-		error: (error, alrt) => { console.error(error); game.chat("Error: " + error) },
-		changeUI: (selector, hideAll) => {
-			if ($(selector).is(':visible')) {
-				game.canvas.focus();
-				player.cam.attachControl(game.canvas, true);
-				player.cam.inputs.attached.pointers.buttons = [1];
-				$(selector).hide();
-			} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
-				game.canvas.focus();
-				player.cam.attachControl(game.canvas, true);
-				player.cam.inputs.attached.pointers.buttons = [1];
-				$('[game-ui]').hide();
-			} else if (!$('[game-ui]').is(':visible')) {
-				player.cam.detachControl(game.canvas, true);
-				$(selector).show().focus();
-			}
-		}		
-	};
 	const Waypoint = class extends Node{
 		#readonly = false;
 		static dialog(wp){
@@ -963,376 +864,12 @@
 		}
 	}
 
-	const player = {
-		username: '', speed: 1,
-		cam: new ArcRotateCamera('player.cam', -Math.PI/2, Math.PI/2, 5, Vector3.Zero(), game.scene()),
-		targetBody: null,
-		getAuthData(){
-			$.ajax({url: web`api/user`, async: false, data: { token: cookie.token, session: true }, success: req => {
-				player.authData = req;
-				if (isJSON(req)) {
-					let res = JSON.parse(req);
-					Object.assign(player, res);
-					localStorage.auth = req.split('').map(e => e.charCodeAt(0).toString(16)).join(' ');
-					document.cookie = 'auth=' + btoa(req);
-					player.freezeProperty(...Object.keys(res));
-				}
-				else if (req == undefined) {
-					game.chat('Failed to connect to account servers.')
-				}
-				else if (req == 'ERROR 404') {
-					game.chat('Invalid token, please log in again and reload the game to play multiplayer.');
-				}
-			}});
-		},
-		updateFleet: () => {
-
-			if(player.data().fleet.length <= 0 && false){
-				game.chat(locales.text`player.death`);
-				player.reset();
-				player.wipe();
-				new Ship('frigate', player.data())
-				new Ship('transport_small', player.data())
-			}
-		},
-		chat: (...msg) => { for (let m of msg) { game.chat((`${player.username}: ${m}`).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')) } },
-		stop: (delay = 0) => {
-			setTimeout(e => {
-				player.data().velocity = Vector3.Zero();
-			}, +delay || 0)
-		},
-		reset: noStop => {
-			player.data().position = random.cords(random.int(0, 50), true).add(new Vector3(0, 0, -1000));
-			player.data().rotation = Vector3.Zero();
-			player.cam.alpha = -Math.PI/2;
-			player.cam.beta = Math.PI;
-			player.cam.target = player.data().position;
-			if (!noStop) player.stop()
-		},
-		wipe: () => {
-			player.data().removeAllItems();
-			for(let type of Tech.keys()){
-				player.data().tech[type] = 0
-			};
-			for(let ship of player.data().fleet){
-				ship.remove();
-			}
-		},
-		data: id => saves.current?.playerData?.get(id ?? player.id) ?? playerData,
-		levelOf: xp => Math.sqrt(xp / 10),
-		xpOf: level => 10 * level ** 2,
-		get isInBattle(){
-			return this.data().fleet.some(ship => !!ship.battle);
-		}
-	};
-	Object.assign(player.cam, {
-		upperRadiusLimit: 50,
-		lowerRadiusLimit: 2.5,
-		addVelocity(vector = Vector3.Zero(), computeMultiplyer){
-			let direction = player.cam.getDirection(vector).scale(1/Math.PI);
-			direction.y = 0;
-			direction.normalize();
-			if(computeMultiplyer) direction.scaleInPlace(player.speed + player.data().tech.thrust / 10);
-			player.data().velocity.addInPlace(direction);
-		}
-	});
-	const warp = {
-		energy: 100, maxEnergy: 100, cooldown: 0,
-		start: (destination, ignoreCooldown) => {
-			let distance = Vector2.Distance(game.currentLevel, destination);
-			if(player.isInBattle){game.chat("You can't enter hyperspace while in a battle.")}
-			else if(this.cooldown > 0 && !ignoreCooldown){game.chat("Hyperspace is on cooldown")}
-			else if(distance > warp.energy){game.chat('That location is out of range')}
-			else{
-				function done(){
-					warp.cooldown = new Action(distance * 1000, 100, i => {
-					});
-					game.currentLevel = destination;
-					player.cam._scene = game.scene(destination);
-					game.chat(`Warped to ${destination.x},${destination.y} (${game.scene().name})`);
-					player.reset();
-					player.cam.target = player.data().position;
-					ui.update();
-				}
-				if(!(saves.current.levels[destination.asArray()] instanceof Level)){
-					new Level(saves.current.systems[destination.asArray()] || 'Empty Space', destination, !!saves.current.systems[destination.asArray()], lvl => {
-						saves.current.levels[destination.asArray()] = lvl;
-						done();
-					}, saves.current);
-				}else{
-					done();
-				}
-			}
-		}
-	};
-	const ui = {};
-	
-	if (cookie.token && navigator.onLine) {
-		player.authData = player.getAuthData();
-	}
-	else if(cookie.auth && localStorage.auth){
-		let localJSON = localStorage.auth.split(' ').map(e => String.fromCharCode(parseInt(e, 16))).join('');
-		if (isJSON(localJSON) && isJSON(atob(cookie.auth))){
-			let localData = JSON.parse(localJSON), data = player.authData = JSON.parse(atob(cookie.auth));
-			Object.assign(player, data);
-			player.freezeProperty(...Object.keys(data));
-		}else{
-			game.chat('Error: Invalid auth data.')
-		}
-	}
-	else{
-		game.mpEnabled = false;
-		game.chat('You\'re not logged in, and will not be able to play multiplayer.')
-	}
-	db.tx('settings').then(tx => {
-		let store = tx.objectStore('settings');
-		store.get('general').async().then(result => {
-			settings = result ?? settings;
-			$('form.gen').formData(settings);
-			ui.update();
-		});
-		store.get('debug').async().then(result => {
-			debug = result ?? debug;
-			$('form.debug').formData(debug);
-		})
-	}).catch(err => {
-		console.warn(`Couldn't find saved settings.`);
-		$('form.gen').formData(settings);
-	});
-
-	game.freezeProperty('mpEnabled', 'scene', 'chat');
-	player.freezeProperty('updateFleet', 'move', 'stop', 'reset', 'hasItems', 'removeItems', 'giveItems', 'wipe', 'chat');
-	onresize = e => { game.engine.resize(); console.warn('Do not paste any code someone gave you, as they may be trying to steal your information') };
-	if (!game.mpEnabled) {
-		$('#main .mp').hide();
-		$('#main .options').attr('plot', 'c,360px,350px,50px');
-		$('#main button.exit').attr('plot', 'c,460px,350px,50px');
-	}
-
-	game.createKeybind('forward', {key: 'w'}, 'Forward', e => {
-		player.cam.addVelocity(Vector3.Forward(), true);
-	});
-	game.createKeybind('left', {key: 'a'}, 'Strafe Left', e => {
-		player.cam.addVelocity(Vector3.Left(), true);
-	});
-	game.createKeybind('right', {key: 'd'}, 'Strafe Right', e => {
-		player.cam.addVelocity(Vector3.Right(), true);
-	});
-	game.createKeybind('back', {key: 's'}, 'Backward', e => {
-		player.cam.addVelocity(Vector3.Backward(), true);
-	});
-	game.createKeybind('chat', {key: 't'}, 'Toggle Chat', e => {
-		e.preventDefault();
-		game.toggleChat()
-	});
-	game.createKeybind('command', {key: '/'}, 'Toggle Command', e => {
-		e.preventDefault();
-		game.toggleChat(true)
-	});
-	game.createKeybind('nav', {key: 'Tab'}, 'Toggle Inventory', e => {
-		game.changeUI('#q');
-	});
-	game.createKeybind('inv', {key: 'e'}, 'Toggle Shipyard/Lab', e => {
-		game.changeUI('#e');
-	});
-	game.createKeybind('screenshot', {key: 'F2'}, 'Take Screenshot', e => {
-		game.screenshots.push(game.canvas[0].toDataURL("image/png")); ui.update();
-	});
-	game.createKeybind('save', {key: 's', ctrl: true}, 'Save Game', e => {
-		if(saves.current instanceof Save.Live){
-			$('#esc .save').text('Saving...');
-			saves.get(saves.current.id).data = saves.current.serialize();
-			saves.get(saves.current.id).saveToDB()
-			.then(() => game.chat('Game saved.'))
-			.catch(err => game.chat('Failed to save game: ' + err))
-			.finally(() => $('#esc .save').text('Save Game'));
-		}else{throw 'Save Error: you must have a valid save selected.'}
-	});
-
 	//Some stuff done on initalization
 	document.title = "Blankstorm " + versions.get(version).text;
 	$("#main .version a").text(versions.get(version).text).attr('href', web('versions#' + version));
 	console.log(`%cBlankstorm ${versions.get(version).text}`, `color:#f55`);
 
-	//load mods & keybinds into the game
-	db.tx('settings').then(tx => {
-		tx.objectStore('settings').get('keybinds').async().then(result => {
-			for (let i in result){
-				let bind = result[i];
-				if(typeof bind == 'string'){
-					bind = {
-						key: result[i],
-						ctrl: false,
-						alt: false
-					}
-				}
-				keybind[i] = bind ?? keybind[i];
-			}
-			$('form.key').formData(keybind);
-		});
-	});
-	db.tx('mods').then(tx => {
-		tx.objectStore('mods').getAll().async().then(result => {
-			console.log('Loaded mods: ' +  (result.join('\n') || '(none)'));
-		});
-	});
-	Object.entries(Ship.generic).forEach(([id, ship]) => {
-		let buildCost = '', techRequires = '';
-			for (let m in ship.recipe) {
-				buildCost += `<br>${locales.text(`item.${m}.name`)}: ${minimize(player.data().items[m])}/${minimize(ship.recipe[m])}`
-			}
-			for (let i in ship.requires) {
-				techRequires += (ship.requires[i] > 0) ? `<br>${locales.text(`tech.${i}.name`)}: ${player.data().tech[i]}/${ship.requires[i]}` : `<br>Incompatible with ${locales.text(`tech.${i}.name`)}`
-			}
-			ship.gui = $(`<div>
-				<span class=locked style=text-align:right><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-				<span class=name style=text-align:center>[${player.data().shipNum(id)}] ${locales.text(`entity.${id}.name`)}</span>
-				<span class=add style=text-align:left><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
-			</div>`);
-			ship.gui.find('.add')
-				.click(e => {
-					if(player.data().hasItems(ship.recipe)){
-						player.data().removeItems(ship.recipe);
-						new Ship(id, player.data());
-					}
-					ui.update();
-				})
-				.tooltip(`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${buildCost}<br>${Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug?.tooltips ? '<br>type: ' + id : ''}`);
-	});
-	for(let [id, t] of Tech){
-			t.gui = $(`<div>
-				<span class=locked style=text-align:right;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-				<span class=name style=text-align:center;>${locales.text(`tech.${id}.name`)}</span>
-				<span class=upgrade style=text-align:left;><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
-			</div>`);
-			t.gui.click(e => {
-				if(player.data().hasItems(Tech.priceOf(id)) && player.data().tech[id] < t.max && !Tech.isLocked(id) && player.data().xpPoints >= 1){
-					player.data().removeItems(Tech.priceOf(id));
-					player.data().tech[id]++;
-					player.data().xpPoints--;
-				}
-				ui.update();
-			});
-			
-			let upgradeCost = Object.entries(Tech.priceOf(id)).reduce((a, [k, v]) => a + `<br>${locales.text(`item.${k}.name`)}: ${minimize(player.data().items[k])}/${minimize(v)}`, ''),
-			techRequires = Object.entries(t.requires).reduce((a, [k, v]) => a + (v > 0) ? `<br>${locales.text(`tech.${k}.name`)}: ${player.data().tech[k]}/${v}` : `<br>Incompatible with ${locales.text(`tech.${k}.name`)}`, '');
-			t.find('.upgrade').tooltip(`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${player.data().tech[id] >= t.max ? `<strong>Max Level</strong>` : `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + id : ''}`);
-	};
-	for(let [id, item] of Items){
-		item.gui = $(`<div>
-				<span style=text-align:right;>${locales.text(`item.${id}.name`)}${item.rare ? ` (rare)` : ``}: </span>
-				<span style=text-align:left;>${minimize(player.data().items[id])}</span>
-			</div>`)
-		.click(e => { if (item.recipe && player.data().hasItems(item.recipe)) { player.data().removeItems(item.recipe); player.data().items[id]++ } })
-		.removeAttr('clickable');
-	}
-	Object.assign(ui, {
-		update: (scene = game.scene()) => {
-			try{
-			$('div.screenshots').empty();
-			$('div.map>:not(button)').remove();
-			let invRows = 1, yardRows = 0, labRows = 0, mapRows = 0;
-			for (let [name, i] of Items){
-				i.gui = ui.inv(name, ++invRows);
-				$('div.inv').append(i.gui)
-			};
-			$('svg.item-bar rect').attr('width', player.data().totalItems / player.data().maxItems * 100 || 0);
-			$('div.item-bar p.label').text(`${minimize(player.data().totalItems)} / ${minimize(player.data().maxItems)}`)
-			for(let [type, t] of Tech){
-				t.gui.find('.locked')[Tech.isLocked(type) ? 'show' : 'hide']();
-			}
-			for(let [id, ship] in Object.entries(Ship.generic)) {
-				let locked = false;
-				for (let t in ship.requires) {
-					if (Tech.isLocked(t)) locked = true; 
-				}
-				ship.gui.find('.locked')[locked ? 'show' : 'hide']();
-			}
-			$('.marker').hide();
-			scene.waypoints.forEach((wp, i) => {
-				wp.gui(i+1).appendTo('div.map');
-				wp.marker.show();
-			});
-			$('.tooltip').remove(); $('[tooltip-active]').mouseenter();
-			for(let [id, body] of scene.bodies){
-				if (body instanceof CelestialBody) {
-					$('select.move').append(body.option = $(`<option value=${id}>${body.name}</option>`))
-				}
-			};
-			game.screenshots.forEach(s => {
-				$(`<img src=${s} width=256></img>`)
-					.appendTo('#q div.screenshots')
-					.cm(
-						$('<button><svg><use href=images/icons.svg#download /></svg> Download</button>').click(e => {
-							$('<a download=screenshot.png></a>').attr('href', s)[0].click()
-						}),
-						$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').click(e => {
-							confirm().then(result => {
-								game.screenshots.spliceOut(s);
-								ui.update();
-							});
-						}),
-					)
-			});
-			$('input[label][display]').each((i, e) => {
-				let val = e.value;
-				$(`label[for=${$(e).attr('ui-label')}]`).html(`${$(e).attr('label')} (${eval(`\`${$(e).attr('display')}\``)}) `);
-			});
-			$('#settings form.key button').each((i, e) => {
-				let bind = keybind[e.name];
-				$(e).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key);
-			});
-			servers.forEach(server => {
-				server.gui.name.text(server.name);
-			});
-			saves.forEach(save => {
-				save.gui.name.text(save.data.name);
-				save.gui.version.text(versions.get(save.data.version)?.text ?? save.data.version);
-				save.gui.date.text(save.data.date.toLocaleString());
-			});
-			$(':root').css('--font-size',settings.font_size+'px')
-			if(game.mp){
-				$('#esc .quit').text('Disconnect');
-				$('#esc .options').attr('plot', '12.5px,125px,225px,50px,a');
-				$('#esc .quit').attr('plot', '12.5px,187.5px,225px,50px,a');
-				$('#esc .save').hide();
-			}else{
-				$('#esc .quit').text('Exit Game');
-				$('#esc .save').attr('plot', '12.5px,125px,225px,50px,a');
-				$('#esc .options').attr('plot', '12.5px,187.5px,225px,50px,a');
-				$('#esc .quit').attr('plot', '12.5px,250px,225px,50px,a');
-				$('#esc .save').show();
-				
-			}
-			
-			$('[plot]').each((i, e) => {
-				let scale = (settings.gui_scale == 0) ? innerHeight <= 475 ? 0.5 : innerHeight <= 650 ? 0.75 : innerHeight <= 800 ? 1 : 1.25 : Object.assign([1, 0.75, 1, 1.25][settings.gui_scale], { is_from_array: true });
-
-				let plot = $(e).attr('plot').replaceAll(/[\d\.]+(px|em)/g, str => parseFloat(str) * scale + str.slice(-2)).split(',');
-				plot[0][0] == 'c' && !plot[0].startsWith('calc') ?
-					$(e).css('left', `${plot[0].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[2]}/2))${plot[0].slice(1) ? ` + ${plot[0].slice(1)})` : ''}`)
-					: plot[0][0] == 'r' ? $(e).css('right', plot[0].slice(1))
-						: plot[0][0] == 'l' ? $(e).css('left', plot[0].slice(1))
-							: $(e).css('left', plot[0]);
-				plot[1][0] == 'c' && !plot[1].startsWith('calc') ?
-					$(e).css('top', `${plot[1].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[3]}/2))${plot[1].slice(1) ? ` + ${plot[1].slice(1)})` : ''}`)
-					: plot[1][0] == 'b' ? $(e).css('bottom', plot[1].slice(1))
-						: plot[1][0] == 't' ? $(e).css('top', plot[1].slice(1))
-							: $(e).css('top', plot[1]);
-				$(e).css({
-					width: plot[2],
-					height: plot[3],
-					position: ['absolute', 'fixed', 'relative', 'sticky'].includes(plot[4]) ? plot[4] : /^(a|s|f|r)$/.test(plot[4]) ? { a: 'absolute', f: 'fixed', r: 'relative', s: 'sticky' }[plot[4]] : 'fixed'
-				});
-			});
-			}catch(err){
-				console.error('Failed to update UI: ' + err.stack);
-			}
-		},
-		lastScene: "#main"
-	});
-
-	//*.new functions ~~new
+	//Class definitions
 	const Save = class {
 		
 		static current = {location:Vector2.Zero()}
@@ -1589,6 +1126,468 @@
 			})
 		}
 	};
+
+	//load mods (if any)
+	db.tx('mods').then(tx => {
+		tx.objectStore('mods').getAll().async().then(result => {
+			console.log('Loaded mods: ' +  (result.join('\n') || '(none)'));
+		});
+	});
+
+	const game = {
+		canvas: $('canvas.game'),
+		engine: new Engine($("canvas.game")[0], true, { preserveDrawingBuffer: true, stencil: true }),
+		screenshots: [],
+		mods: new Map(),
+		isPaused: true,
+		mp: false,
+		mpEnabled: true,
+		hitboxes: false,
+		difficulty: 1,
+		strobeInterval: null,
+		strobe: rate => {
+			if(game.strobeInterval){
+				clearInterval(game.strobeInterval);
+				$(':root').css('--hue', 200);
+				game.strobeInterval = null;
+			}else{
+				game.strobeInterval = setInterval(e => {
+					let hue = $(':root').css('--hue');
+					if(hue > 360) hue -= 360;
+					$(':root').css('--hue', ++hue);
+				}, 1000/rate);
+			}
+		},
+		createKeybind: (name, val, label, onTrigger) => {
+			keybind[name] = val;
+			$('#settings form.key').append(
+				$(`<label>${label}&nbsp;&nbsp;</label>`).attr('for', 'keybind.' + name),
+				$(`<button !sub name=${name}></button><br><br>`)
+					.text((keybind[name].ctrl ? 'Ctrl + ' : '') + (keybind[name].alt ? 'Alt + ' : '') + keybind[name].key)
+					.click(function(e){
+						e.preventDefault();
+						$(this).focus()
+					})
+					.on('keydown', function(e){
+						e.preventDefault();
+						let bind = keybind[this.name] = {
+							key: e.key,
+							ctrl: e.ctrlKey,
+							alt: e.altKey
+						};
+						$(this).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key)
+					})
+			);
+			$('canvas.game,[ingame-ui],#hud,#tablist').keydown(e => {
+				if(e.key == keybind[name].key && (!keybind[name].alt || e.altKey) && (!keybind[name].ctrl || e.ctrlKey)) onTrigger(e);
+			});
+		},
+		toggleChat: command => {
+			$('#chat,#chat_history').toggle();
+			if ($('#cli').toggle().is(':visible')){
+				player.cam.detachControl(game.canvas, true);
+				$('#cli').focus();
+				if(command){
+					$('#cli').val('/');
+				}
+			}else{
+				game.canvas.focus();
+				player.cam.attachControl(game.canvas, true);
+				player.cam.inputs.attached.pointers.buttons = [1];
+			}
+		},
+		cli: { line: 0, currentInput: "", i: $("#cli").val(), prev: [] },
+		scene: () => {
+			return saves.current;
+		},
+		saveSettings: async () => {
+			let settingsStore = (await db.tx('settings', 'readwrite')).objectStore('settings');
+			settings = $("form.gen").formData(), debug = $('form.debug').formData();
+			settingsStore.put(settings, 'general');
+			settingsStore.put(keybind, 'keybinds');
+			settingsStore.put(debug, 'debug')
+		},
+		runCommand: command => {
+			if(game.mp){
+				servers.get(servers.sel).socket.emit('command', command);
+			}else{
+				return runCommand(command, saves.current);
+			}
+		},
+		chat: (...msg) => { for (let m of msg) { $(`<li bg=none></li>`).text(m).appendTo('#chat').fadeOut(1000 * settings.chat); $(`<li bg=none></li>`).text(m).appendTo('#chat_history')}},
+		error: (error, alrt) => { console.error(error); game.chat("Error: " + error) },
+		changeUI: (selector, hideAll) => {
+			if ($(selector).is(':visible')) {
+				game.canvas.focus();
+				player.cam.attachControl(game.canvas, true);
+				player.cam.inputs.attached.pointers.buttons = [1];
+				$(selector).hide();
+			} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
+				game.canvas.focus();
+				player.cam.attachControl(game.canvas, true);
+				player.cam.inputs.attached.pointers.buttons = [1];
+				$('[game-ui]').hide();
+			} else if (!$('[game-ui]').is(':visible')) {
+				player.cam.detachControl(game.canvas, true);
+				$(selector).show().focus();
+			}
+		}		
+	};
+
+	const player = {
+		username: '', speed: 1,
+		cam: {},
+		targetBody: null,
+		getAuthData(){
+			$.ajax({url: web`api/user`, async: false, data: { token: cookie.token, session: true }, success: req => {
+				player.authData = req;
+				if (isJSON(req)) {
+					let res = JSON.parse(req);
+					Object.assign(player, res);
+					localStorage.auth = req.split('').map(e => e.charCodeAt(0).toString(16)).join(' ');
+					document.cookie = 'auth=' + btoa(req);
+					player.freezeProperty(...Object.keys(res));
+				}
+				else if (req == undefined) {
+					game.chat('Failed to connect to account servers.')
+				}
+				else if (req == 'ERROR 404') {
+					game.chat('Invalid token, please log in again and reload the game to play multiplayer.');
+				}
+			}});
+		},
+		updateFleet: () => {
+
+			if(player.data().fleet.length <= 0 && false){
+				game.chat(locales.text`player.death`);
+				player.reset();
+				player.wipe();
+				new Ship('frigate', player.data())
+				new Ship('transport_small', player.data())
+			}
+		},
+		chat: (...msg) => { for (let m of msg) { game.chat((`${player.username}: ${m}`).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')) } },
+		stop: (delay = 0) => {
+			setTimeout(e => {
+				player.data().velocity = Vector3.Zero();
+			}, +delay || 0)
+		},
+		reset: noStop => {
+			player.data().position = random.cords(random.int(0, 50), true).add(new Vector3(0, 0, -1000));
+			player.data().rotation = Vector3.Zero();
+			player.cam.alpha = -Math.PI/2;
+			player.cam.beta = Math.PI;
+			player.cam.target = player.data().position;
+			if (!noStop) player.stop()
+		},
+		wipe: () => {
+			player.data().removeAllItems();
+			for(let type of Tech.keys()){
+				player.data().tech[type] = 0
+			};
+			for(let ship of player.data().fleet){
+				ship.remove();
+			}
+		},
+		data: id => saves.current?.playerData?.get(id ?? player.id) ?? {},
+		levelOf: xp => Math.sqrt(xp / 10),
+		xpOf: level => 10 * level ** 2,
+		get isInBattle(){
+			return this.data().fleet.some(ship => !!ship.battle);
+		}
+	};
+
+	game.freezeProperty('mpEnabled', 'scene', 'chat');
+	player.freezeProperty('updateFleet', 'move', 'stop', 'reset', 'hasItems', 'removeItems', 'giveItems', 'wipe', 'chat');
+	onresize = e => { game.engine.resize(); console.warn('Do not paste any code someone gave you, as they may be trying to steal your information') };
+	if (!game.mpEnabled) {
+		$('#main .mp').hide();
+		$('#main .options').attr('plot', 'c,360px,350px,50px');
+		$('#main button.exit').attr('plot', 'c,460px,350px,50px');
+	}
+
+	game.createKeybind('forward', {key: 'w'}, 'Forward', e => {
+		player.cam.addVelocity(Vector3.Forward(), true);
+	});
+	game.createKeybind('left', {key: 'a'}, 'Strafe Left', e => {
+		player.cam.addVelocity(Vector3.Left(), true);
+	});
+	game.createKeybind('right', {key: 'd'}, 'Strafe Right', e => {
+		player.cam.addVelocity(Vector3.Right(), true);
+	});
+	game.createKeybind('back', {key: 's'}, 'Backward', e => {
+		player.cam.addVelocity(Vector3.Backward(), true);
+	});
+	game.createKeybind('chat', {key: 't'}, 'Toggle Chat', e => {
+		e.preventDefault();
+		game.toggleChat()
+	});
+	game.createKeybind('command', {key: '/'}, 'Toggle Command', e => {
+		e.preventDefault();
+		game.toggleChat(true)
+	});
+	game.createKeybind('nav', {key: 'Tab'}, 'Toggle Inventory', e => {
+		game.changeUI('#q');
+	});
+	game.createKeybind('inv', {key: 'e'}, 'Toggle Shipyard/Lab', e => {
+		game.changeUI('#e');
+	});
+	game.createKeybind('screenshot', {key: 'F2'}, 'Take Screenshot', e => {
+		game.screenshots.push(game.canvas[0].toDataURL("image/png")); ui.update();
+	});
+	game.createKeybind('save', {key: 's', ctrl: true}, 'Save Game', e => {
+		if(saves.current instanceof Save.Live){
+			$('#esc .save').text('Saving...');
+			saves.get(saves.current.id).data = saves.current.serialize();
+			saves.get(saves.current.id).saveToDB()
+			.then(() => game.chat('Game saved.'))
+			.catch(err => game.chat('Failed to save game: ' + err))
+			.finally(() => $('#esc .save').text('Save Game'));
+		}else{throw 'Save Error: you must have a valid save selected.'}
+	});
+
+	if (cookie.token && navigator.onLine) {
+		player.authData = player.getAuthData();
+	}
+	else if(cookie.auth && localStorage.auth){
+		let localJSON = localStorage.auth.split(' ').map(e => String.fromCharCode(parseInt(e, 16))).join('');
+		if (isJSON(localJSON) && isJSON(atob(cookie.auth))){
+			let localData = JSON.parse(localJSON), data = player.authData = JSON.parse(atob(cookie.auth));
+			Object.assign(player, data);
+			player.freezeProperty(...Object.keys(data));
+		}else{
+			game.chat('Error: Invalid auth data.')
+		}
+	}
+	else{
+		game.mpEnabled = false;
+		game.chat('You\'re not logged in, and will not be able to play multiplayer.')
+	}
+
+	//load saved settings and keybinds
+	db.tx('settings').then(async tx => {
+
+		//load settings
+		let store = tx.objectStore('settings');
+
+		settings = await store.get('general').async() ?? settings;
+		$('form.gen').formData(settings);
+			
+		debug = await store.get('debug').async() ?? debug;
+		$('form.debug').formData(debug);
+
+		let binds = await store.get('keybinds').async();
+		for (let i in binds){
+			let bind = binds[i];
+			if(typeof bind == 'string'){
+				bind = {
+					key: binds[i],
+					ctrl: false,
+					alt: false
+				}
+			}
+			keybind[i] = bind ?? keybind[i];
+		}
+		$('form.key').formData(keybind);
+
+		ui.update();
+
+		//load keybinds
+	}).catch(err => {
+		console.warn(`Couldn't find saved settings.`);
+		$('form.gen').formData(settings);
+		$('form.debug').formData(debug);
+		$('form.key').formData(keybind);
+	});
+	
+	const warp = {
+		energy: 100, maxEnergy: 100, cooldown: 0,
+		start: (destination, ignoreCooldown) => {
+			let distance = Vector2.Distance(game.currentLevel, destination);
+			if(player.isInBattle){game.chat("You can't enter hyperspace while in a battle.")}
+			else if(this.cooldown > 0 && !ignoreCooldown){game.chat("Hyperspace is on cooldown")}
+			else if(distance > warp.energy){game.chat('That location is out of range')}
+			else{
+				function done(){
+					warp.cooldown = new Action(distance * 1000, 100, i => {
+					});
+					game.currentLevel = destination;
+					player.cam._scene = game.scene(destination);
+					game.chat(`Warped to ${destination.x},${destination.y} (${game.scene().name})`);
+					player.reset();
+					player.cam.target = player.data().position;
+					ui.update();
+				}
+				if(!(saves.current.levels[destination.asArray()] instanceof Level)){
+					new Level(saves.current.systems[destination.asArray()] || 'Empty Space', destination, !!saves.current.systems[destination.asArray()], lvl => {
+						saves.current.levels[destination.asArray()] = lvl;
+						done();
+					}, saves.current);
+				}else{
+					done();
+				}
+			}
+		}
+	};
+	const ui =  {
+		update: (scene = game.scene()) => {
+			try{
+				if(saves.current instanceof Save.Live && player.data() instanceof PlayerData){
+					$('div.screenshots').empty();
+					$('div.map>:not(button)').remove();
+					$('svg.item-bar rect').attr('width', player.data().totalItems / player.data().maxItems * 100 || 0);
+					$('div.item-bar p.label').text(`${minimize(player.data().totalItems)} / ${minimize(player.data().maxItems)}`);
+
+					//update tech info
+					for(let [id, t] of Tech){
+						const materials = Object.entries(Tech.priceOf(id, player.data().tech[id])).reduce((result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.data().items[id])}/${minimize(amount)}`, '');
+						const requires = Object.entries(t.requires).reduce((result, [id, amount]) => result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.data().tech[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`, '');
+						t.gui.find('.upgrade svg').remove();
+						$('<use href=images/icons.svg#circle-up /></svg>').click(() => {
+							if(player.data().hasItems(Tech.priceOf(id, player.data().tech[id])) && player.data().tech[id] < t.max && !Tech.isLocked(id) && player.data().xpPoints >= 1){
+								player.data().removeItems(Tech.priceOf(id, player.data().tech[id]));
+								player.data().tech[id]++;
+								player.data().xpPoints--;
+							}
+							ui.update();
+						})
+						.tooltip(`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${player.data().tech[id] >= t.max ? `<strong>Max Level</strong>` : `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`}<br><br><strong>Material Cost:</strong>${upgradeCost}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${debug.tooltips ? '<br>type: ' + id : ''}`)
+						.appendTo(t.gui.find('.upgrade'));
+
+						t.gui.find('.locked')[Tech.isLocked(id) ? 'show' : 'hide']();
+
+					}
+
+					//update ship info
+					for(let [id, ship] in Object.entries(Ship.generic)){
+						const materials = Object.entries(ship.recipe).reduce((result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.data().items[id])}/${minimize(amount)}`, '');
+						const requires = Object.entries(ship.requires).reduce((result, [id, tech]) => `${result}<br>${tech == 0 ? `${locales.text(`tech.${id}.name`)}: ${player.data().tech[id]}/${tech}` : `Incompatible with ${locales.text(`tech.${id}.name`)}`}`);
+						ship.gui.find('.add svg').remove();
+						$('<svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg>')
+						.click(() => {
+							if(player.data().hasItems(ship.recipe)){
+								player.data().removeItems(ship.recipe);
+								new Ship(id, player.data());
+							}
+							ui.update();
+						})
+						.tooltip(`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${debug?.tooltips ? '<br>' + id : ''}`)
+						.appendTo(ship.gui.find('.add'));
+
+						let locked = false;
+						for (let t in ship.requires) {
+							if (Tech.isLocked(t)) locked = true; 
+						}
+						ship.gui.find('.locked')[locked ? 'show' : 'hide']();
+					}
+				}
+				$('.marker').hide();
+				scene.waypoints.forEach((wp, i) => {
+					wp.gui(i+1).appendTo('div.map');
+					wp.marker.show();
+				});
+				$('.tooltip').remove(); $('[tooltip-active]').mouseenter();
+				for(let [id, body] of scene.bodies){
+					if (body instanceof CelestialBody) {
+						$('select.move').append(body.option = $(`<option value=${id}>${body.name}</option>`))
+					}
+				};
+				game.screenshots.forEach(s => {
+					$(`<img src=${s} width=256></img>`)
+						.appendTo('#q div.screenshots')
+						.cm(
+							$('<button><svg><use href=images/icons.svg#download /></svg> Download</button>').click(e => {
+								$('<a download=screenshot.png></a>').attr('href', s)[0].click()
+							}),
+							$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').click(e => {
+								confirm().then(result => {
+									game.screenshots.spliceOut(s);
+									ui.update();
+								});
+							}),
+						)
+				});
+				$('input[label][display]').each((i, e) => {
+					let val = e.value;
+					$(`label[for=${$(e).attr('ui-label')}]`).html(`${$(e).attr('label')} (${eval(`\`${$(e).attr('display')}\``)}) `);
+				});
+				$('#settings form.key button').each((i, e) => {
+					let bind = keybind[e.name];
+					$(e).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key);
+				});
+				servers.forEach(server => {
+					server.gui.name.text(server.name);
+				});
+				saves.forEach(save => {
+					save.gui.name.text(save.data.name);
+					save.gui.version.text(versions.get(save.data.version)?.text ?? save.data.version);
+					save.gui.date.text(save.data.date.toLocaleString());
+				});
+				$(':root').css('--font-size',settings.font_size+'px')
+				if(game.mp){
+					$('#esc .quit').text('Disconnect');
+					$('#esc .options').attr('plot', '12.5px,125px,225px,50px,a');
+					$('#esc .quit').attr('plot', '12.5px,187.5px,225px,50px,a');
+					$('#esc .save').hide();
+				}else{
+					$('#esc .quit').text('Exit Game');
+					$('#esc .save').attr('plot', '12.5px,125px,225px,50px,a');
+					$('#esc .options').attr('plot', '12.5px,187.5px,225px,50px,a');
+					$('#esc .quit').attr('plot', '12.5px,250px,225px,50px,a');
+					$('#esc .save').show();
+					
+				}
+				
+				$('[plot]').each((i, e) => {
+					let scale = (settings.gui_scale == 0) ? innerHeight <= 475 ? 0.5 : innerHeight <= 650 ? 0.75 : innerHeight <= 800 ? 1 : 1.25 : Object.assign([1, 0.75, 1, 1.25][settings.gui_scale], { is_from_array: true });
+
+					let plot = $(e).attr('plot').replaceAll(/[\d\.]+(px|em)/g, str => parseFloat(str) * scale + str.slice(-2)).split(',');
+					plot[0][0] == 'c' && !plot[0].startsWith('calc') ?
+						$(e).css('left', `${plot[0].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[2]}/2))${plot[0].slice(1) ? ` + ${plot[0].slice(1)})` : ''}`)
+						: plot[0][0] == 'r' ? $(e).css('right', plot[0].slice(1))
+							: plot[0][0] == 'l' ? $(e).css('left', plot[0].slice(1))
+								: $(e).css('left', plot[0]);
+					plot[1][0] == 'c' && !plot[1].startsWith('calc') ?
+						$(e).css('top', `${plot[1].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[3]}/2))${plot[1].slice(1) ? ` + ${plot[1].slice(1)})` : ''}`)
+						: plot[1][0] == 'b' ? $(e).css('bottom', plot[1].slice(1))
+							: plot[1][0] == 't' ? $(e).css('top', plot[1].slice(1))
+								: $(e).css('top', plot[1]);
+					$(e).css({
+						width: plot[2],
+						height: plot[3],
+						position: ['absolute', 'fixed', 'relative', 'sticky'].includes(plot[4]) ? plot[4] : /^(a|s|f|r)$/.test(plot[4]) ? { a: 'absolute', f: 'fixed', r: 'relative', s: 'sticky' }[plot[4]] : 'fixed'
+					});
+				});
+			}catch(err){
+				console.error('Failed to update UI: ' + err.stack);
+			}
+		},
+		lastScene: "#main"
+	};
+
+	//create the inital GUIs
+	for(let [id, item] of Items){
+		item.gui = $(`<div>
+				<span style=text-align:right;>${locales.text(`item.${id}.name`)}${item.rare ? ` (rare)` : ``}: </span>
+				<span style=text-align:left;>${minimize(player.data().items[id])}</span>
+			</div>`)
+		.click(e => { if (item.recipe && player.data().hasItems(item.recipe)) { player.data().removeItems(item.recipe); player.data().items[id]++ } })
+		.removeAttr('clickable');
+	}
+	for(let [id, t] of Tech){
+		t.gui = $(`<div>
+			<span class=locked style=text-align:right;><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
+			<span class=name style=text-align:center;>${locales.text(`tech.${id}.name`)}</span>
+			<span class=upgrade style=text-align:left;><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
+		</div>`);
+	};
+	Object.entries(Ship.generic).forEach(([id, ship]) => {
+		ship.gui = $(`<div>
+			<span class=locked style=text-align:right><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
+			<span class=name style=text-align:center>${locales.text(`entity.${id}.name`)}</span>
+			<span class=add style=text-align:left><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
+		</div>`);
+	});
 
 	oncontextmenu = e => { $('.cm').not(":last").remove() };
 	onclick = e => { $('.cm').remove() };

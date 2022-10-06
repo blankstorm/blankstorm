@@ -428,7 +428,8 @@ const StorageData = class extends Map {
 		this.set(item, this.get(item) - amount);
 	}
 };
-const PlayerData = class extends BABYLON.TransformNode {
+
+const PlayerData = class extends BABYLON.ArcRotateCamera {
 	get items() {
 		let items = Object.fromEntries([...Items.keys()].map((i) => [i, 0]));
 		this.fleet.forEach((ship) => {
@@ -499,13 +500,14 @@ const PlayerData = class extends BABYLON.TransformNode {
 	xp = 0;
 	xpPoints = 0;
 	velocity = BABYLON.Vector3.Zero();
+	upperRadiusLimit = 50
+	lowerRadiusLimit = 2.5
 	get power() {
 		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);
 	}
 	constructor(data, level) {
 		if (!(level instanceof Level) && level) throw new TypeError('passed level not a Level');
-		super(data.name);
-		this.position = random.cords(random.int(0, 50), true).add(new BABYLON.Vector3(0, 0, -1000));
+		super(data.name, -Math.PI/2, Math.PI/2, 5, BABYLON.Vector3.Zero(), level);
 		Object.assign(this, data);
 	}
 	serialize() {
@@ -515,6 +517,13 @@ const PlayerData = class extends BABYLON.TransformNode {
 			fleet: this.fleet.map((s) => s.id),
 			...this.filter('tech', 'items', 'xp', 'xpPoints'),
 		};
+	}
+	addVelocity(vector = Vector3.Zero(), computeMultiplyer){
+		let direction = player.cam.getDirection(vector).scale(1/Math.PI);
+		direction.y = 0;
+		direction.normalize();
+		if(computeMultiplyer) direction.scaleInPlace(player.speed + player.data().tech.thrust / 10);
+		player.data().velocity.addInPlace(direction);
 	}
 };
 const Entity = class extends BABYLON.TransformNode {
