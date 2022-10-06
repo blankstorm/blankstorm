@@ -6,28 +6,34 @@ const config = {
 	load_remote_manifest: false,
 };
 const version = 'alpha_1.2.0',
-	versions = new Map(
-		config.load_remote_manifest
-			? $.ajax({ url: 'https://blankstorm.drvortex.dev/versions/manifest.json', async: false }).responseJSON
-			: [
-					['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
-					['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
-					['infdev_3', { text: 'Infdev 3', group: 'infdev' }],
-					['infdev_4', { text: 'Infdev 4', group: 'infdev' }],
-					['infdev_5', { text: 'Infdev 5', group: 'infdev' }],
-					['infdev_6', { text: 'Infdev 6', group: 'infdev' }],
-					['infdev_7', { text: 'Infdev 7', group: 'infdev' }],
-					['infdev_8', { text: 'Infdev 8', group: 'infdev' }],
-					['infdev_9', { text: 'Infdev 9', group: 'infdev' }],
-					['infdev_10', { text: 'Infdev 10', group: 'infdev' }],
-					['infdev_11', { text: 'Infdev 11', group: 'infdev' }],
-					['infdev_12', { text: 'Infdev 12', group: 'infdev' }],
-					['alpha_1.0.0', { text: 'Alpha 1.0.0', group: 'alpha' }],
-					['alpha_1.1.0', { text: 'Alpha 1.1.0', group: 'alpha' }],
-					['alpha_1.2.0', { text: 'Alpha 1.2.0', group: 'alpha' }],
-					['alpha_1.3.0', { text: 'Alpha 1.3.0', group: 'alpha' }],
-			  ]
-	);
+	versions = new Map([
+		['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
+		['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
+		['infdev_3', { text: 'Infdev 3', group: 'infdev' }],
+		['infdev_4', { text: 'Infdev 4', group: 'infdev' }],
+		['infdev_5', { text: 'Infdev 5', group: 'infdev' }],
+		['infdev_6', { text: 'Infdev 6', group: 'infdev' }],
+		['infdev_7', { text: 'Infdev 7', group: 'infdev' }],
+		['infdev_8', { text: 'Infdev 8', group: 'infdev' }],
+		['infdev_9', { text: 'Infdev 9', group: 'infdev' }],
+		['infdev_10', { text: 'Infdev 10', group: 'infdev' }],
+		['infdev_11', { text: 'Infdev 11', group: 'infdev' }],
+		['infdev_12', { text: 'Infdev 12', group: 'infdev' }],
+		['alpha_1.0.0', { text: 'Alpha 1.0.0', group: 'alpha' }],
+		['alpha_1.1.0', { text: 'Alpha 1.1.0', group: 'alpha' }],
+		['alpha_1.2.0', { text: 'Alpha 1.2.0', group: 'alpha' }],
+		['alpha_1.3.0', { text: 'Alpha 1.3.0', group: 'alpha' }],
+	]);
+if (config.load_remote_manifest) {
+	fetch('https://blankstorm.drvortex.dev/versions/manifest.json')
+		.then((response) => response.json())
+		.then((data) => {
+			for (let [key, value] of data) {
+				versions.set(key, value);
+			}
+		})
+		.catch((err) => console.warn('Failed to retrieve version manifest: ' + err));
+}
 const init = (options = config) => {};
 
 Math.clamp = (num, min, max) => Math.min(Math.max(num, min), max);
@@ -83,15 +89,15 @@ const greek = [
 		}
 
 		return result;
-	};
-(minimize = Intl.NumberFormat('en', { notation: 'compact' }).format),
-	(range = (min, max) => {
+	},
+	minimize = Intl.NumberFormat('en', { notation: 'compact' }).format,
+	range = (min, max) => {
 		let a = [];
 		for (let i = min; i < max; i++) {
 			a.push(i);
 		}
 		return a;
-	});
+	};
 
 BABYLON.Mesh.sizeOf = (mesh) => {
 	if (typeof mesh.getHierarchyBoundingVectors != 'function') throw new TypeError('parameter is not a Mesh');
@@ -109,7 +115,7 @@ const isHex = (str) => /^[0-9a-f-\.]+$/.test(str),
 			return false;
 		}
 	},
-	isCraftable = (obj) => typeof obj?.recipe == 'object' && typeof obj?.requires == 'object' && typeof obj?.buildTime == 'numbers' && isNaN(obj?.buildTime),
+	isCraftable = (obj) => typeof obj?.recipe == 'object' && typeof obj?.requires == 'object' && typeof obj?.buildTime == 'number' && isNaN(obj?.buildTime),
 	wait = (time) => new Promise((res) => setTimeout(res, time * 1000));
 const random = {
 	float: (min = 0, max = 1) => Math.random() * (max - min) + min,
@@ -519,7 +525,7 @@ const PlayerData = class extends BABYLON.ArcRotateCamera {
 			...this.filter('tech', 'items', 'xp', 'xpPoints'),
 		};
 	}
-	addVelocity(vector = Vector3.Zero(), computeMultiplyer) {
+	addVelocity(vector = BABYLON.Vector3.Zero(), computeMultiplyer) {
 		let direction = player.cam.getDirection(vector).scale(1 / Math.PI);
 		direction.y = 0;
 		direction.normalize();
@@ -811,7 +817,7 @@ const Ship = class extends Entity {
 		setTimeout((e) => {
 			let laser = Mesh.CreateLines('laser.' + random.hex(16), [this.mesh.getAbsolutePosition(), entity.mesh.getAbsolutePosition()], entity.getScene());
 			laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red();
-			entity.hp -= (this._generic.damage / 60) * entity.getScene().getAnimationRatio() * (!!(Math.random() < this._generic.critChance) ? this._generic.critDamage : 1);
+			entity.hp -= (this._generic.damage / 60) * entity.getScene().getAnimationRatio() * (Math.random() < this._generic.critChance ? this._generic.critDamage : 1);
 			setTimeout((e) => laser.dispose(), 50);
 		}, random.int(10, 100));
 	}
@@ -1145,7 +1151,7 @@ const Level = class extends BABYLON.Scene {
 						realTimeFilteringQuality: [2, 8, 32][+settings.render_quality],
 						reflectionTexture: this.probe.cubeTexture,
 					}),
-					position: Vector3.Zero(),
+					position: BABYLON.Vector3.Zero(),
 					isVisible: false,
 					isPickable: false,
 				});
@@ -1234,7 +1240,7 @@ const Level = class extends BABYLON.Scene {
 			...this.filter('difficulty', 'version', 'name', 'id'),
 		};
 		for (let entity of this.entities.values()) {
-			if (!entity instanceof Entity) {
+			if (!(entity instanceof Entity)) {
 				console.warn(`entity #${entity?.id} not saved: invalid type`);
 			} else {
 				let entityData = {
@@ -1264,7 +1270,7 @@ const Level = class extends BABYLON.Scene {
 		}
 
 		for (let [id, body] of this.bodies) {
-			if (!body instanceof CelestialBody) {
+			if (!(body instanceof CelestialBody)) {
 				console.warn(`body #${body?.id} not saved: invalid type`);
 			} else {
 				let bodyData = (data.bodies[id] = {
