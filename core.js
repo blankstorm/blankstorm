@@ -58,23 +58,23 @@ const greek = [
 		'Omega',
 	],
 	numeral = (number) => {
-		let num = number+0 ?? 0,
-		roman = [
-			[M, 1000],
-			[CM, 900],
-			[D, 500],
-			[CD, 400],
-			[C, 100],
-			[XC, 90],
-			[L, 50],
-			[XL, 40],
-			[X, 10],
-			[IX, 9],
-			[V, 5],
-			[IV, 4],
-			[I, 1]
-		],
-		result = '';
+		let num = number + 0 ?? 0,
+			roman = [
+				[M, 1000],
+				[CM, 900],
+				[D, 500],
+				[CD, 400],
+				[C, 100],
+				[XC, 90],
+				[L, 50],
+				[XL, 40],
+				[X, 10],
+				[IX, 9],
+				[V, 5],
+				[IV, 4],
+				[I, 1],
+			],
+			result = '';
 
 		for (let [key, val] of roman) {
 			let q = Math.floor(num / val);
@@ -83,15 +83,15 @@ const greek = [
 		}
 
 		return result;
-	}
-	minimize = Intl.NumberFormat('en', { notation: 'compact' }).format,
-	range = (min, max) => {
+	};
+(minimize = Intl.NumberFormat('en', { notation: 'compact' }).format),
+	(range = (min, max) => {
 		let a = [];
 		for (let i = min; i < max; i++) {
 			a.push(i);
 		}
 		return a;
-	};
+	});
 
 BABYLON.Mesh.sizeOf = (mesh) => {
 	if (typeof mesh.getHierarchyBoundingVectors != 'function') throw new TypeError('parameter is not a Mesh');
@@ -501,14 +501,14 @@ const PlayerData = class extends BABYLON.ArcRotateCamera {
 	xp = 0;
 	xpPoints = 0;
 	velocity = BABYLON.Vector3.Zero();
-	upperRadiusLimit = 50
-	lowerRadiusLimit = 2.5
+	upperRadiusLimit = 50;
+	lowerRadiusLimit = 2.5;
 	get power() {
 		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);
 	}
 	constructor(data, level) {
 		if (!(level instanceof Level) && level) throw new TypeError('passed level not a Level');
-		super(data.name, -Math.PI/2, Math.PI/2, 5, BABYLON.Vector3.Zero(), level);
+		super(data.name, -Math.PI / 2, Math.PI / 2, 5, BABYLON.Vector3.Zero(), level);
 		Object.assign(this, data);
 	}
 	serialize() {
@@ -519,11 +519,11 @@ const PlayerData = class extends BABYLON.ArcRotateCamera {
 			...this.filter('tech', 'items', 'xp', 'xpPoints'),
 		};
 	}
-	addVelocity(vector = Vector3.Zero(), computeMultiplyer){
-		let direction = player.cam.getDirection(vector).scale(1/Math.PI);
+	addVelocity(vector = Vector3.Zero(), computeMultiplyer) {
+		let direction = player.cam.getDirection(vector).scale(1 / Math.PI);
 		direction.y = 0;
 		direction.normalize();
-		if(computeMultiplyer) direction.scaleInPlace(player.speed + player.data().tech.thrust / 10);
+		if (computeMultiplyer) direction.scaleInPlace(player.speed + player.data().tech.thrust / 10);
 		player.data().velocity.addInPlace(direction);
 	}
 };
