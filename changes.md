@@ -21,5 +21,6 @@ These are the changes for the next update[s].
 ### Features
 
 ### Bug Fixes
+- Lots of syntax fixes
 
 ### Technical Changes

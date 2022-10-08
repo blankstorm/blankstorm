@@ -4,7 +4,10 @@ const config = {
 	mesh_segments: 32,
 	render_quality: 0,
 	load_remote_manifest: false,
+	settings: {},
+	debug: {}
 };
+
 const version = 'alpha_1.2.0',
 	versions = new Map([
 		['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
@@ -34,9 +37,7 @@ if (config.load_remote_manifest) {
 		})
 		.catch((err) => console.warn('Failed to retrieve version manifest: ' + err));
 }
-const init = (options = config) => {};
 
-Math.clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 const greek = [
 		'Alpha',
 		'Beta',
@@ -63,33 +64,6 @@ const greek = [
 		'Psi',
 		'Omega',
 	],
-	numeral = (number) => {
-		let num = number + 0 ?? 0,
-			roman = [
-				['M', 1000],
-				['CM', 900],
-				['D', 500],
-				['CD', 400],
-				['C', 100],
-				['XC', 90],
-				['L', 50],
-				['XL', 40],
-				['X', 10],
-				['IX', 9],
-				['V', 5],
-				['IV', 4],
-				['I', 1],
-			],
-			result = '';
-
-		for (let [key, val] of roman) {
-			let q = Math.floor(num / val);
-			num -= q * val;
-			result += key.repeat(q);
-		}
-
-		return result;
-	},
 	minimize = Intl.NumberFormat('en', { notation: 'compact' }).format,
 	range = (min, max) => {
 		let a = [];
@@ -98,12 +72,6 @@ const greek = [
 		}
 		return a;
 	};
-
-BABYLON.Mesh.sizeOf = (mesh) => {
-	if (typeof mesh.getHierarchyBoundingVectors != 'function') throw new TypeError('parameter is not a Mesh');
-	const sizes = mesh.getHierarchyBoundingVectors();
-	return sizes.max.subtract(sizes.min);
-};
 
 //utility functions
 const isHex = (str) => /^[0-9a-f-\.]+$/.test(str),
@@ -137,13 +105,6 @@ const random = {
 		return b;
 	},
 	int: (min = 0, max = 1) => Math.round(Math.random() * (max - min) + min),
-	char: (len = 1, min = 33, max = 126) => {
-		let s = '';
-		for (let i = 0; i < len; i++) {
-			s += String.fromCharCode(random.int(min, max));
-		}
-		return s;
-	},
 	cords: (dis = 1, y0) => {
 		let angle = Math.random() * Math.PI * 2,
 			angle2 = Math.random() * Math.PI * 2;
@@ -200,54 +161,6 @@ const generate = {
 Object.defineProperty(Object.prototype, 'filter', {
 	value: function (...keys) {
 		return Object.fromEntries(Object.entries(this).filter(([key, value]) => keys.includes(key)));
-	},
-});
-Object.assign(BABYLON.Vector3.prototype, {
-	abs() {
-		return new BABYLON.Vector3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
-	},
-	toFixed(num = 1) {
-		return new BABYLON.Vector3(this.x.toFixed(num), this.y.toFixed(num), this.z.toFixed(num));
-	},
-	display(mode = 'xyz', ...options) {
-		return mode == 'xyz'
-			? `(${this.x}, ${this.y}, ${this.z})`
-			: mode == 'xy'
-			? `(${this.x}, ${this.y})`
-			: mode == 'xz'
-			? `(${this.x}, ${this.z})`
-			: mode == 'yz'
-			? `(${this.y}, ${this.z})`
-			: new SyntaxError('Vector3().display: Invalid mode: ' + mode);
-	},
-	worldToScreen(scene, width, height) {
-		return BABYLON.Vector3.Project(this, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), { x: 0, y: 0, width, height });
-	},
-});
-Object.assign(BABYLON.Vector3, {
-	ScreenToWorld(x, y, width, height, depth, scene) {
-		return BABYLON.Vector3.Unproject(new BABYLON.Vector3(x, y, depth), width, height, BABYLON.Matrix.Identity(), scene.getViewMatrix(), scene.getProjectionMatrix());
-	},
-	ScreenToWorldPlane(x, y, pickY, scene) {
-		if (!(scene instanceof BABYLON.Scene)) throw new TypeError('not a Scene');
-		scene.xzPlane.position.y = pickY || 0;
-		let pickInfo = scene.pick(x, y, (mesh) => mesh == scene.xzPlane);
-		return pickInfo.pickedPoint || BABYLON.Vector3.Zero();
-	},
-	getRotation(origin, target) {
-		let diff = target.subtract(origin),
-			distance = Math.sqrt(diff.x ** 2 + diff.y ** 2 + diff.z ** 2),
-			phi = Math.acos(diff.z / distance) || 0,
-			theta = Math.asin(diff.y / (Math.sin(phi) * distance)) || 0;
-		return new BABYLON.Vector3(theta, Math.sign(diff.x || 1) * phi, 0);
-	},
-});
-Object.assign(BABYLON.Vector2.prototype, {
-	display() {
-		return `(${this.x}, ${this.y})`;
-	},
-	abs() {
-		return new BABYLON.Vector2(Math.abs(this.x), Math.abs(this.y));
 	},
 });
 Object.defineProperty(Array.prototype, 'spliceOut', {
@@ -321,8 +234,9 @@ const Path = class extends BABYLON.Path3D {
 	};
 	static nodeDistance(nodeA, nodeB) {
 		if (!(nodeA instanceof Path.Node && nodeB instanceof Path.Node)) throw new TypeError('passed nodes must be path.Node');
-		let distance = nodeA.position.subtract(nodeB.position).abs();
-		return Math.SQRT2 * (distance.x > distance.z ? distance.z : distance.x) + (distance.x > distance.z ? 1 : -1) * (distance.x - distance.z);
+		let distanceX = Math.abs(nodeA.position.x - nodeB.position.x);
+		let distanceY = Math.abs(nodeA.position.z - nodeB.position.z);
+		return Math.SQRT2 * (distanceX > distanceY ? distanceY : distanceX) + (distanceX > distanceY ? 1 : -1) * (distanceX - distanceY);
 	}
 	static trace(startNode, endNode) {
 		let path = [],
@@ -436,7 +350,7 @@ const StorageData = class extends Map {
 	}
 };
 
-const PlayerData = class extends BABYLON.ArcRotateCamera {
+const PlayerData = class extends BABYLON.TransformNode {
 	get items() {
 		let items = Object.fromEntries([...Items.keys()].map((i) => [i, 0]));
 		this.fleet.forEach((ship) => {
@@ -507,16 +421,17 @@ const PlayerData = class extends BABYLON.ArcRotateCamera {
 	xp = 0;
 	xpPoints = 0;
 	velocity = BABYLON.Vector3.Zero();
-	upperRadiusLimit = 50;
-	lowerRadiusLimit = 2.5;
-	velocity = BABYLON.Vector3.Zero();
 	speed = 1;
 	get power() {
 		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);
 	}
 	constructor(data, level) {
 		if (!(level instanceof Level) && level) throw new TypeError('passed level not a Level');
-		super(data.name, -Math.PI / 2, Math.PI / 2, 5, BABYLON.Vector3.Zero(), level);
+		super(data.name, level);
+		this.cam = new BABYLON.ArcRotateCamera(data.name, -Math.PI / 2, Math.PI / 2, 5, BABYLON.Vector3.Zero(), level);
+		this.cam.upperRadiusLimit = 50;
+		this.cam.lowerRadiusLimit = 2.5;
+		this.cam.target = this.position;
 		Object.assign(this, data);
 	}
 	serialize() {
@@ -528,7 +443,7 @@ const PlayerData = class extends BABYLON.ArcRotateCamera {
 		};
 	}
 	addVelocity(vector = BABYLON.Vector3.Zero(), computeMultiplyer) {
-		let direction = this.getDirection(vector).scale(1 / Math.PI);
+		let direction = this.cam.getDirection(vector).scale(1 / Math.PI);
 		direction.y = 0;
 		direction.normalize();
 		if (computeMultiplyer) direction.scaleInPlace(this.speed + this.tech.thrust / 10);
@@ -596,7 +511,8 @@ const Entity = class extends BABYLON.TransformNode {
 			rotateAnimation.setKeys(
 				path.path.flatMap((node, i) => {
 					if (i != 0) {
-						let value = BABYLON.Vector3.getRotation(path.path[i - 1].position, node.position);
+						let value = BABYLON.Vector3.PitchYawRollToMoveBetweenPoints(path.path[i - 1].position, node.position);
+						value.x -= Math.PI / 2;
 						return [
 							{ frame: i * 60 * this._generic.agility - 30, value },
 							{ frame: i * 60 * this._generic.agility - 10, value },
@@ -617,11 +533,11 @@ const Entity = class extends BABYLON.TransformNode {
 	}
 	moveTo(location, isRelative) {
 		if (!(location instanceof BABYLON.Vector3)) throw new TypeError('location must be a Vector3');
-		if (this.currentPath && debug.show_path_gizmos) this.currentPath.disposeGizmo();
+		if (this.currentPath && config.debug.show_path_gizmos) this.currentPath.disposeGizmo();
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.level);
-		if (debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, BABYLON.Color3.Green());
+		if (config.debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, BABYLON.Color3.Green());
 		this.followPath(this.currentPath).then((path) => {
-			if (debug.show_path_gizmos) {
+			if (config.debug.show_path_gizmos) {
 				this.currentPath.disposeGizmo();
 			}
 		});
@@ -928,7 +844,6 @@ const Planet = class extends CelestialBody {
 				upperColor: new BABYLON.Color3(0.2, 2.0, 0.2),
 				lowerColor: new BABYLON.Color3(0, 0.2, 1.0),
 				haloColor: new BABYLON.Color3(0, 0.2, 1.0),
-				maxResolution: [64, 256, 1024][settings.render_quality],
 				seed: 0.3,
 				cloudSeed: 0.6,
 				lowerClamp: new BABYLON.Vector2(0.6, 1),
@@ -1148,7 +1063,7 @@ const Level = class extends BABYLON.Scene {
 					rotationQuaternion: null,
 					material: Object.assign(container.materials[0], {
 						realTimeFiltering: true,
-						realTimeFilteringQuality: [2, 8, 32][+settings.render_quality],
+						realTimeFilteringQuality: [2, 8, 32][+config.settings.render_quality],
 						reflectionTexture: this.probe.cubeTexture,
 					}),
 					position: BABYLON.Vector3.Zero(),
@@ -1484,21 +1399,21 @@ const Level = class extends BABYLON.Scene {
 };
 const commands = {
 	help: () => {
-		open(web`docs/commands`, 'target=_blank');
+		return 'See https://bs.drvortex.dev/docs/commands for command documentation';
 	},
 	kill: (level, selector) => {
-		let e = level.getEntities(selector);
-		if (e.constructor.name == 'Array') {
-			game.removeEntity(...e);
-			return `killed ${e.length} entities`;
+		let entities = level.getEntities(selector);
+		if (entities.constructor.name == 'Array') {
+			entities.forEach(e=>e.remove());
+			return `killed ${entities.length} entities`;
 		} else {
-			game.removeEntity(e);
-			return `killed entity #${e.id} ("${e.name}")`;
+			entities.remove()
+			return `killed entity #${entities.id} ("${entities.name}")`;
 		}
 	},
 	spawn: (level, type, selector, x, y, z) => {
 		let entity = level.getEntities(selector);
-		(entity = entity == player ? entity.data() : entity), (spawned = new Ship(type, entity));
+		let spawned = new Ship(type, entity);
 		spawned.position.addInPlace(BABYLON.Vector3.FromArray(+x, +y, +z));
 	},
 	data: {
@@ -1523,7 +1438,7 @@ const commands = {
 	},
 	tp: (level, selector, x, y, z) => {
 		let entities = level.getEntities(selector),
-			location = new BABYLON.Vector3(+x || player.data().position.x, +y || player.data().position.y, +z || player.data().position.z);
+			location = new BABYLON.Vector3(+x || 0, +y || 0, +z || 0); //TODO: || 0 -> || executor.position
 		if (entities instanceof Array) {
 			entities.forEach((entity) => {
 				entity.position = location;
@@ -1534,30 +1449,7 @@ const commands = {
 			entities.position = location;
 			return `Teleported entities #${entities.id} to ${location.display()}`;
 		}
-	},
-	player: {
-		stop: () => {
-			player.stop();
-		},
-		reset: () => {
-			player.reset();
-		},
-		wipe: () => {
-			player.reset();
-			player.wipe();
-		},
-	},
-	playsound: (level, name, volume = settings.sfx) => {
-		if (sound[name]) {
-			playsound(name, volume);
-		} else {
-			throw new ReferenceError(`sound "${name}" does not exist`);
-		}
-	},
-	reload: () => {
-		//maybe also reload mods in the future
-		game.engine.resize();
-	},
+	}
 };
 const runCommand = (command, level) => {
 	if (!(level instanceof Level)) throw new TypeError('Failed to run command: no level selected');
@@ -1579,4 +1471,5 @@ const runCommand = (command, level) => {
 			) ?? '';
 	return result;
 };
+const init = (canvas, options = config) => {};
 console.log(`Blankstorm Core (${versions.get(version).text}) loaded successfully`);
