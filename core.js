@@ -64,7 +64,6 @@ const greek = [
 		'Psi',
 		'Omega',
 	],
-	minimize = Intl.NumberFormat('en', { notation: 'compact' }).format,
 	range = (min, max) => {
 		let a = [];
 		for (let i = min; i < max; i++) {
@@ -82,9 +81,7 @@ const isHex = (str) => /^[0-9a-f-\.]+$/.test(str),
 		} catch (e) {
 			return false;
 		}
-	},
-	isCraftable = (obj) => typeof obj?.recipe == 'object' && typeof obj?.requires == 'object' && typeof obj?.buildTime == 'number' && isNaN(obj?.buildTime),
-	wait = (time) => new Promise((res) => setTimeout(res, time * 1000));
+	};
 const random = {
 	float: (min = 0, max = 1) => Math.random() * (max - min) + min,
 	hex: (length = 1) => {
@@ -303,7 +300,7 @@ const Path = class extends BABYLON.Path3D {
 			throw e.stack;
 		}
 	}
-	drawGizmo(scene, color = BABYLON.Color3.White(), y = 0) {
+	drawGizmo(scene, color = BABYLON.Color3.White()) {
 		if (this.path.length > 0) {
 			if (!(scene instanceof BABYLON.Scene)) throw new TypeError('scene must be a scene');
 			if (this.gizmo) console.warn('Path gizmo was already drawn!');
@@ -536,7 +533,7 @@ const Entity = class extends BABYLON.TransformNode {
 		if (this.currentPath && config.debug.show_path_gizmos) this.currentPath.disposeGizmo();
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.level);
 		if (config.debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, BABYLON.Color3.Green());
-		this.followPath(this.currentPath).then((path) => {
+		this.followPath(this.currentPath).then(() => {
 			if (config.debug.show_path_gizmos) {
 				this.currentPath.disposeGizmo();
 			}
@@ -732,11 +729,11 @@ const Ship = class extends Entity {
 	//this will be replaced with hardpoints!
 	attack(entity) {
 		if (!(entity instanceof Entity)) throw new TypeError('Target must be an entity');
-		setTimeout((e) => {
+		setTimeout(() => {
 			let laser = BABYLON.Mesh.CreateLines('laser.' + random.hex(16), [this.mesh.getAbsolutePosition(), entity.mesh.getAbsolutePosition()], entity.getScene());
 			laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red();
 			entity.hp -= (this._generic.damage / 60) * entity.getScene().getAnimationRatio() * (Math.random() < this._generic.critChance ? this._generic.critDamage : 1);
-			setTimeout((e) => laser.dispose(), 50);
+			setTimeout(() => laser.dispose(), 50);
 		}, random.int(10, 100));
 	}
 };
@@ -1008,8 +1005,8 @@ const Level = class extends BABYLON.Scene {
 	bodies = new Map();
 	entities = new Map();
 	playerData = new Map();
-	#initPromise = new Promise((res) => {});
-	loadedEntityMeshes = new Promise((res) => {});
+	#initPromise = new Promise(() => {});
+	loadedEntityMeshes = new Promise(() => {});
 	#performanceMonitor = new BABYLON.PerformanceMonitor(60);
 	constructor(name, engine, doNotGenerate) {
 		super(engine);
@@ -1116,7 +1113,6 @@ const Level = class extends BABYLON.Scene {
 		switch (selector[0]) {
 			case '*':
 				return [...this.bodies.values()];
-				break;
 			case '#':
 				for (let [id, body] of this.bodies) {
 					if (id == selector.slice(1)) return body;

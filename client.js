@@ -7,7 +7,8 @@ const web = (url) => `https://blankstorm.drvortex.dev/` + url,
 				.change((e) => res([...e.target.files]))[0]
 				.click()
 		),
-	download = (data, name) => $(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click();
+	download = (data, name) => $(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click(),
+	minimize = Intl.NumberFormat('en', { notation: 'compact' }).format;
 const modal = (input = 'Are you sure?', options = { Cancel: false, Ok: true }) =>
 		new Promise((res) => {
 			$('#modal input').remove();
@@ -30,7 +31,7 @@ const modal = (input = 'Are you sure?', options = { Cancel: false, Ok: true }) =
 					.text(displayText)
 					.appendTo('#modal form');
 			});
-			$('#modal').on('close', (e) => {
+			$('#modal').on('close', () => {
 				res(
 					input instanceof Array
 						? { ...Object.fromEntries([...$('#modal input')].map((el) => [el.name, el.value])), result: $('#modal')[0].returnValue }
@@ -79,7 +80,7 @@ Object.defineProperties(Object.prototype, {
 	getByString: {
 		value: function (path, seperator) {
 			return path
-				.split(seperator || /[\.\[\]'"]/)
+				.split(seperator || /[.[\]'"]/)
 				.filter((p) => p)
 				.reduce((o, p) => (o ? o[p] : null), this);
 		},
@@ -87,14 +88,14 @@ Object.defineProperties(Object.prototype, {
 	setByString: {
 		value: function (path, value, seperator) {
 			return path
-				.split(seperator || /[\.\[\]'"]/)
+				.split(seperator || /[.[\]'"]/)
 				.filter((p) => p)
-				.reduce((o, p, i) => (o[p] = path.split(seperator || /[\.\[\]'"]/).filter((p) => p).length === ++i ? value : o[p] || {}), this);
+				.reduce((o, p, i) => (o[p] = path.split(seperator || /[.[\]'"]/).filter((p) => p).length === ++i ? value : o[p] || {}), this);
 		},
 	},
 	copyFrom: {
 		value: function (source, props) {
-			Object.assign(this, props ? Object.fromEntries(Object.entries(source).filter(([k, v]) => props.includes(k))) : source);
+			Object.assign(this, props ? Object.fromEntries(Object.entries(source).filter(([k]) => props.includes(k))) : source);
 			return this;
 		},
 	},
@@ -128,33 +129,6 @@ $.fn.formData = function (data) {
 		}
 		return formData;
 	}
-};
-$.fn.tooltip = function (info = '') {
-	this.off('mouseenter mouseleave');
-	let id = random.hex(32),
-		tooltip = $(`<div class=tooltip></div>`).css({ position: 'fixed', width: 'fit-content', height: 'fit-content', 'max-width': '15%', 'z-index': 9 }).attr('tooltip-for', id);
-	this.attr('tooltip-id', id)
-		.mouseenter(() => {
-			$(`[tooltip-for=${id}]`).remove();
-			tooltip.html(typeof info == 'function' ? info(tooltip) : info).css({ left: `calc(var(--font-size) + ${mouse.x}px)`, top: `calc(var(--font-size) + ${mouse.y}px)` });
-			this.attr('tooltip-active', true).parent().append(tooltip);
-			let computedStyle = getComputedStyle(tooltip[0]);
-			tooltip.css({
-				left:
-					settings.font_size + mouse.x + parseFloat(computedStyle.width) < innerWidth
-						? settings.font_size + mouse.x
-						: settings.font_size + mouse.x - parseFloat(computedStyle.width),
-				top:
-					settings.font_size + mouse.y + parseFloat(computedStyle.height) < innerHeight
-						? settings.font_size + mouse.y
-						: settings.font_size + mouse.y - parseFloat(computedStyle.height),
-			});
-		})
-		.mouseleave(() => {
-			tooltip.remove();
-			this.removeAttr('tooltip-active');
-		});
-	return this;
 };
 $.fn.cm = function (...content) {
 	content ||= [$('<p></p>')];
@@ -191,8 +165,7 @@ const cookie = {},
 			a.volume = +vol;
 			a.play();
 		}
-	},
-	date = new Date();
+	};
 onmousemove = (e) => {
 	mouse.x = e.clientX;
 	mouse.y = e.clientY;
@@ -564,7 +537,7 @@ const Server = class {
 		this.gui.play = $(`<p style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(this.gui);
 		this.gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=images/icons.svg#pencil /></svg></p>`).appendTo(this.gui);
 		this.gui.name = $(`<p style=position:absolute;left:30%>${this.name}</p>`).appendTo(this.gui);
-		this.gui.info = $(`<p style=position:absolute;left:75%></p>`).appendTo(this.gui);
+		this.gui.info = $(`<p style=position:absolute;left:75%><tool-tip></tool-tip></p>`).appendTo(this.gui);
 		$('<p> </p>').appendTo(this.gui);
 		this.gui
 			.attr('clickable', true)
@@ -613,13 +586,20 @@ const Server = class {
 					this.pingData = JSON.parse(data);
 					this.gui.info
 						.text(`${((Date.now() - beforeTime) / 2).toFixed()}ms ${this.pingData.currentPlayers}/${this.pingData.maxPlayers}`)
-						.tooltip(`${this.url}<br><br>${this.pingData.version.text}<br><br>${this.pingData.message}`);
+						.find('tool-tip')
+						.html(`${this.url}<br><br>${this.pingData.version.text}<br><br>${this.pingData.message}`);
 				} else {
-					this.gui.info.html('<svg><use href=images/icons.svg#xmark /></svg>').tooltip(`Invalid response`);
+					this.gui.info
+					.html('<svg><use href=images/icons.svg#xmark /></svg>')
+					.find('tool-tip')
+					.html('Invalid response');
 				}
 			})
 			.fail(() => {
-				this.gui.info.html('<svg><use href=images/icons.svg#xmark /></svg>').tooltip(`Can't connect to server`);
+				this.gui.info
+				.html('<svg><use href=images/icons.svg#xmark /></svg>')
+				.find('tool-tip')
+				.html(`Can't connect to server`);
 			})
 			.always(() => {
 				this.gui.info.css('animation', 'unset');
@@ -882,8 +862,8 @@ game.createKeybind('save', { key: 's', ctrl: true }, 'Save Game', () => {
 
 if (cookie.token && navigator.onLine) {
 	player.authData = player.getAuthData();
-} else if (cookie.auth && localStorage.auth) {
-	if (isJSON(localStorage.auth)) {
+} else if (localStorage.auth) {
+	if (isJSON(localStorage.auth) && JSON.parse(localStorage.auth)) {
 		let data = (player.authData = JSON.parse(localStorage.auth));
 		Object.assign(player, data);
 		player.freezeProperty(...Object.keys(data));
@@ -994,8 +974,23 @@ const ui = {
 			t.gui = $(`<div>
 						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
 						<span class=name style=text-align:center;>${locales.text(`tech.${id}.name`)}</span>
-						<span class="upgrade add-or-upgrade-icon"><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
+						<span class="upgrade add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
 					</div>`)
+				.find('.upgrade')
+				.click(() => {
+					if (
+						player.data().hasItems(Tech.priceOf(id, player.data().tech[id])) &&
+						player.data().tech[id] < t.max &&
+						!Tech.isLocked(id, player.data()) &&
+						player.data().xpPoints >= 1
+					) {
+						player.data().removeItems(Tech.priceOf(id, player.data().tech[id]));
+						player.data().tech[id]++;
+						player.data().xpPoints--;
+					}
+					ui.update();
+				})
+				.parent()
 				.attr('bg', 'none')
 				.appendTo('div.lab');
 		}
@@ -1003,8 +998,17 @@ const ui = {
 			ship.gui = $(`<div>
 						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
 						<span class=name style=text-align:center>${locales.text(`entity.${id}.name`)}</span>
-						<span class="add add-or-upgrade-icon"><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
+						<span class="add add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
 					</div>`)
+				.find('.add')
+				.click(() => {
+					if (player.data().hasItems(ship.recipe)) {
+						player.data().removeItems(ship.recipe);
+						new Ship(id, player.data());
+					}
+					ui.update();
+				})
+				.parent()
 				.attr('bg', 'none')
 				.appendTo('div.yrd');
 		});
@@ -1034,32 +1038,15 @@ const ui = {
 								: `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 						''
 					);
-					t.gui.find('.upgrade svg').remove();
-					$('<svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg>')
-						.click(() => {
-							if (
-								player.data().hasItems(Tech.priceOf(id, player.data().tech[id])) &&
-								player.data().tech[id] < t.max &&
-								!Tech.isLocked(id, player.data()) &&
-								player.data().xpPoints >= 1
-							) {
-								player.data().removeItems(Tech.priceOf(id, player.data().tech[id]));
-								player.data().tech[id]++;
-								player.data().xpPoints--;
-							}
-							ui.update();
-						})
-						.tooltip(
-							`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
-								player.data().tech[id] >= t.max
-									? `<strong>Max Level</strong>`
-									: `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`
-							}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
-								debug.tooltips ? '<br>type: ' + id : ''
-							}`
-						)
-						.appendTo(t.gui.find('.upgrade'));
-
+					t.gui.find('.upgrade tool-tip').html(
+						`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
+							player.data().tech[id] >= t.max
+								? `<strong>Max Level</strong>`
+								: `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`
+						}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
+							debug.tooltips ? '<br>type: ' + id : ''
+						}`
+					);
 					t.gui.find('.locked')[Tech.isLocked(id, player.data()) ? 'show' : 'hide']();
 				}
 
@@ -1072,25 +1059,15 @@ const ui = {
 					const requires = Object.entries(ship.requires).reduce(
 						(result, [id, tech]) =>
 							`${result}<br>${
-								tech == 0 ? `${locales.text(`tech.${id}.name`)}: ${player.data().tech[id]}/${tech}` : `Incompatible with ${locales.text(`tech.${id}.name`)}`
+								tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.data().tech[id]}/${tech}`
 							}`,
 						''
 					);
-					ship.gui.find('.add svg').remove();
-					$('<svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg>')
-						.click(() => {
-							if (player.data().hasItems(ship.recipe)) {
-								player.data().removeItems(ship.recipe);
-								new Ship(id, player.data());
-							}
-							ui.update();
-						})
-						.tooltip(
-							`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
-								Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
-							}${requires}${debug?.tooltips ? '<br>' + id : ''}`
-						)
-						.appendTo(ship.gui.find('.add'));
+					ship.gui.find('.add tool-tip').html(
+						`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
+							Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
+						}${requires}${debug?.tooltips ? '<br>' + id : ''}`
+					);
 
 					let locked = false;
 					for (let t in ship.requires) {
@@ -1110,8 +1087,6 @@ const ui = {
 				}
 			}
 			$('.marker').hide();
-			$('.tooltip').remove();
-			$('[tooltip-active]').mouseenter();
 
 			game.screenshots.forEach((s) => {
 				$(`<img src=${s} width=256></img>`)
@@ -1489,6 +1464,16 @@ $('html').keydown((e) => {
 			}
 			break;
 	}
+}).mousemove(e => {
+	$('tool-tip').each((i, tooltip) => {
+		let computedStyle = getComputedStyle(tooltip);
+		let left = settings.font_size + e.clientX,
+			top = settings.font_size + e.clientY;
+		$(tooltip).css({
+			left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
+			top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height))
+		});
+	});
 });
 $('#cli').keydown((e) => {
 	let c = game.cli;
@@ -1507,7 +1492,7 @@ $('#cli').keydown((e) => {
 			break;
 		case 'Enter':
 			c.counter = 0;
-			if (/[^\s\/]/.test($('#cli').val())) {
+			if (/[^\s/]/.test($('#cli').val())) {
 				if (c.prev.at(-1) != c.currentInput) c.prev.push($('#cli').val());
 				if ($('#cli').val()[0] == '/') game.chat(game.runCommand($('#cli').val().slice(1)));
 				else game.mp ? servers.get(servers.sel).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val());
