@@ -27,7 +27,7 @@ const version = 'alpha_prototype',
 		['alpha_1.1.0', { text: 'Alpha 1.1.0', group: 'alpha' }],
 		['alpha_1.2.0', { text: 'Alpha 1.2.0', group: 'alpha' }],
 		['alpha_1.2.1', { text: 'Alpha 1.2.1', group: 'alpha' }],
-		['alpha_prototype', { text: 'Alpha Prototype', group: 'alpha'}],
+		['alpha_prototype', { text: 'Alpha Prototype', group: 'alpha' }],
 	]);
 if (config.load_remote_manifest) {
 	fetch('https://blankstorm.drvortex.dev/versions/manifest.json')
