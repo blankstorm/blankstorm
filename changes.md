@@ -24,3 +24,6 @@ These are the changes for the next update[s].
 - Lots of syntax fixes
 
 ### Technical Changes
+- Improved tooltips
+- Removed logger utility
+- GUIs are not regenerated every UI update
