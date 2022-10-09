@@ -177,8 +177,8 @@ document.cookie.split('; ').forEach((e) => {
 let settings = $('#settings form.gen').formData(),
 	debug = $('#settings form.debug').formData(),
 	keybind = {};
-	config.settings = settings;
-	config.debug = debug;
+config.settings = settings;
+config.debug = debug;
 const servers = new Map(),
 	saves = new Map(),
 	sound = {
@@ -589,17 +589,11 @@ const Server = class {
 						.find('tool-tip')
 						.html(`${this.url}<br><br>${this.pingData.version.text}<br><br>${this.pingData.message}`);
 				} else {
-					this.gui.info
-					.html('<svg><use href=images/icons.svg#xmark /></svg>')
-					.find('tool-tip')
-					.html('Invalid response');
+					this.gui.info.html('<svg><use href=images/icons.svg#xmark /></svg>').find('tool-tip').html('Invalid response');
 				}
 			})
 			.fail(() => {
-				this.gui.info
-				.html('<svg><use href=images/icons.svg#xmark /></svg>')
-				.find('tool-tip')
-				.html(`Can't connect to server`);
+				this.gui.info.html('<svg><use href=images/icons.svg#xmark /></svg>').find('tool-tip').html(`Can't connect to server`);
 			})
 			.always(() => {
 				this.gui.info.css('animation', 'unset');
@@ -1038,15 +1032,17 @@ const ui = {
 								: `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 						''
 					);
-					t.gui.find('.upgrade tool-tip').html(
-						`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
-							player.data().tech[id] >= t.max
-								? `<strong>Max Level</strong>`
-								: `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`
-						}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
-							debug.tooltips ? '<br>type: ' + id : ''
-						}`
-					);
+					t.gui
+						.find('.upgrade tool-tip')
+						.html(
+							`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
+								player.data().tech[id] >= t.max
+									? `<strong>Max Level</strong>`
+									: `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`
+							}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
+								debug.tooltips ? '<br>type: ' + id : ''
+							}`
+						);
 					t.gui.find('.locked')[Tech.isLocked(id, player.data()) ? 'show' : 'hide']();
 				}
 
@@ -1063,11 +1059,13 @@ const ui = {
 							}`,
 						''
 					);
-					ship.gui.find('.add tool-tip').html(
-						`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
-							Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
-						}${requires}${debug?.tooltips ? '<br>' + id : ''}`
-					);
+					ship.gui
+						.find('.add tool-tip')
+						.html(
+							`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
+								Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
+							}${requires}${debug?.tooltips ? '<br>' + id : ''}`
+						);
 
 					let locked = false;
 					for (let t in ship.requires) {
@@ -1219,29 +1217,28 @@ db.tx('servers').then((tx) => {
 		});
 });
 
-commands.playsound = (level, name, volume = settings.sfx) => {
+(commands.playsound = (level, name, volume = settings.sfx) => {
 	if (sound[name]) {
 		playsound(name, volume);
 	} else {
 		throw new ReferenceError(`sound "${name}" does not exist`);
 	}
-},
-commands.reload = () => {
-	//maybe also reload mods in the future
-	game.engine.resize();
-},
-
-//Event Listeners (UI transitions, creating saves, etc.)
-$('#main .sp').click(() => {
-	game.mp = false;
-	$('#load li').detach();
-	saves.forEach((save) => save.gui.prependTo('#load'));
-	saves.forEach((save) => save.gui.prependTo('#load'));
-	$('#main').hide();
-	$('#load button.upload use').attr('href', 'images/icons.svg#upload');
-	$('#load button.upload span').text(locales.text`menu.upload`);
-	$('#load').show();
-});
+}),
+	(commands.reload = () => {
+		//maybe also reload mods in the future
+		game.engine.resize();
+	}),
+	//Event Listeners (UI transitions, creating saves, etc.)
+	$('#main .sp').click(() => {
+		game.mp = false;
+		$('#load li').detach();
+		saves.forEach((save) => save.gui.prependTo('#load'));
+		saves.forEach((save) => save.gui.prependTo('#load'));
+		$('#main').hide();
+		$('#load button.upload use').attr('href', 'images/icons.svg#upload');
+		$('#load button.upload span').text(locales.text`menu.upload`);
+		$('#load').show();
+	});
 $('#main .mp').click(() => {
 	game.mp = true;
 	$('#main').hide();
@@ -1444,37 +1441,39 @@ $('#settings form.gen select[name=locale]').change((e) => {
 		console.warn(`Failed to load locale ${lang}`);
 	}
 });
-$('html').keydown((e) => {
-	switch (e.key) {
-		case 'F8':
-			e.preventDefault();
-			open(web`bugs/new`, 'target=_blank');
-			break;
-		case 'b':
-			if (e.ctrlKey) game.strobe(100);
-			break;
-		case 't':
-			if (e.altKey) {
+$('html')
+	.keydown((e) => {
+		switch (e.key) {
+			case 'F8':
 				e.preventDefault();
-				prompt('Password').then((passkey) => {
-					let token = $.ajax(web('api/dev_auth'), { data: { passkey }, async: false }).responseText;
-					document.cookie = 'token=' + token;
-					location.reload();
-				});
-			}
-			break;
-	}
-}).mousemove(e => {
-	$('tool-tip').each((i, tooltip) => {
-		let computedStyle = getComputedStyle(tooltip);
-		let left = settings.font_size + e.clientX,
-			top = settings.font_size + e.clientY;
-		$(tooltip).css({
-			left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
-			top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height))
+				open(web`bugs/new`, 'target=_blank');
+				break;
+			case 'b':
+				if (e.ctrlKey) game.strobe(100);
+				break;
+			case 't':
+				if (e.altKey) {
+					e.preventDefault();
+					prompt('Password').then((passkey) => {
+						let token = $.ajax(web('api/dev_auth'), { data: { passkey }, async: false }).responseText;
+						document.cookie = 'token=' + token;
+						location.reload();
+					});
+				}
+				break;
+		}
+	})
+	.mousemove((e) => {
+		$('tool-tip').each((i, tooltip) => {
+			let computedStyle = getComputedStyle(tooltip);
+			let left = settings.font_size + e.clientX,
+				top = settings.font_size + e.clientY;
+			$(tooltip).css({
+				left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
+				top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height)),
+			});
 		});
 	});
-});
 $('#cli').keydown((e) => {
 	let c = game.cli;
 	if (c.line == 0) c.currentInput = $('#cli').val();
@@ -1677,7 +1676,7 @@ const loop = () => {
 							performance.memory
 								? `${(performance.memory.usedJSHeapSize / 1000000).toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(
 										performance.memory.totalJSHeapSize / 1000000
-							).toFixed()}MB Allocated)`
+								  ).toFixed()}MB Allocated)`
 								: 'Memory usage unknown'
 						}</span><br>
 						<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>

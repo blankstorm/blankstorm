@@ -5,7 +5,7 @@ const config = {
 	render_quality: 0,
 	load_remote_manifest: false,
 	settings: {},
-	debug: {}
+	debug: {},
 };
 
 const version = 'alpha_1.2.0',
@@ -1400,10 +1400,10 @@ const commands = {
 	kill: (level, selector) => {
 		let entities = level.getEntities(selector);
 		if (entities.constructor.name == 'Array') {
-			entities.forEach(e=>e.remove());
+			entities.forEach((e) => e.remove());
 			return `killed ${entities.length} entities`;
 		} else {
-			entities.remove()
+			entities.remove();
 			return `killed entity #${entities.id} ("${entities.name}")`;
 		}
 	},
@@ -1445,7 +1445,7 @@ const commands = {
 			entities.position = location;
 			return `Teleported entities #${entities.id} to ${location.display()}`;
 		}
-	}
+	},
 };
 const runCommand = (command, level) => {
 	if (!(level instanceof Level)) throw new TypeError('Failed to run command: no level selected');
