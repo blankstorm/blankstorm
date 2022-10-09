@@ -16,12 +16,10 @@ These are the changes for the next update[s].
 - Hardpoints (see https://playground.babylonjs.com/#PU4WYI#291)
 - Fix warp
 
-## Changes since Alpha 1.2.0 release
+## Changes since Alpha 1.2.1 release
+
+### Features
 
 ### Bug Fixes
-- Lots of syntax fixes
 
 ### Technical Changes
-- Improved tooltips
-- Removed logger utility
-- GUIs are not regenerated every UI update
