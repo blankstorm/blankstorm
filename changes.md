@@ -18,8 +18,6 @@ These are the changes for the next update[s].
 
 ## Changes since Alpha 1.2.0 release
 
-### Features
-
 ### Bug Fixes
 - Lots of syntax fixes
 

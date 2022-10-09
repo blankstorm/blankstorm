@@ -1,4 +1,5 @@
 /* global BABYLON */
+/* exported runCommand isHex isJSON */
 //core info and setup
 const config = {
 	mesh_segments: 32,
@@ -8,7 +9,7 @@ const config = {
 	debug: {},
 };
 
-const version = 'alpha_1.2.0',
+const version = 'alpha_1.2.1',
 	versions = new Map([
 		['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
 		['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
@@ -25,7 +26,7 @@ const version = 'alpha_1.2.0',
 		['alpha_1.0.0', { text: 'Alpha 1.0.0', group: 'alpha' }],
 		['alpha_1.1.0', { text: 'Alpha 1.1.0', group: 'alpha' }],
 		['alpha_1.2.0', { text: 'Alpha 1.2.0', group: 'alpha' }],
-		['alpha_1.3.0', { text: 'Alpha 1.3.0', group: 'alpha' }],
+		['alpha_1.2.1', { text: 'Alpha 1.2.1', group: 'alpha' }],
 	]);
 if (config.load_remote_manifest) {
 	fetch('https://blankstorm.drvortex.dev/versions/manifest.json')
@@ -73,7 +74,7 @@ const greek = [
 	};
 
 //utility functions
-const isHex = (str) => /^[0-9a-f-\.]+$/.test(str),
+const isHex = (str) => /^[0-9a-f-.]+$/.test(str),
 	isJSON = (str) => {
 		try {
 			JSON.parse(str);
@@ -157,7 +158,7 @@ const generate = {
 //custom stuff
 Object.defineProperty(Object.prototype, 'filter', {
 	value: function (...keys) {
-		return Object.fromEntries(Object.entries(this).filter(([key, value]) => keys.includes(key)));
+		return Object.fromEntries(Object.entries(this).filter(([key]) => keys.includes(key)));
 	},
 });
 Object.defineProperty(Array.prototype, 'spliceOut', {
@@ -539,7 +540,7 @@ const Entity = class extends BABYLON.TransformNode {
 			}
 		});
 	}
-	warpTo(location, isRelative) {
+	warpTo(location) {
 		if (!(location instanceof BABYLON.Vector3)) throw new TypeError('location must be a Vector3');
 	}
 };
@@ -691,17 +692,17 @@ const Ship = class extends Entity {
 		},
 	};
 	constructor(typeOrData, faction, save) {
-		if (!Ship.generic[typeOrData] && !Ship.generic[typeOrData.shipType]) throw new ReferenceError(`Ship type ${typeOrData} does not exist`);
+		if (!Ship.generic[typeOrData] && !Ship.generic[typeOrData.class]) throw new ReferenceError(`Ship type ${typeOrData} does not exist`);
 		if (typeof typeOrData == 'object') {
-			super(typeOrData.shipType, faction, save ?? faction.getScene(), typeOrData.id);
+			super(typeOrData.class, faction, save ?? faction.getScene(), typeOrData.id);
 			Object.assign(this, {
-				type: typeOrData.shipType,
+				type: typeOrData.class,
 				position: BABYLON.Vector3.FromArray(typeOrData.position),
 				rotation: BABYLON.Vector3.FromArray(typeOrData.rotation),
-				storage: new StorageData(Ship.generic[typeOrData.shipType].storage, typeOrData.storage),
+				storage: new StorageData(Ship.generic[typeOrData.class].storage, typeOrData.storage),
 				hp: +typeOrData.hp,
 				reload: +typeOrData.reload,
-				_generic: Ship.generic[typeOrData.shipType],
+				_generic: Ship.generic[typeOrData.class],
 			});
 		} else {
 			super(typeOrData, faction, save ?? faction.getScene());
@@ -1074,7 +1075,7 @@ const Level = class extends BABYLON.Scene {
 		}
 	}
 	async init() {
-		let sys = await Level.generate.system('Crash Site', BABYLON.Vector3.Zero(), this);
+		await Level.generate.system('Crash Site', BABYLON.Vector3.Zero(), this);
 	}
 	async generateRegion(x, y, size) {
 		await this.ready();
@@ -1164,7 +1165,7 @@ const Level = class extends BABYLON.Scene {
 					case 'Ship':
 						Object.assign(entityData, {
 							type: 'ship',
-							shipType: entity.type,
+							class: entity.type,
 							storage: entity.storage.serialize().items,
 							hp: +entity.hp.toFixed(3),
 						});
@@ -1216,6 +1217,16 @@ const Level = class extends BABYLON.Scene {
 	static upgrades = new Map([
 		['infdev_11', (data) => ({ ...data, version: 'alpha_1.0.0' })],
 		['infdev_12', (data) => ({ ...data, version: 'alpha_1.0.0' })],
+		[
+			'alpha_1.2.0',
+			(data) => ({
+				...data,
+				entities: data.entities.map((e) => {
+					e.class = e.shipType;
+					return e;
+				}),
+			}),
+		],
 	]);
 
 	static upgrade(data) {
@@ -1378,7 +1389,7 @@ const Level = class extends BABYLON.Scene {
 					});
 					break;
 				default:
-					body = new CelestialBody(bodyData.name, bodyData.id, save);
+					new CelestialBody(bodyData.name, bodyData.id, save);
 				//TODO: Change Star/Planet constructors to use standerdized data
 			}
 		}
@@ -1467,5 +1478,4 @@ const runCommand = (command, level) => {
 			) ?? '';
 	return result;
 };
-const init = (canvas, options = config) => {};
 console.log(`Blankstorm Core (${versions.get(version).text}) loaded successfully`);

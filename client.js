@@ -1145,7 +1145,7 @@ const ui = {
 
 				let plot = $(e)
 					.attr('plot')
-					.replaceAll(/[\d\.]+(px|em)/g, (str) => parseFloat(str) * scale + str.slice(-2))
+					.replaceAll(/[\d.]+(px|em)/g, (str) => parseFloat(str) * scale + str.slice(-2))
 					.split(',');
 				plot[0][0] == 'c' && !plot[0].startsWith('calc')
 					? $(e).css('left', `${plot[0].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[2]}/2))${plot[0].slice(1) ? ` + ${plot[0].slice(1)})` : ''}`)
