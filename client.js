@@ -1,4 +1,4 @@
-/* global $ BABYLON random  version versions db Level Items Tech minimize Ship PlayerData Planet isJSON runCommand io isHex CelestialBody Action generate Entity commands config*/
+/* global $ BABYLON random  version versions db Level Items Tech minimize Ship PlayerData Planet isJSON runCommand io isHex CelestialBody generate Entity commands config*/
 /*eslint no-redeclare: "off"*/
 const web = (url) => `https://blankstorm.drvortex.dev/` + url,
 	upload = (type, multiple = false) =>
@@ -225,7 +225,7 @@ const locales = Object.assign(new Map(), {
 		$('#settings :where(button.gen,form.gen h2) span').text(lang['menu.general'] ?? 'General');
 		$('#settings :where(button.key,form.key h2) span').text(lang['menu.keybinds'] ?? 'Keybinds');
 		$('#settings :where(button.debug,form.debug h2) span').text(lang['menu.debug'] ?? 'Debug');
-		$('#q div.warp button.warp').text(lang['menu.warp'] ?? 'Warp');
+		$('#q div.warp button.warp').text(lang['menu.warp'] ?? 'Jump');
 		$('#q div.nav button.inv span').text(lang['menu.items'] ?? 'Inventory');
 		$('#q div.nav button.map span').text(lang['menu.map'] ?? 'Waypoints');
 		$('#q div.nav button.screenshots span').text(lang['menu.screenshots'] ?? 'Screenshots');
@@ -350,7 +350,7 @@ const Save = class {
 			let live = save.load();
 			await live.ready();
 			saves.current = live;
-			live.play();
+			live.play(live.playerData.get(player.id));
 			$('#loading_cover').hide();
 		};
 
@@ -389,7 +389,7 @@ const Save = class {
 		constructor(name, doNotGenerate) {
 			super(name, game.engine, doNotGenerate);
 		}
-		play() {
+		play(player) {
 			if (this.version == version) {
 				$('#load').hide();
 				game.canvas.show().focus();
@@ -397,10 +397,14 @@ const Save = class {
 				game.engine.resize();
 				saves.selected = this.id;
 				game.isPaused = false;
-				this.activeCamera = player.data().cam;
-				player.data().cam.attachControl(game.canvas, true);
-				player.data().cam.inputs.attached.pointers.buttons = [1];
-				player.data().cam.target = player.data().position;
+				player ??= [...this.playerData][0];
+				if(player instanceof PlayerData){
+					this.activeCamera = player.cam;
+					player.cam.attachControl(game.canvas, true);
+					player.cam.inputs.attached.pointers.buttons = [1];
+					player.cam.target = player.position;
+				}
+				
 			} else {
 				alert('That save is in compatible with the current game version');
 			}
@@ -572,10 +576,11 @@ const Server = class {
 			.dblclick(() => this.connect())
 			.prependTo('#load');
 		this.gui.delete.click(() => {
-			confirm().then(() => {
+			confirm().then(async () => {
 				this.gui.remove();
 				servers.delete(this.url);
-				db.transaction('servers', 'readwrite').objectStore('servers').delete(this.url);
+				let tx = await db.tx('servers', 'readwrite');
+				tx.objectStore('servers').delete(this.url);
 			});
 		});
 		this.gui.play.click(() => this.connect());
@@ -930,45 +935,6 @@ db.tx('settings')
 		$('form.key').formData(keybind);
 	});
 
-const warp = {
-	energy: 100,
-	maxEnergy: 100,
-	cooldown: 0,
-	start: (destination, ignoreCooldown) => {
-		function done() {
-			warp.cooldown = new Action(distance * 1000, 100, () => {});
-			game.currentLevel = destination;
-			player.data().cam._scene = game.scene(destination);
-			game.chat(`Warped to ${destination.x},${destination.y} (${saves.current.name})`);
-			player.reset();
-			player.data().cam.target = player.data().position;
-			ui.update();
-		}
-		let distance = BABYLON.Vector2.Distance(game.currentLevel, destination);
-		if (player.isInBattle) {
-			game.chat("You can't enter hyperspace while in a battle.");
-		} else if (this.cooldown > 0 && !ignoreCooldown) {
-			game.chat('Hyperspace is on cooldown');
-		} else if (distance > warp.energy) {
-			game.chat('That location is out of range');
-		} else {
-			if (!(saves.current.levels[destination.asArray()] instanceof Level)) {
-				new Level(
-					saves.current.systems[destination.asArray()] || 'Empty Space',
-					destination,
-					!!saves.current.systems[destination.asArray()],
-					(lvl) => {
-						saves.current.levels[destination.asArray()] = lvl;
-						done();
-					},
-					saves.current
-				);
-			} else {
-				done();
-			}
-		}
-	},
-};
 const ui = {
 	init() {
 		for (let [id, item] of Items) {
@@ -1307,16 +1273,13 @@ $('#connect button.back').click(() => {
 $('#save button.back').click(() => {
 	$('#save')[0].close();
 });
-$('#save .new').click(() => {
+$('#save .new').click(async () => {
 	$('#save')[0].close();
-	Save.Live.CreateDefault($('#save .name').val(), player.id, player.username)
-		.ready()
-		.then((live) => {
-			saves.current = live;
-			live.play();
-			let save = new Save(live.serialize());
-			if (!debug.disable_saves) save.saveToDB();
-		});
+	let live = await Save.Live.CreateDefault($('#save .name').val(), player.id, player.username);
+	saves.current = live;
+	live.play(live.playerData.get(player.id));
+	let save = new Save(live.serialize());
+	if (!debug.disable_saves) save.saveToDB();
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();
@@ -1403,10 +1366,10 @@ $('#settings button.mod').click(() => {
 		.empty()
 		.append(
 			$('<h2 style=text-align:center>Mods</h2>'),
-			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=images/icons.svg#trash /></svg>&nbsp;Reset</button>').click(() => {
-				db.transaction('mods', 'readwrite').objectStore('mods').clear().onsuccess = () => {
-					location.reload();
-				};
+			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=images/icons.svg#trash /></svg>&nbsp;Reset</button>').click(async () => {
+				let tx = await db.tx('mods', 'readwrite');
+				await tx.objectStore('mods').clear().async();
+				alert('Requires reload');
 			}),
 			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locales.text`menu.upload`}</button>`).click(() => {
 				//upload('.js').then(files => [...files].forEach(file => file.text().then(mod => game.loadMod(mod))));
@@ -1422,7 +1385,12 @@ $('#settings button.back').click(() => {
 	ui.update();
 });
 $('#q div.warp button.warp').click(() => {
-	warp.start(new BABYLON.Vector2(+$('input.warp.x').val(), +$('input.warp.y').val()));
+	let destination = new BABYLON.Vector3(+$('input.warp.x').val(), 0, +$('input.warp.y').val());
+	player.data().fleet.forEach(ship => {
+		let offset = random.cords(player.data().power, true);
+		ship.jump(destination.add(offset));
+		console.log(ship.id + ' Jumped')
+	});
 	$('#q').toggle();
 });
 $('[label]').each((i, e) => {

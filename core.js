@@ -413,7 +413,7 @@ const PlayerData = class extends BABYLON.TransformNode {
 		return this.fleet.reduce((total, ship) => total + ship.storage.max * (1 + this.tech.storage / 20), 0);
 	}
 	shipNum(type) {
-		return this.fleet.reduce((total, ship) => (total + ship.type == type ? 1 : 0), 0);
+		return this.fleet.reduce((total, ship) => (total + ship.class == type ? 1 : 0), 0);
 	}
 	tech = Object.fromEntries([...Tech.keys()].map((item) => [item, 0]));
 	fleet = [];
@@ -541,9 +541,6 @@ const Entity = class extends BABYLON.TransformNode {
 			}
 		});
 	}
-	warpTo(location) {
-		if (!(location instanceof BABYLON.Vector3)) throw new TypeError('location must be a Vector3');
-	}
 };
 const Ship = class extends Entity {
 	static generic = {
@@ -552,6 +549,8 @@ const Ship = class extends Entity {
 			speed: 2,
 			agility: 2,
 			range: 125,
+			jumpRange: 10000,
+			jumpCooldown: 30,
 			power: 1,
 			enemy: true,
 			camRadius: 10,
@@ -570,6 +569,8 @@ const Ship = class extends Entity {
 			speed: 1,
 			agility: 1.5,
 			range: 150,
+			jumpRange: 10000,
+			jumpCooldown: 40,
 			power: 2,
 			enemy: true,
 			camRadius: 15,
@@ -588,6 +589,8 @@ const Ship = class extends Entity {
 			speed: 1,
 			agility: 0.75,
 			range: 75,
+			jumpRange: 10000,
+			jumpCooldown: 50,
 			power: 1,
 			enemy: false,
 			camRadius: 20,
@@ -606,6 +609,8 @@ const Ship = class extends Entity {
 			speed: 1,
 			agility: 1,
 			range: 200,
+			jumpRange: 10000,
+			jumpCooldown: 45,
 			power: 5,
 			enemy: true,
 			camRadius: 20,
@@ -624,6 +629,8 @@ const Ship = class extends Entity {
 			speed: 1,
 			agility: 1,
 			range: 200,
+			jumpRange: 10000,
+			jumpCooldown: 45,
 			power: 10,
 			enemy: true,
 			camRadius: 30,
@@ -642,6 +649,8 @@ const Ship = class extends Entity {
 			speed: 2 / 3,
 			agility: 0.5,
 			range: 75,
+			jumpRange: 10000,
+			jumpCooldown: 60,
 			power: 10,
 			enemy: false,
 			camRadius: 50,
@@ -660,6 +669,8 @@ const Ship = class extends Entity {
 			speed: 2 / 3,
 			agility: 1,
 			range: 250,
+			jumpRange: 10000,
+			jumpCooldown: 45,
 			power: 25,
 			enemy: true,
 			camRadius: 40,
@@ -678,6 +689,8 @@ const Ship = class extends Entity {
 			speed: 1 / 3,
 			agility: 1,
 			range: 250,
+			jumpRange: 10000,
+			jumpCooldown: 60,
 			power: 100,
 			enemy: true,
 			camRadius: 65,
@@ -692,41 +705,51 @@ const Ship = class extends Entity {
 			model: 'models/horizon.glb',
 		},
 	};
-	constructor(typeOrData, faction, level) {
-		if (!Ship.generic[typeOrData] && !Ship.generic[typeOrData.class]) throw new ReferenceError(`Ship type ${typeOrData} does not exist`);
-		if (typeof typeOrData == 'object') {
-			super(typeOrData.class, faction, level ?? faction.getScene(), typeOrData.id);
+	constructor(classOrData, owner, level) {
+		if (!Ship.generic[classOrData] && !Ship.generic[classOrData.class]) throw new ReferenceError(`Ship type ${classOrData} does not exist`);
+		if (typeof classOrData == 'object') {
+			super(classOrData.class, owner, level ?? owner.getScene(), classOrData.id);
 			Object.assign(this, {
-				type: typeOrData.class,
-				position: BABYLON.Vector3.FromArray(typeOrData.position),
-				rotation: BABYLON.Vector3.FromArray(typeOrData.rotation),
-				storage: new StorageData(Ship.generic[typeOrData.class].storage, typeOrData.storage),
-				hp: +typeOrData.hp,
-				reload: +typeOrData.reload,
-				_generic: Ship.generic[typeOrData.class],
+				class: classOrData.class,
+				position: BABYLON.Vector3.FromArray(classOrData.position),
+				rotation: BABYLON.Vector3.FromArray(classOrData.rotation),
+				storage: new StorageData(Ship.generic[classOrData.class].storage, classOrData.storage),
+				hp: +classOrData.hp,
+				reload: +classOrData.reload,
+				jumpCooldown: +classOrData.jumpCooldown,
+				_generic: Ship.generic[classOrData.class],
 			});
 		} else {
-			super(typeOrData, faction, level ?? faction.getScene());
-			let x = random.int(0, faction.power),
+			super(classOrData, owner, level ?? owner.getScene());
+			let x = random.int(0, owner.power),
 				distance = Math.log(x ** 2 + 1) ** 3;
 			Object.assign(this, {
-				position: faction.position.add(random.cords(distance, true)), // Will be changed to shipyard location
-				storage: new StorageData(Ship.generic[typeOrData].storage),
-				type: typeOrData,
-				hp: Ship.generic[typeOrData].hp,
-				reload: Ship.generic[typeOrData].reload,
-				_generic: Ship.generic[typeOrData],
+				position: owner.position.add(random.cords(distance, true)), // Will be changed to shipyard location
+				storage: new StorageData(Ship.generic[classOrData].storage),
+				class: classOrData,
+				hp: Ship.generic[classOrData].hp,
+				reload: Ship.generic[classOrData].reload,
+				jumpCooldown: Ship.generic[classOrData].jumpCooldown,
+				_generic: Ship.generic[classOrData],
 			});
 		}
 
-		if (faction?.fleet instanceof Array) {
-			faction.fleet.push(this);
+		if (owner?.fleet instanceof Array) {
+			owner.fleet.push(this);
 		}
 	}
 	remove() {
 		this.dispose();
 		this.owner.fleet.spliceOut(this);
 		this.getScene().entities.delete(this.id);
+	}
+	jump(location) {
+		if(!(location instanceof BABYLON.Vector3)) throw new TypeError('Location is not a Vector3');
+		if(this.jumpCooldown > 0) return 'Hyperspace still on cooldown';
+		if(BABYLON.Vector3.Distance(this.position, location) > this._generic.jumpRange) return 'Target location out of range';
+
+		this.position = location.clone();
+		this.jumpCooldown = this._generic.jumpCooldown;
 	}
 	//this will be replaced with hardpoints!
 	attack(entity) {
@@ -737,6 +760,19 @@ const Ship = class extends Entity {
 			entity.hp -= (this._generic.damage / 60) * entity.getScene().getAnimationRatio() * (Math.random() < this._generic.critChance ? this._generic.critDamage : 1);
 			setTimeout(() => laser.dispose(), 50);
 		}, random.int(10, 100));
+	}
+	serialize(){
+		return {
+			position: this.position.asArray().map((num) => +num.toFixed(3)),
+			rotation: this.rotation.asArray().map((num) => +num.toFixed(3)),
+			owner: this.owner?.id,
+			id: this.id,
+			name: this.name,
+			class: this.class,
+			type: 'ship',
+			hp: +this.hp.toFixed(3),
+			storage: this.storage.serialize().items,
+		}
 	}
 };
 const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
@@ -1135,6 +1171,7 @@ const Level = class extends BABYLON.Scene {
 				entity.remove();
 				//Events: trigger event, for sounds
 			} else if (entity instanceof Ship) {
+				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
 				let targets = [...this.entities.values()].filter((e) => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entity._generic.range);
 				let target = targets[random.int(0, targets.length - 1)];
 				if (target && entity.reload <= 0) {
@@ -1211,12 +1248,7 @@ const Level = class extends BABYLON.Scene {
 				};
 				switch (entity.constructor.name) {
 					case 'Ship':
-						Object.assign(entityData, {
-							type: 'ship',
-							class: entity.type,
-							storage: entity.storage.serialize().items,
-							hp: +entity.hp.toFixed(3),
-						});
+						entityData = entity.serialize();
 						break;
 					default:
 						Object.assign(entityData, {
