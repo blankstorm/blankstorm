@@ -410,7 +410,7 @@ const Save = class {
 			Level.Load(saveData, game.engine, save);
 			return save;
 		}
-		static async CreateDefault(name, playerID, playerName){
+		static async CreateDefault(name, playerID, playerName) {
 			let save = new Save.Live(name);
 
 			await save.ready();
@@ -430,7 +430,7 @@ const Save = class {
 
 			let playerData = new PlayerData({ id: playerID, name: playerName, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
 			save.playerData.set(playerID, playerData);
-			
+
 			playerData._shipLaserColor = BABYLON.Color3.Teal();
 			new Ship('mosquito', playerData, save);
 			new Ship('cillus', playerData, save);
@@ -1309,12 +1309,14 @@ $('#save button.back').click(() => {
 });
 $('#save .new').click(() => {
 	$('#save')[0].close();
-	Save.Live.CreateDefault($('#save .name').val(), player.id, player.username).ready().then((live) => {
-		saves.current = live;
-		live.play();
-		let save = new Save(live.serialize());
-		if (!debug.disable_saves) save.saveToDB();
-	});
+	Save.Live.CreateDefault($('#save .name').val(), player.id, player.username)
+		.ready()
+		.then((live) => {
+			saves.current = live;
+			live.play();
+			let save = new Save(live.serialize());
+			if (!debug.disable_saves) save.saveToDB();
+		});
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();

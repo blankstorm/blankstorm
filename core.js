@@ -1144,12 +1144,12 @@ const Level = class extends BABYLON.Scene {
 			}
 		}
 	}
-	screenToWorldPlane(x, y, pickY){
+	screenToWorldPlane(x, y, pickY) {
 		this.xzPlane.position.y = pickY || 0;
 		let pickInfo = this.pick(x, y, (mesh) => mesh == this.xzPlane);
 		return pickInfo.pickedPoint || BABYLON.Vector3.Zero();
 	}
-	handleCanvasClick(e, owner){
+	handleCanvasClick(e, owner) {
 		owner ??= [...this.playerData][0];
 		if (!e.shiftKey) {
 			for (let [id, entity] of this.entities) {
@@ -1183,7 +1183,7 @@ const Level = class extends BABYLON.Scene {
 			}
 		}
 	}
-	handleCanvasRightClick(e, owner){
+	handleCanvasRightClick(e, owner) {
 		for (let [id, entity] of this.entities) {
 			if (entity.selected && entity.owner == owner) {
 				let newPosition = this.screenToWorldPlane(e.clientX, e.clientY, entity.position.y);
