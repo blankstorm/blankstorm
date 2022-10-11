@@ -9,6 +9,7 @@
 		"format": "npm run format:check && npm run format:fix",
 		"lint:check": "npx eslint *.js",
 		"lint:fix": "npx eslint  --fix *.js",
+		"lint:ci": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js *.js",
 		"lint": "npm run lint:check && npm run lint:fix",
 		"test": "npm run format:check && npm run lint:check"
 	},
@@ -29,6 +30,7 @@
 	"homepage": "https://github.com/dr-vortex/blankstorm#readme",
 	"devDependencies": {
 		"eslint": "^8.24.0",
+		"eslint-formatter-azure-devops": "^0.2.0",
 		"prettier": "^2.7.1"
 	}
 }
