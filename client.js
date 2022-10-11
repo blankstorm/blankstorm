@@ -41,9 +41,6 @@ const modal = (input = 'Are you sure?', options = { Cancel: false, Ok: true }) =
 			});
 			ui.update();
 		}),
-	_alert = window.alert,
-	_confirm = window.confirm,
-	_prompt = window.prompt,
 	alert = (data) => modal(data, { Ok: true }),
 	confirm = async (data) => {
 		let res = await modal(data);
@@ -281,7 +278,7 @@ const Waypoint = class extends BABYLON.Node {
 							color: BABYLON.Color3.FromHexString(data.color),
 							position: new BABYLON.Vector3(data.x, data.y, data.z),
 						},
-						game.scene()
+						saves.current
 					);
 					ui.update();
 				}
@@ -318,7 +315,7 @@ const Waypoint = class extends BABYLON.Node {
 		return this.readonly ? ui.filter('span:gt(1)') : ui;
 	}
 	get screenPos() {
-		return BABYLON.Vector3.Project(this.position, BABYLON.Matrix.Identity(), game.scene().getTransformMatrix(), { x: 0, y: 0, width: innerWidth, height: innerHeight });
+		return BABYLON.Vector3.Project(this.position, BABYLON.Matrix.Identity(), saves.current.getTransformMatrix(), { x: 0, y: 0, width: innerWidth, height: innerHeight });
 	}
 	constructor(
 		{
@@ -329,7 +326,7 @@ const Waypoint = class extends BABYLON.Node {
 			icon = 'location-dot',
 			readonly = false,
 		},
-		scene = game.scene()
+		scene = saves.current
 	) {
 		super(id, scene);
 		scene.waypoints.push(this);
@@ -619,14 +616,13 @@ db.tx('mods').then((tx) => {
 
 const game = {
 	canvas: $('canvas.game'),
-	engine: new BABYLON.Engine($('canvas.game')[0], true, { preserveDrawingBuffer: true, stencil: true }),
+	engine: new BABYLON.Engine($('canvas.game')[0], true, { preserveDrawingBuffer: true, stencil: true }), //TODO: move engine to core
 	screenshots: [],
 	mods: new Map(),
 	isPaused: true,
 	mp: false,
 	mpEnabled: true,
 	hitboxes: false,
-	difficulty: 1,
 	strobeInterval: null,
 	strobe: (rate) => {
 		if (game.strobeInterval) {
@@ -917,7 +913,7 @@ const warp = {
 			warp.cooldown = new Action(distance * 1000, 100, () => {});
 			game.currentLevel = destination;
 			player.data().cam._scene = game.scene(destination);
-			game.chat(`Warped to ${destination.x},${destination.y} (${game.scene().name})`);
+			game.chat(`Warped to ${destination.x},${destination.y} (${saves.current.name})`);
 			player.reset();
 			player.data().cam.target = player.data().position;
 			ui.update();
@@ -1007,7 +1003,7 @@ const ui = {
 				.appendTo('div.yrd');
 		});
 	},
-	update: (scene = game.scene()) => {
+	update: (scene = saves.current) => {
 		try {
 			if (saves.current instanceof Save.Live && player.data() instanceof PlayerData) {
 				$('div.screenshots').empty();
@@ -1607,18 +1603,14 @@ const loop = () => {
 	if (saves.current instanceof Save.Live) {
 		if (!game.isPaused) {
 			try {
-				Ship.multiplyer = {
-					damage: 1 + (1 - game.difficulty) + player.data().tech.laser * 0.1,
-					hp: 1 + (1 - game.difficulty) + player.data().tech.armor * 0.15,
-				};
 				if (player.data().cam.alpha > Math.PI) player.data().cam.alpha -= 2 * Math.PI;
 				if (player.data().cam.alpha < -Math.PI) player.data().cam.alpha += 2 * Math.PI;
 				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.sensitivity;
 				player.updateFleet();
-				game.scene().meshes.forEach((mesh) => {
+				saves.current.meshes.forEach((mesh) => {
 					if (mesh instanceof CelestialBody) mesh.showBoundingBox = game.hitboxes;
 					if (mesh.parent instanceof Entity) mesh.getChildMeshes().forEach((child) => (child.showBoundingBox = game.hitboxes));
-					if (mesh != game.scene().skybox && isHex(mesh.id)) mesh.showBoundingBox = game.hitboxes;
+					if (mesh != saves.current.skybox && isHex(mesh.id)) mesh.showBoundingBox = game.hitboxes;
 				});
 				for (let [id, ship] of saves.current.entities) {
 					if (player.data().fleet.length > 0) {
@@ -1636,9 +1628,9 @@ const loop = () => {
 					saves.current.tick();
 				}
 				player.updateFleet();
-				player.data().position.addInPlace(player.data().velocity.scale(game.scene().getAnimationRatio()));
+				player.data().position.addInPlace(player.data().velocity.scale(saves.current.getAnimationRatio()));
 				player.data().velocity.scaleInPlace(0.9);
-				game.scene().waypoints.forEach((waypoint) => {
+				saves.current.waypoints.forEach((waypoint) => {
 					let pos = waypoint.screenPos;
 					waypoint.marker
 						.css({
@@ -1682,7 +1674,7 @@ const loop = () => {
 						<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
 					`);
 
-				game.scene().render();
+				saves.current.render();
 			} catch (err) {
 				console.error(`loop() failed: ${err.stack ?? err}`);
 			}

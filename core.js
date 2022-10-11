@@ -692,10 +692,10 @@ const Ship = class extends Entity {
 			model: 'models/horizon.glb',
 		},
 	};
-	constructor(typeOrData, faction, save) {
+	constructor(typeOrData, faction, level) {
 		if (!Ship.generic[typeOrData] && !Ship.generic[typeOrData.class]) throw new ReferenceError(`Ship type ${typeOrData} does not exist`);
 		if (typeof typeOrData == 'object') {
-			super(typeOrData.class, faction, save ?? faction.getScene(), typeOrData.id);
+			super(typeOrData.class, faction, level ?? faction.getScene(), typeOrData.id);
 			Object.assign(this, {
 				type: typeOrData.class,
 				position: BABYLON.Vector3.FromArray(typeOrData.position),
@@ -706,7 +706,7 @@ const Ship = class extends Entity {
 				_generic: Ship.generic[typeOrData.class],
 			});
 		} else {
-			super(typeOrData, faction, save ?? faction.getScene());
+			super(typeOrData, faction, level ?? faction.getScene());
 			let x = random.int(0, faction.power),
 				distance = Math.log(x ** 2 + 1) ** 3;
 			Object.assign(this, {
@@ -1234,7 +1234,7 @@ const Level = class extends BABYLON.Scene {
 		while (version != data.version && Level.upgrades.has(data.version)) {
 			data = Level.upgrades.get(data.version)(data);
 			if (version != data.version && !Level.upgrades.has(data.version)) {
-				alert(`Can't upgrade save from ${versions.get(data.version).text} to ${versions.get(version).text}.`);
+				alert(`Can't upgrade level from ${versions.get(data.version).text} to ${versions.get(version).text}.`);
 			}
 		}
 		return data;
@@ -1344,22 +1344,22 @@ const Level = class extends BABYLON.Scene {
 		},
 	};
 
-	static Load(saveData, engine, save) {
-		if (saveData.version != version) {
+	static Load(levelData, engine, level) {
+		if (levelData.version != version) {
 			alert(`Can't load save: wrong version`);
-			throw new Error(`Can't load save from data: wrong version (${saveData.version})`);
+			throw new Error(`Can't load save from data: wrong version (${levelData.version})`);
 		}
-		save ??= new Level(saveData.name, engine, true);
-		Object.assign(save, {
-			date: new Date(saveData.date),
+		level ??= new Level(levelData.name, engine, true);
+		Object.assign(level, {
+			date: new Date(levelData.date),
 			bodies: new Map(),
 			entities: new Map(),
 			playerData: new Map(),
-			...saveData.filter('id', 'name', 'versions', 'difficulty'),
+			...levelData.filter('id', 'name', 'versions', 'difficulty'),
 		});
 
-		for (let [id, data] of saveData.playerData) {
-			save.playerData.set(
+		for (let [id, data] of levelData.playerData) {
+			level.playerData.set(
 				id,
 				new PlayerData({
 					position: BABYLON.Vector3.FromArray(data.position),
@@ -1370,37 +1370,37 @@ const Level = class extends BABYLON.Scene {
 			);
 		}
 
-		for (let id in saveData.bodies) {
-			let bodyData = saveData.bodies[id],
+		for (let id in levelData.bodies) {
+			let bodyData = levelData.bodies[id],
 				body;
 			switch (bodyData.type) {
 				case 'star':
 					body = new Star({
 						position: BABYLON.Vector3.FromArray(bodyData.position),
 						color: BABYLON.Color3.FromArray(bodyData.color),
-						scene: save,
+						scene: level,
 						...bodyData.filter('name', 'radius', 'id'),
 					});
 					break;
 				case 'planet':
 					body = new Planet({
 						position: BABYLON.Vector3.FromArray(bodyData.position),
-						scene: save,
+						scene: level,
 						...bodyData.filter('name', 'radius', 'id', 'biome', 'owner', 'rewards'),
 					});
 					break;
 				default:
-					new CelestialBody(bodyData.name, bodyData.id, save);
+					new CelestialBody(bodyData.name, bodyData.id, level);
 				//TODO: Change Star/Planet constructors to use standerdized data
 			}
 		}
-		for (let entityData of saveData.entities) {
+		for (let entityData of levelData.entities) {
 			switch (entityData.type) {
 				case 'ship':
-					new Ship(entityData, save.bodies.get(entityData.owner) ?? save.playerData.get(entityData.owner), save);
+					new Ship(entityData, level.bodies.get(entityData.owner) ?? level.playerData.get(entityData.owner), level);
 					break;
 				default:
-					new Entity(null, null, save);
+					new Entity(null, null, level);
 			}
 		}
 	}
