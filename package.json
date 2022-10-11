@@ -7,9 +7,9 @@
 		"format:check": "npx prettier --check *.{html,js}",
 		"format:fix": "npx prettier --write *.{html,js}",
 		"format": "npm run format:check && npm run format:fix",
-		"lint:check": "npx eslint *.js",
+		"lint:check-old": "npx eslint *.js",
 		"lint:fix": "npx eslint  --fix *.js",
-		"lint:ci": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js *.js",
+		"lint:check": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js *.js",
 		"lint": "npm run lint:check && npm run lint:fix",
 		"test": "npm run format:check && npm run lint:check"
 	},
