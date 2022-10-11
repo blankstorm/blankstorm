@@ -147,12 +147,6 @@ $.fn.cm = function (...content) {
 	});
 	return this;
 };
-BABYLON.Vector3.ScreenToWorldPlane = (x, y, pickY, scene) => {
-	if (!(scene instanceof BABYLON.Scene)) throw new TypeError('not a Scene');
-	scene.xzPlane.position.y = pickY || 0;
-	let pickInfo = scene.pick(x, y, (mesh) => mesh == scene.xzPlane);
-	return pickInfo.pickedPoint || BABYLON.Vector3.Zero();
-};
 
 const cookie = {},
 	mouse = { x: 0, y: 0, pressed: false },
@@ -414,6 +408,38 @@ const Save = class {
 		static Load(saveData) {
 			let save = new Save.Live(saveData.name, true);
 			Level.Load(saveData, game.engine, save);
+			return save;
+		}
+		static async CreateDefault(name, playerID, playerName){
+			let save = new Save.Live(name);
+
+			await save.ready();
+
+			for (let [id, body] of save.bodies) {
+				body.waypoint = new Waypoint(
+					{
+						name: body.name,
+						position: body.position,
+						color: BABYLON.Color3.FromHexString('#88ddff'),
+						icon: Planet.biomes.has(body.biome) && body instanceof Planet ? Planet.biomes.get(body.biome).icon : 'planet-ringed',
+						readonly: true,
+					},
+					save
+				);
+			}
+
+			let playerData = new PlayerData({ id: playerID, name: playerName, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
+			save.playerData.set(playerID, playerData);
+			
+			playerData._shipLaserColor = BABYLON.Color3.Teal();
+			new Ship('mosquito', playerData, save);
+			new Ship('cillus', playerData, save);
+			playerData.addItems(generate.items(5000));
+
+			save.addCamera(playerData.cam);
+			save.activeCamera = playerData.cam;
+			playerData.cam.radius = 10;
+
 			return save;
 		}
 	};
@@ -1283,32 +1309,10 @@ $('#save button.back').click(() => {
 });
 $('#save .new').click(() => {
 	$('#save')[0].close();
-	saves.current = new Save.Live($('#save .name').val());
-	saves.current.ready().then((lvl) => {
-		lvl.playerData.set(player.id, new PlayerData({ id: player.id, name: player.username, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true)) }, lvl));
-		lvl.addCamera(player.data().cam);
-		lvl.activeCamera = player.data().cam;
-
-		lvl.playerData.get(player.id)._shipLaserColor = BABYLON.Color3.Teal();
-		lvl.play();
-		for (let [id, body] of lvl.bodies) {
-			body.waypoint = new Waypoint(
-				{
-					name: body.name,
-					position: body.position,
-					color: BABYLON.Color3.FromHexString('#88ddff'),
-					icon: Planet.biomes.has(body.biome) && body instanceof Planet ? Planet.biomes.get(body.biome).icon : 'planet-ringed',
-					readonly: true,
-				},
-				lvl
-			);
-		}
-
-		new Ship('mosquito', player.data(), lvl);
-		new Ship('cillus', player.data(), lvl);
-		player.data().cam.radius = 10;
-		lvl.playerData.get(player.id).addItems(generate.items(5000));
-		let save = new Save(lvl.serialize());
+	Save.Live.CreateDefault($('#save .name').val(), player.id, player.username).ready().then((live) => {
+		saves.current = live;
+		live.play();
+		let save = new Save(live.serialize());
 		if (!debug.disable_saves) save.saveToDB();
 	});
 });
@@ -1504,48 +1508,13 @@ game.canvas.click((e) => {
 	}
 
 	if (saves.current instanceof Save.Live) {
-		if (!e.shiftKey) {
-			for (let [id, entity] of saves.current.entities) {
-				entity.mesh.getChildMeshes().forEach((mesh) => saves.current.hl.removeMesh(mesh));
-				entity.selected = false;
-			}
-		}
-		let pickInfo = saves.current.pick(saves.current.pointerX, saves.current.pointerY, (mesh) => {
-			let node = mesh;
-			while (node.parent) {
-				node = node.parent;
-				if (node instanceof Ship) {
-					return true;
-				}
-			}
-			return false;
-		});
-		if (pickInfo.pickedMesh) {
-			let node = pickInfo.pickedMesh;
-			while (node.parent) {
-				node = node.parent;
-			}
-			if (node instanceof Ship && node.owner == player.data()) {
-				if (node.selected) {
-					node.mesh.getChildMeshes().forEach((mesh) => saves.current.hl.removeMesh(mesh));
-					node.selected = false;
-				} else {
-					node.mesh.getChildMeshes().forEach((mesh) => saves.current.hl.addMesh(mesh, BABYLON.Color3.Green()));
-					node.selected = true;
-				}
-			}
-		}
+		saves.current.handleCanvasClick(e, player.data());
 	}
 	ui.update();
 });
 game.canvas.contextmenu((e) => {
 	if (saves.current instanceof Save.Live) {
-		for (let [id, entity] of saves.current.entities) {
-			if (entity.selected) {
-				let newPosition = BABYLON.Vector3.ScreenToWorldPlane(e.clientX, e.clientY, entity.position.y, saves.current);
-				entity.moveTo(newPosition, false);
-			}
-		}
+		saves.current.handleCanvasRightClick(e);
 	}
 });
 game.canvas.keydown((e) => {

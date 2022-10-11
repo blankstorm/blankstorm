@@ -1144,6 +1144,53 @@ const Level = class extends BABYLON.Scene {
 			}
 		}
 	}
+	screenToWorldPlane(x, y, pickY){
+		this.xzPlane.position.y = pickY || 0;
+		let pickInfo = this.pick(x, y, (mesh) => mesh == this.xzPlane);
+		return pickInfo.pickedPoint || BABYLON.Vector3.Zero();
+	}
+	handleCanvasClick(e, owner){
+		owner ??= [...this.playerData][0];
+		if (!e.shiftKey) {
+			for (let [id, entity] of this.entities) {
+				entity.mesh.getChildMeshes().forEach((mesh) => this.hl.removeMesh(mesh));
+				entity.selected = false;
+			}
+		}
+		let pickInfo = this.pick(this.pointerX, this.pointerY, (mesh) => {
+			let node = mesh;
+			while (node.parent) {
+				node = node.parent;
+				if (node instanceof Ship) {
+					return true;
+				}
+			}
+			return false;
+		});
+		if (pickInfo.pickedMesh) {
+			let node = pickInfo.pickedMesh;
+			while (node.parent) {
+				node = node.parent;
+			}
+			if (node instanceof Ship && node.owner == owner) {
+				if (node.selected) {
+					node.mesh.getChildMeshes().forEach((mesh) => this.hl.removeMesh(mesh));
+					node.selected = false;
+				} else {
+					node.mesh.getChildMeshes().forEach((mesh) => this.hl.addMesh(mesh, BABYLON.Color3.Green()));
+					node.selected = true;
+				}
+			}
+		}
+	}
+	handleCanvasRightClick(e, owner){
+		for (let [id, entity] of this.entities) {
+			if (entity.selected && entity.owner == owner) {
+				let newPosition = this.screenToWorldPlane(e.clientX, e.clientY, entity.position.y);
+				entity.moveTo(newPosition, false);
+			}
+		}
+	}
 	serialize() {
 		let data = {
 			date: this.date.toJSON(),
