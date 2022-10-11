@@ -744,9 +744,9 @@ const Ship = class extends Entity {
 		this.getScene().entities.delete(this.id);
 	}
 	jump(location) {
-		if(!(location instanceof BABYLON.Vector3)) throw new TypeError('Location is not a Vector3');
-		if(this.jumpCooldown > 0) return 'Hyperspace still on cooldown';
-		if(BABYLON.Vector3.Distance(this.position, location) > this._generic.jumpRange) return 'Target location out of range';
+		if (!(location instanceof BABYLON.Vector3)) throw new TypeError('Location is not a Vector3');
+		if (this.jumpCooldown > 0) return 'Hyperspace still on cooldown';
+		if (BABYLON.Vector3.Distance(this.position, location) > this._generic.jumpRange) return 'Target location out of range';
 
 		this.position = location.clone();
 		this.jumpCooldown = this._generic.jumpCooldown;
@@ -761,7 +761,7 @@ const Ship = class extends Entity {
 			setTimeout(() => laser.dispose(), 50);
 		}, random.int(10, 100));
 	}
-	serialize(){
+	serialize() {
 		return {
 			position: this.position.asArray().map((num) => +num.toFixed(3)),
 			rotation: this.rotation.asArray().map((num) => +num.toFixed(3)),
@@ -772,7 +772,7 @@ const Ship = class extends Entity {
 			type: 'ship',
 			hp: +this.hp.toFixed(3),
 			storage: this.storage.serialize().items,
-		}
+		};
 	}
 };
 const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {

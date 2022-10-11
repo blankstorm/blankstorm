@@ -398,13 +398,12 @@ const Save = class {
 				saves.selected = this.id;
 				game.isPaused = false;
 				player ??= [...this.playerData][0];
-				if(player instanceof PlayerData){
+				if (player instanceof PlayerData) {
 					this.activeCamera = player.cam;
 					player.cam.attachControl(game.canvas, true);
 					player.cam.inputs.attached.pointers.buttons = [1];
 					player.cam.target = player.position;
 				}
-				
 			} else {
 				alert('That save is in compatible with the current game version');
 			}
@@ -1386,10 +1385,10 @@ $('#settings button.back').click(() => {
 });
 $('#q div.warp button.warp').click(() => {
 	let destination = new BABYLON.Vector3(+$('input.warp.x').val(), 0, +$('input.warp.y').val());
-	player.data().fleet.forEach(ship => {
+	player.data().fleet.forEach((ship) => {
 		let offset = random.cords(player.data().power, true);
 		ship.jump(destination.add(offset));
-		console.log(ship.id + ' Jumped')
+		console.log(ship.id + ' Jumped');
 	});
 	$('#q').toggle();
 });
