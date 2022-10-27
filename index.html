@@ -381,7 +381,8 @@
 		<p style=position:absolute;font-size:25px;top:50%;font-family:sans-serif; text-shadow>Loading</p>
 	</div>
 	<input id=cli style=position:fixed;left:15px;bottom:15px;width:30%;height:30px;padding:0;margin:0;z-index:10 hide ofs=x>
-	<ul lsn id=chat style=position:fixed;left:15px;bottom:50px;width:30%;height:fit-content;max-height:35%;background:#2225;padding:0;margin:0;z-index:9 nbs ofn ofs=y bw></ul>
+	<ul lsn id=chat style=position:fixed;left:15px;bottom:50px;width:30%;height:fit-content;max-height:35%;background:#2225;padding:0;margin:0;z-index:9 nbs ofn bw></ul>
+	<ul lsn id=chat_history hide style=position:fixed;left:15px;bottom:50px;width:30%;height:fit-content;max-height:35%;background:#2225;padding:0;margin:0;z-index:9 nbs ofs=y bw></ul>
 	<div id=main cover bg=none center-flex>
 		<img src=image/title.png plot=c,90px,475px,75px />
 		<button class=sp plot=c,260px,350px,50px>Singleplayer</button>
@@ -396,14 +397,14 @@
 		<button class=new plot=r25px,b25px,125px,36px,a><svg><use href=#fa-plus /></svg> New</button>
 		<button class='refresh upload' plot=r175px,b25px,125px,36px,a><svg><use href=#fa-upload /></svg> Upload</button>
 	</ul>
-	<div id=save hide content>
-		<input placeholder="save name" class=name plot='c,50px,250px,2em,a'>
+	<dialog id=save hide ofs=y plot=0,0,300px,450px>
+		<input placeholder="save name" class=name plot=c,50px,250px,2em,a>
 		<button class=back plot=c-75px,b62.5px,150px,36.6px,a><svg><use href=#fa-arrow-left /></svg> Back</button>
-		<button class=new plot=50%,b62.5px,150px,36.6px,a>Start</button>
-		<form name=worldgen bg=none plot=10%,20%,80%,50%,a>
+		<button class=new plot=c+75px,b62.5px,150px,36.6px,a>Start</button>
+		<form name=worldgen bg=none plot=c,75px,80%,250px,a>
 			<input type=range name=difficulty label=Difficulty display='${{"0.5":"Easy","1":"Normal","1.5":"Hard","2":"<dfn style=\"font-style: normal;border-bottom:1px dotted var(--text-color)\" title=\"Disclaimer: Not yet limited to one life.\">Hardcore</dfn>"}[val]}' min=0.5 max=2 step=0.5 value=1><br><br>
 		</form>
-	</div>
+	</dialog>
 	<div id=server hide content>
 		<button class=back plot=c-75px,b62.5px,150px,36.6px,a><svg><use href=#fa-arrow-left /></svg> Cancel</button>
 		<button class=save plot=50%,b62.5px,150px,36.6px,a>Save</button>
@@ -425,7 +426,7 @@
 		<p class=url plot=c,1em,fit-content,1em,a></p>
 		<p class=players plot=c,2em,fit-content,1em,a></p>
 	</div>
-	<dialog id=modal style=width:350px;height:8em>
+	<dialog id=modal plot=0,0,350px,8em>
 		<p class=info plot=c,c-2em,300px,1em,a style=text-align:center></p>
 	</dialog>
 	<div id=e content hide game-ui style=z-index:5 tabindex=-1>
@@ -623,6 +624,7 @@
 	};
 
 	//JQuery plugins
+	$.ajaxSetup({timeout:3000});
 	$.fn.formData = function(data){
 		if (data) {
 			for (let i in data) {
@@ -683,6 +685,10 @@
 		let css = getComputedStyle(this[0]);
 		return `(x: ${css.left}, y: ${css.top})\n${css.width} x ${css.height} = ${parseFloat(css.width) / parseFloat(css.height)}`
 	}
+	$.fn.modal = function(options){
+		
+	}
+
 	let time = 0;
 	const cookie = {},
 	query = {},
@@ -754,7 +760,7 @@
 	const game = {
 		canvas: $('canvas.game'),
 		engine: new Engine($("canvas.game")[0], true, { preserveDrawingBuffer: true, stencil: true }),
-		version: 'infdev_11',
+		version: 'infdev_12',
 		versions: new Map([
 			['infdev_1', {text: 'Infdev 1', group: 'infdev'}],
 			['infdev_2', {text: 'Infdev 2', group: 'infdev'}],
@@ -766,7 +772,8 @@
 			['infdev_8', {text: 'Infdev 8', group: 'infdev'}],
 			['infdev_9', {text: 'Infdev 9', group: 'infdev'}],
 			['infdev_10', {text: 'Infdev 10', group: 'infdev'}],
-			['infdev_11', {text: 'Infdev 11', group: 'infdev'}]
+			['infdev_11', {text: 'Infdev 11', group: 'infdev'}],
+			['infdev_12', {text: 'Infdev 12', group: 'infdev'}]
 		]),
 		screenshots: [],
 		mods: new Map(),
@@ -787,6 +794,20 @@
 					.on('keydown', function(e){ e.preventDefault(); keybind[this.name] = e.key; $(this).text(keybind[this.name]) })
 			);
 			$('canvas.game,[ingame-ui],#hud,#hud_ship,#tablist').keydown(e => { if (e.key == val) onTrigger(e) });
+		},
+		toggleChat: command => {
+			$('#chat,#chat_history').toggle();
+			if ($('#cli').toggle().is(':visible')){
+				document.exitPointerLock();
+				$('#cli').focus();
+				if(command){
+					$('#cli').val('/');
+				}
+				e.preventDefault();
+			}else{
+				game.canvas.focus();
+				game.canvas[0].requestPointerLock();
+			}
 		},
 		getEntity: sel => {
 			if (typeof sel != 'string') throw new TypeError('getEntity: selector must be of type string');
@@ -1023,7 +1044,7 @@
 					}
 				}
 		},
-		chat: (...msg) => { for (let m of msg) { let i = $(`<li>${m}</li>`).appendTo($("#chat")); setTimeout(e => { i.fadeOut(2000, e => { i.remove() }) }, settings.chat * 1000) } },
+		chat: (...msg) => { for (let m of msg) { $(`<li></li>`).text(m).appendTo('#chat').fadeOut(1000 * settings.chat); $(`<li></li>`).text(m).appendTo('#chat_history')}},
 		error: (error, alrt) => { console.error(error); game.chat("Error: " + error) },
 		changeUI: (selector, hideAll) => {
 			if ($(selector).is(':visible')) {
@@ -1342,11 +1363,19 @@
 		game.mpEnabled = false;
 		game.chat('You\'re not logged in, and will not be able to play multiplayer.')
 	}
-	db.transaction('settings', 'readonly').objectStore('settings').get('general').onsuccess = e => {
-		settings = e.target.result;
+	let transaction = db.transaction('settings', 'readonly').objectStore('settings').get('general');
+	transaction.onsuccess = e => {
+		settings = e.target.result ?? settings;
 		$('form.gen').formData(settings);
 		ui.update();
-	};
+		delete transaction;
+	}
+	transaction.onerror = e => {
+		console.warn(`Couldn't find saved settings.`);
+		$('form.gen').formData(settings);
+		delete transaction;
+	}
+	
 
 	Object.defineProperties(tech, {
 		price: {
@@ -1383,7 +1412,6 @@
 		$('#main button.exit').attr('plot', 'c,460px,350px,50px');
 	}
 
-
 	game.createKeybind('forward', 'w', 'Forward', e => {
 		let n = player.camIsActive ? player : player.data().fleet[player.data().fleet.sel],
 			acceleration = (player.camIsActive ? 1 : -1) * (player.speed + player.data().tech.thrust / 10);
@@ -1396,20 +1424,8 @@
 			acceleration = (player.camIsActive ? -1 : 1) * (player.speed + player.data().tech.thrust / 10);
 		n.velocity.addInPlace((player.camIsActive ? n : n.mesh()).getDirection(new Vector3(0, 0, acceleration)));
 	});
-	game.createKeybind('chat', 't', 'Toggle Chat', e => {
-		if ($('#cli').toggle().is(':visible')) {
-			document.exitPointerLock();
-			$('#cli').focus();
-			e.preventDefault();
-		}
-	});
-	game.createKeybind('command', '/', 'Toggle Command', e => {
-		if ($('#cli').toggle().is(':visible')){
-			document.exitPointerLock();
-			$('#cli').focus().val('/');
-			e.preventDefault();
-		}
-	});
+	game.createKeybind('chat', 't', 'Toggle Chat', e => {e.preventDefault();game.toggleChat()});
+	game.createKeybind('command', '/', 'Toggle Command', e => {e.preventDefault();game.toggleChat(true)});
 	game.createKeybind('rcs', 'f', 'Toggle RCS', e => {
 		player.rcsIsActive = !player.rcsIsActive;
 		$('#hud .rcs').text(`RCS: ${player.rcsIsActive ? 'ON' : 'OFF'}`);
@@ -1496,7 +1512,7 @@
 					}
 					s.gui.eq(2).html(`[${ship.num(shiptype)}]&nbsp;${s.displayName}`);
 				})
-				.tooltip(`${s.desc}<br><colorbr><strong>Material Cost</strong>${buildCost}<br>${Object.keys(s.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${settings.debug_tooltips ? '<br>type: ' + shiptype : ''}`);
+				.tooltip(`${s.desc}<br><colorbr><strong>Material Cost</strong>${buildCost}<br>${Object.keys(s.requires).length ? `<br><strong>Requires:</strong>` : ``}${techRequires}${settings?.debug_tooltips ? '<br>type: ' + shiptype : ''}`);
 			return s.gui;
 		},
 		lab: (t, row) => {
@@ -1580,7 +1596,7 @@
 				save.gui.date.text(save.date.toLocaleString());
 			});
 			Save.cache.forEach(save => {
-				save.gui.name.html(save.data.name + ' <em>(Cached)</em>');
+				save.gui.name.html(save.data.name + ' <em>(Cached / Unloaded)</em>');
 				save.gui.version.text(game.versions.get(save.data.version) ? game.versions.get(save.data.version).text : save.data.version);
 				save.gui.date.text(new Date(save.data.date).toLocaleString());
 			});
@@ -2261,21 +2277,29 @@
 			.html('<svg><use href=#fa-arrows-rotate /></svg>')
 			.css('animation', '2s linear infinite rotate');
 			let beforeTime = Date.now();
-			$.get(`https://${this.url}/ping`, data => {
+			let url = /.+:(\d){1,5}/.test(this.url) ? this.url : this.url + ':1123';
+			$.get(`${(/http(s?):\/\//.test(url) ? url : 'https://' + url)}/ping`)
+			.done(data => {
 				if(isJSON(data)){
 					this.pingData = JSON.parse(data);
 					this.gui.info
 					.text(`${((Date.now() - beforeTime)/2).toFixed()}ms ${this.pingData.currentPlayers}/${this.pingData.maxPlayers}`)
 					.tooltip(`${this.url}<br><br>${this.pingData.version}<br><br>${this.pingData.message}`)
 					.css('font-size', `${settings.font_size}px`)
-					.css('animation', 'unset');
 				}else{
 					this.gui.info
 					.html('<svg><use href=#fa-xmark /></svg>')
-					.css('animation', 'unset')
-					.tooltip(`Can't connect to server`);
+					.tooltip(`Invalid response`);
 				}
-			});
+			})
+			.fail(data => {
+				this.gui.info
+				.html('<svg><use href=#fa-xmark /></svg>')
+				.tooltip(`Can't connect to server`);
+			})
+			.always(data => {
+				this.gui.info.css('animation', 'unset');
+			})
 		}
 	};
 
@@ -2566,12 +2590,13 @@
 	$('#cli').keydown(e => {
 		let c = game.cli;
 		if (c.line == 0) c.currentInput = $("#cli").val();
-		switch (e.key) {
+		switch (e.key){
+			case 'Escape': game.toggleChat();break;
 			case "ArrowUp": if (c.line > -c.prev.length) $("#cli").val(c.prev.at(--c.line)); if (c.line == -c.prev.length) if (++c.counter == 69) $("#cli").val('nice'); break;
 			case "ArrowDown": c.counter = 0; if (c.line < 0) ++c.line == 0 ? $("#cli").val(c.currentInput) : $("#cli").val(c.prev.at(c.line)); break;
 			case 'Enter':
 				c.counter = 0;
-				if ((/[^\s]/).test($("#cli").val()) && $("#cli").val() != '') {
+				if ((/[^\s\/]/).test($("#cli").val())){
 					if (c.prev.at(-1) != c.currentInput) c.prev.push($("#cli").val());
 					if ($('#cli').val()[0] == '/') game.chat(game.runCommand($("#cli").val().slice(1)))
 					else game.mp ? servers.get(servers.sel).socket.emit("chat", $("#cli").val()) : player.chat($("#cli").val())
