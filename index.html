@@ -16,13 +16,16 @@
 					req.onupgradeneeded = (e) => {
 						let db = req.result;
 						switch (e.oldVersion) {
+							case 3:
+								if (db.objectStoreNames.contains('settings')) db.deleteObjectStore('settings');
+								//f (db.objectStoreNames.contains('servers')) db.deleteObjectStore('settings');
+								break;
 							case 2:
 								if (db.objectStoreNames.contains('locales')) db.deleteObjectStore('locales');
 								break;
 							case 0:
-								db.createObjectStore('saves');
-								db.createObjectStore('settings');
 								db.createObjectStore('servers');
+								db.createObjectStore('saves');
 								db.createObjectStore('mods');
 						}
 					};

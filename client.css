@@ -50,12 +50,6 @@ li {
 	font-family: var(--font-family);
 	font-size: var(--font-size);
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
 code {
 	font-family: monospace;
 	background-color: #222;
@@ -114,7 +108,7 @@ textarea {
 input:hover {
 	cursor: text;
 }
-input[type='checkbox']:hover {
+input[type='checkbox']:hover, [clickable]{
 	cursor: pointer;
 }
 dialog {

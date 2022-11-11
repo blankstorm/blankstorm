@@ -5,8 +5,14 @@ const config = {
 	mesh_segments: 32,
 	render_quality: 0,
 	load_remote_manifest: false,
+	playerCamera: {
+		wheelPrecision: 5,
+		lowerRadiusLimit: 1,
+		upperRadiusLimit: 50,
+		minZ: 0.1,
+		radius: 10,
+	},
 	settings: {},
-	debug: {},
 };
 
 const version = 'alpha_prototype',
@@ -115,32 +121,16 @@ const random = {
 const generate = {
 	enemies: (power) => {
 		//enemy spawning algorithm
-		let e = [],
-			p = [];
-		for (let i in Ship.generic) {
-			Ship.generic[i].enemy ? p.push(Ship.generic[i].power) : 0;
-		}
-		p.sort((c1, c2) => {
-			if (c1 > c2) {
-				return -1;
-			} else if (c2 > c1) {
-				return 1;
-			} else {
-				return 0;
-			}
-		});
-		for (let i = 0; i < p.length; i++) {
-			for (let j in Ship.generic) {
-				p[i] == Ship.generic[j].power ? (p[i] = j) : 0;
-			}
-		}
-		for (let i = 0; i < p.length; i++) {
-			for (let j = 0; j < Math.floor(power / Ship.generic[p[i]].power); j++) {
-				e.push(p[i]);
-				power -= Ship.generic[p[i]].power;
-			}
-		}
+		let e = [];
 		e.power = power;
+		let generic = [...Ship.generic];
+		generic.sort((a, b) => b[1].power - a[1].power); //decending
+		for (let [name, ship] of generic) {
+			for (let j = 0; j < Math.floor(power / ship.power); j++) {
+				e.push(name);
+				power -= ship.power;
+			}
+		}
 		return e;
 	},
 	items: (quantity = 0, rares) => {
@@ -155,6 +145,7 @@ const generate = {
 		return result;
 	},
 };
+const wait = (time) => new Promise((res) => setTimeout(res, time));
 
 //custom stuff
 Object.defineProperty(Object.prototype, 'filter', {
@@ -428,8 +419,7 @@ const PlayerData = class extends BABYLON.TransformNode {
 		if (!(level instanceof Level) && level) throw new TypeError('passed level not a Level');
 		super(data.name, level);
 		this.cam = new BABYLON.ArcRotateCamera(data.name, -Math.PI / 2, Math.PI / 2, 5, BABYLON.Vector3.Zero(), level);
-		this.cam.upperRadiusLimit = 50;
-		this.cam.lowerRadiusLimit = 2.5;
+		Object.assign(this.cam, config.playerCamera);
 		this.cam.target = this.position;
 		Object.assign(this, data);
 	}
@@ -449,19 +439,123 @@ const PlayerData = class extends BABYLON.TransformNode {
 		this.velocity.addInPlace(direction);
 	}
 };
-const Entity = class extends BABYLON.TransformNode {
-	static generic = new Map();
-	static loadType(data) {
-		Entity.generic.set(data.id, {
-			...data,
-			model: null,
-		});
+const Hardpoint = class extends BABYLON.TransformNode {
+	static generic = new Map([
+		[
+			'laser',
+			{
+				damage: 1,
+				reload: 10,
+				range: 200,
+				critChance: 0.05,
+				critFactor: 1.5,
+				model: 'models/laser.glb',
+				projectiles: 1,
+				projectileInterval: 0, //not needed
+				projectileModel: 'models/laser_projectile.glb',
+				async fire(target) {
+					await wait(random.int(0, 25));
+					let laser = BABYLON.Mesh.CreateLines('laser.' + random.hex(16), [this.getAbsolutePosition(), target.getAbsolutePosition()], this.getScene());
+					laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red();
+					target.entity.hp -= (this._generic.damage / Level.tickRate) * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
+					await wait(random.int(0, 25));
+					laser.dispose();
+				},
+			},
+		],
+	]);
+	_generic = {};
+	_entity;
+	#_res;
+	instanceReady;
+	constructor(type, ship, id = random.hex(32)) {
+		if (!(ship instanceof Ship)) throw new TypeError();
+		if (!(ship.level instanceof Level)) throw new TypeError();
+		super(id);
+		this._generic = Hardpoint.generic.get(type);
+
+		this.level = ship.level;
+		this.parent = ship;
+		this._entity = ship;
+		this.reload = this._generic.reload;
+		let _res;
+		this.instanceReady = new Promise((res) => (_res = res));
+		this.#_res = _res;
+		this.#createInstance(type).catch((err) => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${type}: ${err}`));
 	}
-	_generic = { speed: 1 };
+
+	get entity() {
+		return this._entity;
+	}
+
 	async #createInstance(type) {
-		await this.level.loadedEntityMeshes;
-		if (typeof this.level.genericEntities[type]?.instantiateModelsToScene == 'function') {
-			this.mesh = this.level.genericEntities[type].instantiateModelsToScene().rootNodes[0];
+		await this.level.loadedGenericMeshes;
+		if (typeof this.level.genericMeshes[type]?.instantiateModelsToScene == 'function') {
+			this.mesh = this.level.genericMeshes[type].instantiateModelsToScene().rootNodes[0];
+		} else {
+			this.mesh = BABYLON.MeshBuilder.CreateBox('error_mesh', { size: 1 }, this.level);
+			this.mesh.material = new BABYLON.StandardMaterial('error_material', this.level);
+			this.mesh.material.emissiveColor = BABYLON.Color3.Gray();
+			throw 'Origin mesh does not exist';
+		}
+		this.mesh.setParent(this);
+		this.mesh.position = BABYLON.Vector3.Zero();
+		this.mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI);
+		this.#_res();
+	}
+
+	remove() {}
+
+	fireProjectile(target) {
+		this._generic.fire.call(this, target);
+		this.reload = this._generic.reload;
+	}
+};
+const Entity = class extends BABYLON.TransformNode {
+	_generic = { speed: 1 };
+
+	#selected = false;
+
+	constructor(type, owner, level, id = random.hex(32)) {
+		if (!(level instanceof Level)) throw new TypeError('passed level must be a Level');
+		super(id, level);
+		this.id = id;
+		this.owner = owner;
+		this.level = level;
+		this.#createInstance(type).catch((err) => console.warn(`Failed to create entity mesh instance for #${id} of type ${type}: ${err}`));
+		level.entities.set(this.id, this);
+	}
+
+	get entity() {
+		return this;
+	}
+
+	get selected() {
+		return this.#selected;
+	}
+
+	select() {
+		[this.mesh, ...this.hardpoints.map((hp) => hp.mesh)].forEach((mesh) => {
+			mesh.getChildMeshes().forEach((child) => {
+				this.level.hl.addMesh(child, BABYLON.Color3.Green());
+			});
+		});
+		this.#selected = true;
+	}
+
+	unselect() {
+		[this.mesh, ...this.hardpoints.map((hp) => hp.mesh)].forEach((mesh) => {
+			mesh.getChildMeshes().forEach((child) => {
+				this.level.hl.removeMesh(child);
+			});
+		});
+		this.#selected = false;
+	}
+
+	async #createInstance(type) {
+		await this.level.loadedGenericMeshes;
+		if (typeof this.level.genericMeshes[type]?.instantiateModelsToScene == 'function') {
+			this.mesh = this.level.genericMeshes[type].instantiateModelsToScene().rootNodes[0];
 		} else {
 			this.mesh = BABYLON.MeshBuilder.CreateBox('error_mesh', { size: 1 }, this.level);
 			this.mesh.material = new BABYLON.StandardMaterial('error_material', this.level);
@@ -472,22 +566,16 @@ const Entity = class extends BABYLON.TransformNode {
 		this.mesh.position = BABYLON.Vector3.Zero();
 		this.mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI);
 	}
-	constructor(type, owner, level, id = random.hex(32)) {
-		if (!(level instanceof Level)) throw new TypeError('passed level must be a Level');
-		super();
-		this.id = id;
-		this.owner = owner;
-		this.level = level;
-		this.#createInstance(type).catch((err) => console.warn(`Failed to create entity mesh instance for #${id} of type ${type} owned by ${owner?.name ?? owner}: ${err}`));
-		level.entities.set(this.id, this);
-	}
+
 	remove() {
 		this.mesh.dispose();
 		this.getScene().entities.delete(this.id);
 	}
+
 	toString() {
 		return `Entity #${this.id}`;
 	}
+
 	followPath(path) {
 		if (!(path instanceof Path)) throw new TypeError('path must be a Path');
 		return new Promise((resolve) => {
@@ -530,210 +618,287 @@ const Entity = class extends BABYLON.TransformNode {
 			}
 		});
 	}
+
 	moveTo(location, isRelative) {
 		if (!(location instanceof BABYLON.Vector3)) throw new TypeError('location must be a Vector3');
-		if (this.currentPath && config.debug.show_path_gizmos) this.currentPath.disposeGizmo();
+		if (this.currentPath && config.settings.debug.show_path_gizmos) this.currentPath.disposeGizmo();
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.level);
-		if (config.debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, BABYLON.Color3.Green());
+		if (config.settings.debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, BABYLON.Color3.Green());
 		this.followPath(this.currentPath).then(() => {
-			if (config.debug.show_path_gizmos) {
+			if (config.settings.debug.show_path_gizmos) {
 				this.currentPath.disposeGizmo();
 			}
 		});
 	}
+
+	serialize() {
+		return {
+			position: this.position.asArray().map((num) => +num.toFixed(3)),
+			rotation: this.rotation.asArray().map((num) => +num.toFixed(3)),
+			owner: this.owner?.id,
+			id: this.id,
+			name: this.name,
+			type: 'entity',
+		};
+	}
+	static generic = new Map();
+	static FromData(data, owner, level) {
+		let entity = new Entity(data.type, owner, level, data.id);
+		entity.position = BABYLON.Vector3.FromArray(data.position);
+		entity.rotation = BABYLON.Vector3.FromArray(data.rotation);
+		return entity;
+	}
 };
 const Ship = class extends Entity {
-	static generic = {
-		wind: {
-			hp: 10,
-			speed: 2,
-			agility: 2,
-			range: 125,
-			jumpRange: 10000,
-			jumpCooldown: 30,
-			power: 1,
-			enemy: true,
-			camRadius: 10,
-			xp: 5,
-			storage: 100,
-			critChance: 0.1,
-			critDamage: 1.5,
-			damage: 0.1,
-			reload: 0.5,
-			recipe: { metal: 1000, minerals: 500, fuel: 250 },
-			requires: {},
-			model: 'models/wind.glb',
-		},
-		mosquito: {
-			hp: 25,
-			speed: 1,
-			agility: 1.5,
-			range: 150,
-			jumpRange: 10000,
-			jumpCooldown: 40,
-			power: 2,
-			enemy: true,
-			camRadius: 15,
-			xp: 7.5,
-			storage: 250,
-			critChance: 0.25,
-			critDamage: 1.25,
-			damage: 0.5,
-			reload: 1,
-			recipe: { metal: 2000, minerals: 2000, fuel: 500 },
-			requires: {},
-			model: 'models/mosquito.glb',
-		},
-		cillus: {
-			hp: 5,
-			speed: 1,
-			agility: 0.75,
-			range: 75,
-			jumpRange: 10000,
-			jumpCooldown: 50,
-			power: 1,
-			enemy: false,
-			camRadius: 20,
-			xp: 10,
-			storage: 25000,
-			critChance: 0.1,
-			critDamage: 1,
-			damage: 0.1,
-			reload: 5,
-			recipe: { metal: 5000, minerals: 1000, fuel: 2500 },
-			requires: { storage: 3 },
-			model: 'models/cillus.glb',
-		},
-		inca: {
-			hp: 50,
-			speed: 1,
-			agility: 1,
-			range: 200,
-			jumpRange: 10000,
-			jumpCooldown: 45,
-			power: 5,
-			enemy: true,
-			camRadius: 20,
-			xp: 10,
-			storage: 250,
-			critChance: 0.1,
-			critDamage: 1.25,
-			damage: 1,
-			reload: 2,
-			recipe: { metal: 4000, minerals: 1000, fuel: 1000 },
-			requires: {},
-			model: 'models/inca.glb',
-		},
-		pilsung: {
-			hp: 100,
-			speed: 1,
-			agility: 1,
-			range: 200,
-			jumpRange: 10000,
-			jumpCooldown: 45,
-			power: 10,
-			enemy: true,
-			camRadius: 30,
-			xp: 20,
-			storage: 1000,
-			critChance: 0.25,
-			critDamage: 1.5,
-			damage: 2.5,
-			reload: 1,
-			recipe: { metal: 10000, minerals: 4000, fuel: 2500 },
-			requires: {},
-			model: 'models/pilsung.glb',
-		},
-		apis: {
-			hp: 50,
-			speed: 2 / 3,
-			agility: 0.5,
-			range: 75,
-			jumpRange: 10000,
-			jumpCooldown: 60,
-			power: 10,
-			enemy: false,
-			camRadius: 50,
-			xp: 10,
-			storage: 100000,
-			critChance: 0.1,
-			critDamage: 1,
-			damage: 1,
-			reload: 5,
-			recipe: { metal: 10000, minerals: 2000, fuel: 5000 },
-			requires: { storage: 5 },
-			model: 'models/apis.glb',
-		},
-		hurricane: {
-			hp: 250,
-			speed: 2 / 3,
-			agility: 1,
-			range: 250,
-			jumpRange: 10000,
-			jumpCooldown: 45,
-			power: 25,
-			enemy: true,
-			camRadius: 40,
-			xp: 50,
-			storage: 2500,
-			critChance: 0.2,
-			critDamage: 1.25,
-			damage: 10,
-			reload: 2,
-			recipe: { metal: 25000, minerals: 10000, fuel: 5000 },
-			requires: {},
-			model: 'models/hurricane.glb',
-		},
-		horizon: {
-			hp: 2000,
-			speed: 1 / 3,
-			agility: 1,
-			range: 250,
-			jumpRange: 10000,
-			jumpCooldown: 60,
-			power: 100,
-			enemy: true,
-			camRadius: 65,
-			xp: 100,
-			storage: 10000,
-			critChance: 0.2,
-			critDamage: 1.5,
-			damage: 100,
-			reload: 4,
-			recipe: { metal: 1000000, minerals: 500000, fuel: 250000 },
-			requires: { build: 5 },
-			model: 'models/horizon.glb',
-		},
-	};
-	constructor(classOrData, owner, level) {
-		if (!Ship.generic[classOrData] && !Ship.generic[classOrData.class]) throw new ReferenceError(`Ship type ${classOrData} does not exist`);
-		if (typeof classOrData == 'object') {
-			super(classOrData.class, owner, level ?? owner.getScene(), classOrData.id);
-			Object.assign(this, {
-				class: classOrData.class,
-				position: BABYLON.Vector3.FromArray(classOrData.position),
-				rotation: BABYLON.Vector3.FromArray(classOrData.rotation),
-				storage: new StorageData(Ship.generic[classOrData.class].storage, classOrData.storage),
-				hp: +classOrData.hp,
-				reload: +classOrData.reload,
-				jumpCooldown: +classOrData.jumpCooldown,
-				_generic: Ship.generic[classOrData.class],
-			});
-		} else {
-			super(classOrData, owner, level ?? owner.getScene());
-			let x = random.int(0, owner.power),
-				distance = Math.log(x ** 2 + 1) ** 3;
-			Object.assign(this, {
-				position: owner.position.add(random.cords(distance, true)), // Will be changed to shipyard location
-				storage: new StorageData(Ship.generic[classOrData].storage),
-				class: classOrData,
-				hp: Ship.generic[classOrData].hp,
-				reload: Ship.generic[classOrData].reload,
-				jumpCooldown: Ship.generic[classOrData].jumpCooldown,
-				_generic: Ship.generic[classOrData],
-			});
-		}
+	static generic = new Map([
+		[
+			'wind',
+			{
+				hp: 10,
+				speed: 2,
+				agility: 2,
+				jumpRange: 10000,
+				jumpCooldown: 30,
+				power: 1,
+				enemy: true,
+				camRadius: 10,
+				xp: 5,
+				storage: 100,
+				recipe: { metal: 1000, minerals: 500, fuel: 250 },
+				requires: {},
+				model: 'models/wind.glb',
+				hardpoints: [{ type: 'laser', position: [0, 0.01, 0.05], scale: 0.25 }],
+			},
+		],
+		[
+			'mosquito',
+			{
+				hp: 25,
+				speed: 1,
+				agility: 1.5,
+				jumpRange: 10000,
+				jumpCooldown: 40,
+				power: 2,
+				enemy: true,
+				camRadius: 15,
+				xp: 7.5,
+				storage: 250,
+				recipe: { metal: 2000, minerals: 2000, fuel: 500 },
+				requires: {},
+				model: 'models/mosquito.glb',
+				hardpoints: [
+					{ type: 'laser', position: [-0.025, 0.0075, -0.075], scale: 0.375 },
+					{ type: 'laser', position: [0.025, 0.0075, -0.075], scale: 0.375 },
+				],
+			},
+		],
+		[
+			'cillus',
+			{
+				hp: 5,
+				speed: 1,
+				agility: 0.75,
+				jumpRange: 10000,
+				jumpCooldown: 50,
+				power: 1,
+				enemy: false,
+				camRadius: 20,
+				xp: 10,
+				storage: 25000,
+				recipe: { metal: 5000, minerals: 1000, fuel: 2500 },
+				requires: { storage: 3 },
+				model: 'models/cillus.glb',
+				hardpoints: [],
+			},
+		],
+		[
+			'inca',
+			{
+				hp: 50,
+				speed: 1,
+				agility: 1,
+				jumpRange: 10000,
+				jumpCooldown: 45,
+				power: 5,
+				enemy: true,
+				camRadius: 20,
+				xp: 10,
+				storage: 250,
+				recipe: { metal: 4000, minerals: 1000, fuel: 1000 },
+				requires: {},
+				model: 'models/inca.glb',
+				hardpoints: [
+					{ type: 'laser', position: [-0.06, 0.03, -0.1], scale: 0.75 },
+					{ type: 'laser', position: [0.06, 0.03, -0.1], scale: 0.75 },
+					{ type: 'laser', position: [0.06, 0.015, 0.05], scale: 0.75 },
+					{ type: 'laser', position: [-0.06, 0.015, 0.05], scale: 0.75 },
+				],
+			},
+		],
+		[
+			'pilsung',
+			{
+				hp: 100,
+				speed: 1,
+				agility: 1,
+				jumpRange: 10000,
+				jumpCooldown: 45,
+				power: 10,
+				enemy: true,
+				camRadius: 30,
+				xp: 20,
+				storage: 1000,
+				recipe: { metal: 10000, minerals: 4000, fuel: 2500 },
+				requires: {},
+				model: 'models/pilsung.glb',
+				hardpoints: [
+					{ type: 'laser', position: [0.1, 0.04, -0.1], rotation: [0, Math.PI / 2, 0], scale: 0.8 },
+					{ type: 'laser', position: [0.1, 0.04, -0.05], rotation: [0, Math.PI / 2, 0], scale: 0.8 },
+					{ type: 'laser', position: [0.1, 0.04, 0], rotation: [0, Math.PI / 2, 0], scale: 0.8 },
+					{ type: 'laser', position: [0.1, 0.04, 0.05], rotation: [0, Math.PI / 2, 0], scale: 0.8 },
+					{ type: 'laser', position: [-0.1, 0.04, -0.1], rotation: [0, -Math.PI / 2, 0], scale: 0.8 },
+					{ type: 'laser', position: [-0.1, 0.04, -0.05], rotation: [0, -Math.PI / 2, 0], scale: 0.8 },
+					{ type: 'laser', position: [-0.1, 0.04, 0], rotation: [0, -Math.PI / 2, 0], scale: 0.8 },
+					{ type: 'laser', position: [-0.1, 0.04, 0.05], rotation: [0, -Math.PI / 2, 0], scale: 0.8 },
+				],
+			},
+		],
+		[
+			'apis',
+			{
+				hp: 50,
+				speed: 2 / 3,
+				agility: 0.5,
+				jumpRange: 10000,
+				jumpCooldown: 60,
+				power: 10,
+				enemy: false,
+				camRadius: 50,
+				xp: 10,
+				storage: 100000,
+				recipe: { metal: 10000, minerals: 2000, fuel: 5000 },
+				requires: { storage: 5 },
+				model: 'models/apis.glb',
+				hardpoints: [],
+			},
+		],
+		[
+			'hurricane',
+			{
+				hp: 250,
+				speed: 2 / 3,
+				agility: 1,
+				jumpRange: 10000,
+				jumpCooldown: 45,
+				power: 25,
+				enemy: true,
+				camRadius: 40,
+				xp: 50,
+				storage: 2500,
+				recipe: { metal: 25000, minerals: 10000, fuel: 5000 },
+				requires: {},
+				model: 'models/hurricane.glb',
+				hardpoints: [
+					{ type: 'laser', position: [0.325, 0.0375, -1.225], rotation: [0, Math.PI / 2, 0], scale: 0.85 },
+					{ type: 'laser', position: [0.325, 0.0375, -1.15], rotation: [0, Math.PI / 2, 0], scale: 0.85 },
+					{ type: 'laser', position: [0.325, 0.0375, -1.075], rotation: [0, Math.PI / 2, 0], scale: 0.85 },
+					{ type: 'laser', position: [-0.325, 0.0375, -1.225], rotation: [0, -Math.PI / 2, 0], scale: 0.85 },
+					{ type: 'laser', position: [-0.325, 0.0375, -1.15], rotation: [0, -Math.PI / 2, 0], scale: 0.85 },
+					{ type: 'laser', position: [-0.325, 0.0375, -1.075], rotation: [0, -Math.PI / 2, 0], scale: 0.85 },
+					{ type: 'laser', position: [0.1, 0.03, -0.35], rotation: [0, Math.PI / 2, 0], scale: 0.75 },
+					{ type: 'laser', position: [0.1, 0.03, -0.2875], rotation: [0, Math.PI / 2, 0], scale: 0.75 },
+					{ type: 'laser', position: [0.1, 0.03, -0.225], rotation: [0, Math.PI / 2, 0], scale: 0.75 },
+					{ type: 'laser', position: [0.1, 0.03, -0.1625], rotation: [0, Math.PI / 2, 0], scale: 0.75 },
+					{ type: 'laser', position: [-0.1, 0.03, -0.35], rotation: [0, -Math.PI / 2, 0], scale: 0.75 },
+					{ type: 'laser', position: [-0.1, 0.03, -0.2875], rotation: [0, -Math.PI / 2, 0], scale: 0.75 },
+					{ type: 'laser', position: [-0.1, 0.03, -0.225], rotation: [0, -Math.PI / 2, 0], scale: 0.75 },
+					{ type: 'laser', position: [-0.1, 0.03, -0.1625], rotation: [0, -Math.PI / 2, 0], scale: 0.75 },
+				],
+			},
+		],
+		[
+			'horizon',
+			{
+				hp: 2000,
+				speed: 1 / 3,
+				agility: 1,
+				jumpRange: 10000,
+				jumpCooldown: 60,
+				power: 100,
+				enemy: true,
+				camRadius: 65,
+				xp: 100,
+				storage: 10000,
+				recipe: { metal: 1000000, minerals: 500000, fuel: 250000 },
+				requires: { build: 5 },
+				model: 'models/horizon.glb',
+				hardpoints: [
+					{ type: 'laser', position: [2.125, 0.055, -0.5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [2, 0.055, 0], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [1.875, 0.055, 0.5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [1.75, 0.055, 1], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [1.625, 0.055, 1.5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [1.5, 0.055, 2], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [1.375, 0.055, 2.5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [1.25, 0.055, 3], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [1.125, 0.055, 3.5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [1, 0.055, 4], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [0.875, 0.055, 4.5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [0.75, 0.055, 5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [0.625, 0.055, 5.5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [0.5, 0.055, 6], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [0.375, 0.055, 6.5], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [0.25, 0.055, 7], rotation: [0, (Math.PI * 5) / 12, 0], scale: 1.5 },
 
+					{ type: 'laser', position: [-2.125, 0.055, -0.5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-2, 0.055, 0], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-1.875, 0.055, 0.5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-1.75, 0.055, 1], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-1.625, 0.055, 1.5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-1.5, 0.055, 2], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-1.375, 0.055, 2.5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-1.25, 0.055, 3], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-1.125, 0.055, 3.5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-1, 0.055, 4], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-0.875, 0.055, 4.5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-0.75, 0.055, 5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-0.625, 0.055, 5.5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-0.5, 0.055, 6], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-0.375, 0.055, 6.5], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+					{ type: 'laser', position: [-0.25, 0.055, 7], rotation: [0, (-Math.PI * 5) / 12, 0], scale: 1.5 },
+				],
+			},
+		],
+	]);
+	constructor(className, owner, level) {
+		if (className && !Ship.generic.has(className)) throw new ReferenceError(`Ship type ${className} does not exist`);
+		super(className, owner, level ?? owner.getScene());
+		let x = random.int(0, owner.power),
+			distance = Math.log(x ** 3 + 1);
+		this._generic = Ship.generic.get(className);
+		Object.assign(this, {
+			position: owner.position.add(random.cords(distance, true)), // Will be changed to shipyard location
+			storage: new StorageData(Ship.generic.get(className).storage),
+			class: className,
+			hp: this._generic.hp,
+			reload: this._generic.reload,
+			jumpCooldown: this._generic.jumpCooldown,
+			hardpoints: [],
+		});
+		for (let generic of this._generic.hardpoints) {
+			if (!Hardpoint.generic.has(generic.type)) {
+				console.warn(`Hardpoint type ${generic.type} doesn't exist, skipping`);
+				continue;
+			}
+
+			let hp = new Hardpoint(generic.type, this);
+			hp.position = BABYLON.Vector3.FromArray(generic.position || [0, 0, 0]);
+			hp.rotation = BABYLON.Vector3.FromArray(generic.rotation || [0, 0, 0]).addInPlaceFromFloats(0, Math.PI, 0);
+			hp.instanceReady.then(() => {
+				hp.scaling.scaleInPlace(generic.scale ?? 1);
+			});
+			this.hardpoints.push(hp);
+		}
 		if (owner?.fleet instanceof Array) {
 			owner.fleet.push(this);
 		}
@@ -752,14 +917,15 @@ const Ship = class extends Entity {
 		this.jumpCooldown = this._generic.jumpCooldown;
 	}
 	//this will be replaced with hardpoints!
-	attack(entity) {
+	async attack(entity) {
 		if (!(entity instanceof Entity)) throw new TypeError('Target must be an entity');
-		setTimeout(() => {
-			let laser = BABYLON.Mesh.CreateLines('laser.' + random.hex(16), [this.mesh.getAbsolutePosition(), entity.mesh.getAbsolutePosition()], entity.getScene());
-			laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red();
-			entity.hp -= (this._generic.damage / 60) * entity.getScene().getAnimationRatio() * (Math.random() < this._generic.critChance ? this._generic.critDamage : 1);
-			setTimeout(() => laser.dispose(), 50);
-		}, random.int(10, 100));
+		for (let hp of this.hardpoints) {
+			let targets = [...entity.hardpoints, entity].filter((e) => BABYLON.Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range),
+				target = targets.at(random.int(0, targets.length - 1));
+			if (hp.reload <= 0) {
+				await hp.fireProjectile(target);
+			}
+		}
 	}
 	serialize() {
 		return {
@@ -773,6 +939,19 @@ const Ship = class extends Entity {
 			hp: +this.hp.toFixed(3),
 			storage: this.storage.serialize().items,
 		};
+	}
+	static FromData(data, owner, level) {
+		const ship = new Ship(data.class, owner, level);
+		Object.assign(ship, {
+			id: data.id,
+			class: data.class,
+			position: BABYLON.Vector3.FromArray(data.position),
+			rotation: BABYLON.Vector3.FromArray(data.rotation),
+			storage: new StorageData(Ship.generic.get(data.class).storage, data.storage),
+			hp: +data.hp,
+			reload: +data.reload,
+			jumpCooldown: +data.jumpCooldown,
+		});
 	}
 };
 const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
@@ -1026,7 +1205,6 @@ const Planet = class extends CelestialBody {
 		}
 	}
 };
-
 const Station = class extends CelestialBody {
 	constructor({ name = 'Station', id = random.hex(32) }, scene) {
 		super(name, id, scene);
@@ -1039,12 +1217,12 @@ const Level = class extends BABYLON.Scene {
 	date = new Date();
 	difficulty = 1;
 	clearColor = new BABYLON.Color3(0.8, 0.75, 0.85);
-	genericEntities = {};
+	genericMeshes = {};
 	bodies = new Map();
 	entities = new Map();
 	playerData = new Map();
 	#initPromise = new Promise(() => {});
-	loadedEntityMeshes = new Promise(() => {});
+	loadedGenericMeshes = new Promise(() => {});
 	#performanceMonitor = new BABYLON.PerformanceMonitor(60);
 	constructor(name, engine, doNotGenerate) {
 		super(engine);
@@ -1067,11 +1245,11 @@ const Level = class extends BABYLON.Scene {
 		this.skybox.material.reflectionTexture.coordinatesMode = 5;
 		this.name = name;
 
-		this.loadedEntityMeshes = this.#loadEntityMeshes();
+		this.loadedGenericMeshes = this.#loadGenericMeshes();
 		this.#initPromise = !doNotGenerate ? this.init() : Promise.resolve(this);
 		this.registerBeforeRender(() => {
 			let ratio = this.getAnimationRatio();
-			for (let [id, body] of this.bodies) {
+			for (let body of this.bodies.values()) {
 				if (body instanceof Planet && body.material instanceof CelestialBodyMaterial) {
 					body.rotation.y += 0.0001 * ratio * body.material.rotationFactor;
 					body.material.setMatrix('rotation', BABYLON.Matrix.RotationY(body.matrixAngle));
@@ -1090,15 +1268,15 @@ const Level = class extends BABYLON.Scene {
 	get tps() {
 		return this.#performanceMonitor.averageFPS;
 	}
-	async #loadEntityMeshes() {
-		for (let i in Ship.generic) {
+	async #loadGenericMeshes() {
+		for (let [id, generic] of [...Ship.generic, ...[...Hardpoint.generic].flatMap((e) => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]])]) {
 			try {
-				let container = (this.genericEntities[i] = await BABYLON.SceneLoader.LoadAssetContainerAsync('', Ship.generic[i].model, this));
+				let container = (this.genericMeshes[id] = await BABYLON.SceneLoader.LoadAssetContainerAsync('', generic.model, this));
 				Object.assign(container.meshes[0], {
 					rotationQuaternion: null,
 					material: Object.assign(container.materials[0], {
 						realTimeFiltering: true,
-						realTimeFilteringQuality: [2, 8, 32][+config.settings.render_quality],
+						realTimeFilteringQuality: [2, 8, 32][+config.render_quality],
 						reflectionTexture: this.probe.cubeTexture,
 					}),
 					position: BABYLON.Vector3.Zero(),
@@ -1107,7 +1285,7 @@ const Level = class extends BABYLON.Scene {
 				});
 				this.probe.renderList.push(container.meshes[1]);
 			} catch (err) {
-				console.error(`Failed to load model for ship type ${i} from ${Ship.generic[i].model}: ${err}`);
+				console.error(`Failed to load model for generic type ${id} from ${generic.model}: ${err}`);
 			}
 		}
 	}
@@ -1118,7 +1296,7 @@ const Level = class extends BABYLON.Scene {
 		await this.ready();
 	}
 	async ready() {
-		await Promise.allSettled([this.#initPromise, this.loadedEntityMeshes]);
+		await Promise.allSettled([this.#initPromise, this.loadedGenericMeshes]);
 		return this;
 	}
 	getPlayerData(nameOrID) {
@@ -1136,7 +1314,6 @@ const Level = class extends BABYLON.Scene {
 				break;
 			case '*':
 				return [...this.entities.values()];
-				break;
 			case '#':
 				if (this.entities.has(selector.slice(1))) {
 					return this.entities.get(selector.slice(1));
@@ -1160,19 +1337,20 @@ const Level = class extends BABYLON.Scene {
 	}
 	tick() {
 		this.#performanceMonitor.sampleFrame();
-		for (let [id, playerData] of this.playerData) {
+		for (let playerData of this.playerData.values()) {
 			if (Math.abs(playerData.rotation.y) > Math.PI) {
 				playerData.rotation.y += Math.sign(playerData.rotation.y) * 2 * Math.PI;
 			}
 		}
-		for (let [id, entity] of this.entities) {
-			entity.reload--;
+		for (let entity of this.entities.values()) {
+			entity.hardpoints.forEach((hp) => (hp.reload = Math.max(--hp.reload, 0)));
 			if (entity.hp <= 0) {
 				entity.remove();
 				//Events: trigger event, for sounds
 			} else if (entity instanceof Ship) {
 				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
-				let targets = [...this.entities.values()].filter((e) => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entity._generic.range);
+				const entityRange = entity.hardpoints.reduce((a, hp) => Math.max(a, hp.range), 0);
+				let targets = [...this.entities.values()].filter((e) => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entityRange);
 				let target = targets[random.int(0, targets.length - 1)];
 				if (target && entity.reload <= 0) {
 					entity.attack(target);
@@ -1189,9 +1367,8 @@ const Level = class extends BABYLON.Scene {
 	handleCanvasClick(e, owner) {
 		owner ??= [...this.playerData][0];
 		if (!e.shiftKey) {
-			for (let [id, entity] of this.entities) {
-				entity.mesh.getChildMeshes().forEach((mesh) => this.hl.removeMesh(mesh));
-				entity.selected = false;
+			for (let entity of this.entities.values()) {
+				entity.unselect();
 			}
 		}
 		let pickInfo = this.pick(this.pointerX, this.pointerY, (mesh) => {
@@ -1211,17 +1388,15 @@ const Level = class extends BABYLON.Scene {
 			}
 			if (node instanceof Ship && node.owner == owner) {
 				if (node.selected) {
-					node.mesh.getChildMeshes().forEach((mesh) => this.hl.removeMesh(mesh));
-					node.selected = false;
+					node.unselect();
 				} else {
-					node.mesh.getChildMeshes().forEach((mesh) => this.hl.addMesh(mesh, BABYLON.Color3.Green()));
-					node.selected = true;
+					node.select();
 				}
 			}
 		}
 	}
 	handleCanvasRightClick(e, owner) {
-		for (let [id, entity] of this.entities) {
+		for (let entity of this.entities.values()) {
 			if (entity.selected && entity.owner == owner) {
 				let newPosition = this.screenToWorldPlane(e.clientX, e.clientY, entity.position.y);
 				entity.moveTo(newPosition, false);
@@ -1234,36 +1409,22 @@ const Level = class extends BABYLON.Scene {
 			bodies: {},
 			entities: [],
 			playerData: {},
-			...this.filter('difficulty', 'version', 'name', 'id'),
+			difficulty: this.difficulty,
+			version: this.version,
+			name: this.name,
+			id: this.id,
 		};
 		for (let entity of this.entities.values()) {
 			if (!(entity instanceof Entity)) {
-				console.warn(`entity #${entity?.id} not saved: invalid type`);
+				console.warn(`entity #${entity?.id} not serialized: not an entity`);
 			} else {
-				let entityData = {
-					position: entity.position.asArray().map((num) => +num.toFixed(3)),
-					rotation: entity.rotation.asArray().map((num) => +num.toFixed(3)),
-					owner: entity.owner?.id,
-					...entity.filter('name', 'id'),
-				};
-				switch (entity.constructor.name) {
-					case 'Ship':
-						entityData = entity.serialize();
-						break;
-					default:
-						Object.assign(entityData, {
-							type: null,
-							hp: 0,
-							owner: null,
-						});
-				}
-				data.entities.push(entityData);
+				data.entities.push(entity.serialize());
 			}
 		}
 
 		for (let [id, body] of this.bodies) {
 			if (!(body instanceof CelestialBody)) {
-				console.warn(`body #${body?.id} not saved: invalid type`);
+				console.warn(`body #${body?.id} not serialized: not a celestial body`);
 			} else {
 				let bodyData = (data.bodies[id] = {
 					position: body.position.asArray().map((num) => +num.toFixed(3)),
@@ -1292,6 +1453,10 @@ const Level = class extends BABYLON.Scene {
 		}
 		data.playerData = [...this.playerData].map(([id, player]) => [id, player.serialize()]);
 		return data;
+	}
+
+	static get tickRate() {
+		return 10;
 	}
 
 	static upgrades = new Map([
@@ -1476,10 +1641,10 @@ const Level = class extends BABYLON.Scene {
 		for (let entityData of levelData.entities) {
 			switch (entityData.type) {
 				case 'ship':
-					new Ship(entityData, level.bodies.get(entityData.owner) ?? level.playerData.get(entityData.owner), level);
+					Ship.FromData(entityData, level.bodies.get(entityData.owner) ?? level.playerData.get(entityData.owner), level);
 					break;
 				default:
-					new Entity(null, null, level);
+					Entity.FromData(entityData, level.bodies.get(entityData.owner) ?? level.playerData.get(entityData.owner), level);
 			}
 		}
 	}
@@ -1500,7 +1665,7 @@ const commands = {
 	},
 	spawn: (level, type, selector, x, y, z) => {
 		let entity = level.getEntities(selector);
-		let spawned = new Ship(type, entity);
+		let spawned = new Ship(type, entity, level);
 		spawned.position.addInPlace(BABYLON.Vector3.FromArray(+x, +y, +z));
 	},
 	data: {

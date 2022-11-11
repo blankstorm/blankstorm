@@ -14,6 +14,8 @@
 			"no-unused-vars": "warn",
 			"no-mixed-spaces-and-tabs": "warn",
 			"no-unreachable": "warn",
-			"no-fallthrough":"off"
+			"no-extra-semi": "warn",
+			"no-fallthrough": "off"
+			
 		}
 }

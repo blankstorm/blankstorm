@@ -107,7 +107,7 @@ $.fn.formData = function (data) {
 	if (data) {
 		for (let i in data) {
 			this.find(`[name=${i}]`).each((a, e) => {
-				e.type == 'checkbox' ? (e.checked = data[i]) : (e.value = data[i]);
+				e.type == 'checkbox' || e.type == 'hidden' ? (e.checked = data[i]) : (e.value = data[i]);
 			});
 		}
 		return this;
@@ -136,17 +136,23 @@ $.fn.cm = function (...content) {
 	menu.css({ position: 'fixed', width: 'fit-content', height: 'fit-content', 'max-width': '15%', padding: '1em', 'z-index': 9 });
 	this.contextmenu((e) => {
 		e.preventDefault();
-		menu.css({ left: settings.font_size + mouse.x, top: settings.font_size + mouse.y });
+		menu.css({ left: settings.general.font_size + mouse.x, top: settings.general.font_size + mouse.y });
 		this.parent().append(menu);
 		menu.css({
 			top:
-				settings.font_size + mouse.y + parseFloat(getComputedStyle(menu[0]).height) < innerHeight
-					? settings.font_size + mouse.y
-					: settings.font_size + mouse.y - parseFloat(getComputedStyle(menu[0]).height),
+				settings.general.font_size + mouse.y + parseFloat(getComputedStyle(menu[0]).height) < innerHeight
+					? settings.general.font_size + mouse.y
+					: settings.general.font_size + mouse.y - parseFloat(getComputedStyle(menu[0]).height),
 		});
 	});
 	return this;
 };
+
+//add HTML for settings to work (the title and defaults for checkboxes)
+$('#settings form').prepend('<h2 style=text-align:center>Settings - <span></span></h2>');
+$('#settings form input[type=checkbox]').each((i, e) => {
+	$(`<input type=hidden name=${e.name} value=${!(e.value == 'true')}>`).insertBefore(e);
+});
 
 const cookie = {},
 	mouse = { x: 0, y: 0, pressed: false },
@@ -165,11 +171,47 @@ document.cookie.split('; ').forEach((e) => {
 	cookie[e.split('=')[0]] = e.split('=')[1];
 });
 
-let settings = $('#settings form.gen').formData(),
-	debug = $('#settings form.debug').formData(),
-	keybind = {};
-config.settings = settings;
-config.debug = debug;
+const settingsProxyHandler = (obj) => ({
+	get(ls, prop) {
+		let _settings = JSON.parse(ls.getItem('settings'));
+		if (typeof _settings.getByString(obj)[prop] === 'object' && _settings.getByString(obj)[prop] !== null) {
+			return new Proxy(ls, settingsProxyHandler());
+		} else {
+			return _settings.getByString(obj)[prop];
+		}
+	},
+	set(ls, prop, value) {
+		let _settings = JSON.parse(ls.getItem('settings'));
+		_settings.getByString(obj)[prop] = value;
+		ls.setItem('settings', JSON.stringify(_settings));
+	},
+});
+localStorage.settings ??= '{"general":{},"debug":{},"keybinds":{}}';
+const settings = new Proxy(localStorage, {
+	get(ls, prop) {
+		let _settings = JSON.parse(ls.getItem('settings'));
+		if (typeof _settings[prop] === 'object' && _settings[prop] !== null) {
+			return new Proxy(ls, settingsProxyHandler(prop));
+		} else {
+			return _settings[prop];
+		}
+	},
+	set(ls, prop, value) {
+		let _settings = JSON.parse(ls.getItem('settings'));
+		_settings[prop] = value;
+		ls.setItem('settings', JSON.stringify(_settings));
+	},
+});
+//load settings
+(() => {
+	let _general = Object.fromEntries(Object.entries($('#settings form.gen').formData()).map(([key, val]) => [key, settings.general[key] ?? val]));
+	let _debug = Object.fromEntries(Object.entries($('#settings form.debug').formData()).map(([key, val]) => [key, settings.debug[key] ?? val]));
+	$('#settings form.gen').formData((settings.general = _general));
+	$('#settings form.debug').formData((settings.debug = _debug));
+	config.settings = settings;
+})();
+let keybind = {};
+
 const servers = new Map(),
 	saves = new Map(),
 	sound = {
@@ -182,12 +224,6 @@ const servers = new Map(),
 		laser_hit: 'sfx/laser_hit.mp3',
 		ui: 'sfx/ui.mp3',
 	};
-
-//add HTML for settings to work (the title and defaults for checkboxes)
-$('#settings form').prepend('<h2 style=text-align:center>Settings - <span></span></h2>');
-$('#settings form checkbox').each((i, e) => {
-	$(`<input type=hidden ${e.name} value=${!e.value}>`).insertBefore(e);
-});
 
 const locales = Object.assign(new Map(), {
 	async fetch(url) {
@@ -235,7 +271,7 @@ const locales = Object.assign(new Map(), {
 		$('#e div.nav button.lab span').text(lang['menu.lab'] ?? 'Laboratory');
 	},
 	text(key) {
-		return this.get(this.has(settings.locale) ? settings.locale : 'en')?.text?.[key] || 'Unknown';
+		return this.get(this.has(settings.general.locale) ? settings.general.locale : 'en')?.text?.[key] || 'Unknown';
 	},
 	currentLang: '',
 });
@@ -418,7 +454,7 @@ const Save = class {
 
 			await save.ready();
 
-			for (let [id, body] of save.bodies) {
+			for (let body of save.bodies.values()) {
 				body.waypoint = new Waypoint(
 					{
 						name: body.name,
@@ -441,7 +477,6 @@ const Save = class {
 
 			save.addCamera(playerData.cam);
 			save.activeCamera = playerData.cam;
-			playerData.cam.radius = 10;
 
 			return save;
 		}
@@ -605,14 +640,14 @@ const Server = class {
 	}
 	ping() {
 		this.gui.info.html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').css('animation', '2s linear infinite rotate');
-		let beforeTime = Date.now();
+		let beforeTime = performance.now();
 		let url = /.+:(\d){1,5}/.test(this.url) ? this.url : this.url + ':1123';
 		$.get(`${/http(s?):\/\//.test(url) ? url : 'https://' + url}/ping`)
 			.done((data) => {
 				if (isJSON(data)) {
 					this.pingData = JSON.parse(data);
 					this.gui.info
-						.text(`${((Date.now() - beforeTime) / 2).toFixed()}ms ${this.pingData.currentPlayers}/${this.pingData.maxPlayers}`)
+						.text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${this.pingData.currentPlayers}/${this.pingData.maxPlayers}`)
 						.find('tool-tip')
 						.html(`${this.url}<br><br>${this.pingData.version.text}<br><br>${this.pingData.message}`);
 				} else {
@@ -709,16 +744,6 @@ const game = {
 	scene: () => {
 		return saves.current;
 	},
-	saveSettings: async () => {
-		let settingsStore = (await db.tx('settings', 'readwrite')).objectStore('settings');
-		settings = $('form.gen').formData();
-		debug = $('form.debug').formData();
-		config.settings = settings;
-		config.debug = debug;
-		settingsStore.put(settings, 'general');
-		settingsStore.put(keybind, 'keybinds');
-		settingsStore.put(debug, 'debug');
-	},
 	runCommand: (command) => {
 		if (game.mp) {
 			servers.get(servers.sel).socket.emit('command', command);
@@ -731,7 +756,7 @@ const game = {
 			$(`<li bg=none></li>`)
 				.text(m)
 				.appendTo('#chat')
-				.fadeOut(1000 * settings.chat);
+				.fadeOut(1000 * settings.general.chat);
 			$(`<li bg=none></li>`).text(m).appendTo('#chat_history');
 		}
 	},
@@ -896,48 +921,30 @@ if (cookie.token && navigator.onLine) {
 }
 
 //load saved settings and keybinds
-db.tx('settings')
-	.then(async (tx) => {
-		//load settings
-		let store = tx.objectStore('settings');
+$('form.gen').formData((settings.general ??= $('form.gen').formData()));
+$('form.debug').formData((settings.debug ??= $('form.debug').formData()));
+config.settings = settings;
 
-		settings = (await store.get('general').async()) ?? settings;
-		$('form.gen').formData(settings);
-		config.settings = settings;
-
-		debug = (await store.get('debug').async()) ?? debug;
-		$('form.debug').formData(debug);
-		config.debug = debug;
-
-		let binds = await store.get('keybinds').async();
-		for (let i in binds) {
-			let bind = binds[i];
-			if (typeof bind == 'string') {
-				bind = {
-					key: binds[i],
-					ctrl: false,
-					alt: false,
-				};
-			}
-			keybind[i] = bind ?? keybind[i];
-		}
-		$('form.key').formData(keybind);
-
-		ui.update();
-
-		//load keybinds
-	})
-	.catch((err) => {
-		console.warn(`Couldn't get saved settings. (${err})`);
-		$('form.gen').formData(settings);
-		$('form.debug').formData(debug);
-		$('form.key').formData(keybind);
-	});
+for (let i in settings.keybinds) {
+	let bind = settings.keybinds[i];
+	if (typeof bind == 'string') {
+		bind = {
+			key: settings.keybinds[i],
+			ctrl: false,
+			alt: false,
+		};
+	}
+	keybind[i] = bind ?? keybind[i];
+}
+$('form.key').formData(keybind);
 
 const ui = {
+	item: {},
+	tech: {},
+	ship: {},
 	init() {
 		for (let [id, item] of Items) {
-			item.gui = $(`<div>
+			ui.item[id] = $(`<div>
 						<span style=text-align:right;>${locales.text(`item.${id}.name`)}${item.rare ? ` (rare)` : ``}: </span>
 						<span class=count style=text-align:left;></span>
 					</div>`)
@@ -952,7 +959,7 @@ const ui = {
 				.appendTo('div.inv');
 		}
 		for (let [id, t] of Tech) {
-			t.gui = $(`<div>
+			ui.tech[id] = $(`<div>
 						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
 						<span class=name style=text-align:center;>${locales.text(`tech.${id}.name`)}</span>
 						<span class="upgrade add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
@@ -975,8 +982,8 @@ const ui = {
 				.attr('bg', 'none')
 				.appendTo('div.lab');
 		}
-		Object.entries(Ship.generic).forEach(([id, ship]) => {
-			ship.gui = $(`<div>
+		for (let [id, ship] of Ship.generic) {
+			ui.ship[id] = $(`<div>
 						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
 						<span class=name style=text-align:center>${locales.text(`entity.${id}.name`)}</span>
 						<span class="add add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
@@ -992,7 +999,7 @@ const ui = {
 				.parent()
 				.attr('bg', 'none')
 				.appendTo('div.yrd');
-		});
+		}
 	},
 	update: (scene = saves.current) => {
 		try {
@@ -1003,7 +1010,7 @@ const ui = {
 				$('div.item-bar p.label').text(`${minimize(player.data().totalItems)} / ${minimize(player.data().maxItems)}`);
 
 				for (let [id, amount] of Object.entries(player.data().items)) {
-					Items.get(id).gui.find('.count').text(minimize(amount));
+					ui.item[id].find('.count').text(minimize(amount));
 				}
 
 				//update tech info
@@ -1019,7 +1026,7 @@ const ui = {
 								: `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 						''
 					);
-					t.gui
+					ui.tech[id]
 						.find('.upgrade tool-tip')
 						.html(
 							`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
@@ -1027,14 +1034,14 @@ const ui = {
 									? `<strong>Max Level</strong>`
 									: `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`
 							}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
-								debug.tooltips ? '<br>type: ' + id : ''
+								settings.debug.tooltips ? '<br>type: ' + id : ''
 							}`
 						);
-					t.gui.find('.locked')[Tech.isLocked(id, player.data()) ? 'show' : 'hide']();
+					ui.tech[id].find('.locked')[Tech.isLocked(id, player.data()) ? 'show' : 'hide']();
 				}
 
 				//update ship info
-				for (let [id, ship] of Object.entries(Ship.generic)) {
+				for (let [id, ship] of Ship.generic) {
 					const materials = Object.entries(ship.recipe).reduce(
 						(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.data().items[id])}/${minimize(amount)}`,
 						''
@@ -1046,19 +1053,19 @@ const ui = {
 							}`,
 						''
 					);
-					ship.gui
+					ui.ship[id]
 						.find('.add tool-tip')
 						.html(
 							`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
 								Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
-							}${requires}${debug?.tooltips ? '<br>' + id : ''}`
+							}${requires}${settings.debug?.tooltips ? '<br>' + id : ''}`
 						);
 
 					let locked = false;
 					for (let t in ship.requires) {
 						if (Tech.isLocked(t, player.data())) locked = true;
 					}
-					ship.gui.find('.locked')[locked ? 'show' : 'hide']();
+					ui.ship[id].find('.locked')[locked ? 'show' : 'hide']();
 				}
 
 				scene.waypoints.forEach((wp, i) => {
@@ -1102,9 +1109,9 @@ const ui = {
 			saves.forEach((save) => {
 				save.gui.name.text(save.data.name);
 				save.gui.version.text(versions.get(save.data.version)?.text ?? save.data.version);
-				save.gui.date.text(save.data.date.toLocaleString());
+				save.gui.date.text(new Date(save.data.date).toLocaleString());
 			});
-			$(':root').css('--font-size', settings.font_size + 'px');
+			$(':root').css('--font-size', settings.general.font_size + 'px');
 			if (game.mp) {
 				$('#esc .quit').text('Disconnect');
 				$('#esc .options').attr('plot', '12.5px,125px,225px,50px,a');
@@ -1120,7 +1127,7 @@ const ui = {
 
 			$('[plot]').each((i, e) => {
 				let scale =
-					settings.gui_scale == 0
+					settings.general.gui_scale == 0
 						? innerHeight <= 475
 							? 0.5
 							: innerHeight <= 650
@@ -1128,7 +1135,7 @@ const ui = {
 							: innerHeight <= 800
 							? 1
 							: 1.25
-						: Object.assign([1, 0.75, 1, 1.25][settings.gui_scale], { is_from_array: true });
+						: Object.assign([1, 0.75, 1, 1.25][settings.general.gui_scale], { is_from_array: true });
 
 				let plot = $(e)
 					.attr('plot')
@@ -1204,7 +1211,7 @@ db.tx('servers').then((tx) => {
 		});
 });
 
-(commands.playsound = (level, name, volume = settings.sfx) => {
+(commands.playsound = (level, name, volume = settings.general.sfx) => {
 	if (sound[name]) {
 		playsound(name, volume);
 	} else {
@@ -1278,7 +1285,7 @@ $('#save .new').click(async () => {
 	saves.current = live;
 	live.play(live.playerData.get(player.id));
 	let save = new Save(live.serialize());
-	if (!debug.disable_saves) save.saveToDB();
+	if (!settings.debug.disable_saves) save.saveToDB();
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();
@@ -1352,7 +1359,6 @@ $('button.map.new').click(() => {
 	Waypoint.dialog();
 });
 $('#settings>button:not(.back)').click((e) => {
-	game.saveSettings();
 	let target = $(e.target);
 	$('#settings form')
 		.hide()
@@ -1378,7 +1384,6 @@ $('#settings button.mod').click(() => {
 	ui.update();
 });
 $('#settings button.back').click(() => {
-	game.saveSettings();
 	$('#settings').hide();
 	$(ui.LastScene).show();
 	ui.update();
@@ -1400,6 +1405,10 @@ $('[label]').each((i, e) => {
 		.insertBefore($(e));
 });
 $('input[label][display]').mousemove(() => ui.update());
+$('#settings,#settings ').on('click change', () => {
+	settings.general = $('#settings form.gen').formData();
+	settings.debug = $('#settings form.debug').formData();
+});
 $('#settings form.gen input').change(() => ui.update());
 $('#settings form.gen select[name=locale]').change((e) => {
 	let lang = e.target.value;
@@ -1435,8 +1444,8 @@ $('html')
 	.mousemove((e) => {
 		$('tool-tip').each((i, tooltip) => {
 			let computedStyle = getComputedStyle(tooltip);
-			let left = settings.font_size + e.clientX,
-				top = settings.font_size + e.clientY;
+			let left = settings.general.font_size + e.clientX,
+				top = settings.general.font_size + e.clientY;
 			$(tooltip).css({
 				left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
 				top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height)),
@@ -1483,7 +1492,7 @@ game.canvas.click((e) => {
 });
 game.canvas.contextmenu((e) => {
 	if (saves.current instanceof Save.Live) {
-		saves.current.handleCanvasRightClick(e);
+		saves.current.handleCanvasRightClick(e, player.data());
 	}
 });
 game.canvas.keydown((e) => {
@@ -1533,24 +1542,27 @@ $('canvas.game,#esc,#hud').keydown((e) => {
 	ui.update();
 });
 $('button').click(() => {
-	playsound(sound.ui, settings.sfx);
+	playsound(sound.ui, settings.general.sfx);
 });
-
-// the loop ~~loop
+setInterval(() => {
+	if (saves.current instanceof Save.Live && !game.isPaused) {
+		saves.current.tick();
+	}
+}, 1000 / Level.tickRate);
 const loop = () => {
 	if (saves.current instanceof Save.Live) {
 		if (!game.isPaused) {
 			try {
 				if (player.data().cam.alpha > Math.PI) player.data().cam.alpha -= 2 * Math.PI;
 				if (player.data().cam.alpha < -Math.PI) player.data().cam.alpha += 2 * Math.PI;
-				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.sensitivity;
+				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.general.sensitivity;
 				player.updateFleet();
 				saves.current.meshes.forEach((mesh) => {
 					if (mesh instanceof CelestialBody) mesh.showBoundingBox = game.hitboxes;
 					if (mesh.parent instanceof Entity) mesh.getChildMeshes().forEach((child) => (child.showBoundingBox = game.hitboxes));
 					if (mesh != saves.current.skybox && isHex(mesh.id)) mesh.showBoundingBox = game.hitboxes;
 				});
-				for (let [id, ship] of saves.current.entities) {
+				for (let ship of saves.current.entities.values()) {
 					if (player.data().fleet.length > 0) {
 						if (ship.hp <= 0) {
 							player.data().addItems(ship._generic.recipe);
@@ -1562,9 +1574,6 @@ const loop = () => {
 						}
 					}
 				}
-				if (game.engine.frameId % 60 == 0) {
-					saves.current.tick();
-				}
 				player.updateFleet();
 				player.data().position.addInPlace(player.data().velocity.scale(saves.current.getAnimationRatio()));
 				player.data().velocity.scaleInPlace(0.9);
@@ -1573,8 +1582,8 @@ const loop = () => {
 					waypoint.marker
 						.css({
 							position: 'fixed',
-							left: Math.min(Math.max(pos.x, 0), innerWidth - settings.font_size) + 'px',
-							top: Math.min(Math.max(pos.y, 0), innerHeight - settings.font_size) + 'px',
+							left: Math.min(Math.max(pos.x, 0), innerWidth - settings.general.font_size) + 'px',
+							top: Math.min(Math.max(pos.y, 0), innerHeight - settings.general.font_size) + 'px',
 							fill: waypoint.color.toHexString(),
 						})
 						.filter('p')
@@ -1618,8 +1627,6 @@ const loop = () => {
 			}
 		}
 	}
-	settings = $('#settings form.gen').formData();
-	debug = $('#settings form.debug').formData();
 };
 ui.update();
 $('#loading_cover').fadeOut(1000);
