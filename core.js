@@ -15,7 +15,7 @@ const config = {
 	settings: {},
 };
 
-const version = 'alpha_1.3.0',
+const version = 'alpha_1.3.1',
 	versions = new Map([
 		['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
 		['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
@@ -34,6 +34,7 @@ const version = 'alpha_1.3.0',
 		['alpha_1.2.0', { text: 'Alpha 1.2.0', group: 'alpha' }],
 		['alpha_1.2.1', { text: 'Alpha 1.2.1', group: 'alpha' }],
 		['alpha_1.3.0', { text: 'Alpha 1.3.0', group: 'alpha' }],
+		['alpha_1.3.1', { text: 'Alpha 1.3.1', group: 'alpha' }],
 	]);
 if (config.load_remote_manifest) {
 	fetch('https://blankstorm.drvortex.dev/versions/manifest.json')
@@ -145,7 +146,6 @@ const generate = {
 		return result;
 	},
 };
-const wait = (time) => new Promise((res) => setTimeout(res, time));
 
 //custom stuff
 Object.defineProperty(Object.prototype, 'filter', {
@@ -440,50 +440,6 @@ const PlayerData = class extends BABYLON.TransformNode {
 	}
 };
 const Hardpoint = class extends BABYLON.TransformNode {
-	static generic = new Map([
-		[
-			'laser',
-			{
-				damage: 1,
-				reload: 10,
-				range: 200,
-				critChance: 0.05,
-				critFactor: 1.5,
-				model: 'models/laser.glb',
-				projectiles: 1,
-				projectileInterval: 0, //not needed
-				projectileSpeed: 5,
-				projectileModel: 'models/laser_projectile.glb',
-				async fire(target) {
-					const laser = await this.createProjectileInstante(),
-						startPos = this.getAbsolutePosition(),
-						endPos = target.getAbsolutePosition(),
-						frameFactor = BABYLON.Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed;
-					laser.position = startPos;
-					this.lookAt(endPos);
-					laser.lookAt(endPos);
-					const animation = new BABYLON.Animation(
-						'projectileAnimation',
-						'position',
-						60,
-						BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-						BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-					);
-					animation.setKeys([
-						{ frame: 0, value: startPos },
-						{ frame: 60 * frameFactor, value: endPos },
-					]);
-					laser.animations.push(animation);
-					let result = this.level.beginAnimation(laser, 0, 60 * frameFactor);
-					result.disposeOnEnd = true;
-					result.onAnimationEnd = () => {
-						laser.dispose();
-						target.entity.hp -= (this._generic.damage / Level.tickRate) * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
-					};
-				},
-			},
-		],
-	]);
 	_generic = {};
 	#entity;
 	#resolve;
@@ -527,6 +483,52 @@ const Hardpoint = class extends BABYLON.TransformNode {
 		this._generic.fire.call(this, target);
 		this.reload = this._generic.reload;
 	}
+
+	static generic = new Map([
+		[
+			'laser',
+			{
+				damage: 1,
+				reload: 10,
+				range: 200,
+				critChance: 0.05,
+				critFactor: 1.5,
+				model: 'models/laser.glb',
+				projectiles: 1,
+				projectileInterval: 0, //not needed
+				projectileSpeed: 5,
+				projectileModel: 'models/laser_projectile.glb',
+				async fire(target) {
+					const laser = await this.createProjectileInstante(),
+						startPos = this.getAbsolutePosition(),
+						endPos = target.getAbsolutePosition(),
+						frameFactor = BABYLON.Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed;
+					laser.scaling = this.scaling
+					laser.position = startPos;
+					this.lookAt(endPos);
+					laser.lookAt(endPos);
+					const animation = new BABYLON.Animation(
+						'projectileAnimation',
+						'position',
+						60,
+						BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+						BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+					);
+					animation.setKeys([
+						{ frame: 0, value: startPos },
+						{ frame: 60 * frameFactor, value: endPos },
+					]);
+					laser.animations.push(animation);
+					let result = this.level.beginAnimation(laser, 0, 60 * frameFactor);
+					result.disposeOnEnd = true;
+					result.onAnimationEnd = () => {
+						laser.dispose();
+						target.entity.hp -= (this._generic.damage / Level.tickRate) * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
+					};
+				},
+			},
+		],
+	]);
 };
 const Entity = class extends BABYLON.TransformNode {
 	_generic = { speed: 1 };
@@ -659,6 +661,65 @@ const Entity = class extends BABYLON.TransformNode {
 	}
 };
 const Ship = class extends Entity {
+	constructor(className, owner, level) {
+		if (className && !Ship.generic.has(className)) throw new ReferenceError(`Ship type ${className} does not exist`);
+		super(className, owner, level ?? owner.getScene());
+		let x = random.int(0, owner.power),
+			distance = Math.log(x ** 3 + 1);
+		this._generic = Ship.generic.get(className);
+		Object.assign(this, {
+			position: owner.position.add(random.cords(distance, true)), // Will be changed to shipyard location
+			storage: new StorageData(Ship.generic.get(className).storage),
+			class: className,
+			hp: this._generic.hp,
+			reload: this._generic.reload,
+			jumpCooldown: this._generic.jumpCooldown,
+			hardpoints: [],
+		});
+		for (let generic of this._generic.hardpoints) {
+			if (!Hardpoint.generic.has(generic.type)) {
+				console.warn(`Hardpoint type ${generic.type} doesn't exist, skipping`);
+				continue;
+			}
+
+			let hp = new Hardpoint(generic.type, this);
+			hp.position = BABYLON.Vector3.FromArray(generic.position || [0, 0, 0]);
+			hp.rotation = BABYLON.Vector3.FromArray(generic.rotation || [0, 0, 0]).addInPlaceFromFloats(0, Math.PI, 0);
+			hp.instanceReady.then(() => {
+				hp.scaling.scaleInPlace(generic.scale ?? 1);
+			});
+			this.hardpoints.push(hp);
+		}
+		if (owner?.fleet instanceof Array) {
+			owner.fleet.push(this);
+		}
+	}
+	remove() {
+		this.dispose();
+		this.owner.fleet.spliceOut(this);
+		this.getScene().entities.delete(this.id);
+	}
+	jump(location) {
+		if (!(location instanceof BABYLON.Vector3)) throw new TypeError('Location is not a Vector3');
+		if (this.jumpCooldown > 0) return 'Hyperspace still on cooldown';
+		if (BABYLON.Vector3.Distance(this.position, location) > this._generic.jumpRange) return 'Target location out of range';
+
+		this.position = location.clone();
+		this.jumpCooldown = this._generic.jumpCooldown;
+	}
+	serialize() {
+		return {
+			position: this.position.asArray().map((num) => +num.toFixed(3)),
+			rotation: this.rotation.asArray().map((num) => +num.toFixed(3)),
+			owner: this.owner?.id,
+			id: this.id,
+			name: this.name,
+			class: this.class,
+			type: 'ship',
+			hp: +this.hp.toFixed(3),
+			storage: this.storage.serialize().items,
+		};
+	}
 	static generic = new Map([
 		[
 			'wind',
@@ -879,76 +940,6 @@ const Ship = class extends Entity {
 			},
 		],
 	]);
-	constructor(className, owner, level) {
-		if (className && !Ship.generic.has(className)) throw new ReferenceError(`Ship type ${className} does not exist`);
-		super(className, owner, level ?? owner.getScene());
-		let x = random.int(0, owner.power),
-			distance = Math.log(x ** 3 + 1);
-		this._generic = Ship.generic.get(className);
-		Object.assign(this, {
-			position: owner.position.add(random.cords(distance, true)), // Will be changed to shipyard location
-			storage: new StorageData(Ship.generic.get(className).storage),
-			class: className,
-			hp: this._generic.hp,
-			reload: this._generic.reload,
-			jumpCooldown: this._generic.jumpCooldown,
-			hardpoints: [],
-		});
-		for (let generic of this._generic.hardpoints) {
-			if (!Hardpoint.generic.has(generic.type)) {
-				console.warn(`Hardpoint type ${generic.type} doesn't exist, skipping`);
-				continue;
-			}
-
-			let hp = new Hardpoint(generic.type, this);
-			hp.position = BABYLON.Vector3.FromArray(generic.position || [0, 0, 0]);
-			hp.rotation = BABYLON.Vector3.FromArray(generic.rotation || [0, 0, 0]).addInPlaceFromFloats(0, Math.PI, 0);
-			hp.instanceReady.then(() => {
-				hp.scaling.scaleInPlace(generic.scale ?? 1);
-			});
-			this.hardpoints.push(hp);
-		}
-		if (owner?.fleet instanceof Array) {
-			owner.fleet.push(this);
-		}
-	}
-	remove() {
-		this.dispose();
-		this.owner.fleet.spliceOut(this);
-		this.getScene().entities.delete(this.id);
-	}
-	jump(location) {
-		if (!(location instanceof BABYLON.Vector3)) throw new TypeError('Location is not a Vector3');
-		if (this.jumpCooldown > 0) return 'Hyperspace still on cooldown';
-		if (BABYLON.Vector3.Distance(this.position, location) > this._generic.jumpRange) return 'Target location out of range';
-
-		this.position = location.clone();
-		this.jumpCooldown = this._generic.jumpCooldown;
-	}
-	//this will be replaced with hardpoints!
-	async attack(entity) {
-		if (!(entity instanceof Entity)) throw new TypeError('Target must be an entity');
-		for (let hp of this.hardpoints) {
-			let targets = [...entity.hardpoints, entity].filter((e) => BABYLON.Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range),
-				target = targets.at(random.int(0, targets.length - 1));
-			if (hp.reload <= 0) {
-				await hp.fireProjectile(target);
-			}
-		}
-	}
-	serialize() {
-		return {
-			position: this.position.asArray().map((num) => +num.toFixed(3)),
-			rotation: this.rotation.asArray().map((num) => +num.toFixed(3)),
-			owner: this.owner?.id,
-			id: this.id,
-			name: this.name,
-			class: this.class,
-			type: 'ship',
-			hp: +this.hp.toFixed(3),
-			storage: this.storage.serialize().items,
-		};
-	}
 	static FromData(data, owner, level) {
 		const ship = new Ship(data.class, owner, level);
 		Object.assign(ship, {
@@ -964,32 +955,7 @@ const Ship = class extends Entity {
 	}
 };
 const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
-	static updateRandom(texture) {
-		if (!(texture instanceof BABYLON.DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
-		let context = texture.getContext(),
-			imageData = context.getImageData(0, 0, 512, 512);
-		for (let i = 0; i < 1048576; i++) {
-			imageData.data[i] = (Math.random() * 256) | 0;
-		}
-		context.putImageData(imageData, 0, 0);
-		texture.update();
-	}
-	generateTexture(id, path, options, level) {
-		let sampler = new BABYLON.DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, level, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
-		CelestialBodyMaterial.updateRandom(sampler);
-		let texture = new BABYLON.ProceduralTexture('CelestialBodyMaterial.texture.' + id, options.mapSize, path, level, null, true, true);
-		texture.setColor3('upperColor', options.upperColor);
-		texture.setColor3('lowerColor', options.lowerColor);
-		texture.setFloat('mapSize', options.mapSize);
-		texture.setFloat('maxResolution', options.maxResolution);
-		texture.setFloat('seed', options.seed);
-		texture.setVector2('lowerClamp', options.lowerClamp);
-		texture.setTexture('randomSampler', sampler);
-		texture.setVector2('range', options.range);
-		texture.setVector3('options', options.options);
-		texture.refreshRate = 0;
-		return texture;
-	}
+	
 	constructor(options, level) {
 		options.mapSize = 1024;
 		options.maxResolution = [64, 256, 1024][config.render_quality];
@@ -1021,6 +987,34 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);
+	}
+
+	generateTexture(id, path, options, level) {
+		let sampler = new BABYLON.DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, level, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+		CelestialBodyMaterial.updateRandom(sampler);
+		let texture = new BABYLON.ProceduralTexture('CelestialBodyMaterial.texture.' + id, options.mapSize, path, level, null, true, true);
+		texture.setColor3('upperColor', options.upperColor);
+		texture.setColor3('lowerColor', options.lowerColor);
+		texture.setFloat('mapSize', options.mapSize);
+		texture.setFloat('maxResolution', options.maxResolution);
+		texture.setFloat('seed', options.seed);
+		texture.setVector2('lowerClamp', options.lowerClamp);
+		texture.setTexture('randomSampler', sampler);
+		texture.setVector2('range', options.range);
+		texture.setVector3('options', options.options);
+		texture.refreshRate = 0;
+		return texture;
+	}
+
+	static updateRandom(texture) {
+		if (!(texture instanceof BABYLON.DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
+		let context = texture.getContext(),
+			imageData = context.getImageData(0, 0, 512, 512);
+		for (let i = 0; i < 1048576; i++) {
+			imageData.data[i] = (Math.random() * 256) | 0;
+		}
+		context.putImageData(imageData, 0, 0);
+		texture.update();
 	}
 };
 const CelestialBody = class extends BABYLON.Mesh {
@@ -1062,6 +1056,28 @@ const Star = class extends CelestialBody {
 	}
 };
 const Planet = class extends CelestialBody {
+	constructor({ name, position = BABYLON.Vector3.Zero(), biome = 'earthlike', radius = 1, owner = null, fleet = [], rewards = {}, scene, id }) {
+		super(name ?? 'Unknown Planet', id, scene);
+		BABYLON.CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
+		Object.assign(this, {
+			owner,
+			radius,
+			rewards,
+			biome,
+			position,
+			material: Planet.biomes.has(biome) ? new CelestialBodyMaterial(Planet.biomes.get(biome), scene) : new BABYLON.StandardMaterial('mat', scene),
+		});
+		this.fleetLocation = random.cords(random.int(radius + 5, radius * 1.2), true);
+		for (let shipOrType of fleet) {
+			if (shipOrType instanceof Ship) {
+				this.fleet.push(shipOrType);
+			} else {
+				let ship = new Ship(shipOrType, this, scene);
+				ship.position.addInPlace(this.fleetLocation);
+			}
+		}
+	}
+
 	static biomes = new Map([
 		[
 			'earthlike',
@@ -1195,32 +1211,15 @@ const Planet = class extends CelestialBody {
 			},
 		],
 	]);
-	constructor({ name, position = BABYLON.Vector3.Zero(), biome = 'earthlike', radius = 1, owner = null, fleet = [], rewards = {}, scene, id }) {
-		super(name ?? 'Unknown Planet', id, scene);
-		BABYLON.CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
-		Object.assign(this, {
-			owner,
-			radius,
-			rewards,
-			biome,
-			position,
-			material: Planet.biomes.has(biome) ? new CelestialBodyMaterial(Planet.biomes.get(biome), scene) : new BABYLON.StandardMaterial('mat', scene),
-		});
-		this.fleetLocation = random.cords(random.int(radius + 5, radius * 1.2), true);
-		for (let shipOrType of fleet) {
-			if (shipOrType instanceof Ship) {
-				this.fleet.push(shipOrType);
-			} else {
-				let ship = new Ship(shipOrType, this, scene);
-				ship.position.addInPlace(this.fleetLocation);
-			}
-		}
-	}
 };
 const Station = class extends CelestialBody {
+	components = [];
 	constructor({ name = 'Station', id = random.hex(32) }, scene) {
 		super(name, id, scene);
+
 	}
+
+	static generic
 };
 const Level = class extends BABYLON.Scene {
 	id = random.hex(16);
@@ -1378,9 +1377,15 @@ const Level = class extends BABYLON.Scene {
 				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
 				const entityRange = entity.hardpoints.reduce((a, hp) => Math.max(a, hp._generic.range), 0);
 				let targets = [...this.entities.values()].filter((e) => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entityRange);
-				let target = targets[random.int(0, targets.length - 1)];
+				let target = targets.reduce((ac, cur) => ac = BABYLON.Vector3.Distance(ac?.getAbsolutePosition ? ac.getAbsolutePosition() : BABYLON.Vector3.One().scale(Infinity), entity.getAbsolutePosition()) < BABYLON.Vector3.Distance(cur.getAbsolutePosition(), entity.getAbsolutePosition()) ? ac : cur, null);
 				if (target) {
-					entity.attack(target);
+					for (let hp of entity.hardpoints) {
+						let targetPoints = [...target.hardpoints, target].filter((e) => BABYLON.Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range),
+							targetPoint = targetPoints.reduce((ac, cur) => ac = BABYLON.Vector3.Distance(ac.getAbsolutePosition(), hp.getAbsolutePosition()) < BABYLON.Vector3.Distance(cur.getAbsolutePosition(), hp.getAbsolutePosition()) ? ac : cur, target);
+						if (hp.reload <= 0) {
+							hp.fireProjectile(targetPoint);
+						}
+					}
 				}
 			}
 		}

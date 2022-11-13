@@ -12,16 +12,8 @@
 - Rockets (see https://playground.babylonjs.com/#PU4WYI#291)
 
 ### Features
-- Hardpoints
-- Waypoints are now hidden in cinematic mode
+Improvements to hardpoint targeting
 
 ### Bug Fixes
-- Major issue with planets not spawning
-- Hyperspace
-- Save date display fixed
-- Icon clicks
 
 ### Technical Changes
-- Changed serialization and deserialization to be part of classes
-- Improvements to entity selection
-- Change settings (incl. keybinds) to use the localStorage API
