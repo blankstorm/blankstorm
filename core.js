@@ -1376,12 +1376,11 @@ const Level = class extends BABYLON.Scene {
 				//Events: trigger event, for sounds
 			} else if (entity instanceof Ship) {
 				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
-				const entityRange = entity.hardpoints.reduce((a, hp) => Math.max(a, hp.range), 0);
+				const entityRange = entity.hardpoints.reduce((a, hp) => Math.max(a, hp._generic.range), 0);
 				let targets = [...this.entities.values()].filter((e) => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entityRange);
 				let target = targets[random.int(0, targets.length - 1)];
-				if (target && entity.reload <= 0) {
+				if (target) {
 					entity.attack(target);
-					entity.reload = entity._generic.reload;
 				}
 			}
 		}
