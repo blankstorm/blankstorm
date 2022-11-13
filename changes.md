@@ -13,6 +13,7 @@
 
 ### Features
 - Hardpoints
+- Waypoints are now hidden in cinematic mode
 
 ### Bug Fixes
 - Major issue with planets not spawning
