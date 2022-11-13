@@ -1501,7 +1501,7 @@ game.canvas.keydown((e) => {
 			$('#debug').toggle();
 		case 'F1':
 			e.preventDefault();
-			$('#hud').toggle();
+			$('#hud,.marker').toggle();
 			break;
 		case 'F4':
 			e.preventDefault();

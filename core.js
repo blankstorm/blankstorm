@@ -15,7 +15,7 @@ const config = {
 	settings: {},
 };
 
-const version = 'alpha_prototype',
+const version = 'alpha_1.3.0',
 	versions = new Map([
 		['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
 		['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
@@ -33,7 +33,7 @@ const version = 'alpha_prototype',
 		['alpha_1.1.0', { text: 'Alpha 1.1.0', group: 'alpha' }],
 		['alpha_1.2.0', { text: 'Alpha 1.2.0', group: 'alpha' }],
 		['alpha_1.2.1', { text: 'Alpha 1.2.1', group: 'alpha' }],
-		['alpha_prototype', { text: 'Alpha Prototype', group: 'alpha' }],
+		['alpha_1.3.0', { text: 'Alpha 1.3.0', group: 'alpha' }],
 	]);
 if (config.load_remote_manifest) {
 	fetch('https://blankstorm.drvortex.dev/versions/manifest.json')
@@ -452,21 +452,41 @@ const Hardpoint = class extends BABYLON.TransformNode {
 				model: 'models/laser.glb',
 				projectiles: 1,
 				projectileInterval: 0, //not needed
+				projectileSpeed: 5,
 				projectileModel: 'models/laser_projectile.glb',
 				async fire(target) {
-					await wait(random.int(0, 25));
-					let laser = BABYLON.Mesh.CreateLines('laser.' + random.hex(16), [this.getAbsolutePosition(), target.getAbsolutePosition()], this.getScene());
-					laser.color = this.owner?._shipLaserColor ?? BABYLON.Color3.Red();
-					target.entity.hp -= (this._generic.damage / Level.tickRate) * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
-					await wait(random.int(0, 25));
-					laser.dispose();
+					const laser = await this.createProjectileInstante(),
+						startPos = this.getAbsolutePosition(),
+						endPos = target.getAbsolutePosition(),
+						frameFactor = BABYLON.Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed;
+					laser.position = startPos;
+					this.lookAt(endPos);
+					laser.lookAt(endPos);
+					const animation = new BABYLON.Animation(
+						'projectileAnimation',
+						'position',
+						60,
+						BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+						BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+					);
+					animation.setKeys([
+						{ frame: 0, value: startPos },
+						{ frame: 60 * frameFactor, value: endPos },
+					]);
+					laser.animations.push(animation);
+					let result = this.level.beginAnimation(laser, 0, 60 * frameFactor);
+					result.disposeOnEnd = true;
+					result.onAnimationEnd = () => {
+						laser.dispose();
+						target.entity.hp -= (this._generic.damage / Level.tickRate) * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
+					};
 				},
 			},
 		],
 	]);
 	_generic = {};
-	_entity;
-	#_res;
+	#entity;
+	#resolve;
 	instanceReady;
 	constructor(type, ship, id = random.hex(32)) {
 		if (!(ship instanceof Ship)) throw new TypeError();
@@ -475,33 +495,30 @@ const Hardpoint = class extends BABYLON.TransformNode {
 		this._generic = Hardpoint.generic.get(type);
 
 		this.level = ship.level;
+		this.type = type;
 		this.parent = ship;
-		this._entity = ship;
+		this.#entity = ship;
 		this.reload = this._generic.reload;
-		let _res;
-		this.instanceReady = new Promise((res) => (_res = res));
-		this.#_res = _res;
-		this.#createInstance(type).catch((err) => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${type}: ${err}`));
+		let resolve;
+		this.instanceReady = new Promise((res) => (resolve = res));
+		this.#resolve = resolve;
+		this.#createInstance().catch((err) => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${type}: ${err}`));
 	}
 
 	get entity() {
-		return this._entity;
+		return this.#entity;
 	}
 
-	async #createInstance(type) {
-		await this.level.loadedGenericMeshes;
-		if (typeof this.level.genericMeshes[type]?.instantiateModelsToScene == 'function') {
-			this.mesh = this.level.genericMeshes[type].instantiateModelsToScene().rootNodes[0];
-		} else {
-			this.mesh = BABYLON.MeshBuilder.CreateBox('error_mesh', { size: 1 }, this.level);
-			this.mesh.material = new BABYLON.StandardMaterial('error_material', this.level);
-			this.mesh.material.emissiveColor = BABYLON.Color3.Gray();
-			throw 'Origin mesh does not exist';
-		}
+	async #createInstance() {
+		this.mesh = await this.level.instantiateGenericMesh(this.type);
 		this.mesh.setParent(this);
 		this.mesh.position = BABYLON.Vector3.Zero();
 		this.mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI);
-		this.#_res();
+		this.#resolve();
+	}
+
+	async createProjectileInstante() {
+		return await this.level.instantiateGenericMesh(this.type + '.projectile');
 	}
 
 	remove() {}
@@ -553,15 +570,7 @@ const Entity = class extends BABYLON.TransformNode {
 	}
 
 	async #createInstance(type) {
-		await this.level.loadedGenericMeshes;
-		if (typeof this.level.genericMeshes[type]?.instantiateModelsToScene == 'function') {
-			this.mesh = this.level.genericMeshes[type].instantiateModelsToScene().rootNodes[0];
-		} else {
-			this.mesh = BABYLON.MeshBuilder.CreateBox('error_mesh', { size: 1 }, this.level);
-			this.mesh.material = new BABYLON.StandardMaterial('error_material', this.level);
-			this.mesh.material.emissiveColor = BABYLON.Color3.Gray();
-			throw 'Origin mesh does not exist';
-		}
+		this.mesh = await this.level.instantiateGenericMesh(type);
 		this.mesh.setParent(this);
 		this.mesh.position = BABYLON.Vector3.Zero();
 		this.mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI);
@@ -965,10 +974,10 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
 		context.putImageData(imageData, 0, 0);
 		texture.update();
 	}
-	generateTexture(id, path, options, scene) {
-		let sampler = new BABYLON.DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+	generateTexture(id, path, options, level) {
+		let sampler = new BABYLON.DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, level, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
 		CelestialBodyMaterial.updateRandom(sampler);
-		let texture = new BABYLON.ProceduralTexture('CelestialBodyMaterial.texture.' + id, options.mapSize, path, scene, null, true, true);
+		let texture = new BABYLON.ProceduralTexture('CelestialBodyMaterial.texture.' + id, options.mapSize, path, level, null, true, true);
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
 		texture.setFloat('mapSize', options.mapSize);
@@ -981,31 +990,34 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
 		texture.refreshRate = 0;
 		return texture;
 	}
-	constructor(options, scene) {
+	constructor(options, level) {
 		options.mapSize = 1024;
 		options.maxResolution = [64, 256, 1024][config.render_quality];
 		let id = random.hex(8);
-		super('CelestialBodyMaterial.' + id, scene, './shaders/planet', {
+		super('CelestialBodyMaterial.' + id, level, './shaders/planet', {
 			attributes: ['position', 'normal', 'uv'],
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
 			needAlphaBlending: true,
+		});
+		level.onActiveCameraChanged.add(() => {
+			this.setVector3('cameraPosition', level.activeCamera.position);
 		});
 		this.generationOptions = options;
 		this.rotationFactor = Math.random();
 		this.matrixAngle = 0;
 
-		this.setVector3('cameraPosition', scene.activeCamera.position);
+		this.setVector3('cameraPosition', level.activeCamera?.position || BABYLON.Vector3.Zero());
 		this.setVector3('lightPosition', BABYLON.Vector3.Zero());
 
 		this.noiseTexture = this.generateTexture(
 			id,
 			'./shaders/noise',
 			{ ...options, options: new BABYLON.Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y) },
-			scene
+			level
 		);
 		this.setTexture('textureSampler', this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, './shaders/cloud', { ...options, options: new BABYLON.Vector3(1.0, 0, 0) }, scene);
+		this.cloudTexture = this.generateTexture(id, './shaders/cloud', { ...options, options: new BABYLON.Vector3(1.0, 0, 0) }, level);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);
@@ -1246,7 +1258,7 @@ const Level = class extends BABYLON.Scene {
 		this.name = name;
 
 		this.loadedGenericMeshes = this.#loadGenericMeshes();
-		this.#initPromise = !doNotGenerate ? this.init() : Promise.resolve(this);
+		this.#initPromise = doNotGenerate ? Promise.resolve(this) : this.init();
 		this.registerBeforeRender(() => {
 			let ratio = this.getAnimationRatio();
 			for (let body of this.bodies.values()) {
@@ -1289,8 +1301,23 @@ const Level = class extends BABYLON.Scene {
 			}
 		}
 	}
+	async instantiateGenericMesh(id) {
+		await this.loadedGenericMeshes;
+
+		let instance;
+		if (typeof this.genericMeshes[id]?.instantiateModelsToScene == 'function') {
+			instance = this.genericMeshes[id].instantiateModelsToScene().rootNodes[0];
+		} else {
+			instance = BABYLON.MeshBuilder.CreateBox('error_mesh', { size: 1 }, this);
+			instance.material = new BABYLON.StandardMaterial('error_material', this);
+			instance.material.emissiveColor = BABYLON.Color3.Gray();
+			throw 'Origin mesh does not exist';
+		}
+
+		return instance;
+	}
 	async init() {
-		await Level.generate.system('Crash Site', BABYLON.Vector3.Zero(), this);
+		return await Level.generate.system('Crash Site', BABYLON.Vector3.Zero(), this);
 	}
 	async generateRegion(x, y, size) {
 		await this.ready();
@@ -1556,7 +1583,7 @@ const Level = class extends BABYLON.Scene {
 	};
 
 	static generate = {
-		system: (name, position, level) => {
+		system: async (name, position, level) => {
 			let star = new Star({
 				name,
 				position,
