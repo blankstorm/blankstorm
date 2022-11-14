@@ -1219,7 +1219,9 @@ const Station = class extends CelestialBody {
 
 	}
 
-	static generic
+	static generic = new Map([
+		
+	]);
 };
 const Level = class extends BABYLON.Scene {
 	id = random.hex(16);
@@ -1280,7 +1282,11 @@ const Level = class extends BABYLON.Scene {
 		return this.#performanceMonitor.averageFPS;
 	}
 	async #loadGenericMeshes() {
-		for (let [id, generic] of [...Ship.generic, ...[...Hardpoint.generic].flatMap((e) => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]])]) {
+		for (let [id, generic] of [
+			...Ship.generic,
+			...[...Hardpoint.generic].flatMap((e) => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]]),
+			...Station.generic.map(([key, val]) => ['station.' + key, val])
+		]) {
 			try {
 				let container = (this.genericMeshes[id] = await BABYLON.SceneLoader.LoadAssetContainerAsync('', generic.model, this));
 				Object.assign(container.meshes[0], {
