@@ -12,8 +12,9 @@
 - Rockets (see https://playground.babylonjs.com/#PU4WYI#291)
 
 ### Features
-Improvements to hardpoint targeting
+- Improvements to hardpoint targeting
 
 ### Bug Fixes
+- Fixed an issue that prevent ticks
 
 ### Technical Changes
