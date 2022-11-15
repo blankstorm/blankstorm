@@ -1293,7 +1293,7 @@ const Level = class extends BABYLON.Scene {
 		for (let [id, generic] of [
 			...Ship.generic,
 			...[...Hardpoint.generic].flatMap((e) => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]]),
-			...Station.generic.map(([key, val]) => ['station.' + key, val])
+			...[...Station.generic].map(([key, val]) => ['station.' + key, val])
 		]) {
 			try {
 				let container = (this.genericMeshes[id] = await BABYLON.SceneLoader.LoadAssetContainerAsync('', generic.model, this));
