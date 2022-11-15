@@ -12,7 +12,7 @@
 		"lint:check-ci": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js src/*.js",
 		"lint": "npm run lint:check && npm run lint:fix",
 		"test": "npm run format:check && npm run lint:check",
-		"build": "mkdir -p build && cp -r src/* build && rm build/libraries/*.{map,d.ts}",
+		"build": "mkdir -p build && cp -r src/* build && rm build/libraries/*.map && rm build/libraries/*.d.ts",
 		"build:windows": "(if not exist build mkdir build) && xcopy /e /k /i /Y src build && del build\\libraries\\*.map && del build\\libraries\\*.d.ts"
 	},
 	"repository": {
