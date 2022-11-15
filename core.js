@@ -1,3 +1,4 @@
+/// <reference path="./libraries/babylon.core.d.ts" />
 /* global BABYLON */
 /* exported runCommand isHex isJSON */
 //core info and setup
@@ -1217,7 +1218,6 @@ const Station = class extends CelestialBody {
 	components = [];
 	constructor({ name = 'Station', id = random.hex(32) }, scene) {
 		super(name, id, scene);
-
 	}
 
 	static generic = new Map([
