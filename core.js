@@ -15,7 +15,7 @@ const config = {
 	settings: {},
 };
 
-const version = 'alpha_1.3.1',
+const version = 'alpha_1.4.0',
 	versions = new Map([
 		['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
 		['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
@@ -35,6 +35,7 @@ const version = 'alpha_1.3.1',
 		['alpha_1.2.1', { text: 'Alpha 1.2.1', group: 'alpha' }],
 		['alpha_1.3.0', { text: 'Alpha 1.3.0', group: 'alpha' }],
 		['alpha_1.3.1', { text: 'Alpha 1.3.1', group: 'alpha' }],
+		['alpha_1.4.0', { text: 'Alpha 1.4.0', group: 'alpha' }],
 	]);
 if (config.load_remote_manifest) {
 	fetch('https://blankstorm.drvortex.dev/versions/manifest.json')
@@ -1220,7 +1221,14 @@ const Station = class extends CelestialBody {
 	}
 
 	static generic = new Map([
-		
+		['core', {
+			type: 'core',
+			hp: 100,
+			model: 'models/station/core.glb',
+			connecters: [
+				{ type: 'any', position: new BABYLON.Vector3(0, 0, 0)}
+			]
+		}]
 	]);
 };
 const Level = class extends BABYLON.Scene {
@@ -1652,11 +1660,10 @@ const Level = class extends BABYLON.Scene {
 		}
 
 		for (let id in levelData.bodies) {
-			let bodyData = levelData.bodies[id],
-				body;
+			let bodyData = levelData.bodies[id];
 			switch (bodyData.type) {
 				case 'star':
-					body = new Star({
+					new Star({
 						position: BABYLON.Vector3.FromArray(bodyData.position),
 						color: BABYLON.Color3.FromArray(bodyData.color),
 						scene: level,
@@ -1664,7 +1671,7 @@ const Level = class extends BABYLON.Scene {
 					});
 					break;
 				case 'planet':
-					body = new Planet({
+					new Planet({
 						position: BABYLON.Vector3.FromArray(bodyData.position),
 						scene: level,
 						...bodyData.filter('name', 'radius', 'id', 'biome', 'owner', 'rewards'),
