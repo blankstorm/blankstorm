@@ -505,7 +505,7 @@ const Hardpoint = class extends BABYLON.TransformNode {
 						startPos = this.getAbsolutePosition(),
 						endPos = target.getAbsolutePosition(),
 						frameFactor = BABYLON.Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed;
-					laser.scaling = this.scaling
+					laser.scaling = this.scaling;
 					laser.position = startPos;
 					this.lookAt(endPos);
 					laser.lookAt(endPos);
@@ -957,7 +957,6 @@ const Ship = class extends Entity {
 	}
 };
 const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
-	
 	constructor(options, level) {
 		options.mapSize = 1024;
 		options.maxResolution = [64, 256, 1024][config.render_quality];
@@ -1221,14 +1220,15 @@ const Station = class extends CelestialBody {
 	}
 
 	static generic = new Map([
-		['core', {
-			type: 'core',
-			hp: 100,
-			model: 'models/station/core.glb',
-			connecters: [
-				{ type: 'any', position: new BABYLON.Vector3(0, 0, 0)}
-			]
-		}]
+		[
+			'core',
+			{
+				type: 'core',
+				hp: 100,
+				model: 'models/station/core.glb',
+				connecters: [{ type: 'any', position: new BABYLON.Vector3(0, 0, 0) }],
+			},
+		],
 	]);
 };
 const Level = class extends BABYLON.Scene {
@@ -1293,7 +1293,7 @@ const Level = class extends BABYLON.Scene {
 		for (let [id, generic] of [
 			...Ship.generic,
 			...[...Hardpoint.generic].flatMap((e) => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]]),
-			...[...Station.generic].map(([key, val]) => ['station.' + key, val])
+			...[...Station.generic].map(([key, val]) => ['station.' + key, val]),
 		]) {
 			try {
 				let container = (this.genericMeshes[id] = await BABYLON.SceneLoader.LoadAssetContainerAsync('', generic.model, this));
@@ -1391,11 +1391,29 @@ const Level = class extends BABYLON.Scene {
 				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
 				const entityRange = entity.hardpoints.reduce((a, hp) => Math.max(a, hp._generic.range), 0);
 				let targets = [...this.entities.values()].filter((e) => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entityRange);
-				let target = targets.reduce((ac, cur) => ac = BABYLON.Vector3.Distance(ac?.getAbsolutePosition ? ac.getAbsolutePosition() : BABYLON.Vector3.One().scale(Infinity), entity.getAbsolutePosition()) < BABYLON.Vector3.Distance(cur.getAbsolutePosition(), entity.getAbsolutePosition()) ? ac : cur, null);
+				let target = targets.reduce(
+					(ac, cur) =>
+						(ac =
+							BABYLON.Vector3.Distance(ac?.getAbsolutePosition ? ac.getAbsolutePosition() : BABYLON.Vector3.One().scale(Infinity), entity.getAbsolutePosition()) <
+							BABYLON.Vector3.Distance(cur.getAbsolutePosition(), entity.getAbsolutePosition())
+								? ac
+								: cur),
+					null
+				);
 				if (target) {
 					for (let hp of entity.hardpoints) {
-						let targetPoints = [...target.hardpoints, target].filter((e) => BABYLON.Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range),
-							targetPoint = targetPoints.reduce((ac, cur) => ac = BABYLON.Vector3.Distance(ac.getAbsolutePosition(), hp.getAbsolutePosition()) < BABYLON.Vector3.Distance(cur.getAbsolutePosition(), hp.getAbsolutePosition()) ? ac : cur, target);
+						let targetPoints = [...target.hardpoints, target].filter(
+								(e) => BABYLON.Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range
+							),
+							targetPoint = targetPoints.reduce(
+								(ac, cur) =>
+									(ac =
+										BABYLON.Vector3.Distance(ac.getAbsolutePosition(), hp.getAbsolutePosition()) <
+										BABYLON.Vector3.Distance(cur.getAbsolutePosition(), hp.getAbsolutePosition())
+											? ac
+											: cur),
+								target
+							);
 						if (hp.reload <= 0) {
 							hp.fireProjectile(targetPoint);
 						}
