@@ -4,14 +4,16 @@
 	"description": "Blankstorm",
 	"main": "core.js",
 	"scripts": {
-		"format:check": "npx prettier --check *.{html,js}",
-		"format:fix": "npx prettier --write *.{html,js}",
+		"format:check": "npx prettier --check src/*.{html,js}",
+		"format:fix": "npx prettier --write src/*.{html,js}",
 		"format": "npm run format:check && npm run format:fix",
-		"lint:check": "npx eslint *.js",
-		"lint:fix": "npx eslint  --fix *.js",
-		"lint:check-ci": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js *.js",
+		"lint:check": "npx eslint src/*.js",
+		"lint:fix": "npx eslint  --fix src/*.js",
+		"lint:check-ci": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js src/*.js",
 		"lint": "npm run lint:check && npm run lint:fix",
-		"test": "npm run format:check && npm run lint:check"
+		"test": "npm run format:check && npm run lint:check",
+		"build": "mkdir -p build && cp -r src/* build && rm build/libraries/*.{map,d.ts}",
+		"build:windows": "(if not exist build mkdir build) && xcopy /e /k /i /Y src build && del build\\libraries\\*.map && del build\\libraries\\*.d.ts"
 	},
 	"repository": {
 		"type": "git",
