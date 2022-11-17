@@ -3,3 +3,4 @@ assets
 blender
 build
 libraries/*.map
+dist
