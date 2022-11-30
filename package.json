@@ -11,12 +11,17 @@
 		"lint:fix": "npx eslint  --fix src/*.js",
 		"lint:check-ci": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js src/*.js",
 		"lint": "npm run lint:check && npm run lint:fix",
-		"test": "npm run format:check && npm run lint:check",
+		"test": "npx electron .",
 		"build:win": "npx electron-builder build -w",
 		"build:mac": "npx electron-builder build -m",
 		"build:linux": "npx electron-builder build -l",
 		"build:all": "npx electron-builder build -mlw",
 		"build": "npx electron-builder build"
+	},
+	"build": {
+		"appId": "dev.drvortex.blankstorm",
+		"productName": "Blankstorm Client",
+		"copyright": "Copyright © 2022 ${author}"
 	},
 	"repository": {
 		"type": "git",

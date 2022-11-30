@@ -1223,6 +1223,7 @@ commands.reload = () => {
 	game.engine.resize();
 };
 //Event Listeners (UI transitions, creating saves, etc.)
+
 $('#main .sp').click(() => {
 	game.mp = false;
 	$('#load li').detach();

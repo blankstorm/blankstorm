@@ -1,12 +1,17 @@
 /* eslint-env node */
-const { app, BrowserWindow } = require('electron');
+const { app, nativeTheme, BrowserWindow } = require('electron');
 
 function createWindow() {
 	const win = new BrowserWindow({
 		width: 900,
 		height: 600,
+		center: true,
+		darkTheme: true
 	});
 
+	nativeTheme.themeSource = 'dark';
+
+	win.removeMenu(true);
 	win.loadFile('src/index.html');
 }
 
