@@ -1,21 +1,21 @@
 /* global $ BABYLON random  version versions db Level Items Tech minimize Ship PlayerData Planet isJSON runCommand io isHex CelestialBody generate Entity commands config*/
 /*eslint no-redeclare: "off"*/
-const web = (url) => `https://blankstorm.drvortex.dev/` + url,
+const web = url => `https://blankstorm.drvortex.dev/` + url,
 	upload = (type, multiple = false) =>
-		new Promise((res) =>
+		new Promise(res =>
 			$(`<input type=file ${type ? `accept='${type}'` : ''} ${multiple ? 'multiple' : ''}>`)
-				.change((e) => res([...e.target.files]))[0]
+				.change(e => res([...e.target.files]))[0]
 				.click()
 		),
 	download = (data, name) => $(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click(),
 	minimize = Intl.NumberFormat('en', { notation: 'compact' }).format;
 const modal = (input = 'Are you sure?', options = { Cancel: false, Ok: true }) =>
-		new Promise((res) => {
+		new Promise(res => {
 			$('#modal input').remove();
 			if (input instanceof Array) {
 				$('#modal').attr('plot', `0,0,350px,${6 + 2 * input.length}em`);
 				$('#modal p.info').attr('plot', `c,c-${2 * input.length}em,300px,1em,a`);
-				input.forEach((data) => {
+				input.forEach(data => {
 					$('<input><br>').attr(data).appendTo('#modal');
 				});
 			} else {
@@ -34,15 +34,15 @@ const modal = (input = 'Are you sure?', options = { Cancel: false, Ok: true }) =
 			$('#modal').on('close', () => {
 				res(
 					input instanceof Array
-						? { ...Object.fromEntries([...$('#modal input')].map((el) => [el.name, el.value])), result: $('#modal')[0].returnValue }
+						? { ...Object.fromEntries([...$('#modal input')].map(el => [el.name, el.value])), result: $('#modal')[0].returnValue }
 						: $('#modal')[0].returnValue
 				);
 				$('#modal button').remove();
 			});
 			ui.update();
 		}),
-	alert = (data) => modal(data, { Ok: true }),
-	confirm = async (data) => {
+	alert = data => modal(data, { Ok: true }),
+	confirm = async data => {
 		let res = await modal(data);
 		if (JSON.parse(res)) {
 			return true;
@@ -78,7 +78,7 @@ Object.defineProperties(Object.prototype, {
 		value: function (path, seperator) {
 			return path
 				.split(seperator || /[.[\]'"]/)
-				.filter((p) => p)
+				.filter(p => p)
 				.reduce((o, p) => (o ? o[p] : null), this);
 		},
 	},
@@ -86,8 +86,8 @@ Object.defineProperties(Object.prototype, {
 		value: function (path, value, seperator) {
 			return path
 				.split(seperator || /[.[\]'"]/)
-				.filter((p) => p)
-				.reduce((o, p, i) => (o[p] = path.split(seperator || /[.[\]'"]/).filter((p) => p).length === ++i ? value : o[p] || {}), this);
+				.filter(p => p)
+				.reduce((o, p, i) => (o[p] = path.split(seperator || /[.[\]'"]/).filter(p => p).length === ++i ? value : o[p] || {}), this);
 		},
 	},
 	copyFrom: {
@@ -134,7 +134,7 @@ $.fn.cm = function (...content) {
 		menu.append(c, $('<br>'));
 	}
 	menu.css({ position: 'fixed', width: 'fit-content', height: 'fit-content', 'max-width': '15%', padding: '1em', 'z-index': 9 });
-	this.contextmenu((e) => {
+	this.contextmenu(e => {
 		e.preventDefault();
 		menu.css({ left: settings.general.font_size + mouse.x, top: settings.general.font_size + mouse.y });
 		this.parent().append(menu);
@@ -163,15 +163,15 @@ const cookie = {},
 			a.play();
 		}
 	};
-onmousemove = (e) => {
+onmousemove = e => {
 	mouse.x = e.clientX;
 	mouse.y = e.clientY;
 };
-document.cookie.split('; ').forEach((e) => {
+document.cookie.split('; ').forEach(e => {
 	cookie[e.split('=')[0]] = e.split('=')[1];
 });
 
-const settingsProxyHandler = (obj) => ({
+const settingsProxyHandler = obj => ({
 	get(ls, prop) {
 		let _settings = JSON.parse(ls.getItem('settings'));
 		if (typeof _settings.getByString(obj)[prop] === 'object' && _settings.getByString(obj)[prop] !== null) {
@@ -228,7 +228,7 @@ const servers = new Map(),
 const locales = Object.assign(new Map(), {
 	async fetch(url) {
 		let locale = isJSON(url) ? JSON.parse(url) : await $.ajax(url),
-			err = (msg) => {
+			err = msg => {
 				throw new Error(`Failed to load locale from ${url}: ${msg}`);
 			};
 		locale.language ||= locale.lang;
@@ -236,7 +236,7 @@ const locales = Object.assign(new Map(), {
 		if (!locale.language) err('Does not have a language');
 		if (!(locale.version || locale.versions)) err('Does not have a version');
 		if (!locale?.text) err('Missing data');
-		if (locale.version != version && ![...locale.versions].some((v) => version.match(v))) err('Wrong game version');
+		if (locale.version != version && ![...locale.versions].some(v => version.match(v))) err('Wrong game version');
 
 		this.set(locale.language, locale);
 		$('<option></option>').attr('value', locale.language).text(locale.name).appendTo('#settings form.gen select[name=locale]');
@@ -288,7 +288,7 @@ const Waypoint = class extends BABYLON.Node {
 				{ name: 'z', placeholder: 'Z', value: wp instanceof Waypoint ? wp.position.z : null },
 			],
 			{ Cancel: false, Save: true }
-		).then((data) => {
+		).then(data => {
 			if (data.result) {
 				if (!isHex(data.color.slice(1))) {
 					alert(locales.text`error.waypoint.color`);
@@ -398,10 +398,10 @@ const Save = class {
 			})
 			.dblclick(loadAndPlay);
 		if (!game.mp) gui.prependTo('#load');
-		gui.delete.click((e) => {
+		gui.delete.click(e => {
 			let remove = () => {
 				gui.remove();
-				db.tx('saves', 'readwrite').then((tx) => {
+				db.tx('saves', 'readwrite').then(tx => {
 					tx.objectStore('saves').delete(save.data.id);
 					saves.delete(save.data.id);
 				});
@@ -411,7 +411,7 @@ const Save = class {
 		gui.download.click(() => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
 		gui.play.click(loadAndPlay);
 		gui.edit.click(() => {
-			modal([{ name: 'name', placeholder: 'New name', value: save.data.name }], { Cancel: false, Save: true }).then((result) => {
+			modal([{ name: 'name', placeholder: 'New name', value: save.data.name }], { Cancel: false, Save: true }).then(result => {
 				if (result.result) {
 					save.data.name = result.name;
 					ui.update();
@@ -545,7 +545,7 @@ const Server = class {
 			socket: null,
 			gui: $(`<li ofn bg style=align-items:center;height:3em></li>`),
 		});
-		db.tx('servers', 'readwrite').then((tx) => tx.objectStore('servers').put(name, url));
+		db.tx('servers', 'readwrite').then(tx => tx.objectStore('servers').put(name, url));
 		this.socket = io(this.url, { reconnection: false, autoConnect: false, auth: { token: cookie.token, session: cookie.session } });
 		this.socket.on('connect', () => {
 			$('#connect').hide();
@@ -556,27 +556,27 @@ const Server = class {
 			player.data().cam.inputs.attached.pointers.buttons = [1];
 			$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
 		});
-		this.socket.on('connect_error', (err) => {
+		this.socket.on('connect_error', err => {
 			$('#connect p').text((err.message.startsWith('Connection refused') ? '' : 'Connection Error: ') + err.message);
 			$('#connect button').text('Back');
 		});
-		this.socket.on('connect_failed', (err) => {
+		this.socket.on('connect_failed', err => {
 			$('#connect p').text('Connection failed: ' + err.message);
 			$('#connect button').text('Back');
 		});
-		this.socket.on('packet', (packet) => {
+		this.socket.on('packet', packet => {
 			$('#connect p').text('[Server] ' + (packet instanceof Array ? `Array (${packet.length})<br>` + packet.join('<br>') : packet));
 		});
-		this.socket.on('playerlist', (list) => {
+		this.socket.on('playerlist', list => {
 			$('#tablist p.players').html(list.join('<br>'));
 		});
-		this.socket.on('kick', (message) => {
+		this.socket.on('kick', message => {
 			this.kickMessage = 'Kicked from server: ' + message;
 		});
-		this.socket.on('chat', (message) => {
+		this.socket.on('chat', message => {
 			game.chat(message);
 		});
-		this.socket.on('disconnect', (reason) => {
+		this.socket.on('disconnect', reason => {
 			let message =
 				this.kickMessage ??
 				(reason == 'io server disconnect'
@@ -636,14 +636,14 @@ const Server = class {
 			this.socket.disconnect(true);
 		}
 		servers.sel = null;
-		servers.forEach((server) => server.ping());
+		servers.forEach(server => server.ping());
 	}
 	ping() {
 		this.gui.info.html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').css('animation', '2s linear infinite rotate');
 		let beforeTime = performance.now();
 		let url = /.+:(\d){1,5}/.test(this.url) ? this.url : this.url + ':1123';
 		$.get(`${/http(s?):\/\//.test(url) ? url : 'https://' + url}/ping`)
-			.done((data) => {
+			.done(data => {
 				if (isJSON(data)) {
 					this.pingData = JSON.parse(data);
 					this.gui.info
@@ -670,11 +670,11 @@ $('#main .version a')
 console.log(`%cBlankstorm ${versions.get(version).text}`, `color:#f55`);
 
 //load mods (if any)
-db.tx('mods').then((tx) => {
+db.tx('mods').then(tx => {
 	tx.objectStore('mods')
 		.getAll()
 		.async()
-		.then((result) => {
+		.then(result => {
 			console.log('Loaded mods: ' + (result.join('\n') || '(none)'));
 		});
 });
@@ -689,7 +689,7 @@ const game = {
 	mpEnabled: true,
 	hitboxes: false,
 	strobeInterval: null,
-	strobe: (rate) => {
+	strobe: rate => {
 		if (game.strobeInterval) {
 			clearInterval(game.strobeInterval);
 			$(':root').css('--hue', 200);
@@ -722,11 +722,11 @@ const game = {
 					$(this).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key);
 				})
 		);
-		$('canvas.game,[ingame-ui],#hud,#tablist').keydown((e) => {
+		$('canvas.game,[ingame-ui],#hud,#tablist').keydown(e => {
 			if (e.key == keybind[name].key && (!keybind[name].alt || e.altKey) && (!keybind[name].ctrl || e.ctrlKey)) onTrigger(e);
 		});
 	},
-	toggleChat: (command) => {
+	toggleChat: command => {
 		$('#chat,#chat_history').toggle();
 		if ($('#cli').toggle().is(':visible')) {
 			player.data().cam.detachControl(game.canvas, true);
@@ -744,7 +744,7 @@ const game = {
 	scene: () => {
 		return saves.current;
 	},
-	runCommand: (command) => {
+	runCommand: command => {
 		if (game.mp) {
 			servers.get(servers.sel).socket.emit('command', command);
 		} else {
@@ -760,7 +760,7 @@ const game = {
 			$(`<li bg=none></li>`).text(m).appendTo('#chat_history');
 		}
 	},
-	error: (error) => {
+	error: error => {
 		console.error(error);
 		game.chat('Error: ' + error);
 	},
@@ -789,7 +789,7 @@ const player = {
 			url: web`api/user`,
 			async: false,
 			data: { token: cookie.token, session: true },
-			success: (req) => {
+			success: req => {
 				player.authData = req;
 				if (isJSON(req)) {
 					let res = JSON.parse(req);
@@ -823,7 +823,7 @@ const player = {
 			player.data().velocity = BABYLON.Vector3.Zero();
 		}, +delay || 0);
 	},
-	reset: (noStop) => {
+	reset: noStop => {
 		player.data().position = random.cords(random.int(0, 50), true).add(new BABYLON.Vector3(0, 0, -1000));
 		player.data().rotation = BABYLON.Vector3.Zero();
 		player.data().cam.alpha = -Math.PI / 2;
@@ -840,11 +840,11 @@ const player = {
 			ship.remove();
 		}
 	},
-	data: (id) => saves.current?.playerData?.get(id ?? player.id) ?? {},
-	levelOf: (xp) => Math.sqrt(xp / 10),
-	xpOf: (level) => 10 * level ** 2,
+	data: id => saves.current?.playerData?.get(id ?? player.id) ?? {},
+	levelOf: xp => Math.sqrt(xp / 10),
+	xpOf: level => 10 * level ** 2,
 	get isInBattle() {
-		return this.data().fleet.some((ship) => !!ship.battle);
+		return this.data().fleet.some(ship => !!ship.battle);
 	},
 };
 
@@ -872,11 +872,11 @@ game.createKeybind('right', { key: 'd' }, 'Strafe Right', () => {
 game.createKeybind('back', { key: 's' }, 'Backward', () => {
 	player.data().addVelocity(BABYLON.Vector3.Backward(), true);
 });
-game.createKeybind('chat', { key: 't' }, 'Toggle Chat', (e) => {
+game.createKeybind('chat', { key: 't' }, 'Toggle Chat', e => {
 	e.preventDefault();
 	game.toggleChat();
 });
-game.createKeybind('command', { key: '/' }, 'Toggle Command', (e) => {
+game.createKeybind('command', { key: '/' }, 'Toggle Command', e => {
 	e.preventDefault();
 	game.toggleChat(true);
 });
@@ -898,7 +898,7 @@ game.createKeybind('save', { key: 's', ctrl: true }, 'Save Game', () => {
 			.get(saves.current.id)
 			.saveToDB()
 			.then(() => game.chat('Game saved.'))
-			.catch((err) => game.chat('Failed to save game: ' + err))
+			.catch(err => game.chat('Failed to save game: ' + err))
 			.finally(() => $('#esc .save').text('Save Game'));
 	} else {
 		throw 'Save Error: you must have a valid save selected.';
@@ -1080,7 +1080,7 @@ const ui = {
 			}
 			$('.marker').hide();
 
-			game.screenshots.forEach((s) => {
+			game.screenshots.forEach(s => {
 				$(`<img src=${s} width=256></img>`)
 					.appendTo('#q div.screenshots')
 					.cm(
@@ -1103,10 +1103,10 @@ const ui = {
 				let bind = keybind[e.name];
 				$(e).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key);
 			});
-			servers.forEach((server) => {
+			servers.forEach(server => {
 				server.gui.name.text(server.name);
 			});
-			saves.forEach((save) => {
+			saves.forEach(save => {
 				save.gui.name.text(save.data.name);
 				save.gui.version.text(versions.get(save.data.version)?.text ?? save.data.version);
 				save.gui.date.text(new Date(save.data.date).toLocaleString());
@@ -1139,7 +1139,7 @@ const ui = {
 
 				let plot = $(e)
 					.attr('plot')
-					.replaceAll(/[\d.]+(px|em)/g, (str) => parseFloat(str) * scale + str.slice(-2))
+					.replaceAll(/[\d.]+(px|em)/g, str => parseFloat(str) * scale + str.slice(-2))
 					.split(',');
 				plot[0][0] == 'c' && !plot[0].startsWith('calc')
 					? $(e).css('left', `${plot[0].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[2]}/2))${plot[0].slice(1) ? ` + ${plot[0].slice(1)})` : ''}`)
@@ -1186,53 +1186,53 @@ locales.fetch('locales/en.json').then(() => {
 });
 
 //Load saves and servers into the game (from the IndexedDB)
-db.tx('saves').then((tx) => {
+db.tx('saves').then(tx => {
 	tx.objectStore('saves')
 		.getAll()
 		.async()
-		.then((result) => {
-			result.forEach((save) => new Save(save));
+		.then(result => {
+			result.forEach(save => new Save(save));
 		});
 });
-db.tx('servers').then((tx) => {
+db.tx('servers').then(tx => {
 	tx.objectStore('servers')
 		.getAllKeys()
 		.async()
-		.then((result) => {
-			result.forEach((key) =>
-				db.tx('servers').then((tx) =>
+		.then(result => {
+			result.forEach(key =>
+				db.tx('servers').then(tx =>
 					tx
 						.objectStore('servers')
 						.get(key)
 						.async()
-						.then((result) => new Server(key, result))
+						.then(result => new Server(key, result))
 				)
 			);
 		});
 });
 
-(commands.playsound = (level, name, volume = settings.general.sfx) => {
+commands.playsound = (level, name, volume = settings.general.sfx) => {
 	if (sound[name]) {
 		playsound(name, volume);
 	} else {
 		throw new ReferenceError(`sound "${name}" does not exist`);
 	}
-}),
-	(commands.reload = () => {
-		//maybe also reload mods in the future
-		game.engine.resize();
-	}),
-	//Event Listeners (UI transitions, creating saves, etc.)
-	$('#main .sp').click(() => {
-		game.mp = false;
-		$('#load li').detach();
-		saves.forEach((save) => save.gui.prependTo('#load'));
-		saves.forEach((save) => save.gui.prependTo('#load'));
-		$('#main').hide();
-		$('#load button.upload use').attr('href', 'images/icons.svg#upload');
-		$('#load button.upload span').text(locales.text`menu.upload`);
-		$('#load').show();
-	});
+};
+commands.reload = () => {
+	//maybe also reload mods in the future
+	game.engine.resize();
+};
+//Event Listeners (UI transitions, creating saves, etc.)
+$('#main .sp').click(() => {
+	game.mp = false;
+	$('#load li').detach();
+	saves.forEach(save => save.gui.prependTo('#load'));
+	saves.forEach(save => save.gui.prependTo('#load'));
+	$('#main').hide();
+	$('#load button.upload use').attr('href', 'images/icons.svg#upload');
+	$('#load button.upload span').text(locales.text`menu.upload`);
+	$('#load').show();
+});
 $('#main .mp').click(() => {
 	game.mp = true;
 	$('#main').hide();
@@ -1240,7 +1240,7 @@ $('#main .mp').click(() => {
 	$('#load button.refresh span').text(locales.text`menu.refresh`);
 	$('#load').show();
 	$('#load li').detach();
-	servers.forEach((server) => {
+	servers.forEach(server => {
 		server.gui.prependTo('#load');
 		server.ping();
 	});
@@ -1259,11 +1259,11 @@ $('#load .new').click(() => {
 });
 $('#load button.upload.refresh').click(() => {
 	if (game.mp) {
-		servers.forEach((server) => server.ping());
+		servers.forEach(server => server.ping());
 	} else {
 		upload('.json')
-			.then((file) => file[0].text())
-			.then((text) => {
+			.then(file => file[0].text())
+			.then(text => {
 				if (isJSON(text)) {
 					new Save(JSON.parse(text));
 				} else {
@@ -1303,7 +1303,7 @@ $('#esc .save').click(() => {
 				game.chat('Game Saved.');
 				$('#esc .save').text('Save Game');
 			})
-			.catch((err) => {
+			.catch(err => {
 				game.chat('Failed to save game: ' + err);
 				$('#esc .save').text('Save Game');
 			});
@@ -1358,7 +1358,7 @@ $('.nav button.trade').click(() => {
 $('button.map.new').click(() => {
 	Waypoint.dialog();
 });
-$('#settings>button:not(.back)').click((e) => {
+$('#settings>button:not(.back)').click(e => {
 	let target = $(e.target);
 	$('#settings form')
 		.hide()
@@ -1390,7 +1390,7 @@ $('#settings button.back').click(() => {
 });
 $('#q div.warp button.warp').click(() => {
 	let destination = new BABYLON.Vector3(+$('input.warp.x').val(), 0, +$('input.warp.y').val());
-	player.data().fleet.forEach((ship) => {
+	player.data().fleet.forEach(ship => {
 		let offset = random.cords(player.data().power, true);
 		ship.jump(destination.add(offset));
 		console.log(ship.id + ' Jumped');
@@ -1410,7 +1410,7 @@ $('#settings,#settings ').on('click change', () => {
 	settings.debug = $('#settings form.debug').formData();
 });
 $('#settings form.gen input').change(() => ui.update());
-$('#settings form.gen select[name=locale]').change((e) => {
+$('#settings form.gen select[name=locale]').change(e => {
 	let lang = e.target.value;
 	if (locales.has(lang)) {
 		locales.load(lang);
@@ -1420,7 +1420,7 @@ $('#settings form.gen select[name=locale]').change((e) => {
 	}
 });
 $('html')
-	.keydown((e) => {
+	.keydown(e => {
 		switch (e.key) {
 			case 'F8':
 				e.preventDefault();
@@ -1432,7 +1432,7 @@ $('html')
 			case 't':
 				if (e.altKey) {
 					e.preventDefault();
-					prompt('Password').then((passkey) => {
+					prompt('Password').then(passkey => {
 						let token = $.ajax(web('api/dev_auth'), { data: { passkey }, async: false }).responseText;
 						document.cookie = 'token=' + token;
 						location.reload();
@@ -1441,7 +1441,7 @@ $('html')
 				break;
 		}
 	})
-	.mousemove((e) => {
+	.mousemove(e => {
 		$('tool-tip').each((i, tooltip) => {
 			let computedStyle = getComputedStyle(tooltip);
 			let left = settings.general.font_size + e.clientX,
@@ -1452,7 +1452,7 @@ $('html')
 			});
 		});
 	});
-$('#cli').keydown((e) => {
+$('#cli').keydown(e => {
 	let c = game.cli;
 	if (c.line == 0) c.currentInput = $('#cli').val();
 	switch (e.key) {
@@ -1479,7 +1479,7 @@ $('#cli').keydown((e) => {
 			break;
 	}
 });
-game.canvas.click((e) => {
+game.canvas.click(e => {
 	if (!game.isPaused) {
 		player.data().cam.attachControl(game.canvas, true);
 		player.data().cam.inputs.attached.pointers.buttons = [1];
@@ -1490,12 +1490,12 @@ game.canvas.click((e) => {
 	}
 	ui.update();
 });
-game.canvas.contextmenu((e) => {
+game.canvas.contextmenu(e => {
 	if (saves.current instanceof Save.Live) {
 		saves.current.handleCanvasRightClick(e, player.data());
 	}
 });
-game.canvas.keydown((e) => {
+game.canvas.keydown(e => {
 	switch (e.key) {
 		case 'F3':
 			$('#debug').toggle();
@@ -1513,7 +1513,7 @@ game.canvas.keydown((e) => {
 			break;
 	}
 });
-game.canvas.keyup((e) => {
+game.canvas.keyup(e => {
 	switch (e.key) {
 		case 'Tab':
 			e.preventDefault();
@@ -1522,19 +1522,19 @@ game.canvas.keyup((e) => {
 	}
 });
 
-$('#q').keydown((e) => {
+$('#q').keydown(e => {
 	if (e.key == keybind.nav || e.key == 'Escape') {
 		game.changeUI('#q');
 	}
 });
 $('#e')
-	.keydown((e) => {
+	.keydown(e => {
 		if (e.key == keybind.inv || e.key == 'Escape') {
 			game.changeUI('#e');
 		}
 	})
 	.click(() => ui.update());
-$('canvas.game,#esc,#hud').keydown((e) => {
+$('canvas.game,#esc,#hud').keydown(e => {
 	if (e.key == 'Escape') {
 		game.changeUI('#esc', true);
 		game.isPaused = !game.isPaused;
@@ -1557,9 +1557,9 @@ const loop = () => {
 				if (player.data().cam.alpha < -Math.PI) player.data().cam.alpha += 2 * Math.PI;
 				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.general.sensitivity;
 				player.updateFleet();
-				saves.current.meshes.forEach((mesh) => {
+				saves.current.meshes.forEach(mesh => {
 					if (mesh instanceof CelestialBody) mesh.showBoundingBox = game.hitboxes;
-					if (mesh.parent instanceof Entity) mesh.getChildMeshes().forEach((child) => (child.showBoundingBox = game.hitboxes));
+					if (mesh.parent instanceof Entity) mesh.getChildMeshes().forEach(child => (child.showBoundingBox = game.hitboxes));
 					if (mesh != saves.current.skybox && isHex(mesh.id)) mesh.showBoundingBox = game.hitboxes;
 				});
 				for (let ship of saves.current.entities.values()) {
@@ -1577,7 +1577,7 @@ const loop = () => {
 				player.updateFleet();
 				player.data().position.addInPlace(player.data().velocity.scale(saves.current.getAnimationRatio()));
 				player.data().velocity.scaleInPlace(0.9);
-				saves.current.waypoints.forEach((waypoint) => {
+				saves.current.waypoints.forEach(waypoint => {
 					let pos = waypoint.screenPos;
 					waypoint.marker
 						.css({

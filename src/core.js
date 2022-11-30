@@ -40,13 +40,13 @@ const version = 'alpha_1.4.0',
 	]);
 if (config.load_remote_manifest) {
 	fetch('https://blankstorm.drvortex.dev/versions/manifest.json')
-		.then((response) => response.json())
-		.then((data) => {
+		.then(response => response.json())
+		.then(data => {
 			for (let [key, value] of data) {
 				versions.set(key, value);
 			}
 		})
-		.catch((err) => console.warn('Failed to retrieve version manifest: ' + err));
+		.catch(err => console.warn('Failed to retrieve version manifest: ' + err));
 }
 
 const greek = [
@@ -84,8 +84,8 @@ const greek = [
 	};
 
 //utility functions
-const isHex = (str) => /^[0-9a-f-.]+$/.test(str),
-	isJSON = (str) => {
+const isHex = str => /^[0-9a-f-.]+$/.test(str),
+	isJSON = str => {
 		try {
 			JSON.parse(str);
 			return true;
@@ -122,7 +122,7 @@ const random = {
 	},
 };
 const generate = {
-	enemies: (power) => {
+	enemies: power => {
 		//enemy spawning algorithm
 		let e = [];
 		e.power = power;
@@ -260,7 +260,7 @@ const Path = class extends BABYLON.Path3D {
 					this.openNodes[0]
 				);
 				this.openNodes.splice(
-					this.openNodes.findIndex((node) => node == currentNode),
+					this.openNodes.findIndex(node => node == currentNode),
 					1
 				);
 				this.closedNodes.push(currentNode);
@@ -269,24 +269,24 @@ const Path = class extends BABYLON.Path3D {
 					this.path = Path.trace(this.startNode, this.endNode);
 					this.#pathFound = true;
 				}
-				let relatives = [0, 1, -1].flatMap((x) => [0, 1, -1].map((y) => new BABYLON.Vector3(x, 0, y))).filter((v) => v.x != 0 || v.z != 0);
-				let neighbors = relatives.map((v) =>
-					this.openNodes.some((node) => node.position.equals(v))
-						? this.openNodes.find((node) => node.position.equals(v))
+				let relatives = [0, 1, -1].flatMap(x => [0, 1, -1].map(y => new BABYLON.Vector3(x, 0, y))).filter(v => v.x != 0 || v.z != 0);
+				let neighbors = relatives.map(v =>
+					this.openNodes.some(node => node.position.equals(v))
+						? this.openNodes.find(node => node.position.equals(v))
 						: new Path.Node(currentNode.position.add(v), currentNode)
 				);
 				for (let neighbor of neighbors) {
 					if (scene instanceof Level) {
-						scene.bodies.forEach((body) => {
+						scene.bodies.forEach(body => {
 							if (BABYLON.Vector3.Distance(body.position, neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
 						});
 					}
-					if (!neighbor.intersects.length && !this.closedNodes.some((node) => node.equals(neighbor))) {
+					if (!neighbor.intersects.length && !this.closedNodes.some(node => node.equals(neighbor))) {
 						let costToNeighbor = currentNode.gCost + Path.nodeDistance(currentNode, neighbor);
-						if (costToNeighbor < neighbor.gCost || !this.openNodes.some((node) => node.equals(neighbor))) {
+						if (costToNeighbor < neighbor.gCost || !this.openNodes.some(node => node.equals(neighbor))) {
 							neighbor.gCost = costToNeighbor;
 							neighbor.hCost = Path.nodeDistance(neighbor, this.endNode);
-							if (!this.openNodes.some((node) => node.equals(neighbor))) this.openNodes.push(neighbor);
+							if (!this.openNodes.some(node => node.equals(neighbor))) this.openNodes.push(neighbor);
 						}
 					}
 				}
@@ -301,7 +301,7 @@ const Path = class extends BABYLON.Path3D {
 			if (this.gizmo) console.warn('Path gizmo was already drawn!');
 			this.gizmo = BABYLON.Mesh.CreateLines(
 				'pathGizmo.' + random.hex(16),
-				this.path.map((node) => node.position),
+				this.path.map(node => node.position),
 				scene
 			);
 			this.gizmo.color = color;
@@ -316,7 +316,7 @@ const Path = class extends BABYLON.Path3D {
 const StorageData = class extends Map {
 	#max = 1;
 	constructor(max = 1, items = {}) {
-		super([...Items.keys()].map((i) => [i, 0]));
+		super([...Items.keys()].map(i => [i, 0]));
 		this.#max = max;
 		Object.entries(items).forEach(([item, amount]) => this.add(item, +amount || 0));
 	}
@@ -344,8 +344,8 @@ const StorageData = class extends Map {
 
 const PlayerData = class extends BABYLON.TransformNode {
 	get items() {
-		let items = Object.fromEntries([...Items.keys()].map((i) => [i, 0]));
-		this.fleet.forEach((ship) => {
+		let items = Object.fromEntries([...Items.keys()].map(i => [i, 0]));
+		this.fleet.forEach(ship => {
 			for (let [name, amount] of Object.entries(items)) {
 				items[name] = +ship.storage.get(name) + amount;
 			}
@@ -354,13 +354,13 @@ const PlayerData = class extends BABYLON.TransformNode {
 	}
 
 	set items(value) {
-		this.fleet.forEach((ship) => {
+		this.fleet.forEach(ship => {
 			ship.storage.empty(Object.keys(value));
 		});
 		this.addItems(value);
 	}
 	addItems(items) {
-		this.fleet.forEach((ship) => {
+		this.fleet.forEach(ship => {
 			let space = ship.storage.max * (1 + this.tech.storage / 20) - ship.storage.total;
 			if (space > 0) {
 				Object.entries(items).forEach(([name, amount]) => {
@@ -378,7 +378,7 @@ const PlayerData = class extends BABYLON.TransformNode {
 	}
 	removeItems(items) {
 		items = { ...items };
-		this.fleet.forEach((ship) => {
+		this.fleet.forEach(ship => {
 			Object.entries(items).forEach(([item, amount]) => {
 				let stored = Math.min(ship.storage.get(item), amount);
 				ship.storage.remove(item, stored);
@@ -387,17 +387,17 @@ const PlayerData = class extends BABYLON.TransformNode {
 		});
 	}
 	removeAllItems() {
-		this.removeItems(Object.fromEntries([...Items.keys()].map((i) => [i, Infinity])));
+		this.removeItems(Object.fromEntries([...Items.keys()].map(i => [i, Infinity])));
 	}
 	hasItems(items) {
 		items = { ...items };
-		this.fleet.forEach((ship) => {
+		this.fleet.forEach(ship => {
 			Object.entries(items).forEach(([item, amount]) => {
 				let stored = Math.min(ship.storage.get(item), amount);
 				items[item] -= stored;
 			});
 		});
-		return Object.values(items).every((item) => item <= 0);
+		return Object.values(items).every(item => item <= 0);
 	}
 	get totalItems() {
 		return this.fleet.reduce((total, ship) => total + ship.storage.total, 0);
@@ -408,7 +408,7 @@ const PlayerData = class extends BABYLON.TransformNode {
 	shipNum(type) {
 		return this.fleet.reduce((total, ship) => (total + ship.class == type ? 1 : 0), 0);
 	}
-	tech = Object.fromEntries([...Tech.keys()].map((item) => [item, 0]));
+	tech = Object.fromEntries([...Tech.keys()].map(item => [item, 0]));
 	fleet = [];
 	xp = 0;
 	xpPoints = 0;
@@ -427,9 +427,9 @@ const PlayerData = class extends BABYLON.TransformNode {
 	}
 	serialize() {
 		return {
-			position: this.position.asArray().map((num) => +num.toFixed(3)),
-			rotation: this.rotation.asArray().map((num) => +num.toFixed(3)),
-			fleet: this.fleet.map((s) => s.id),
+			position: this.position.asArray().map(num => +num.toFixed(3)),
+			rotation: this.rotation.asArray().map(num => +num.toFixed(3)),
+			fleet: this.fleet.map(s => s.id),
 			...this.filter('tech', 'items', 'xp', 'xpPoints'),
 		};
 	}
@@ -458,9 +458,9 @@ const Hardpoint = class extends BABYLON.TransformNode {
 		this.#entity = ship;
 		this.reload = this._generic.reload;
 		let resolve;
-		this.instanceReady = new Promise((res) => (resolve = res));
+		this.instanceReady = new Promise(res => (resolve = res));
 		this.#resolve = resolve;
-		this.#createInstance().catch((err) => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${type}: ${err}`));
+		this.#createInstance().catch(err => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${type}: ${err}`));
 	}
 
 	get entity() {
@@ -543,7 +543,7 @@ const Entity = class extends BABYLON.TransformNode {
 		this.id = id;
 		this.owner = owner;
 		this.level = level;
-		this.#createInstance(type).catch((err) => console.warn(`Failed to create entity mesh instance for #${id} of type ${type}: ${err}`));
+		this.#createInstance(type).catch(err => console.warn(`Failed to create entity mesh instance for #${id} of type ${type}: ${err}`));
 		level.entities.set(this.id, this);
 	}
 
@@ -556,8 +556,8 @@ const Entity = class extends BABYLON.TransformNode {
 	}
 
 	select() {
-		[this.mesh, ...this.hardpoints.map((hp) => hp.mesh)].forEach((mesh) => {
-			mesh.getChildMeshes().forEach((child) => {
+		[this.mesh, ...this.hardpoints.map(hp => hp.mesh)].forEach(mesh => {
+			mesh.getChildMeshes().forEach(child => {
 				this.level.hl.addMesh(child, BABYLON.Color3.Green());
 			});
 		});
@@ -565,8 +565,8 @@ const Entity = class extends BABYLON.TransformNode {
 	}
 
 	unselect() {
-		[this.mesh, ...this.hardpoints.map((hp) => hp.mesh)].forEach((mesh) => {
-			mesh.getChildMeshes().forEach((child) => {
+		[this.mesh, ...this.hardpoints.map(hp => hp.mesh)].forEach(mesh => {
+			mesh.getChildMeshes().forEach(child => {
 				this.level.hl.removeMesh(child);
 			});
 		});
@@ -591,7 +591,7 @@ const Entity = class extends BABYLON.TransformNode {
 
 	followPath(path) {
 		if (!(path instanceof Path)) throw new TypeError('path must be a Path');
-		return new Promise((resolve) => {
+		return new Promise(resolve => {
 			let animation = new BABYLON.Animation(
 					'pathFollow',
 					'position',
@@ -646,8 +646,8 @@ const Entity = class extends BABYLON.TransformNode {
 
 	serialize() {
 		return {
-			position: this.position.asArray().map((num) => +num.toFixed(3)),
-			rotation: this.rotation.asArray().map((num) => +num.toFixed(3)),
+			position: this.position.asArray().map(num => +num.toFixed(3)),
+			rotation: this.rotation.asArray().map(num => +num.toFixed(3)),
 			owner: this.owner?.id,
 			id: this.id,
 			name: this.name,
@@ -711,8 +711,8 @@ const Ship = class extends Entity {
 	}
 	serialize() {
 		return {
-			position: this.position.asArray().map((num) => +num.toFixed(3)),
-			rotation: this.rotation.asArray().map((num) => +num.toFixed(3)),
+			position: this.position.asArray().map(num => +num.toFixed(3)),
+			rotation: this.rotation.asArray().map(num => +num.toFixed(3)),
 			owner: this.owner?.id,
 			id: this.id,
 			name: this.name,
@@ -1284,7 +1284,7 @@ const Level = class extends BABYLON.Scene {
 		});
 	}
 	get selectedEntities() {
-		return [...this.entities.values()].filter((e) => e.selected);
+		return [...this.entities.values()].filter(e => e.selected);
 	}
 	get tps() {
 		return this.#performanceMonitor.averageFPS;
@@ -1292,7 +1292,7 @@ const Level = class extends BABYLON.Scene {
 	async #loadGenericMeshes() {
 		for (let [id, generic] of [
 			...Ship.generic,
-			...[...Hardpoint.generic].flatMap((e) => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]]),
+			...[...Hardpoint.generic].flatMap(e => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]]),
 			...[...Station.generic].map(([key, val]) => ['station.' + key, val]),
 		]) {
 			try {
@@ -1383,14 +1383,14 @@ const Level = class extends BABYLON.Scene {
 			}
 		}
 		for (let entity of this.entities.values()) {
-			entity.hardpoints.forEach((hp) => (hp.reload = Math.max(--hp.reload, 0)));
+			entity.hardpoints.forEach(hp => (hp.reload = Math.max(--hp.reload, 0)));
 			if (entity.hp <= 0) {
 				entity.remove();
 				//Events: trigger event, for sounds
 			} else if (entity instanceof Ship) {
 				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
 				const entityRange = entity.hardpoints.reduce((a, hp) => Math.max(a, hp._generic.range), 0);
-				let targets = [...this.entities.values()].filter((e) => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entityRange);
+				let targets = [...this.entities.values()].filter(e => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entityRange);
 				let target = targets.reduce(
 					(ac, cur) =>
 						(ac =
@@ -1403,7 +1403,7 @@ const Level = class extends BABYLON.Scene {
 				if (target) {
 					for (let hp of entity.hardpoints) {
 						let targetPoints = [...target.hardpoints, target].filter(
-								(e) => BABYLON.Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range
+								e => BABYLON.Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range
 							),
 							targetPoint = targetPoints.reduce(
 								(ac, cur) =>
@@ -1424,7 +1424,7 @@ const Level = class extends BABYLON.Scene {
 	}
 	screenToWorldPlane(x, y, pickY) {
 		this.xzPlane.position.y = pickY || 0;
-		let pickInfo = this.pick(x, y, (mesh) => mesh == this.xzPlane);
+		let pickInfo = this.pick(x, y, mesh => mesh == this.xzPlane);
 		return pickInfo.pickedPoint || BABYLON.Vector3.Zero();
 	}
 	handleCanvasClick(e, owner) {
@@ -1434,7 +1434,7 @@ const Level = class extends BABYLON.Scene {
 				entity.unselect();
 			}
 		}
-		let pickInfo = this.pick(this.pointerX, this.pointerY, (mesh) => {
+		let pickInfo = this.pick(this.pointerX, this.pointerY, mesh => {
 			let node = mesh;
 			while (node.parent) {
 				node = node.parent;
@@ -1490,8 +1490,8 @@ const Level = class extends BABYLON.Scene {
 				console.warn(`body #${body?.id} not serialized: not a celestial body`);
 			} else {
 				let bodyData = (data.bodies[id] = {
-					position: body.position.asArray().map((num) => +num.toFixed(3)),
-					fleetLocation: body.fleetLocation.asArray().map((num) => +num.toFixed(3)),
+					position: body.position.asArray().map(num => +num.toFixed(3)),
+					fleetLocation: body.fleetLocation.asArray().map(num => +num.toFixed(3)),
 					...body.filter('name', 'id', 'owner'),
 				});
 				switch (body.constructor.name) {
@@ -1499,7 +1499,7 @@ const Level = class extends BABYLON.Scene {
 						Object.assign(bodyData, {
 							type: 'star',
 							radius: body.radius,
-							color: body.material.emissiveColor.asArray().map((num) => +num.toFixed(3)),
+							color: body.material.emissiveColor.asArray().map(num => +num.toFixed(3)),
 						});
 						break;
 					case 'Planet':
@@ -1523,13 +1523,13 @@ const Level = class extends BABYLON.Scene {
 	}
 
 	static upgrades = new Map([
-		['infdev_11', (data) => ({ ...data, version: 'alpha_1.0.0' })],
-		['infdev_12', (data) => ({ ...data, version: 'alpha_1.0.0' })],
+		['infdev_11', data => ({ ...data, version: 'alpha_1.0.0' })],
+		['infdev_12', data => ({ ...data, version: 'alpha_1.0.0' })],
 		[
 			'alpha_1.2.0',
-			(data) => ({
+			data => ({
 				...data,
-				entities: data.entities.map((e) => {
+				entities: data.entities.map(e => {
 					e.class = e.shipType;
 					return e;
 				}),
@@ -1718,7 +1718,7 @@ const commands = {
 	kill: (level, selector) => {
 		let entities = level.getEntities(selector);
 		if (entities.constructor.name == 'Array') {
-			entities.forEach((e) => e.remove());
+			entities.forEach(e => e.remove());
 			return `killed ${entities.length} entities`;
 		} else {
 			entities.remove();
@@ -1754,7 +1754,7 @@ const commands = {
 		let entities = level.getEntities(selector),
 			location = new BABYLON.Vector3(+x || 0, +y || 0, +z || 0); //TODO: || 0 -> || executor.position
 		if (entities instanceof Array) {
-			entities.forEach((entity) => {
+			entities.forEach(entity => {
 				entity.position = location;
 				//TODO: properly implement with checks for ships
 			});
@@ -1771,7 +1771,7 @@ const runCommand = (command, level) => {
 		hasRun = false;
 	let result =
 		splitCmd
-			.filter((p) => p)
+			.filter(p => p)
 			.reduce(
 				(o, p, i) =>
 					typeof o?.[p] == 'function'
