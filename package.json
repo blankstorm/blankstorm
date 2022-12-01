@@ -31,7 +31,13 @@
 		},
 		"win": {
 			"executableName": "blankstorm-client"
-		}
+		},
+		"linux": {
+			"category": "Game"
+		},
+		"mac": {
+			"category": "public.app-category.games"
+		},
 	},
 	"repository": {
 		"type": "git",
