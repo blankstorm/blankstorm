@@ -1,6 +1,6 @@
 {
 	"name": "blankstorm-client",
-	"version": "alpha-1.4.0",
+	"version": "0.0.0-alpha-1.4.0",
 	"description": "Blankstorm",
 	"main": "app.js",
 	"scripts": {
@@ -21,7 +21,17 @@
 	"build": {
 		"appId": "dev.drvortex.blankstorm",
 		"productName": "Blankstorm Client",
-		"copyright": "Copyright © 2022 ${author}"
+		"copyright": "Copyright © 2022 ${author}",
+		"icon": "./icon.png",
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true,
+			"removeDefaultUninstallWelcomePage": true,
+			"deleteAppDataOnUninstall": true
+		},
+		"win": {
+			"executableName": "blankstorm-client"
+		}
 	},
 	"repository": {
 		"type": "git",
