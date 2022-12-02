@@ -12,11 +12,11 @@
 		"lint:check-ci": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js src/*.js",
 		"lint": "npm run lint:check && npm run lint:fix",
 		"test": "npx electron .",
-		"build:win": "npx electron-builder build -w",
-		"build:mac": "npx electron-builder build -m",
-		"build:linux": "npx electron-builder build -l",
-		"build:all": "npx electron-builder build -mlw",
-		"build": "npx electron-builder build"
+		"build:win": "npx electron-builder build -w --publish never",
+		"build:mac": "npx electron-builder build -m --publish never",
+		"build:linux": "npx electron-builder build -l --publish never",
+		"build:all": "npx electron-builder build -mlw --publish never",
+		"build": "npx electron-builder build --publish never"
 	},
 	"build": {
 		"appId": "dev.drvortex.blankstorm",
