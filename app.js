@@ -13,6 +13,7 @@ function createWindow() {
 
 	win.removeMenu(true);
 	win.loadFile('src/index.html');
+	win.webContents.openDevTools()
 }
 
 app.whenReady().then(() => {

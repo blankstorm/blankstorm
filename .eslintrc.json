@@ -15,7 +15,7 @@
 			"no-mixed-spaces-and-tabs": "warn",
 			"no-unreachable": "warn",
 			"no-extra-semi": "warn",
-			"no-fallthrough": "off"
-			
+			"no-fallthrough": "off",
+			"no-empty": "warn"
 		}
 }

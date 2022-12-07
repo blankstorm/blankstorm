@@ -53,6 +53,11 @@
 		"url": "https://github.com/dr-vortex/blankstorm/issues"
 	},
 	"homepage": "https://github.com/dr-vortex/blankstorm#readme",
+	"dependencies": {
+		"babylonjs": "5.27.x",
+		"babylonjs-loaders": "5.27.x",
+		"socket.io-client": "4.x.x"
+	},
 	"devDependencies": {
 		"electron": "^21.3.0",
 		"electron-builder": "^23.6.0",
