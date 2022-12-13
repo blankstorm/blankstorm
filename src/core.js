@@ -1,4 +1,4 @@
-/// <reference path="./libraries/babylon.core.d.ts" />
+/// <reference path="../node_modules/babylonjs/babylon.d.ts" />
 /* global BABYLON */
 /* exported runCommand isHex isJSON */
 //core info and setup

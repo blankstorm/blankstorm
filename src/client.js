@@ -1222,8 +1222,13 @@ commands.reload = () => {
 	//maybe also reload mods in the future
 	game.engine.resize();
 };
+<<<<<<< Updated upstream
 //Event Listeners (UI transitions, creating saves, etc.)
 
+=======
+
+//Event Listeners (UI transitions, creating saves, etc.)
+>>>>>>> Stashed changes
 $('#main .sp').click(() => {
 	game.mp = false;
 	$('#load li').detach();

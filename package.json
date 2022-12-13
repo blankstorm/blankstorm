@@ -16,7 +16,8 @@
 		"build:mac": "npx electron-builder build -m --publish never",
 		"build:linux": "npx electron-builder build -l --publish never",
 		"build:all": "npx electron-builder build -mlw --publish never",
-		"build": "npx electron-builder build --publish never"
+		"build": "npx electron-builder build --publish never",
+		"deploy": "node scripts/deploy.js"
 	},
 	"build": {
 		"appId": "dev.drvortex.blankstorm",
@@ -56,6 +57,7 @@
 	"dependencies": {
 		"babylonjs": "5.27.x",
 		"babylonjs-loaders": "5.27.x",
+		"jquery": "^3.6.2",
 		"socket.io-client": "4.x.x"
 	},
 	"devDependencies": {
@@ -63,6 +65,7 @@
 		"electron-builder": "^23.6.0",
 		"eslint": "^8.24.0",
 		"eslint-formatter-azure-devops": "^0.2.0",
+		"mime-types": "^2.1.35",
 		"prettier": "^2.7.1"
 	}
 }

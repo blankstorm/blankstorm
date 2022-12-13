@@ -4,8 +4,6 @@
 			"browser": true
 		},
 		"extends": "eslint:recommended",
-		"overrides": [
-		],
 		"parserOptions": {
 			"ecmaVersion": "latest"
 		},
@@ -17,5 +15,6 @@
 			"no-extra-semi": "warn",
 			"no-fallthrough": "off",
 			"no-empty": "warn"
-		}
+		},
+		"ignorePatterns": [	"scripts/*.js" ]
 }
