@@ -1,4 +1,4 @@
-/* global $ BABYLON random  version versions db Level Items Tech minimize Ship PlayerData Planet isJSON runCommand io isHex CelestialBody generate Entity commands config*/
+/* global $ BABYLON random version versions db Level Items Tech minimize Ship PlayerData Planet isJSON runCommand io isHex CelestialBody generate Entity commands config*/
 /*eslint no-redeclare: "off"*/
 const web = url => `https://blankstorm.drvortex.dev/` + url,
 	upload = (type, multiple = false) =>
@@ -1222,13 +1222,8 @@ commands.reload = () => {
 	//maybe also reload mods in the future
 	game.engine.resize();
 };
-<<<<<<< Updated upstream
-//Event Listeners (UI transitions, creating saves, etc.)
-
-=======
 
 //Event Listeners (UI transitions, creating saves, etc.)
->>>>>>> Stashed changes
 $('#main .sp').click(() => {
 	game.mp = false;
 	$('#load li').detach();
