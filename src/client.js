@@ -369,7 +369,6 @@ const Waypoint = class extends BABYLON.Node {
 
 //Class definitions
 const Save = class {
-	static current = { location: BABYLON.Vector2.Zero() };
 	static GUI = function (save) {
 		const gui = $(`<li ofn bg bw style=align-items:center;height:3em;></li>`);
 		gui.delete = $(`<p style=position:absolute;left:10%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(gui);
@@ -450,7 +449,7 @@ const Save = class {
 			return save;
 		}
 		static async CreateDefault(name, playerID, playerName) {
-			let save = new Save.Live(name);
+			const save = new Save.Live(name);
 
 			await save.ready();
 
@@ -467,10 +466,15 @@ const Save = class {
 				);
 			}
 
-			let playerData = new PlayerData({ id: playerID, name: playerName, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
+			const playerData = new PlayerData({ id: playerID, name: playerName, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
+			playerData._customHardpointProjectileMaterials = [
+				{
+					applies_to: [ 'laser' ],
+					material: Object.assign(new BABYLON.StandardMaterial('player-laser-projectile-material', save), { emissiveColor: BABYLON.Color3.Teal(), albedoColor: BABYLON.Color3.Teal() })
+				}
+			]
 			save.playerData.set(playerID, playerData);
 
-			playerData._shipLaserColor = BABYLON.Color3.Teal();
 			new Ship('mosquito', playerData, save);
 			new Ship('cillus', playerData, save);
 			playerData.addItems(generate.items(5000));
@@ -809,8 +813,8 @@ const player = {
 			game.chat(locales.text`player.death`);
 			player.reset();
 			player.wipe();
-			new Ship('frigate', player.data());
-			new Ship('transport_small', player.data());
+			new Ship('mosquito', player.data());
+			new Ship('cillus', player.data());
 		}
 	},
 	chat: (...msg) => {
