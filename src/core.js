@@ -517,8 +517,10 @@ const Hardpoint = class extends BABYLON.TransformNode {
 				async fire(target, { projectileMaterials = []}) {
 					await wait(random.int(4, 40));
 					const laser = await this.createProjectileInstante(),
-						targetOffset = random.float(0, this._data.scale),
+						bounding = this.getHierarchyBoundingVectors(),
+						targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),
 						startPos = this.getAbsolutePosition(),
+						
 						endPos = target.getAbsolutePosition().add(random.cords(targetOffset)),
 						frameFactor = BABYLON.Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed,
 						material = projectileMaterials.find(({applies_to = [], material}) => {
