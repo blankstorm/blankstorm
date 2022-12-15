@@ -474,7 +474,7 @@ const Hardpoint = class extends BABYLON.TransformNode {
 		return this.#entity;
 	}
 
-	get level(){
+	get level() {
 		return this.#entity.level;
 	}
 
@@ -514,24 +514,23 @@ const Hardpoint = class extends BABYLON.TransformNode {
 				projectileInterval: 0, //not needed
 				projectileSpeed: 5,
 				projectileModel: 'models/laser_projectile.glb',
-				async fire(target, { projectileMaterials = []}) {
+				async fire(target, { projectileMaterials = [] }) {
 					await wait(random.int(4, 40));
 					const laser = await this.createProjectileInstante(),
 						bounding = this.getHierarchyBoundingVectors(),
 						targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),
 						startPos = this.getAbsolutePosition(),
-						
 						endPos = target.getAbsolutePosition().add(random.cords(targetOffset)),
 						frameFactor = BABYLON.Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed,
-						material = projectileMaterials.find(({applies_to = [], material}) => {
-							if(applies_to.includes(this.type) && material){
+						material = projectileMaterials.find(({ applies_to = [], material }) => {
+							if (applies_to.includes(this.type) && material) {
 								return material;
 							}
 						}, this);
 					this.projectiles.push(laser);
 					laser.material = material.material;
-					for(let child of laser.getChildMeshes()){
-						child.material = material.material
+					for (let child of laser.getChildMeshes()) {
+						child.material = material.material;
 					}
 					laser.scaling = this.scaling;
 					laser.position = startPos;
@@ -929,39 +928,39 @@ const Ship = class extends Entity {
 				requires: { build: 5 },
 				model: 'models/horizon.glb',
 				hardpoints: [
-					{ type: 'laser', position: new BABYLON.Vector3(2.125, 0.055, -0.5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(2, 0.055, 0), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(1.875, 0.055, 0.5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(1.75, 0.055, 1), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(1.625, 0.055, 1.5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(1.5, 0.055, 2), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(1.375, 0.055, 2.5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(1.25, 0.055, 3), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(1.125, 0.055, 3.5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(1, 0.055, 4), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(0.875, 0.055, 4.5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(0.75, 0.055, 5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(0.625, 0.055, 5.5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(0.5, 0.055, 6), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(0.375, 0.055, 6.5), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(0.25, 0.055, 7), rotation: new BABYLON.Vector3(0, Math.PI * 5 / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(2.125, 0.055, -0.5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(2, 0.055, 0), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(1.875, 0.055, 0.5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(1.75, 0.055, 1), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(1.625, 0.055, 1.5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(1.5, 0.055, 2), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(1.375, 0.055, 2.5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(1.25, 0.055, 3), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(1.125, 0.055, 3.5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(1, 0.055, 4), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(0.875, 0.055, 4.5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(0.75, 0.055, 5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(0.625, 0.055, 5.5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(0.5, 0.055, 6), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(0.375, 0.055, 6.5), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(0.25, 0.055, 7), rotation: new BABYLON.Vector3(0, (Math.PI * 5) / 12, 0), scale: 1.5 },
 
-					{ type: 'laser', position: new BABYLON.Vector3(-2.125, 0.055, -0.5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-2, 0.055, 0), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-1.875, 0.055, 0.5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-1.75, 0.055, 1), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-1.625, 0.055, 1.5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-1.5, 0.055, 2), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-1.375, 0.055, 2.5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-1.25, 0.055, 3), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-1.125, 0.055, 3.5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-1, 0.055, 4), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-0.875, 0.055, 4.5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-0.75, 0.055, 5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-0.625, 0.055, 5.5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-0.5, 0.055, 6), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-0.375, 0.055, 6.5), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
-					{ type: 'laser', position: new BABYLON.Vector3(-0.25, 0.055, 7), rotation: new BABYLON.Vector3(0, -Math.PI * 5 / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-2.125, 0.055, -0.5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-2, 0.055, 0), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-1.875, 0.055, 0.5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-1.75, 0.055, 1), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-1.625, 0.055, 1.5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-1.5, 0.055, 2), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-1.375, 0.055, 2.5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-1.25, 0.055, 3), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-1.125, 0.055, 3.5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-1, 0.055, 4), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-0.875, 0.055, 4.5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-0.75, 0.055, 5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-0.625, 0.055, 5.5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-0.5, 0.055, 6), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-0.375, 0.055, 6.5), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
+					{ type: 'laser', position: new BABYLON.Vector3(-0.25, 0.055, 7), rotation: new BABYLON.Vector3(0, (-Math.PI * 5) / 12, 0), scale: 1.5 },
 				],
 			},
 		],
@@ -1103,10 +1102,10 @@ const Planet = class extends CelestialBody {
 		}
 		this._customHardpointProjectileMaterials = [
 			{
-				applies_to: [ 'laser' ],
-				material: Object.assign(new BABYLON.StandardMaterial('player-laser-projectile-material', scene), { emissiveColor: BABYLON.Color3.Red() })
-			}
-		];;
+				applies_to: ['laser'],
+				material: Object.assign(new BABYLON.StandardMaterial('player-laser-projectile-material', scene), { emissiveColor: BABYLON.Color3.Red() }),
+			},
+		];
 	}
 
 	static biomes = new Map([
@@ -1245,7 +1244,6 @@ const Planet = class extends CelestialBody {
 };
 
 const StationComponent = class extends BABYLON.TransformNode {
-
 	_generic = {};
 	#station;
 	#resolve;
@@ -1254,7 +1252,7 @@ const StationComponent = class extends BABYLON.TransformNode {
 		if (!(station instanceof Station)) throw new TypeError();
 		if (!(station.level instanceof Level)) throw new TypeError();
 		super(id, station.level);
-		
+
 		this._generic = StationComponent.generic.get(type);
 
 		this.type = type;
@@ -1262,16 +1260,16 @@ const StationComponent = class extends BABYLON.TransformNode {
 		this.#station = station;
 
 		let resolve;
-		this.instanceReady = new Promise((res) => (resolve = res));
+		this.instanceReady = new Promise(res => (resolve = res));
 		this.#resolve = resolve;
-		this.#createInstance().catch((err) => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${type}: ${err}`));
+		this.#createInstance().catch(err => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${type}: ${err}`));
 	}
 
 	get station() {
 		return this.#station;
 	}
 
-	get level(){
+	get level() {
 		return this.#station.level;
 	}
 
@@ -1295,17 +1293,13 @@ const StationComponent = class extends BABYLON.TransformNode {
 				type: 'core',
 				hp: 100,
 				model: 'models/station/core.glb',
-				connecters: [
-					{ type: 'any', position: new BABYLON.Vector3(0, 0, 0) }
-				],
+				connecters: [{ type: 'any', position: new BABYLON.Vector3(0, 0, 0) }],
 			},
 		],
 	]);
-
-}
+};
 
 const Station = class extends CelestialBody {
-	
 	components = [];
 	#level;
 
@@ -1313,14 +1307,11 @@ const Station = class extends CelestialBody {
 		super(name, id, level);
 
 		this.#level = level;
-
 	}
 
-	get level(){
+	get level() {
 		return this.#level;
 	}
-	
-
 };
 
 const Level = class extends BABYLON.Scene {
@@ -1384,7 +1375,7 @@ const Level = class extends BABYLON.Scene {
 	async #loadGenericMeshes() {
 		for (let [id, generic] of [
 			...Ship.generic,
-			...[...Hardpoint.generic].flatMap((e) => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]]),
+			...[...Hardpoint.generic].flatMap(e => [e, [e[0] + '.projectile', { model: e[1].projectileModel }]]),
 			...[...StationComponent.generic].map(([key, val]) => ['station.' + key, val]),
 		]) {
 			try {
@@ -1475,7 +1466,7 @@ const Level = class extends BABYLON.Scene {
 			}
 		}
 		for (let entity of this.entities.values()) {
-			for(let hp of entity.hardpoints){
+			for (let hp of entity.hardpoints) {
 				hp.reload = Math.max(--hp.reload, 0);
 			}
 			if (entity.hp <= 0) {

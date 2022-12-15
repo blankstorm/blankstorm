@@ -469,10 +469,13 @@ const Save = class {
 			const playerData = new PlayerData({ id: playerID, name: playerName, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
 			playerData._customHardpointProjectileMaterials = [
 				{
-					applies_to: [ 'laser' ],
-					material: Object.assign(new BABYLON.StandardMaterial('player-laser-projectile-material', save), { emissiveColor: BABYLON.Color3.Teal(), albedoColor: BABYLON.Color3.Teal() })
-				}
-			]
+					applies_to: ['laser'],
+					material: Object.assign(new BABYLON.StandardMaterial('player-laser-projectile-material', save), {
+						emissiveColor: BABYLON.Color3.Teal(),
+						albedoColor: BABYLON.Color3.Teal(),
+					}),
+				},
+			];
 			save.playerData.set(playerID, playerData);
 
 			new Ship('mosquito', playerData, save);
