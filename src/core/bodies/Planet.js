@@ -3,6 +3,7 @@ import { random } from '../utils.js';
 import Ship from '../entities/Ship.js';
 import CelestialBody from './CelestialBody.js';
 import CelestialBodyMaterial from './CelestialBodyMaterial.js';
+
 import { Vector2, Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '../../../node_modules/@babylonjs/core/Maths/math.color.js';
 import { StandardMaterial } from '../../../node_modules/@babylonjs/core/Materials/standardMaterial.js';

@@ -2,7 +2,6 @@ import { random } from '../utils.js';
 import CelestialBody from './CelestialBody.js';
 import StationComponent from '../StationComponent.js';
 
-
 const Station = class extends CelestialBody {
 	components = [];
 	#core;
@@ -32,6 +31,6 @@ const Station = class extends CelestialBody {
 	}
 
 	remove() {}
-}
+};
 
 export default Station;

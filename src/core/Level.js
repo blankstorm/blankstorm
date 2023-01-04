@@ -196,14 +196,11 @@ const Level = class extends Scene {
 				);
 				if (target) {
 					for (let hp of entity.hardpoints) {
-						let targetPoints = [...target.hardpoints, target].filter(
-								e => Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range
-							),
+						let targetPoints = [...target.hardpoints, target].filter(e => Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range),
 							targetPoint = targetPoints.reduce(
 								(ac, cur) =>
 									(ac =
-										Vector3.Distance(ac.getAbsolutePosition(), hp.getAbsolutePosition()) <
-										Vector3.Distance(cur.getAbsolutePosition(), hp.getAbsolutePosition())
+										Vector3.Distance(ac.getAbsolutePosition(), hp.getAbsolutePosition()) < Vector3.Distance(cur.getAbsolutePosition(), hp.getAbsolutePosition())
 											? ac
 											: cur),
 								target

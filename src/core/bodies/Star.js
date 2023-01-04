@@ -1,5 +1,6 @@
 import { config } from '../meta.js';
 import CelestialBody from './CelestialBody.js';
+
 import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '../../../node_modules/@babylonjs/core/Maths/math.color.js';
 import { PointLight } from '../../../node_modules/@babylonjs/core/Lights/pointLight.js';

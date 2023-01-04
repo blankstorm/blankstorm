@@ -1,7 +1,7 @@
 import { random } from '../utils.js';
+
 import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
 import { Mesh } from '../../../node_modules/@babylonjs/core/Meshes/mesh.js';
-
 
 export default class extends Mesh {
 	fleet = [];

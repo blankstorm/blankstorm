@@ -66,20 +66,8 @@ export default class extends TransformNode {
 	followPath(path) {
 		if (!(path instanceof Path)) throw new TypeError('path must be a Path');
 		return new Promise(resolve => {
-			let animation = new Animation(
-					'pathFollow',
-					'position',
-					60 * this._generic.speed,
-					Animation.ANIMATIONTYPE_VECTOR3,
-					Animation.ANIMATIONLOOPMODE_CONSTANT
-				),
-				rotateAnimation = new Animation(
-					'pathRotate',
-					'rotation',
-					60 * this._generic.agility,
-					Animation.ANIMATIONTYPE_VECTOR3,
-					Animation.ANIMATIONLOOPMODE_CONSTANT
-				);
+			let animation = new Animation('pathFollow', 'position', 60 * this._generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
+				rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this._generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
 			animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this._generic.speed, value: node.position })));
 			rotateAnimation.setKeys(

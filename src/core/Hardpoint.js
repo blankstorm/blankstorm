@@ -1,6 +1,7 @@
 import { random, wait } from './utils.js';
 import Ship from './entities/Ship.js';
 import Level from './Level.js';
+
 import { TransformNode } from '../../node_modules/@babylonjs/core/Meshes/transformNode.js';
 import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
 import { Animation } from '../../node_modules/@babylonjs/core/Animations/animation.js';
@@ -99,13 +100,7 @@ const Hardpoint = class extends TransformNode {
 					laser.position = startPos;
 					this.lookAt(endPos);
 					laser.lookAt(endPos);
-					const animation = new Animation(
-						'projectileAnimation',
-						'position',
-						60,
-						Animation.ANIMATIONTYPE_VECTOR3,
-						Animation.ANIMATIONLOOPMODE_CONSTANT
-					);
+					const animation = new Animation('projectileAnimation', 'position', 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 					animation.setKeys([
 						{ frame: 0, value: startPos },
 						{ frame: 60 * frameFactor, value: endPos },

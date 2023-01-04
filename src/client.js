@@ -1,5 +1,23 @@
 import db from './db.js';
-import { config, version, versions, isJSON, isHex, commands, runCommand, random, generate, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Planet, Level } from './core/index.js';
+import {
+	config,
+	version,
+	versions,
+	isJSON,
+	isHex,
+	commands,
+	runCommand,
+	random,
+	generate,
+	CelestialBody,
+	Items,
+	Tech,
+	Entity,
+	Ship,
+	PlayerData,
+	Planet,
+	Level,
+} from './core/index.js';
 import * as core from './core/index.js';
 
 import { Vector2, Vector3, Matrix } from '../node_modules/@babylonjs/core/Maths/math.vector.js';
@@ -1617,9 +1635,7 @@ const loop = () => {
 						})
 						.filter('p')
 						.text(
-							Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 ||
-								waypoint.marker.eq(0).is(':hover') ||
-								waypoint.marker.eq(1).is(':hover')
+							Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.marker.eq(0).is(':hover') || waypoint.marker.eq(1).is(':hover')
 								? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km`
 								: ''
 						);
