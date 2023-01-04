@@ -1,6 +1,6 @@
 import db from './db.js';
-import { config, version, versions, isJSON, isHex, commands, runCommand, random, generate, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Planet, Level } from './core.js';
-import * as core from './core.js';
+import { config, version, versions, isJSON, isHex, commands, runCommand, random, generate, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Planet, Level } from './core/index.js';
+import * as core from './core/index.js';
 
 window.core = core;
 
@@ -353,7 +353,7 @@ const Waypoint = class extends BABYLON.Node {
 				.click(() => {
 					confirm().then(() => {
 						this.marker.remove();
-						this.getScene().waypoints.spliceOut(this);
+						this.getScene().waypoints.splice(this.getScene().waypoints.indexOf(this), 1);
 					});
 				});
 		return this.readonly ? ui.filter('span:gt(1)') : ui;
@@ -1110,7 +1110,7 @@ const ui = {
 						}),
 						$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').click(() => {
 							confirm().then(() => {
-								game.screenshots.spliceOut(s);
+								game.screenshots.splice(game.screenshots.indexOf(s), 1);
 								ui.update();
 							});
 						})

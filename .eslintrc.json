@@ -17,5 +17,8 @@
 			"no-fallthrough": "off",
 			"no-empty": "warn"
 		},
+		"globals": {
+			"BABYLON": "readonly"
+		},
 		"ignorePatterns": [	"scripts/*.js" ]
 }
