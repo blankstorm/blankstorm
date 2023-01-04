@@ -1,8 +1,7 @@
 /// <reference path="../node_modules/babylonjs/babylon.d.ts" />
 /* global BABYLON */
-/* exported runCommand isHex isJSON */
 //core info and setup
-const config = {
+export const config = {
 	mesh_segments: 32,
 	render_quality: 0,
 	load_remote_manifest: false,
@@ -16,28 +15,28 @@ const config = {
 	settings: {},
 };
 
-const version = 'alpha_1.4.0',
-	versions = new Map([
-		['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
-		['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
-		['infdev_3', { text: 'Infdev 3', group: 'infdev' }],
-		['infdev_4', { text: 'Infdev 4', group: 'infdev' }],
-		['infdev_5', { text: 'Infdev 5', group: 'infdev' }],
-		['infdev_6', { text: 'Infdev 6', group: 'infdev' }],
-		['infdev_7', { text: 'Infdev 7', group: 'infdev' }],
-		['infdev_8', { text: 'Infdev 8', group: 'infdev' }],
-		['infdev_9', { text: 'Infdev 9', group: 'infdev' }],
-		['infdev_10', { text: 'Infdev 10', group: 'infdev' }],
-		['infdev_11', { text: 'Infdev 11', group: 'infdev' }],
-		['infdev_12', { text: 'Infdev 12', group: 'infdev' }],
-		['alpha_1.0.0', { text: 'Alpha 1.0.0', group: 'alpha' }],
-		['alpha_1.1.0', { text: 'Alpha 1.1.0', group: 'alpha' }],
-		['alpha_1.2.0', { text: 'Alpha 1.2.0', group: 'alpha' }],
-		['alpha_1.2.1', { text: 'Alpha 1.2.1', group: 'alpha' }],
-		['alpha_1.3.0', { text: 'Alpha 1.3.0', group: 'alpha' }],
-		['alpha_1.3.1', { text: 'Alpha 1.3.1', group: 'alpha' }],
-		['alpha_1.4.0', { text: 'Alpha 1.4.0', group: 'alpha' }],
-	]);
+export const version = 'alpha_1.4.0';
+export const versions = new Map([
+	['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
+	['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
+	['infdev_3', { text: 'Infdev 3', group: 'infdev' }],
+	['infdev_4', { text: 'Infdev 4', group: 'infdev' }],
+	['infdev_5', { text: 'Infdev 5', group: 'infdev' }],
+	['infdev_6', { text: 'Infdev 6', group: 'infdev' }],
+	['infdev_7', { text: 'Infdev 7', group: 'infdev' }],
+	['infdev_8', { text: 'Infdev 8', group: 'infdev' }],
+	['infdev_9', { text: 'Infdev 9', group: 'infdev' }],
+	['infdev_10', { text: 'Infdev 10', group: 'infdev' }],
+	['infdev_11', { text: 'Infdev 11', group: 'infdev' }],
+	['infdev_12', { text: 'Infdev 12', group: 'infdev' }],
+	['alpha_1.0.0', { text: 'Alpha 1.0.0', group: 'alpha' }],
+	['alpha_1.1.0', { text: 'Alpha 1.1.0', group: 'alpha' }],
+	['alpha_1.2.0', { text: 'Alpha 1.2.0', group: 'alpha' }],
+	['alpha_1.2.1', { text: 'Alpha 1.2.1', group: 'alpha' }],
+	['alpha_1.3.0', { text: 'Alpha 1.3.0', group: 'alpha' }],
+	['alpha_1.3.1', { text: 'Alpha 1.3.1', group: 'alpha' }],
+	['alpha_1.4.0', { text: 'Alpha 1.4.0', group: 'alpha' }],
+]);
 if (config.load_remote_manifest) {
 	fetch('https://blankstorm.drvortex.dev/versions/manifest.json')
 		.then(response => response.json())
@@ -49,51 +48,51 @@ if (config.load_remote_manifest) {
 		.catch(err => console.warn('Failed to retrieve version manifest: ' + err));
 }
 
-const greek = [
-		'Alpha',
-		'Beta',
-		'Gamma',
-		'Delta',
-		'Epsilon',
-		'Zeta',
-		'Eta',
-		'Theta',
-		'Iota',
-		'Kappa',
-		'Lambda',
-		'Mu',
-		'Nu',
-		'Xi',
-		'Omicron',
-		'Pi',
-		'Rho',
-		'Sigma',
-		'Tau',
-		'Upsilon',
-		'Phi',
-		'Chi',
-		'Psi',
-		'Omega',
-	],
-	range = (min, max) => {
-		let a = [];
-		for (let i = min; i < max; i++) {
-			a.push(i);
-		}
-		return a;
-	};
+export const greek = [
+	'Alpha',
+	'Beta',
+	'Gamma',
+	'Delta',
+	'Epsilon',
+	'Zeta',
+	'Eta',
+	'Theta',
+	'Iota',
+	'Kappa',
+	'Lambda',
+	'Mu',
+	'Nu',
+	'Xi',
+	'Omicron',
+	'Pi',
+	'Rho',
+	'Sigma',
+	'Tau',
+	'Upsilon',
+	'Phi',
+	'Chi',
+	'Psi',
+	'Omega',
+];
+export const range = (min, max) => {
+	let a = [];
+	for (let i = min; i < max; i++) {
+		a.push(i);
+	}
+	return a;
+};
 
 //utility functions
-const isHex = str => /^[0-9a-f-.]+$/.test(str),
-	isJSON = str => {
-		try {
-			JSON.parse(str);
-			return true;
-		} catch (e) {
-			return false;
-		}
-	};
-const random = {
+export const isHex = str => /^[0-9a-f-.]+$/.test(str);
+export const isJSON = str => {
+	try {
+		JSON.parse(str);
+		return true;
+	} catch (e) {
+		return false;
+	}
+};
+export const random = {
 	float: (min = 0, max = 1) => Math.random() * (max - min) + min,
 	hex: (length = 1) => {
 		let s = '';
@@ -121,7 +120,7 @@ const random = {
 			: new BABYLON.Vector3(dis * Math.cos(angle), dis * Math.sin(angle) * Math.cos(angle2), dis * Math.sin(angle) * Math.sin(angle2));
 	},
 };
-const generate = {
+export const generate = {
 	enemies: power => {
 		//enemy spawning algorithm
 		let e = [];
@@ -164,14 +163,14 @@ Object.defineProperty(Array.prototype, 'spliceOut', {
 	},
 });
 
-const Items = new Map([
+export const Items = new Map([
 	['metal', { rare: false, value: 1 }],
 	['minerals', { rare: false, value: 2 }],
 	['fuel', { rare: false, value: 4 }],
 	['ancient_tech', { rare: true, drop: 0.1, value: 1000 }],
 	['code_snippets', { rare: true, drop: 0.1, value: 1000 }],
 ]);
-const Tech = new Map([
+export const Tech = new Map([
 	['armor', { recipe: { metal: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {} }],
 	['laser', { recipe: { minerals: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {} }],
 	['reload', { recipe: { metal: 4000, minerals: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {} }],
@@ -203,7 +202,7 @@ Tech.isLocked = (type, current) => {
 	return false;
 };
 
-const Path = class extends BABYLON.Path3D {
+export const Path = class extends BABYLON.Path3D {
 	static Node = class {
 		position = BABYLON.Vector3.Zero();
 		parent = null;
@@ -314,7 +313,7 @@ const Path = class extends BABYLON.Path3D {
 		this.gizmo = undefined;
 	}
 };
-const StorageData = class extends Map {
+export const StorageData = class extends Map {
 	#max = 1;
 	constructor(max = 1, items = {}) {
 		super([...Items.keys()].map(i => [i, 0]));
@@ -343,7 +342,7 @@ const StorageData = class extends Map {
 	}
 };
 
-const PlayerData = class extends BABYLON.TransformNode {
+export const PlayerData = class extends BABYLON.TransformNode {
 	get items() {
 		let items = Object.fromEntries([...Items.keys()].map(i => [i, 0]));
 		this.fleet.forEach(ship => {
@@ -442,7 +441,7 @@ const PlayerData = class extends BABYLON.TransformNode {
 		this.velocity.addInPlace(direction);
 	}
 };
-const Hardpoint = class extends BABYLON.TransformNode {
+export const Hardpoint = class extends BABYLON.TransformNode {
 	_generic = {};
 	#entity;
 	#resolve;
@@ -560,7 +559,7 @@ const Hardpoint = class extends BABYLON.TransformNode {
 		],
 	]);
 };
-const Entity = class extends BABYLON.TransformNode {
+export const Entity = class extends BABYLON.TransformNode {
 	_generic = { speed: 1 };
 
 	#selected = false;
@@ -690,7 +689,7 @@ const Entity = class extends BABYLON.TransformNode {
 		return entity;
 	}
 };
-const Ship = class extends Entity {
+export const Ship = class extends Entity {
 	constructor(className, owner, level) {
 		if (className && !Ship.generic.has(className)) throw new ReferenceError(`Ship type ${className} does not exist`);
 		super(className, owner, level ?? owner.getScene());
@@ -979,7 +978,7 @@ const Ship = class extends Entity {
 		});
 	}
 };
-const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
+export const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
 	constructor(options, level) {
 		options.mapSize = 1024;
 		options.maxResolution = [64, 256, 1024][config.render_quality];
@@ -1041,7 +1040,7 @@ const CelestialBodyMaterial = class extends BABYLON.ShaderMaterial {
 		texture.update();
 	}
 };
-const CelestialBody = class extends BABYLON.Mesh {
+export const CelestialBody = class extends BABYLON.Mesh {
 	fleet = [];
 	owner = null;
 	fleetLocation = BABYLON.Vector3.Zero();
@@ -1059,7 +1058,7 @@ const CelestialBody = class extends BABYLON.Mesh {
 		this.getScene().bodies.delete(this.id);
 	}
 };
-const Star = class extends CelestialBody {
+export const Star = class extends CelestialBody {
 	constructor({ name, position = BABYLON.Vector3.Zero(), radius = 1, color = BABYLON.Color3.Gray(), scene, id }) {
 		super(name ?? 'Unknown Star', id, scene);
 		BABYLON.CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
@@ -1079,7 +1078,7 @@ const Star = class extends CelestialBody {
 		//s.material.Fragment_Before_FragColor(`color = vec4(vec3(color.xyz),1.0);`);
 	}
 };
-const Planet = class extends CelestialBody {
+export const Planet = class extends CelestialBody {
 	constructor({ name, position = BABYLON.Vector3.Zero(), biome = 'earthlike', radius = 1, owner = null, fleet = [], rewards = {}, scene, id }) {
 		super(name ?? 'Unknown Planet', id, scene);
 		BABYLON.CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
@@ -1243,7 +1242,7 @@ const Planet = class extends CelestialBody {
 	]);
 };
 
-const StationComponent = class extends BABYLON.TransformNode {
+export const StationComponent = class extends BABYLON.TransformNode {
 	_generic = {};
 	#station;
 	#resolve;
@@ -1296,8 +1295,8 @@ const StationComponent = class extends BABYLON.TransformNode {
 		component.connections[componentConnecter] = this;
 
 		component.parent = this;
-		component.position = connection1.position.clone()//.add(connection2.position);
-		component.rotation = connection1.rotation.clone()//.add(connection2.rotation);
+		component.position = connection1.position.clone(); //.add(connection2.position);
+		component.rotation = connection1.rotation.clone(); //.add(connection2.rotation);
 	}
 
 	removeConnection(component) {
@@ -1316,13 +1315,13 @@ const StationComponent = class extends BABYLON.TransformNode {
 			type: this.type,
 			position: this.position.asArray(),
 			rotation: this.rotation.asArray(),
-			connections: this.connections.map(component => component.serialize())
+			connections: this.connections.map(component => component.serialize()),
 		};
 	}
 
 	remove() {
 		this.#station.components.splice(this.#station.components.indexOf(this), 1);
-		for(let connection of this.connections) {
+		for (let connection of this.connections) {
 			this.removeConnection(connection);
 		}
 		this.dispose();
@@ -1358,7 +1357,7 @@ const StationComponent = class extends BABYLON.TransformNode {
 	]);
 };
 
-const Station = class extends CelestialBody {
+export const Station = class extends CelestialBody {
 	components = [];
 	#core;
 	#level;
@@ -1382,16 +1381,14 @@ const Station = class extends CelestialBody {
 	serialize() {
 		return {
 			id: this.id,
-			components: this.#core.serialize()
+			components: this.#core.serialize(),
 		};
 	}
 
-	remove() {
-
-	}
+	remove() {}
 };
 
-const Level = class extends BABYLON.Scene {
+export const Level = class extends BABYLON.Scene {
 	id = random.hex(16);
 	name = '';
 	version = version;
@@ -1873,7 +1870,7 @@ const Level = class extends BABYLON.Scene {
 		}
 	}
 };
-const commands = {
+export const commands = {
 	help: () => {
 		return 'See https://bs.drvortex.dev/docs/commands for command documentation';
 	},
@@ -1927,7 +1924,7 @@ const commands = {
 		}
 	},
 };
-const runCommand = (command, level) => {
+export const runCommand = (command, level) => {
 	if (!(level instanceof Level)) throw new TypeError('Failed to run command: no level selected');
 	let splitCmd = command.split(' '),
 		hasRun = false;

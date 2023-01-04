@@ -1,4 +1,17 @@
-/* global $ BABYLON random version versions db Level Items Tech minimize Ship PlayerData Planet isJSON runCommand io isHex CelestialBody generate Entity commands config*/
+import db from './db.js';
+import { config, version, versions, isJSON, isHex, commands, runCommand, random, generate, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Planet, Level } from './core.js';
+import * as core from './core.js';
+
+window.core = core;
+
+try {
+	await db.init();
+} catch (err) {
+	console.error('Failed to open IndexedDB: ' + err);
+}
+
+//Client.js
+/* global $ BABYLON io*/
 /*eslint no-redeclare: "off"*/
 const web = url => `https://blankstorm.drvortex.dev/` + url,
 	upload = (type, multiple = false) =>
@@ -200,6 +213,7 @@ const settings = new Proxy(localStorage, {
 		let _settings = JSON.parse(ls.getItem('settings'));
 		_settings[prop] = value;
 		ls.setItem('settings', JSON.stringify(_settings));
+		return _settings;
 	},
 });
 //load settings
@@ -855,7 +869,6 @@ const player = {
 	},
 };
 
-game.freezeProperty('mpEnabled', 'scene', 'chat');
 player.freezeProperty('updateFleet', 'move', 'stop', 'reset', 'hasItems', 'removeItems', 'giveItems', 'wipe', 'chat');
 onresize = () => {
 	game.engine.resize();
@@ -926,6 +939,7 @@ if (cookie.token && navigator.onLine) {
 	game.mpEnabled = false;
 	game.chat("You're not logged in, and will not be able to play multiplayer.");
 }
+game.freezeProperty('mpEnabled', 'scene', 'chat');
 
 //load saved settings and keybinds
 $('form.gen').formData((settings.general ??= $('form.gen').formData()));
