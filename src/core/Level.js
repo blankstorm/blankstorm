@@ -11,37 +11,49 @@ import Entity from './entities/Entity.js';
 import Ship from './entities/Ship.js';
 import PlayerData from './PlayerData.js';
 
-const Level = class extends BABYLON.Scene {
+import { Vector3, Matrix } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '../../node_modules/@babylonjs/core/Maths/math.color.js';
+import { Scene } from '../../node_modules/@babylonjs/core/scene.js';
+import { MeshBuilder } from '../../node_modules/@babylonjs/core/Meshes/meshBuilder.js';
+import { PerformanceMonitor } from '../../node_modules/@babylonjs/core/Misc/performanceMonitor.js';
+import { GlowLayer } from '../../node_modules/@babylonjs/core/Layers/glowLayer.js';
+import { HighlightLayer } from '../../node_modules/@babylonjs/core/Layers/highlightLayer.js';
+import { ReflectionProbe } from '../../node_modules/@babylonjs/core/Probes/reflectionProbe.js';
+import { StandardMaterial } from '../../node_modules/@babylonjs/core/Materials/standardMaterial.js';
+import { CubeTexture } from '../../node_modules/@babylonjs/core/Materials/Textures/cubeTexture.js';
+import { SceneLoader } from '../../node_modules/@babylonjs/core/Loading/sceneLoader.js';
+
+const Level = class extends Scene {
 	id = random.hex(16);
 	name = '';
 	version = version;
 	date = new Date();
 	difficulty = 1;
-	clearColor = new BABYLON.Color3(0.8, 0.75, 0.85);
+	clearColor = new Color3(0.8, 0.75, 0.85);
 	genericMeshes = {};
 	bodies = new Map();
 	entities = new Map();
 	playerData = new Map();
 	#initPromise = new Promise(() => {});
 	loadedGenericMeshes = new Promise(() => {});
-	#performanceMonitor = new BABYLON.PerformanceMonitor(60);
+	#performanceMonitor = new PerformanceMonitor(60);
 	constructor(name, engine, doNotGenerate) {
 		super(engine);
 		Object.assign(this, {
-			skybox: BABYLON.MeshBuilder.CreateBox('skybox', { size: Level.system.size * 2 }, this),
-			gl: Object.assign(new BABYLON.GlowLayer('glowLayer', this), { intensity: 0.9 }),
-			hl: new BABYLON.HighlightLayer('highlight', this),
-			xzPlane: BABYLON.MeshBuilder.CreatePlane('xzPlane', { size: Level.system.size * 2 }, this),
-			probe: new BABYLON.ReflectionProbe('probe', 256, this),
+			skybox: MeshBuilder.CreateBox('skybox', { size: Level.system.size * 2 }, this),
+			gl: Object.assign(new GlowLayer('glowLayer', this), { intensity: 0.9 }),
+			hl: new HighlightLayer('highlight', this),
+			xzPlane: MeshBuilder.CreatePlane('xzPlane', { size: Level.system.size * 2 }, this),
+			probe: new ReflectionProbe('probe', 256, this),
 		});
 		this.xzPlane.rotation.x = Math.PI / 2;
 		this.xzPlane.setEnabled(false);
 		this.skybox.infiniteDistance = true;
 		this.skybox.isPickable = false;
-		this.skybox.material = Object.assign(new BABYLON.StandardMaterial('skybox.mat', this), {
+		this.skybox.material = Object.assign(new StandardMaterial('skybox.mat', this), {
 			backFaceCulling: false,
 			disableLighting: true,
-			reflectionTexture: BABYLON.CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), this),
+			reflectionTexture: CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), this),
 		});
 		this.skybox.material.reflectionTexture.coordinatesMode = 5;
 		this.name = name;
@@ -53,11 +65,11 @@ const Level = class extends BABYLON.Scene {
 			for (let body of this.bodies.values()) {
 				if (body instanceof Planet && body.material instanceof CelestialBodyMaterial) {
 					body.rotation.y += 0.0001 * ratio * body.material.rotationFactor;
-					body.material.setMatrix('rotation', BABYLON.Matrix.RotationY(body.matrixAngle));
+					body.material.setMatrix('rotation', Matrix.RotationY(body.matrixAngle));
 					body.matrixAngle -= 0.0004 * ratio;
 					body.material.setVector3(
 						'options',
-						new BABYLON.Vector3(body.material.generationOptions.clouds, body.material.generationOptions.groundAlbedo, body.material.generationOptions.cloudAlbedo)
+						new Vector3(body.material.generationOptions.clouds, body.material.generationOptions.groundAlbedo, body.material.generationOptions.cloudAlbedo)
 					);
 				}
 			}
@@ -76,7 +88,7 @@ const Level = class extends BABYLON.Scene {
 			...[...StationComponent.generic].map(([key, val]) => ['station.' + key, val]),
 		]) {
 			try {
-				let container = (this.genericMeshes[id] = await BABYLON.SceneLoader.LoadAssetContainerAsync('', generic.model, this));
+				let container = (this.genericMeshes[id] = await SceneLoader.LoadAssetContainerAsync('', generic.model, this));
 				Object.assign(container.meshes[0], {
 					rotationQuaternion: null,
 					material: Object.assign(container.materials[0], {
@@ -84,7 +96,7 @@ const Level = class extends BABYLON.Scene {
 						realTimeFilteringQuality: [2, 8, 32][+config.render_quality],
 						reflectionTexture: this.probe.cubeTexture,
 					}),
-					position: BABYLON.Vector3.Zero(),
+					position: Vector3.Zero(),
 					isVisible: false,
 					isPickable: false,
 				});
@@ -101,16 +113,16 @@ const Level = class extends BABYLON.Scene {
 		if (typeof this.genericMeshes[id]?.instantiateModelsToScene == 'function') {
 			instance = this.genericMeshes[id].instantiateModelsToScene().rootNodes[0];
 		} else {
-			instance = BABYLON.MeshBuilder.CreateBox('error_mesh', { size: 1 }, this);
-			instance.material = new BABYLON.StandardMaterial('error_material', this);
-			instance.material.emissiveColor = BABYLON.Color3.Gray();
+			instance = MeshBuilder.CreateBox('error_mesh', { size: 1 }, this);
+			instance.material = new StandardMaterial('error_material', this);
+			instance.material.emissiveColor = Color3.Gray();
 			throw 'Origin mesh does not exist';
 		}
 
 		return instance;
 	}
 	async init() {
-		return await Level.generate.system('Crash Site', BABYLON.Vector3.Zero(), this);
+		return await Level.generate.system('Crash Site', Vector3.Zero(), this);
 	}
 	async generateRegion(x, y, size) {
 		await this.ready();
@@ -172,12 +184,12 @@ const Level = class extends BABYLON.Scene {
 			} else if (entity instanceof Ship) {
 				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
 				const entityRange = entity.hardpoints.reduce((a, hp) => Math.max(a, hp._generic.range), 0);
-				let targets = [...this.entities.values()].filter(e => e.owner != entity.owner && BABYLON.Vector3.Distance(e.position, entity.position) < entityRange);
+				let targets = [...this.entities.values()].filter(e => e.owner != entity.owner && Vector3.Distance(e.position, entity.position) < entityRange);
 				let target = targets.reduce(
 					(ac, cur) =>
 						(ac =
-							BABYLON.Vector3.Distance(ac?.getAbsolutePosition ? ac.getAbsolutePosition() : BABYLON.Vector3.One().scale(Infinity), entity.getAbsolutePosition()) <
-							BABYLON.Vector3.Distance(cur.getAbsolutePosition(), entity.getAbsolutePosition())
+							Vector3.Distance(ac?.getAbsolutePosition ? ac.getAbsolutePosition() : Vector3.One().scale(Infinity), entity.getAbsolutePosition()) <
+							Vector3.Distance(cur.getAbsolutePosition(), entity.getAbsolutePosition())
 								? ac
 								: cur),
 					null
@@ -185,13 +197,13 @@ const Level = class extends BABYLON.Scene {
 				if (target) {
 					for (let hp of entity.hardpoints) {
 						let targetPoints = [...target.hardpoints, target].filter(
-								e => BABYLON.Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range
+								e => Vector3.Distance(e.getAbsolutePosition(), hp.getAbsolutePosition()) < hp._generic.range
 							),
 							targetPoint = targetPoints.reduce(
 								(ac, cur) =>
 									(ac =
-										BABYLON.Vector3.Distance(ac.getAbsolutePosition(), hp.getAbsolutePosition()) <
-										BABYLON.Vector3.Distance(cur.getAbsolutePosition(), hp.getAbsolutePosition())
+										Vector3.Distance(ac.getAbsolutePosition(), hp.getAbsolutePosition()) <
+										Vector3.Distance(cur.getAbsolutePosition(), hp.getAbsolutePosition())
 											? ac
 											: cur),
 								target
@@ -207,7 +219,7 @@ const Level = class extends BABYLON.Scene {
 	screenToWorldPlane(x, y, pickY) {
 		this.xzPlane.position.y = pickY || 0;
 		let pickInfo = this.pick(x, y, mesh => mesh == this.xzPlane);
-		return pickInfo.pickedPoint || BABYLON.Vector3.Zero();
+		return pickInfo.pickedPoint || Vector3.Zero();
 	}
 	handleCanvasClick(e, owner) {
 		owner ??= [...this.playerData][0];
@@ -406,7 +418,7 @@ const Level = class extends BABYLON.Scene {
 				name,
 				position,
 				radius: random.int(300, 500),
-				color: new BABYLON.Color3(
+				color: new Color3(
 					Math.random() ** 3 / 2 + random.float(0.3, 0.4),
 					Math.random() ** 3 / 2 + random.float(0.3, 0.4),
 					Math.random() ** 3 / 2 + random.float(0.3, 0.4)
@@ -451,8 +463,8 @@ const Level = class extends BABYLON.Scene {
 			level.playerData.set(
 				id,
 				new PlayerData({
-					position: BABYLON.Vector3.FromArray(data.position),
-					rotation: BABYLON.Vector3.FromArray(data.rotation),
+					position: Vector3.FromArray(data.position),
+					rotation: Vector3.FromArray(data.rotation),
 					id,
 					...filterObject(data, 'xp', 'xpPoints', 'tech'),
 				})
@@ -464,15 +476,15 @@ const Level = class extends BABYLON.Scene {
 			switch (bodyData.type) {
 				case 'star':
 					new Star({
-						position: BABYLON.Vector3.FromArray(bodyData.position),
-						color: BABYLON.Color3.FromArray(bodyData.color),
+						position: Vector3.FromArray(bodyData.position),
+						color: Color3.FromArray(bodyData.color),
 						scene: level,
 						...filterObject(bodyData, 'name', 'radius', 'id'),
 					});
 					break;
 				case 'planet':
 					new Planet({
-						position: BABYLON.Vector3.FromArray(bodyData.position),
+						position: Vector3.FromArray(bodyData.position),
 						scene: level,
 						...filterObject(bodyData, 'name', 'radius', 'id', 'biome', 'owner', 'rewards'),
 					});

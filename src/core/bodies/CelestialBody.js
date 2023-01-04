@@ -1,9 +1,12 @@
 import { random } from '../utils.js';
+import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { Mesh } from '../../../node_modules/@babylonjs/core/Meshes/mesh.js';
 
-export default class extends BABYLON.Mesh {
+
+export default class extends Mesh {
 	fleet = [];
 	owner = null;
-	fleetLocation = BABYLON.Vector3.Zero();
+	fleetLocation = Vector3.Zero();
 	get power() {
 		return this.fleet.reduce((total, ship) => total + ship._generic.power, 0) ?? 0;
 	}

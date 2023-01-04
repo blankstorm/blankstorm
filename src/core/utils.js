@@ -1,6 +1,8 @@
 import Items from './items.js';
 import Ship from './entities/Ship.js';
 
+import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
+
 export const filterObject = (object, ...keys) => Object.fromEntries(Object.entries(object).filter(([key]) => keys.includes(key)));
 export const greek = [
 	'Alpha',
@@ -70,8 +72,8 @@ export const random = {
 		let angle = Math.random() * Math.PI * 2,
 			angle2 = Math.random() * Math.PI * 2;
 		return y0
-			? new BABYLON.Vector3(dis * Math.cos(angle), 0, dis * Math.sin(angle))
-			: new BABYLON.Vector3(dis * Math.cos(angle), dis * Math.sin(angle) * Math.cos(angle2), dis * Math.sin(angle) * Math.sin(angle2));
+			? new Vector3(dis * Math.cos(angle), 0, dis * Math.sin(angle))
+			: new Vector3(dis * Math.cos(angle), dis * Math.sin(angle) * Math.cos(angle2), dis * Math.sin(angle) * Math.sin(angle2));
 	},
 };
 export const generate = {

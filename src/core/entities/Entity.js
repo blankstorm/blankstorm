@@ -2,7 +2,11 @@ import Path from '../Path.js';
 import { random } from '../utils.js';
 import { config } from '../meta.js';
 
-export default class extends BABYLON.TransformNode {
+import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '../../../node_modules/@babylonjs/core/Maths/math.color.js';
+import { TransformNode } from '../../../node_modules/@babylonjs/core/Meshes/transformNode.js';
+
+export default class extends TransformNode {
 	_generic = { speed: 1 };
 
 	#selected = false;
@@ -28,7 +32,7 @@ export default class extends BABYLON.TransformNode {
 	select() {
 		[this.mesh, ...this.hardpoints.map(hp => hp.mesh)].forEach(mesh => {
 			mesh.getChildMeshes().forEach(child => {
-				this.level.hl.addMesh(child, BABYLON.Color3.Green());
+				this.level.hl.addMesh(child, Color3.Green());
 			});
 		});
 		this.#selected = true;
@@ -46,8 +50,8 @@ export default class extends BABYLON.TransformNode {
 	async #createInstance(type) {
 		this.mesh = await this.level.instantiateGenericMesh(type);
 		this.mesh.setParent(this);
-		this.mesh.position = BABYLON.Vector3.Zero();
-		this.mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI);
+		this.mesh.position = Vector3.Zero();
+		this.mesh.rotation = new Vector3(0, 0, Math.PI);
 	}
 
 	remove() {
@@ -62,26 +66,26 @@ export default class extends BABYLON.TransformNode {
 	followPath(path) {
 		if (!(path instanceof Path)) throw new TypeError('path must be a Path');
 		return new Promise(resolve => {
-			let animation = new BABYLON.Animation(
+			let animation = new Animation(
 					'pathFollow',
 					'position',
 					60 * this._generic.speed,
-					BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-					BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+					Animation.ANIMATIONTYPE_VECTOR3,
+					Animation.ANIMATIONLOOPMODE_CONSTANT
 				),
-				rotateAnimation = new BABYLON.Animation(
+				rotateAnimation = new Animation(
 					'pathRotate',
 					'rotation',
 					60 * this._generic.agility,
-					BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-					BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+					Animation.ANIMATIONTYPE_VECTOR3,
+					Animation.ANIMATIONLOOPMODE_CONSTANT
 				);
 
 			animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this._generic.speed, value: node.position })));
 			rotateAnimation.setKeys(
 				path.path.flatMap((node, i) => {
 					if (i != 0) {
-						let value = BABYLON.Vector3.PitchYawRollToMoveBetweenPoints(path.path[i - 1].position, node.position);
+						let value = Vector3.PitchYawRollToMoveBetweenPoints(path.path[i - 1].position, node.position);
 						value.x -= Math.PI / 2;
 						return [
 							{ frame: i * 60 * this._generic.agility - 30, value },
@@ -103,10 +107,10 @@ export default class extends BABYLON.TransformNode {
 	}
 
 	moveTo(location, isRelative) {
-		if (!(location instanceof BABYLON.Vector3)) throw new TypeError('location must be a Vector3');
+		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
 		if (this.currentPath && config.settings.debug.show_path_gizmos) this.currentPath.disposeGizmo();
-		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : BABYLON.Vector3.Zero()), this.level);
-		if (config.settings.debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, BABYLON.Color3.Green());
+		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : Vector3.Zero()), this.level);
+		if (config.settings.debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, Color3.Green());
 		this.followPath(this.currentPath).then(() => {
 			if (config.settings.debug.show_path_gizmos) {
 				this.currentPath.disposeGizmo();
@@ -127,8 +131,8 @@ export default class extends BABYLON.TransformNode {
 	static generic = new Map();
 	static FromData(data, owner, level) {
 		let entity = new this(data.type, owner, level, data.id);
-		entity.position = BABYLON.Vector3.FromArray(data.position);
-		entity.rotation = BABYLON.Vector3.FromArray(data.rotation);
+		entity.position = Vector3.FromArray(data.position);
+		entity.rotation = Vector3.FromArray(data.rotation);
 		return entity;
 	}
 }

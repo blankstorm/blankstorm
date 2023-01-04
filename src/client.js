@@ -2,7 +2,16 @@ import db from './db.js';
 import { config, version, versions, isJSON, isHex, commands, runCommand, random, generate, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Planet, Level } from './core/index.js';
 import * as core from './core/index.js';
 
-window.core = core;
+import { Vector2, Vector3, Matrix } from '../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '../node_modules/@babylonjs/core/Maths/math.color.js';
+import { StandardMaterial } from '../node_modules/@babylonjs/core/Materials/standardMaterial.js';
+import { Engine } from '../node_modules/@babylonjs/core/Engines/engine.js';
+
+import '../node_modules/jquery/dist/jquery.js';
+import '../node_modules/socket.io-client/dist/socket.io.min.js';
+/* global io $ */ //since eslint doesn't detect them
+
+window.core = core; //For debugging
 
 try {
 	await db.init();
@@ -10,8 +19,6 @@ try {
 	console.error('Failed to open IndexedDB: ' + err);
 }
 
-//Client.js
-/* global $ BABYLON io*/
 /*eslint no-redeclare: "off"*/
 const web = url => `https://blankstorm.drvortex.dev/` + url,
 	upload = (type, multiple = false) =>
@@ -290,7 +297,7 @@ const locales = Object.assign(new Map(), {
 	currentLang: '',
 });
 
-const Waypoint = class extends BABYLON.Node {
+const Waypoint = class extends Node {
 	#readonly = false;
 	static dialog(wp) {
 		modal(
@@ -311,16 +318,16 @@ const Waypoint = class extends BABYLON.Node {
 				} else if (wp instanceof Waypoint) {
 					Object.assign(wp, {
 						name: data.name,
-						color: BABYLON.Color3.FromHexString(data.color),
-						position: new BABYLON.Vector3(data.x, data.y, data.z),
+						color: Color3.FromHexString(data.color),
+						position: new Vector3(data.x, data.y, data.z),
 					});
 					ui.update();
 				} else {
 					new Waypoint(
 						{
 							name: data.name,
-							color: BABYLON.Color3.FromHexString(data.color),
-							position: new BABYLON.Vector3(data.x, data.y, data.z),
+							color: Color3.FromHexString(data.color),
+							position: new Vector3(data.x, data.y, data.z),
 						},
 						saves.current
 					);
@@ -359,14 +366,14 @@ const Waypoint = class extends BABYLON.Node {
 		return this.readonly ? ui.filter('span:gt(1)') : ui;
 	}
 	get screenPos() {
-		return BABYLON.Vector3.Project(this.position, BABYLON.Matrix.Identity(), saves.current.getTransformMatrix(), { x: 0, y: 0, width: innerWidth, height: innerHeight });
+		return Vector3.Project(this.position, Matrix.Identity(), saves.current.getTransformMatrix(), { x: 0, y: 0, width: innerWidth, height: innerHeight });
 	}
 	constructor(
 		{
 			id = random.hex(32),
 			name = 'Waypoint',
-			position = BABYLON.Vector3.Zero(),
-			color = new BABYLON.Color3(Math.random(), Math.random(), Math.random()),
+			position = Vector3.Zero(),
+			color = new Color3(Math.random(), Math.random(), Math.random()),
 			icon = 'location-dot',
 			readonly = false,
 		},
@@ -472,7 +479,7 @@ const Save = class {
 					{
 						name: body.name,
 						position: body.position,
-						color: BABYLON.Color3.FromHexString('#88ddff'),
+						color: Color3.FromHexString('#88ddff'),
 						icon: Planet.biomes.has(body.biome) && body instanceof Planet ? Planet.biomes.get(body.biome).icon : 'planet-ringed',
 						readonly: true,
 					},
@@ -480,13 +487,13 @@ const Save = class {
 				);
 			}
 
-			const playerData = new PlayerData({ id: playerID, name: playerName, position: new BABYLON.Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
+			const playerData = new PlayerData({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
 			playerData._customHardpointProjectileMaterials = [
 				{
 					applies_to: ['laser'],
-					material: Object.assign(new BABYLON.StandardMaterial('player-laser-projectile-material', save), {
-						emissiveColor: BABYLON.Color3.Teal(),
-						albedoColor: BABYLON.Color3.Teal(),
+					material: Object.assign(new StandardMaterial('player-laser-projectile-material', save), {
+						emissiveColor: Color3.Teal(),
+						albedoColor: Color3.Teal(),
 					}),
 				},
 			];
@@ -517,8 +524,8 @@ const Save = class {
 			new Waypoint({
 				id: waypoint.id,
 				name: waypoint.name,
-				color: BABYLON.Color3.FromArray(waypoint.color),
-				position: BABYLON.Vector3.FromArray(waypoint.position),
+				color: Color3.FromArray(waypoint.color),
+				position: Vector3.FromArray(waypoint.position),
 			});
 		}
 		return save;
@@ -702,7 +709,7 @@ db.tx('mods').then(tx => {
 
 const game = {
 	canvas: $('canvas.game'),
-	engine: new BABYLON.Engine($('canvas.game')[0], true, { preserveDrawingBuffer: true, stencil: true }), //TODO: move engine to core
+	engine: new Engine($('canvas.game')[0], true, { preserveDrawingBuffer: true, stencil: true }), //TODO: move engine to core
 	screenshots: [],
 	mods: new Map(),
 	isPaused: true,
@@ -841,12 +848,12 @@ const player = {
 	},
 	stop: (delay = 0) => {
 		setTimeout(() => {
-			player.data().velocity = BABYLON.Vector3.Zero();
+			player.data().velocity = Vector3.Zero();
 		}, +delay || 0);
 	},
 	reset: noStop => {
-		player.data().position = random.cords(random.int(0, 50), true).add(new BABYLON.Vector3(0, 0, -1000));
-		player.data().rotation = BABYLON.Vector3.Zero();
+		player.data().position = random.cords(random.int(0, 50), true).add(new Vector3(0, 0, -1000));
+		player.data().rotation = Vector3.Zero();
 		player.data().cam.alpha = -Math.PI / 2;
 		player.data().cam.beta = Math.PI;
 		player.data().cam.target = player.data().position;
@@ -881,16 +888,16 @@ if (!game.mpEnabled) {
 }
 
 game.createKeybind('forward', { key: 'w' }, 'Forward', () => {
-	player.data().addVelocity(BABYLON.Vector3.Forward(), true);
+	player.data().addVelocity(Vector3.Forward(), true);
 });
 game.createKeybind('left', { key: 'a' }, 'Strafe Left', () => {
-	player.data().addVelocity(BABYLON.Vector3.Left(), true);
+	player.data().addVelocity(Vector3.Left(), true);
 });
 game.createKeybind('right', { key: 'd' }, 'Strafe Right', () => {
-	player.data().addVelocity(BABYLON.Vector3.Right(), true);
+	player.data().addVelocity(Vector3.Right(), true);
 });
 game.createKeybind('back', { key: 's' }, 'Backward', () => {
-	player.data().addVelocity(BABYLON.Vector3.Backward(), true);
+	player.data().addVelocity(Vector3.Backward(), true);
 });
 game.createKeybind('chat', { key: 't' }, 'Toggle Chat', e => {
 	e.preventDefault();
@@ -1411,7 +1418,7 @@ $('#settings button.back').click(() => {
 	ui.update();
 });
 $('#q div.warp button.warp').click(() => {
-	let destination = new BABYLON.Vector3(+$('input.warp.x').val(), 0, +$('input.warp.y').val());
+	let destination = new Vector3(+$('input.warp.x').val(), 0, +$('input.warp.y').val());
 	player.data().fleet.forEach(ship => {
 		let offset = random.cords(player.data().power, true);
 		ship.jump(destination.add(offset));
@@ -1610,10 +1617,10 @@ const loop = () => {
 						})
 						.filter('p')
 						.text(
-							BABYLON.Vector2.Distance(pos, new BABYLON.Vector2(innerWidth / 2, innerHeight / 2)) < 60 ||
+							Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 ||
 								waypoint.marker.eq(0).is(':hover') ||
 								waypoint.marker.eq(1).is(':hover')
-								? `${waypoint.name} - ${minimize(BABYLON.Vector3.Distance(player.data().position, waypoint.position))} km`
+								? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km`
 								: ''
 						);
 					waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
@@ -1631,7 +1638,7 @@ const loop = () => {
 						</span><br>
 						`);
 				$('#debug .right').html(`
-						<span>Babylon v${BABYLON.Engine.Version} | jQuery v${$.fn.jquery}</span><br>
+						<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
 						<span>${game.engine._glRenderer}</span><br>
 						<span>${
 							performance.memory

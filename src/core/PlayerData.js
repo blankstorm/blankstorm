@@ -3,7 +3,11 @@ import Items from './items.js';
 import Tech from './tech.js';
 import { config } from './meta.js';
 
-export default class extends BABYLON.TransformNode {
+import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { TransformNode } from '../../node_modules/@babylonjs/core/Meshes/transformNode.js';
+import { ArcRotateCamera } from '../../node_modules/@babylonjs/core/Cameras/arcRotateCamera.js';
+
+export default class extends TransformNode {
 	get items() {
 		let items = Object.fromEntries([...Items.keys()].map(i => [i, 0]));
 		this.fleet.forEach(ship => {
@@ -73,7 +77,7 @@ export default class extends BABYLON.TransformNode {
 	fleet = [];
 	xp = 0;
 	xpPoints = 0;
-	velocity = BABYLON.Vector3.Zero();
+	velocity = Vector3.Zero();
 	speed = 1;
 	get power() {
 		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);
@@ -81,7 +85,7 @@ export default class extends BABYLON.TransformNode {
 	constructor(data, level) {
 		//if (!(level instanceof Level) && level) throw new TypeError('passed level not a Level'); Level not imported due to overhead
 		super(data.name, level);
-		this.cam = new BABYLON.ArcRotateCamera(data.name, -Math.PI / 2, Math.PI / 2, 5, BABYLON.Vector3.Zero(), level);
+		this.cam = new ArcRotateCamera(data.name, -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), level);
 		Object.assign(this.cam, config.playerCamera);
 		this.cam.target = this.position;
 		Object.assign(this, data);
@@ -94,7 +98,7 @@ export default class extends BABYLON.TransformNode {
 			...filterObject(this, 'tech', 'items', 'xp', 'xpPoints'),
 		};
 	}
-	addVelocity(vector = BABYLON.Vector3.Zero(), computeMultiplyer) {
+	addVelocity(vector = Vector3.Zero(), computeMultiplyer) {
 		let direction = this.cam.getDirection(vector).scale(1 / Math.PI);
 		direction.y = 0;
 		direction.normalize();

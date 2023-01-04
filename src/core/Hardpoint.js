@@ -1,8 +1,11 @@
 import { random, wait } from './utils.js';
 import Ship from './entities/Ship.js';
 import Level from './Level.js';
+import { TransformNode } from '../../node_modules/@babylonjs/core/Meshes/transformNode.js';
+import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { Animation } from '../../node_modules/@babylonjs/core/Animations/animation.js';
 
-const Hardpoint = class extends BABYLON.TransformNode {
+const Hardpoint = class extends TransformNode {
 	_generic = {};
 	#entity;
 	#resolve;
@@ -18,8 +21,8 @@ const Hardpoint = class extends BABYLON.TransformNode {
 		this.type = data.type;
 		this.parent = ship;
 		this.#entity = ship;
-		this.position = data.position || BABYLON.Vector3.Zero();
-		this.rotation = (data.rotation || BABYLON.Vector3.Zero()).addInPlaceFromFloats(0, Math.PI, 0);
+		this.position = data.position || Vector3.Zero();
+		this.rotation = (data.rotation || Vector3.Zero()).addInPlaceFromFloats(0, Math.PI, 0);
 		this.reload = this._generic.reload;
 		let resolve;
 		this.instanceReady = new Promise(res => (resolve = res));
@@ -41,8 +44,8 @@ const Hardpoint = class extends BABYLON.TransformNode {
 	async #createInstance() {
 		this.mesh = await this.level.instantiateGenericMesh(this.type);
 		this.mesh.setParent(this);
-		this.mesh.position = BABYLON.Vector3.Zero();
-		this.mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI);
+		this.mesh.position = Vector3.Zero();
+		this.mesh.rotation = new Vector3(0, 0, Math.PI);
 		this.#resolve();
 	}
 
@@ -81,7 +84,7 @@ const Hardpoint = class extends BABYLON.TransformNode {
 						targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),
 						startPos = this.getAbsolutePosition(),
 						endPos = target.getAbsolutePosition().add(random.cords(targetOffset)),
-						frameFactor = BABYLON.Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed,
+						frameFactor = Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed,
 						material = projectileMaterials.find(({ applies_to = [], material }) => {
 							if (applies_to.includes(this.type) && material) {
 								return material;
@@ -96,12 +99,12 @@ const Hardpoint = class extends BABYLON.TransformNode {
 					laser.position = startPos;
 					this.lookAt(endPos);
 					laser.lookAt(endPos);
-					const animation = new BABYLON.Animation(
+					const animation = new Animation(
 						'projectileAnimation',
 						'position',
 						60,
-						BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
-						BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+						Animation.ANIMATIONTYPE_VECTOR3,
+						Animation.ANIMATIONLOOPMODE_CONSTANT
 					);
 					animation.setKeys([
 						{ frame: 0, value: startPos },

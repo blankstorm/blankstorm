@@ -3,46 +3,51 @@ fs = require('fs'),
 path = require('path'),
 mime = require('mime-types'),
 opts = { recursive: true, force: true },
+inputDirPath = 'src',
 outputDirPath = 'dist/web';
-
 
 if(fs.existsSync(outputDirPath)){
 	fs.rmSync(outputDirPath, opts);
 }
 
 console.log('Copying...');
-fs.cpSync('src', outputDirPath, opts);
+fs.cpSync(inputDirPath, outputDirPath, opts);
 
 console.log('Installing dependencies...');
 const outputLibPath = path.join(outputDirPath, 'libraries');
 if(!fs.existsSync(outputLibPath)){
 	fs.mkdirSync(outputLibPath)
 }
-const _updateDir = dir => {
-	for(let fName of fs.readdirSync(dir)){
-		const fPath = path.join(dir, fName);
-		const stats = fs.statSync(fPath);
+const _updateDir = (inputDir, outputDir) => {
+	for(let fName of fs.readdirSync(inputDir)){
+		const
+		input = path.join(inputDir, fName),
+		output = path.join(outputDir, fName);
+		const stats = fs.statSync(input);
 		if(stats.isFile()){
-			const type = mime.lookup(fPath);
-			console.log(`Processing ${fPath} `);
+			const type = mime.lookup(input);
+			console.log(`Processing ${input} `);
 			if(['text/html', 'application/html', 'text/javascript', 'application/javascript'].includes(type)){
-				const content = fs.readFileSync(fPath, { encoding: 'utf8' });
-				const newContent = content.replaceAll(/\.\.\/node_modules\/([._\w-]+)\/([/._\w-]+)/g, (match, depName) => {
-					const depFName = path.basename(match);
-					fs.cpSync(match.slice(1), `${outputLibPath}/${depName}/${depFName}`);
-					const newPath = `libraries/${depName}/${depFName}`;
-					console.log(`Found dependency: ${depName} (in ${fPath})`);
+				const content = fs.readFileSync(input, { encoding: 'utf8' });
+				const newContent = content.replaceAll(/[.\/]+node_modules\/([@._\w-]+)\/([/._\w-]+)/gi, (match, depName) => {
+					const depFName = path.basename(match), wd = process.cwd();
+					process.chdir(path.dirname(input));
+					const oldPath = path.resolve(match);
+					process.chdir(wd);
+					fs.cpSync(oldPath, `${outputLibPath}/${depName}/${depFName}`);
+					const newPath = `${outputLibPath}/${depName}/${depFName}`;
+					console.log(`Found dependency: ${depName}: ${depFName} (in ${input})`);
 					return newPath;
 				});
-				fs.writeFileSync(fPath, newContent);
+				fs.writeFileSync(output, newContent);
 			}
 		}else if(stats.isDirectory()){
-			_updateDir(fPath);
+			_updateDir(input, output);
 		}
 		
 	}	
 }
-_updateDir(outputDirPath);
+_updateDir(inputDirPath, outputDirPath);
 
 console.log('Cleaning up...');
 

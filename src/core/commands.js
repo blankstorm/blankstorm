@@ -1,4 +1,5 @@
 import Ship from './entities/Ship.js';
+import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
 
 export const commands = {
 	help: () => {
@@ -17,7 +18,7 @@ export const commands = {
 	spawn: (level, type, selector, x, y, z) => {
 		let entity = level.getEntities(selector);
 		let spawned = new Ship(type, entity, level);
-		spawned.position.addInPlace(BABYLON.Vector3.FromArray(+x, +y, +z));
+		spawned.position.addInPlace(Vector3.FromArray(+x, +y, +z));
 	},
 	data: {
 		get: (level, selector, path = '') => {
@@ -41,7 +42,7 @@ export const commands = {
 	},
 	tp: (level, selector, x, y, z) => {
 		let entities = level.getEntities(selector),
-			location = new BABYLON.Vector3(+x || 0, +y || 0, +z || 0); //TODO: || 0 -> || executor.position
+			location = new Vector3(+x || 0, +y || 0, +z || 0); //TODO: || 0 -> || executor.position
 		if (entities instanceof Array) {
 			entities.forEach(entity => {
 				entity.position = location;

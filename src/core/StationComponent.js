@@ -1,6 +1,9 @@
 import { random } from './utils.js';
 
-const StationComponent = class extends BABYLON.TransformNode {
+import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { TransformNode } from '../../node_modules/@babylonjs/core/Meshes/transformNode.js';
+
+const StationComponent = class extends TransformNode {
 	_generic = {};
 	#station;
 	#resolve;
@@ -33,8 +36,8 @@ const StationComponent = class extends BABYLON.TransformNode {
 	async #createInstance() {
 		this.mesh = await this.level.instantiateGenericMesh('station.' + this.type);
 		this.mesh.setParent(this);
-		this.mesh.position = BABYLON.Vector3.Zero();
-		this.mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI);
+		this.mesh.position = Vector3.Zero();
+		this.mesh.rotation = new Vector3(0, 0, Math.PI);
 		this.#resolve();
 	}
 
@@ -93,10 +96,10 @@ const StationComponent = class extends BABYLON.TransformNode {
 				hp: 100,
 				model: 'models/station/core.glb',
 				connecters: [
-					{ type: '*', position: new BABYLON.Vector3(0, 0, 0), rotation: new BABYLON.Vector3(0, 0, 0) },
-					{ type: '*', position: new BABYLON.Vector3(0, 0, 0), rotation: new BABYLON.Vector3(0, Math.PI / 2, 0) },
-					{ type: '*', position: new BABYLON.Vector3(0, 0, 0), rotation: new BABYLON.Vector3(0, Math.PI, 0) },
-					{ type: '*', position: new BABYLON.Vector3(0, 0, 0), rotation: new BABYLON.Vector3(0, (3 * Math.PI) / 2, 0) },
+					{ type: '*', position: new Vector3(0, 0, 0), rotation: new Vector3(0, 0, 0) },
+					{ type: '*', position: new Vector3(0, 0, 0), rotation: new Vector3(0, Math.PI / 2, 0) },
+					{ type: '*', position: new Vector3(0, 0, 0), rotation: new Vector3(0, Math.PI, 0) },
+					{ type: '*', position: new Vector3(0, 0, 0), rotation: new Vector3(0, (3 * Math.PI) / 2, 0) },
 				],
 			},
 		],
@@ -107,8 +110,8 @@ const StationComponent = class extends BABYLON.TransformNode {
 				hp: 50,
 				model: 'models/station/connecter_i.glb',
 				connecters: [
-					{ type: '*', position: new BABYLON.Vector3(0, 0, -0.5), rotation: BABYLON.Vector3.Zero() },
-					{ type: '*', position: new BABYLON.Vector3(0, 0, 0.5), rotation: BABYLON.Vector3.Zero() },
+					{ type: '*', position: new Vector3(0, 0, -0.5), rotation: Vector3.Zero() },
+					{ type: '*', position: new Vector3(0, 0, 0.5), rotation: Vector3.Zero() },
 				],
 			},
 		],

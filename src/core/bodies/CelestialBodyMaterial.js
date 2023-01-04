@@ -1,7 +1,12 @@
 import { config } from '../meta.js';
 import { random } from '../utils.js';
+import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { ShaderMaterial } from '../../../node_modules/@babylonjs/core/Materials/shaderMaterial.js';
+import { DynamicTexture } from '../../../node_modules/@babylonjs/core/Materials/Textures/dynamicTexture.js';
+import { ProceduralTexture } from '../../../node_modules/@babylonjs/core/Materials/Textures/Procedurals/proceduralTexture.js';
+import { Texture } from '../../../node_modules/@babylonjs/core/Materials/Textures/texture.js';
 
-export default class extends BABYLON.ShaderMaterial {
+export default class extends ShaderMaterial {
 	constructor(options, level) {
 		options.mapSize = 1024;
 		options.maxResolution = [64, 256, 1024][config.render_quality];
@@ -18,27 +23,27 @@ export default class extends BABYLON.ShaderMaterial {
 		this.rotationFactor = Math.random();
 		this.matrixAngle = 0;
 
-		this.setVector3('cameraPosition', level.activeCamera?.position || BABYLON.Vector3.Zero());
-		this.setVector3('lightPosition', BABYLON.Vector3.Zero());
+		this.setVector3('cameraPosition', level.activeCamera?.position || Vector3.Zero());
+		this.setVector3('lightPosition', Vector3.Zero());
 
 		this.noiseTexture = this.generateTexture(
 			id,
 			'./shaders/noise',
-			{ ...options, options: new BABYLON.Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y) },
+			{ ...options, options: new Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y) },
 			level
 		);
 		this.setTexture('textureSampler', this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, './shaders/cloud', { ...options, options: new BABYLON.Vector3(1.0, 0, 0) }, level);
+		this.cloudTexture = this.generateTexture(id, './shaders/cloud', { ...options, options: new Vector3(1.0, 0, 0) }, level);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);
 	}
 
 	generateTexture(id, path, options, level) {
-		let sampler = new BABYLON.DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, level, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+		let sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, level, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
-		let texture = new BABYLON.ProceduralTexture('CelestialBodyMaterial.texture.' + id, options.mapSize, path, level, null, true, true);
+		let texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, options.mapSize, path, level, null, true, true);
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
 		texture.setFloat('mapSize', options.mapSize);
@@ -53,7 +58,7 @@ export default class extends BABYLON.ShaderMaterial {
 	}
 
 	updateRandom(texture) {
-		if (!(texture instanceof BABYLON.DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
+		if (!(texture instanceof DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
 		let context = texture.getContext(),
 			imageData = context.getImageData(0, 0, 512, 512);
 		for (let i = 0; i < 1048576; i++) {
