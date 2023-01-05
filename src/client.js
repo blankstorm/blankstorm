@@ -20,13 +20,14 @@ import {
 } from './core/index.js';
 import * as core from './core/index.js';
 
-import { Vector2, Vector3, Matrix } from '../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '../node_modules/@babylonjs/core/Maths/math.color.js';
-import { StandardMaterial } from '../node_modules/@babylonjs/core/Materials/standardMaterial.js';
-import { Engine } from '../node_modules/@babylonjs/core/Engines/engine.js';
+import { Vector2, Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { Engine } from '@babylonjs/core/Engines/engine.js';
+import { Node } from '@babylonjs/core/node.js';
 
-import '../node_modules/jquery/dist/jquery.js';
-import '../node_modules/socket.io-client/dist/socket.io.min.js';
+import 'jquery';
+import 'socket.io-client';
 /* global io $ */ //since eslint doesn't detect them
 
 window.core = core; //For debugging

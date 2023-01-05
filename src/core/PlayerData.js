@@ -3,9 +3,9 @@ import Items from './items.js';
 import Tech from './tech.js';
 import { config } from './meta.js';
 
-import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { TransformNode } from '../../node_modules/@babylonjs/core/Meshes/transformNode.js';
-import { ArcRotateCamera } from '../../node_modules/@babylonjs/core/Cameras/arcRotateCamera.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
+import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera.js';
 
 export default class extends TransformNode {
 	get items() {

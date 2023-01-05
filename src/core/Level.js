@@ -11,17 +11,19 @@ import Entity from './entities/Entity.js';
 import Ship from './entities/Ship.js';
 import PlayerData from './PlayerData.js';
 
-import { Vector3, Matrix } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '../../node_modules/@babylonjs/core/Maths/math.color.js';
-import { Scene } from '../../node_modules/@babylonjs/core/scene.js';
-import { MeshBuilder } from '../../node_modules/@babylonjs/core/Meshes/meshBuilder.js';
-import { PerformanceMonitor } from '../../node_modules/@babylonjs/core/Misc/performanceMonitor.js';
-import { GlowLayer } from '../../node_modules/@babylonjs/core/Layers/glowLayer.js';
-import { HighlightLayer } from '../../node_modules/@babylonjs/core/Layers/highlightLayer.js';
-import { ReflectionProbe } from '../../node_modules/@babylonjs/core/Probes/reflectionProbe.js';
-import { StandardMaterial } from '../../node_modules/@babylonjs/core/Materials/standardMaterial.js';
-import { CubeTexture } from '../../node_modules/@babylonjs/core/Materials/Textures/cubeTexture.js';
-import { SceneLoader } from '../../node_modules/@babylonjs/core/Loading/sceneLoader.js';
+import { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { Scene } from '@babylonjs/core/scene.js';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
+import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor.js';
+import { GlowLayer } from '@babylonjs/core/Layers/glowLayer.js';
+import { HighlightLayer } from '@babylonjs/core/Layers/highlightLayer.js';
+import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe.js';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.js';
+import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader.js';
+
+import '@babylonjs/loaders/glTF/index.js';
 
 const Level = class extends Scene {
 	id = random.hex(16);

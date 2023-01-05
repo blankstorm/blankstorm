@@ -1,10 +1,10 @@
 import { random } from './utils.js';
 
-import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '../../node_modules/@babylonjs/core/Maths/math.color.js';
-import { Path3D } from '../../node_modules/@babylonjs/core/Maths/math.path.js';
-import { MeshBuilder } from '../../node_modules/@babylonjs/core/Meshes/meshBuilder.js';
-import { Scene } from '../../node_modules/@babylonjs/core/scene.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { Path3D } from '@babylonjs/core/Maths/math.path.js';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
+import { Scene } from '@babylonjs/core/scene.js';
 
 const Path = class extends Path3D {
 	static Node = class {

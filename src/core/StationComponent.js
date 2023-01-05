@@ -1,7 +1,7 @@
 import { random } from './utils.js';
 
-import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { TransformNode } from '../../node_modules/@babylonjs/core/Meshes/transformNode.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 
 const StationComponent = class extends TransformNode {
 	_generic = {};

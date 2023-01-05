@@ -1,7 +1,7 @@
 import Items from './items.js';
 import Ship from './entities/Ship.js';
 
-import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 export const filterObject = (object, ...keys) => Object.fromEntries(Object.entries(object).filter(([key]) => keys.includes(key)));
 export const greek = [

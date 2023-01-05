@@ -2,9 +2,9 @@ import { random, wait } from './utils.js';
 import Ship from './entities/Ship.js';
 import Level from './Level.js';
 
-import { TransformNode } from '../../node_modules/@babylonjs/core/Meshes/transformNode.js';
-import { Vector3 } from '../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { Animation } from '../../node_modules/@babylonjs/core/Animations/animation.js';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Animation } from '@babylonjs/core/Animations/animation.js';
 
 const Hardpoint = class extends TransformNode {
 	_generic = {};

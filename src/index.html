@@ -5,42 +5,6 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content="Blankstorm is a free, online Sandbox/RTS game - no installation required. Command your own fleet and explore the galaxy!" />
-		<script async>
-			IDBRequest.prototype.async = function () {
-				return new Promise((resolve, reject) => {
-					this.onsuccess = e => resolve(this.result);
-					this.onerror = e => reject(this.error);
-				});
-			};
-			const db = {
-				promise: new Promise((resolve, reject) => {
-					let req = indexedDB.open('blankstorm', 3);
-					req.onsuccess = e => resolve(req.result);
-					req.onerror = e => reject(req.error);
-					req.onupgradeneeded = e => {
-						let db = req.result;
-						switch (e.oldVersion) {
-							case 3:
-								if (db.objectStoreNames.contains('settings')) db.deleteObjectStore('settings');
-								//f (db.objectStoreNames.contains('servers')) db.deleteObjectStore('settings');
-								break;
-							case 2:
-								if (db.objectStoreNames.contains('locales')) db.deleteObjectStore('locales');
-								break;
-							case 0:
-								db.createObjectStore('servers');
-								db.createObjectStore('saves');
-								db.createObjectStore('mods');
-						}
-					};
-				}),
-				async tx(stores, mode) {
-					let db = await this.promise;
-					return db.transaction(stores, mode);
-				},
-			};
-			db.promise.catch(e => console.error('Failed to open IndexedDB: ' + e));
-		</script>
 		<link rel=icon href=images/icon.png type=image/png>
 		<link rel="stylesheet" href="client.css" type="text/css" />
 	</head>
@@ -279,5 +243,14 @@
 			<ul class="mod" nbs bg="none" ofs="y" hide lsn></ul>
 		</div>
 	</body>
+	<script type="importmap">
+		{
+			"imports": {
+				"@babylonjs/": "../node_modules/@babylonjs/",
+				"jquery": "../node_modules/jquery/dist/jquery.js",
+				"socket.io-client": "../node_modules/socket.io-client/dist/socket.io.min.js"
+			}
+		}
+	</script>
 	<script type="module" src="client.js"></script>
 </html>
