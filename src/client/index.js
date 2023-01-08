@@ -99,20 +99,6 @@ const modal = (input = 'Are you sure?', options = { Cancel: false, Ok: true }) =
 	};
 
 Object.defineProperties(Object.prototype, {
-	hide: {
-		value: function (...p) {
-			for (let i of p) {
-				Object.defineProperty(this, i, { enumerable: false });
-			}
-		},
-	},
-	freezeProperty: {
-		value: function (...p) {
-			for (let i of p) {
-				Object.defineProperty(this, i, { writable: false });
-			}
-		},
-	},
 	getByString: {
 		value: function (path, seperator) {
 			return path
@@ -127,12 +113,6 @@ Object.defineProperties(Object.prototype, {
 				.split(seperator || /[.[\]'"]/)
 				.filter(p => p)
 				.reduce((o, p, i) => (o[p] = path.split(seperator || /[.[\]'"]/).filter(p => p).length === ++i ? value : o[p] || {}), this);
-		},
-	},
-	copyFrom: {
-		value: function (source, props) {
-			Object.assign(this, props ? Object.fromEntries(Object.entries(source).filter(([k]) => props.includes(k))) : source);
-			return this;
 		},
 	},
 });
@@ -842,7 +822,6 @@ const player = {
 					let res = JSON.parse(req);
 					Object.assign(player, res);
 					localStorage.auth = req;
-					player.freezeProperty(...Object.keys(res));
 				} else if (req == undefined) {
 					game.chat('Failed to connect to account servers.');
 				} else if (req == 'ERROR 404') {
@@ -895,7 +874,6 @@ const player = {
 	},
 };
 
-player.freezeProperty('updateFleet', 'move', 'stop', 'reset', 'hasItems', 'removeItems', 'giveItems', 'wipe', 'chat');
 onresize = () => {
 	game.engine.resize();
 	console.warn('Do not paste any code someone gave you, as they may be trying to steal your information');
@@ -957,7 +935,6 @@ if (cookie.token && navigator.onLine) {
 	if (isJSON(localStorage.auth) && JSON.parse(localStorage.auth)) {
 		let data = (player.authData = JSON.parse(localStorage.auth));
 		Object.assign(player, data);
-		player.freezeProperty(...Object.keys(data));
 	} else {
 		game.chat('Error: Invalid auth data.');
 	}
@@ -965,7 +942,6 @@ if (cookie.token && navigator.onLine) {
 	game.mpEnabled = false;
 	game.chat("You're not logged in, and will not be able to play multiplayer.");
 }
-game.freezeProperty('mpEnabled', 'scene', 'chat');
 
 //load saved settings and keybinds
 $('form.gen').formData((settings.general ??= $('form.gen').formData()));
