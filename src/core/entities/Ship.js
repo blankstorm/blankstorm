@@ -3,7 +3,7 @@ import Entity from './Entity.js';
 import Hardpoint from '../Hardpoint.js';
 import StorageData from '../StorageData.js';
 
-import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 const Ship = class extends Entity {
 	constructor(className, owner, level) {

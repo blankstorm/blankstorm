@@ -1,11 +1,11 @@
 import { config } from '../meta.js';
 import CelestialBody from './CelestialBody.js';
 
-import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '../../../node_modules/@babylonjs/core/Maths/math.color.js';
-import { PointLight } from '../../../node_modules/@babylonjs/core/Lights/pointLight.js';
-import { StandardMaterial } from '../../../node_modules/@babylonjs/core/Materials/standardMaterial.js';
-import { CreateSphereVertexData } from '../../../node_modules/@babylonjs/core/Meshes/Builders/sphereBuilder.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { PointLight } from '@babylonjs/core/Lights/pointLight.js';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder.js';
 
 export default class extends CelestialBody {
 	constructor({ name, position = Vector3.Zero(), radius = 1, color = Color3.Gray(), scene, id }) {

@@ -4,10 +4,10 @@ import Ship from '../entities/Ship.js';
 import CelestialBody from './CelestialBody.js';
 import CelestialBodyMaterial from './CelestialBodyMaterial.js';
 
-import { Vector2, Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '../../../node_modules/@babylonjs/core/Maths/math.color.js';
-import { StandardMaterial } from '../../../node_modules/@babylonjs/core/Materials/standardMaterial.js';
-import { CreateSphereVertexData } from '../../../node_modules/@babylonjs/core/Meshes/Builders/sphereBuilder.js';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder.js';
 
 const Planet = class extends CelestialBody {
 	constructor({ name, position = Vector3.Zero(), biome = 'earthlike', radius = 1, owner = null, fleet = [], rewards = {}, scene, id }) {

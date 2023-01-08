@@ -2,9 +2,9 @@ import Path from '../Path.js';
 import { random } from '../utils.js';
 import { config } from '../meta.js';
 
-import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '../../../node_modules/@babylonjs/core/Maths/math.color.js';
-import { TransformNode } from '../../../node_modules/@babylonjs/core/Meshes/transformNode.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 
 export default class extends TransformNode {
 	_generic = { speed: 1 };

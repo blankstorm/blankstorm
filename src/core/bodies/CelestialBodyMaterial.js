@@ -1,11 +1,11 @@
 import { config } from '../meta.js';
 import { random } from '../utils.js';
 
-import { Vector3 } from '../../../node_modules/@babylonjs/core/Maths/math.vector.js';
-import { ShaderMaterial } from '../../../node_modules/@babylonjs/core/Materials/shaderMaterial.js';
-import { DynamicTexture } from '../../../node_modules/@babylonjs/core/Materials/Textures/dynamicTexture.js';
-import { ProceduralTexture } from '../../../node_modules/@babylonjs/core/Materials/Textures/Procedurals/proceduralTexture.js';
-import { Texture } from '../../../node_modules/@babylonjs/core/Materials/Textures/texture.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial.js';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture.js';
+import { ProceduralTexture } from '@babylonjs/core/Materials/Textures/Procedurals/proceduralTexture.js';
+import { Texture } from '@babylonjs/core/Materials/Textures/texture.js';
 
 export default class extends ShaderMaterial {
 	constructor(options, level) {
