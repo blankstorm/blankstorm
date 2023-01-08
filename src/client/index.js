@@ -17,8 +17,8 @@ import {
 	PlayerData,
 	Planet,
 	Level,
-} from './core/index.js';
-import * as core from './core/index.js';
+} from '../core/index.js';
+import * as core from '../core/index.js';
 
 import { Vector2, Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '@babylonjs/core/Maths/math.color.js';
