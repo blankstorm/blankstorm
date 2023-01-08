@@ -3,8 +3,9 @@ const fs = require('fs'),
 	mime = require('mime-types'),
 	opts = { recursive: true, force: true },
 	inputDirPath = 'src',
-	outputDirPath = 'dist/web'
-	outputLibPath = path.join(outputDirPath, 'libraries');
+	outputDirPath = 'dist/web',
+	outputLib = 'libraries',
+	outputLibPath = outputDirPath + '/' + outputLib;
 
 if (fs.existsSync(outputDirPath)) {
 	fs.rmSync(outputDirPath, opts);
@@ -28,13 +29,17 @@ const updateFile = (rawInput, rawOutput) => {
 	if (['text/html', 'application/html'].includes(type)) {
 		console.log(`Processing ${input}`);
 		const content = fs.readFileSync(input, { encoding: 'utf8' })
-		.replaceAll(/[.\/]+node_modules\/([@._\w-]+)\//gi, (match, depName) => {
+		.replaceAll(/[.\/]+node_modules\/([@._\w-]+)/gi, (match, depName) => {
 			const
-				oldPath = `${pathToPOSIX(path.resolve(path.dirname(rawInput), match))}/`,
-				newPath = `${outputLibPath}/${depName}/`;
+				oldPath = path.posix.resolve(path.posix.dirname(input), match),
+				newPath = path.posix.resolve(path.posix.join(outputLibPath), depName);
+			let newRelativePath = path.posix.relative(path.posix.dirname(output), newPath);
+				if(!newRelativePath.startsWith('.')){
+					newRelativePath = './' + newRelativePath;
+				}
 				console.log(`Found dependency: ${depName} (in ${input})`);
 			fs.cpSync(oldPath, newPath, opts);
-			return newPath;
+			return newRelativePath;
 		});
 		fs.writeFileSync(output, content);
 	}
