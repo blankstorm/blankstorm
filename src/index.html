@@ -25,7 +25,7 @@
 			</svg>
 			<p style="position: absolute; font-size: 25px; top: 50%" text-shadow>Loading</p>
 		</div>
-		<input ingame id="cli" style="position: fixed; left: 15px; bottom: 15px; width: 30%; height: 30px; padding: 0; margin: 0; z-index: 10" hide ofs="x" />
+		<input ingame id="cli" style="position: fixed; left: 15px; bottom: 15px; width: 30%; height: 30px; padding: 0; margin: 0; z-index: 10" hide overflow-scroll="x" />
 		<ul
 			bg="none"
 			lsn
@@ -64,7 +64,7 @@
 			<p class="version" plot="r2em,b1em,fit-content,1em" style="text-align: right"><a target="_blank">Version</a></p>
 			<p class="copyright" plot="2em,b1em,fit-content,1em">&copy; 2022 Dr. Vortex. All Rights Reserved.</p>
 		</div>
-		<ul id="load" hide lsn content bg="trans" ofs="y" style="padding: 2.5%">
+		<ul id="load" hide lsn content bg="trans" overflow-scroll="y" style="padding: 2.5%">
 			<button class="back" plot="25px,b25px,125px,36px,a">
 				<svg><use href=images/icons.svg#arrow-left /></svg>
 				<span></span>
@@ -78,7 +78,7 @@
 				<span></span>
 			</button>
 		</ul>
-		<dialog id="save" ofs="y" plot="0,0,400px,300px">
+		<dialog id="save" overflow-scroll="y" plot="0,0,400px,300px">
 			<input placeholder="save name" class="name" plot="c,50px,250px,2em,a" />
 			<button class="back" plot="c-75px,b62.5px,150px,36.6px,a">
 				<svg><use href=images/icons.svg#arrow-left /></svg>
@@ -137,9 +137,9 @@
 					<span></span>
 				</button>
 			</div>
-			<div class="trade" ofs="y" bg="none" style="display: none"></div>
-			<div class="yrd" ofs="y" bg="none" style="display: grid"></div>
-			<div class="lab" ofs="y" bg="none" style="display: none"></div>
+			<div class="trade" overflow-scroll="y" bg="none" style="display: none"></div>
+			<div class="yrd" overflow-scroll="y" bg="none" style="display: grid"></div>
+			<div class="lab" overflow-scroll="y" bg="none" style="display: none"></div>
 		</div>
 		<div id="q" ingame bg="trans" content hide game-ui style="z-index: 5" tabindex="-1">
 			<div class="nav" bg="none" plot="5%,25px,90%,45px,a">
@@ -160,21 +160,21 @@
 					<span></span>
 				</button>
 			</div>
-			<div class="inv" ofs="y" bg="none" style="display: grid"></div>
+			<div class="inv" overflow-scroll="y" bg="none" style="display: grid"></div>
 			<div class="item-bar" plot="c,calc(3em + 45px),75%,1.5em,a" style="line-height: 0">
 				<p class="label" plot="c,0,200px,1em,a"></p>
 				<svg class="item-bar" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1">
 					<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
 				</svg>
 			</div>
-			<div class="map" ofs="y" bg="none" style="grid-template-columns: repeat(4, 1fr) 6fr; column-gap: 10px; display: none">
+			<div class="map" overflow-scroll="y" bg="none" style="grid-template-columns: repeat(4, 1fr) 6fr; column-gap: 10px; display: none">
 				<button class="map new" plot="r25px,b25px,125px,36px,a">
 					<svg><use href=images/icons.svg#plus /></svg>
 					<span></span>
 				</button>
 			</div>
-			<div class="screenshots" bg="none" ofs="y" style="display: none; grid-auto-rows: 144px; grid-template-columns: repeat(auto-fill, 256px); gap: 1em"></div>
-			<div class="warp" ofs="y" bg="none" style="display: none">
+			<div class="screenshots" bg="none" overflow-scroll="y" style="display: none; grid-auto-rows: 144px; grid-template-columns: repeat(auto-fill, 256px); gap: 1em"></div>
+			<div class="warp" overflow-scroll="y" bg="none" style="display: none">
 				<input label="Warp To: " class="warp x" maxlength="4" style="width: 50px" />
 				<input class="warp y" maxlength="4" style="width: 50px" />
 				<button style="margin: 1%" class="warp"></button>
@@ -203,11 +203,11 @@
 			</div>
 		</div>
 		<div id="settings" bg="trans" hide content>
-			<button plot="50px,50px,135px,35px,a" class="gen">
+			<button plot="50px,50px,135px,35px,a" class="general" setting-section="general">
 				<svg><use href=images/icons.svg#gear /></svg>
 				<span></span>
 			</button>
-			<button plot="50px,100px,135px,35px,a" class="key">
+			<button plot="50px,100px,135px,35px,a" class="keybinds" setting-section="keybinds">
 				<svg><use href=images/icons.svg#keyboard /></svg>
 				<span></span>
 			</button>
@@ -215,7 +215,7 @@
 				<svg><use href=images/icons.svg#puzzle-piece /></svg>
 				<span>Mods</span>
 			</button>
-			<button plot="50px,150px,135px,35px,a" class="debug">
+			<button plot="50px,150px,135px,35px,a" class="debug" setting-section="debug">
 				<svg><use href=images/icons.svg#bug /></svg>
 				<span></span>
 			</button>
@@ -223,24 +223,10 @@
 				<svg><use href=images/icons.svg#arrow-left /></svg>
 				<span></span>
 			</button>
-			<form class="gen" name="settings" nbs bg="none" ofs="y">
-				<input type="range" name="font_size" label="Font Size" display="${val}px" min="10" max="20" step="1" value="13" /><br /><br />
-				<input type="range" name="chat" label="Chat Timeout" display="${val} seconds" min="5" max="15" step="1" value="10" /><br /><br />
-				<input type="range" name="sensitivity" label="Camera Sensitivity" display="${(val*100).toFixed()}%" min="0.1" max="2" step="0.05" value="1" /><br /><br />
-				<input type="range" name="music" label="Music Volume" display="${(val*100).toFixed()}%" min="0" max="1" step="0.05" value="1" /><br /><br />
-				<input type="range" name="sfx" label="Sound Effect Volume" display="${(val*100).toFixed()}%" min="0" max="1" step="0.05" value="1" /><br /><br />
-				<input type="range" name="render_quality" label="Render Quality" display="${['Low','Medium','High'][val]}" min="0" max="2" step="1" value="1" /><br /><br />
-				<input type="range" name="gui_scale" label="GUI Scale" display="${['auto','small','normal','large'][val]}" min="0" max="3" step="1" value="0" /><br /><br />
-				<select name="locale" label="Language"></select
-				><br /><br />
-			</form>
-			<form class="key" name="keybind" nbs bg="none" ofs="y" hide></form>
-			<form class="debug" name="debug" nbs bg="none" ofs="y" hide>
-				<input type="checkbox" name="show_path_gizmos" label="Show Path Gizmos" value="true" /><br /><br />
-				<input type="checkbox" name="tooltips" label="Show Advanced Tooltips" value="true" /><br /><br />
-				<input type="checkbox" name="disable_saves" label="Disable Saves" value="true" /><br /><br />
-			</form>
-			<ul class="mod" nbs bg="none" ofs="y" hide lsn></ul>
+			<div class="general"  setting-section="general" no-box-shadow bg="none" overflow-scroll="y"></div>
+			<div class="keybinds" setting-section="keybinds" no-box-shadow bg="none" overflow-scroll="y" hide></div>
+			<div class="debug" setting-section="debug" no-box-shadow bg="none" overflow-scroll="y" hide></div>
+			<ul class="mod" no-box-shadow bg="none" overflow-scroll="y" hide lsn></ul>
 		</div>
 	</body>
 	<script type="importmap">
@@ -248,7 +234,11 @@
 			"imports": {
 				"@babylonjs/": "../node_modules/@babylonjs/",
 				"jquery": "../node_modules/jquery/dist/jquery.js",
-				"socket.io-client": "../node_modules/socket.io-client/dist/socket.io.min.js"
+				"socket.io-client": "../node_modules/socket.io-client/dist/socket.io.min.js",
+				"core/": "./core/",
+				"core": "./core/index.js",
+				"client/": "./client/",
+				"client": "./client/index.js"
 			}
 		}
 	</script>

@@ -165,12 +165,6 @@ progress::-webkit-progress-value {
 	background-color: var(--text-color);
 	border-radius: var(--bg-radius);
 }
-form label {
-	position: absolute;
-	right: 51%;
-	width: 50%;
-	text-align: right;
-}
 tool-tip {
 	display: none;
 	width: fit-content;
@@ -202,19 +196,19 @@ tool-tip {
 [hide] {
 	display: none;
 }
-[lsn] {
+[list-style-none] {
 	list-style: none !important;
 }
-[nbs] {
+[no-box-shadow] {
 	box-shadow: none !important;
 }
-[ofs=] {
+[overflow-scroll=] {
 	overflow: scroll !important;
 }
-[ofs='x'] {
+[overflow-scroll='x'] {
 	overflow-x: scroll !important;
 }
-[ofs='y'] {
+[overflow-scroll='y'] {
 	overflow-y: scroll !important;
 }
 [bw] {
@@ -273,10 +267,23 @@ li[bg] {
 	list-style: none;
 	margin: 1% 10% 1% 5%;
 }
-:where(#settings form, #save) :where(input, select),
-form.key button {
+#settings form {
+	align-items: center;
+}
+.setting-container {
+	width: 100%;
+	margin-top: 1em;
+}
+.setting-label {
+	text-align: right;
 	position: absolute;
-	left: 51%;
+	right: 50%;
+	margin: 0.5em;
+}
+.setting-input {
+	position: absolute;
+	left: 50%;
+	margin: 0.5em;
 }
 .selected {
 	border: 1px solid var(--text-color);

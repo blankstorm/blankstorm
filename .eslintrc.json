@@ -15,7 +15,8 @@
 			"no-unreachable": "warn",
 			"no-extra-semi": "warn",
 			"no-fallthrough": "off",
-			"no-empty": "warn"
+			"no-empty": "warn",
+			"no-case-declarations": "off"
 		},
 		"globals": {
 			"BABYLON": "readonly"

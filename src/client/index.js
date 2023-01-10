@@ -1,24 +1,5 @@
-import db from './db.js';
-import {
-	config,
-	version,
-	versions,
-	isJSON,
-	isHex,
-	commands,
-	runCommand,
-	random,
-	generate,
-	CelestialBody,
-	Items,
-	Tech,
-	Entity,
-	Ship,
-	PlayerData,
-	Planet,
-	Level,
-} from '../core/index.js';
-import * as core from '../core/index.js';
+import { version, versions, isJSON, isHex, config, commands, runCommand, random, generate, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Planet, Level } from 'core';
+import * as core from 'core';
 
 import { Vector2, Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '@babylonjs/core/Maths/math.color.js';
@@ -26,77 +7,260 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js'
 import { Engine } from '@babylonjs/core/Engines/engine.js';
 import { Node } from '@babylonjs/core/node.js';
 
-import 'jquery';
-import 'socket.io-client';
-/* global io $ */ //since eslint doesn't detect them
+import 'jquery'; /* global $ */
+import 'socket.io-client'; /* global io */
+// eslint doesn't detect them
 
-window.core = core; //For debugging
+import db from './db.js';
+import { SettingsStore } from './settings.js';
+import { LocaleStore } from './locales.js';
+import { web, upload, download, minimize, modal, alert, confirm, prompt } from './utils.js';
+
+export const locales = new LocaleStore();
+
+export const settings = new SettingsStore({
+	sections: [
+		{
+			id: 'general',
+			label: () => locales.text('menu.settings_section.general'),
+			parent: $('#settings div.general'),
+		},
+		{
+			id: 'keybinds',
+			label: () => locales.text('menu.settings_section.keybinds'),
+			parent: $('#settings div.keybinds'),
+		},
+		{
+			id: 'debug',
+			label: () => locales.text('menu.settings_section.debug'),
+			parent: $('#settings div.debug'),
+		},
+	],
+	items: [
+		{
+			id: 'font_size',
+			section: 'general',
+			type: 'range',
+			label: val => `Font Size (${val}px)`,
+			min: 10,
+			max: 20,
+			step: 1,
+			value: 13,
+		},
+		{
+			id: 'chat_timeout',
+			section: 'general',
+			type: 'range',
+			label: val => `Chat Timeout (${val} seconds)`,
+			min: 5,
+			max: 15,
+			step: 1,
+			value: 10,
+		},
+		{
+			id: 'sensitivity',
+			section: 'general',
+			type: 'range',
+			label: val => `Camera Sensitivity (${(val * 100).toFixed()}%)`,
+			min: 0.1,
+			max: 2,
+			step: 0.05,
+			value: 1,
+		},
+		{
+			id: 'music',
+			section: 'general',
+			type: 'range',
+			label: val => `Music Volume (${(val * 100).toFixed()}%)`,
+			min: 0,
+			max: 1,
+			step: 0.05,
+			value: 1,
+		},
+		{
+			id: 'sfx',
+			section: 'general',
+			type: 'range',
+			label: val => `Sound Effects Volume (${(val * 100).toFixed()}%)`,
+			min: 0,
+			max: 1,
+			step: 0.05,
+			value: 1,
+		},
+		{
+			id: 'render_quality',
+			section: 'general',
+			type: 'range',
+			label: val => `Render Quality (${['Low', 'Medium', 'High'][val]})`,
+			min: 0,
+			max: 2,
+			step: 1,
+			value: 1,
+		},
+		{
+			id: 'gui_scale',
+			section: 'general',
+			type: 'range',
+			label: val => `GUI Scale (${['auto', 'small', 'normal', 'large'][val]})`,
+			min: 0,
+			max: 3,
+			step: 1,
+			value: 2,
+		},
+		{
+			id: 'locale',
+			section: 'general',
+			type: 'select',
+			label: 'Language',
+		},
+		{
+			id: 'show_path_gizmos',
+			section: 'debug',
+			label: 'Show Path Gizmos',
+			value: false,
+		},
+		{
+			id: 'tooltips',
+			section: 'debug',
+			label: 'Show Advanced Tooltips',
+			value: false,
+		},
+		{
+			id: 'disable_saves',
+			section: 'debug',
+			label: 'Disable Saves',
+			value: false,
+		},
+		{
+			id: 'forward',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Forward',
+			value: { key: 'w' },
+			onTrigger: () => {
+				player.data().addVelocity(Vector3.Forward(), true);
+			},
+		},
+		{
+			id: 'left',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Strafe Left',
+			value: { key: 'a' },
+			onTrigger: () => {
+				player.data().addVelocity(Vector3.Left(), true);
+			},
+		},
+		{
+			id: 'right',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Strafe Right',
+			value: { key: 'd' },
+			onTrigger: () => {
+				player.data().addVelocity(Vector3.Right(), true);
+			},
+		},
+		{
+			id: 'back',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Backward',
+			value: { key: 's' },
+			onTrigger: () => {
+				player.data().addVelocity(Vector3.Backward(), true);
+			},
+		},
+		{
+			id: 'chat',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Chat',
+			value: { key: 't' },
+			onTrigger: e => {
+				e.preventDefault();
+				game.toggleChat();
+			},
+		},
+		{
+			id: 'command',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Command',
+			value: { key: '/' },
+			onTrigger: e => {
+				e.preventDefault();
+				game.toggleChat(true);
+			},
+		},
+		{
+			id: 'nav',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Inventory',
+			value: { key: 'Tab' },
+			onTrigger: () => {
+				game.changeUI('#q');
+			},
+		},
+		{
+			id: 'inv',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Shipyard/Lab',
+			value: { key: 'e' },
+			onTrigger: () => {
+				game.changeUI('#e');
+			},
+		},
+		{
+			id: 'screenshot',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Take Screenshot',
+			value: { key: 'F2' },
+			onTrigger: () => {
+				game.screenshots.push(game.canvas[0].toDataURL('image/png'));
+				ui.update();
+			},
+		},
+		{
+			id: 'save',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Save Game',
+			value: { key: 's', ctrl: true },
+			onTrigger: () => {
+				if (saves.current instanceof Save.Live) {
+					$('#esc .save').text('Saving...');
+					saves.get(saves.current.id).data = saves.current.serialize();
+					saves
+						.get(saves.current.id)
+						.saveToDB()
+						.then(() => game.chat('Game saved.'))
+						.catch(err => game.chat('Failed to save game: ' + err))
+						.finally(() => $('#esc .save').text('Save Game'));
+				} else {
+					throw 'Save Error: you must have a valid save selected.';
+				}
+			},
+		},
+	],
+});
+
+for (let section of settings.sections.values()) {
+	section.ui.attr({
+		bg: 'none',
+		'overflow-scroll': 'y',
+		'no-box-shadow': '',
+	});
+}
 
 try {
 	await db.init();
 } catch (err) {
 	console.error('Failed to open IndexedDB: ' + err);
 }
-
-/*eslint no-redeclare: "off"*/
-const web = url => `https://blankstorm.drvortex.dev/` + url,
-	upload = (type, multiple = false) =>
-		new Promise(res =>
-			$(`<input type=file ${type ? `accept='${type}'` : ''} ${multiple ? 'multiple' : ''}>`)
-				.change(e => res([...e.target.files]))[0]
-				.click()
-		),
-	download = (data, name) => $(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click(),
-	minimize = Intl.NumberFormat('en', { notation: 'compact' }).format;
-const modal = (input = 'Are you sure?', options = { Cancel: false, Ok: true }) =>
-		new Promise(res => {
-			$('#modal input').remove();
-			if (input instanceof Array) {
-				$('#modal').attr('plot', `0,0,350px,${6 + 2 * input.length}em`);
-				$('#modal p.info').attr('plot', `c,c-${2 * input.length}em,300px,1em,a`);
-				input.forEach(data => {
-					$('<input><br>').attr(data).appendTo('#modal');
-				});
-			} else {
-				$('#modal').attr('plot', '0,0,350px,8em');
-				$('#modal p.info').attr('plot', 'c,c-2em,300px,1em,a').text(input);
-			}
-
-			$('#modal')[0].showModal();
-			Object.entries(options).forEach(([displayText, result], i, a) => {
-				$(`<button></button>`)
-					.attr('plot', a.length == 2 ? `c${i ? `+` : `-`}50px,b2em,100px,2em,a` : `c,b2em,100px,2em,a`)
-					.attr('value', result)
-					.text(displayText)
-					.appendTo('#modal form');
-			});
-			$('#modal').on('close', () => {
-				res(
-					input instanceof Array
-						? { ...Object.fromEntries([...$('#modal input')].map(el => [el.name, el.value])), result: $('#modal')[0].returnValue }
-						: $('#modal')[0].returnValue
-				);
-				$('#modal button').remove();
-			});
-			ui.update();
-		}),
-	alert = data => modal(data, { Ok: true }),
-	confirm = async data => {
-		let res = await modal(data);
-		if (JSON.parse(res)) {
-			return true;
-		} else {
-			throw false;
-		}
-	},
-	prompt = async (text, value) => {
-		let data = await modal([{ name: 'data', placeholder: text, value }]);
-		if (JSON.parse(data.result)) {
-			return data.data;
-		} else {
-			throw false;
-		}
-	};
 
 Object.defineProperties(Object.prototype, {
 	getByString: {
@@ -122,30 +286,6 @@ Math.log = (num, base = Math.E) => Math._log(num) / Math._log(base);
 
 //JQuery plugins
 $.ajaxSetup({ timeout: 3000 });
-$.fn.formData = function (data) {
-	if (data) {
-		for (let i in data) {
-			this.find(`[name=${i}]`).each((a, e) => {
-				e.type == 'checkbox' || e.type == 'hidden' ? (e.checked = data[i]) : (e.value = data[i]);
-			});
-		}
-		return this;
-	} else {
-		let formData = Object.fromEntries(new FormData(this[0]));
-		for (let i in formData) {
-			if (+formData[i] == formData[i]) {
-				formData[i] = +formData[i];
-			}
-			if (formData[i] === 'true') {
-				formData[i] = true;
-			}
-			if (formData[i] === 'false') {
-				formData[i] = false;
-			}
-		}
-		return formData;
-	}
-};
 $.fn.cm = function (...content) {
 	content ||= [$('<p></p>')];
 	let menu = $('<div bg=light class=cm></div>');
@@ -155,23 +295,17 @@ $.fn.cm = function (...content) {
 	menu.css({ position: 'fixed', width: 'fit-content', height: 'fit-content', 'max-width': '15%', padding: '1em', 'z-index': 9 });
 	this.contextmenu(e => {
 		e.preventDefault();
-		menu.css({ left: settings.general.font_size + mouse.x, top: settings.general.font_size + mouse.y });
+		menu.css({ left: settings.get('font_size') + mouse.x, top: settings.get('font_size') + mouse.y });
 		this.parent().append(menu);
 		menu.css({
 			top:
-				settings.general.font_size + mouse.y + parseFloat(getComputedStyle(menu[0]).height) < innerHeight
-					? settings.general.font_size + mouse.y
-					: settings.general.font_size + mouse.y - parseFloat(getComputedStyle(menu[0]).height),
+				settings.get('font_size') + mouse.y + parseFloat(getComputedStyle(menu[0]).height) < innerHeight
+					? settings.get('font_size') + mouse.y
+					: settings.get('font_size') + mouse.y - parseFloat(getComputedStyle(menu[0]).height),
 		});
 	});
 	return this;
 };
-
-//add HTML for settings to work (the title and defaults for checkboxes)
-$('#settings form').prepend('<h2 style=text-align:center>Settings - <span></span></h2>');
-$('#settings form input[type=checkbox]').each((i, e) => {
-	$(`<input type=hidden name=${e.name} value=${!(e.value == 'true')}>`).insertBefore(e);
-});
 
 const cookie = {},
 	mouse = { x: 0, y: 0, pressed: false },
@@ -190,48 +324,6 @@ document.cookie.split('; ').forEach(e => {
 	cookie[e.split('=')[0]] = e.split('=')[1];
 });
 
-const settingsProxyHandler = obj => ({
-	get(ls, prop) {
-		let _settings = JSON.parse(ls.getItem('settings'));
-		if (typeof _settings.getByString(obj)[prop] === 'object' && _settings.getByString(obj)[prop] !== null) {
-			return new Proxy(ls, settingsProxyHandler());
-		} else {
-			return _settings.getByString(obj)[prop];
-		}
-	},
-	set(ls, prop, value) {
-		let _settings = JSON.parse(ls.getItem('settings'));
-		_settings.getByString(obj)[prop] = value;
-		ls.setItem('settings', JSON.stringify(_settings));
-	},
-});
-localStorage.settings ??= '{"general":{},"debug":{},"keybinds":{}}';
-const settings = new Proxy(localStorage, {
-	get(ls, prop) {
-		let _settings = JSON.parse(ls.getItem('settings'));
-		if (typeof _settings[prop] === 'object' && _settings[prop] !== null) {
-			return new Proxy(ls, settingsProxyHandler(prop));
-		} else {
-			return _settings[prop];
-		}
-	},
-	set(ls, prop, value) {
-		let _settings = JSON.parse(ls.getItem('settings'));
-		_settings[prop] = value;
-		ls.setItem('settings', JSON.stringify(_settings));
-		return _settings;
-	},
-});
-//load settings
-(() => {
-	let _general = Object.fromEntries(Object.entries($('#settings form.gen').formData()).map(([key, val]) => [key, settings.general[key] ?? val]));
-	let _debug = Object.fromEntries(Object.entries($('#settings form.debug').formData()).map(([key, val]) => [key, settings.debug[key] ?? val]));
-	$('#settings form.gen').formData((settings.general = _general));
-	$('#settings form.debug').formData((settings.debug = _debug));
-	config.settings = settings;
-})();
-let keybind = {};
-
 const servers = new Map(),
 	saves = new Map(),
 	sound = {
@@ -244,57 +336,6 @@ const servers = new Map(),
 		laser_hit: 'sfx/laser_hit.mp3',
 		ui: 'sfx/ui.mp3',
 	};
-
-const locales = Object.assign(new Map(), {
-	async fetch(url) {
-		let locale = isJSON(url) ? JSON.parse(url) : await $.ajax(url),
-			err = msg => {
-				throw new Error(`Failed to load locale from ${url}: ${msg}`);
-			};
-		locale.language ||= locale.lang;
-		if (typeof locale != 'object') err('Not an object');
-		if (!locale.language) err('Does not have a language');
-		if (!(locale.version || locale.versions)) err('Does not have a version');
-		if (!locale?.text) err('Missing data');
-		if (locale.version != version && ![...locale.versions].some(v => version.match(v))) err('Wrong game version');
-
-		this.set(locale.language, locale);
-		$('<option></option>').attr('value', locale.language).text(locale.name).appendTo('#settings form.gen select[name=locale]');
-		return locale;
-	},
-	load(id) {
-		if (!this.has(id)) throw new Error(`Locale ${id} does not exist`);
-		let lang = this.get(id);
-		this.currentLang = id;
-		$('#main button.sp').text(lang['menu.singleplayer'] ?? 'Singleplayer');
-		$('#main button.mp').text(lang['menu.multiplayer'] ?? 'Multiplayer');
-		$('#main button.options,#esc button.options').text(lang['menu.options'] ?? 'Options');
-		$('#main button.exit').text(lang['menu.exit'] ?? 'Exit');
-		$('#esc button.resume').text(lang['menu.resume'] ?? 'Resume Game');
-		$('#esc button.save').text(lang['menu.save'] ?? 'Save Game');
-		$('#esc button.quit').text(lang['menu.quit'] ?? 'Main Menu');
-		$('#load button.upload span').text(lang['menu.upload'] ?? 'Upload');
-		$(':where(#load,#save,#settings) button.back span').text(lang['menu.back'] ?? 'Back');
-		$(':where(#load,#q) button.new span').text(lang['menu.new'] ?? 'New');
-		$('#save button.new span').text(lang['menu.start'] ?? 'Start');
-		$('#connect button.back span').text(lang['menu.cancel'] ?? 'Cancel');
-		$('#settings :where(button.gen,form.gen h2) span').text(lang['menu.general'] ?? 'General');
-		$('#settings :where(button.key,form.key h2) span').text(lang['menu.keybinds'] ?? 'Keybinds');
-		$('#settings :where(button.debug,form.debug h2) span').text(lang['menu.debug'] ?? 'Debug');
-		$('#q div.warp button.warp').text(lang['menu.warp'] ?? 'Jump');
-		$('#q div.nav button.inv span').text(lang['menu.items'] ?? 'Inventory');
-		$('#q div.nav button.map span').text(lang['menu.map'] ?? 'Waypoints');
-		$('#q div.nav button.screenshots span').text(lang['menu.screenshots'] ?? 'Screenshots');
-		$('#q div.nav button.warp span').text(lang['menu.hyperspace'] ?? 'Hyperspace');
-		$('#e div.nav button.trade span').text(lang['menu.trade'] ?? 'Trade');
-		$('#e div.nav button.yrd span').text(lang['menu.shipyard'] ?? 'Shipyard');
-		$('#e div.nav button.lab span').text(lang['menu.lab'] ?? 'Laboratory');
-	},
-	text(key) {
-		return this.get(this.has(settings.general.locale) ? settings.general.locale : 'en')?.text?.[key] || 'Unknown';
-	},
-	currentLang: '',
-});
 
 const Waypoint = class extends Node {
 	#readonly = false;
@@ -729,30 +770,6 @@ const game = {
 			}, 1000 / rate);
 		}
 	},
-	createKeybind: (name, val, label, onTrigger) => {
-		keybind[name] = val;
-		$('#settings form.key').append(
-			$(`<label>${label}&nbsp;&nbsp;</label>`).attr('for', 'keybind.' + name),
-			$(`<button !sub name=${name}></button><br><br>`)
-				.text((keybind[name].ctrl ? 'Ctrl + ' : '') + (keybind[name].alt ? 'Alt + ' : '') + keybind[name].key)
-				.click(function (e) {
-					e.preventDefault();
-					$(this).focus();
-				})
-				.on('keydown', function (e) {
-					e.preventDefault();
-					let bind = (keybind[this.name] = {
-						key: e.key,
-						ctrl: e.ctrlKey,
-						alt: e.altKey,
-					});
-					$(this).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key);
-				})
-		);
-		$('canvas.game,[ingame-ui],#hud,#tablist').keydown(e => {
-			if (e.key == keybind[name].key && (!keybind[name].alt || e.altKey) && (!keybind[name].ctrl || e.ctrlKey)) onTrigger(e);
-		});
-	},
 	toggleChat: command => {
 		$('#chat,#chat_history').toggle();
 		if ($('#cli').toggle().is(':visible')) {
@@ -783,7 +800,7 @@ const game = {
 			$(`<li bg=none></li>`)
 				.text(m)
 				.appendTo('#chat')
-				.fadeOut(1000 * settings.general.chat);
+				.fadeOut(1000 * settings.get('chat'));
 			$(`<li bg=none></li>`).text(m).appendTo('#chat_history');
 		}
 	},
@@ -884,51 +901,6 @@ if (!game.mpEnabled) {
 	$('#main button.exit').attr('plot', 'c,460px,350px,50px');
 }
 
-game.createKeybind('forward', { key: 'w' }, 'Forward', () => {
-	player.data().addVelocity(Vector3.Forward(), true);
-});
-game.createKeybind('left', { key: 'a' }, 'Strafe Left', () => {
-	player.data().addVelocity(Vector3.Left(), true);
-});
-game.createKeybind('right', { key: 'd' }, 'Strafe Right', () => {
-	player.data().addVelocity(Vector3.Right(), true);
-});
-game.createKeybind('back', { key: 's' }, 'Backward', () => {
-	player.data().addVelocity(Vector3.Backward(), true);
-});
-game.createKeybind('chat', { key: 't' }, 'Toggle Chat', e => {
-	e.preventDefault();
-	game.toggleChat();
-});
-game.createKeybind('command', { key: '/' }, 'Toggle Command', e => {
-	e.preventDefault();
-	game.toggleChat(true);
-});
-game.createKeybind('nav', { key: 'Tab' }, 'Toggle Inventory', () => {
-	game.changeUI('#q');
-});
-game.createKeybind('inv', { key: 'e' }, 'Toggle Shipyard/Lab', () => {
-	game.changeUI('#e');
-});
-game.createKeybind('screenshot', { key: 'F2' }, 'Take Screenshot', () => {
-	game.screenshots.push(game.canvas[0].toDataURL('image/png'));
-	ui.update();
-});
-game.createKeybind('save', { key: 's', ctrl: true }, 'Save Game', () => {
-	if (saves.current instanceof Save.Live) {
-		$('#esc .save').text('Saving...');
-		saves.get(saves.current.id).data = saves.current.serialize();
-		saves
-			.get(saves.current.id)
-			.saveToDB()
-			.then(() => game.chat('Game saved.'))
-			.catch(err => game.chat('Failed to save game: ' + err))
-			.finally(() => $('#esc .save').text('Save Game'));
-	} else {
-		throw 'Save Error: you must have a valid save selected.';
-	}
-});
-
 if (cookie.token && navigator.onLine) {
 	player.authData = player.getAuthData();
 } else if (localStorage.auth) {
@@ -942,24 +914,6 @@ if (cookie.token && navigator.onLine) {
 	game.mpEnabled = false;
 	game.chat("You're not logged in, and will not be able to play multiplayer.");
 }
-
-//load saved settings and keybinds
-$('form.gen').formData((settings.general ??= $('form.gen').formData()));
-$('form.debug').formData((settings.debug ??= $('form.debug').formData()));
-config.settings = settings;
-
-for (let i in settings.keybinds) {
-	let bind = settings.keybinds[i];
-	if (typeof bind == 'string') {
-		bind = {
-			key: settings.keybinds[i],
-			ctrl: false,
-			alt: false,
-		};
-	}
-	keybind[i] = bind ?? keybind[i];
-}
-$('form.key').formData(keybind);
 
 const ui = {
 	item: {},
@@ -1057,7 +1011,7 @@ const ui = {
 									? `<strong>Max Level</strong>`
 									: `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`
 							}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
-								settings.debug.tooltips ? '<br>type: ' + id : ''
+								settings.get('tooltips') ? '<br>type: ' + id : ''
 							}`
 						);
 					ui.tech[id].find('.locked')[Tech.isLocked(id, player.data()) ? 'show' : 'hide']();
@@ -1118,14 +1072,6 @@ const ui = {
 						})
 					);
 			});
-			$('input[label][display]').each((i, e) => {
-				let val = e.value;
-				$(`label[for=${$(e).attr('ui-label')}]`).html(`${$(e).attr('label')} (${eval(`\`${$(e).attr('display')}\``)}) `);
-			});
-			$('#settings form.key button').each((i, e) => {
-				let bind = keybind[e.name];
-				$(e).text((bind.ctrl ? 'Ctrl + ' : '') + (bind.alt ? 'Alt + ' : '') + bind.key);
-			});
 			servers.forEach(server => {
 				server.gui.name.text(server.name);
 			});
@@ -1134,7 +1080,7 @@ const ui = {
 				save.gui.version.text(versions.get(save.data.version)?.text ?? save.data.version);
 				save.gui.date.text(new Date(save.data.date).toLocaleString());
 			});
-			$(':root').css('--font-size', settings.general.font_size + 'px');
+			$(':root').css('--font-size', settings.get('font_size') + 'px');
 			if (game.mp) {
 				$('#esc .quit').text('Disconnect');
 				$('#esc .options').attr('plot', '12.5px,125px,225px,50px,a');
@@ -1150,7 +1096,7 @@ const ui = {
 
 			$('[plot]').each((i, e) => {
 				let scale =
-					settings.general.gui_scale == 0
+					settings.get('gui_scale') == 0
 						? innerHeight <= 475
 							? 0.5
 							: innerHeight <= 650
@@ -1158,7 +1104,7 @@ const ui = {
 							: innerHeight <= 800
 							? 1
 							: 1.25
-						: Object.assign([1, 0.75, 1, 1.25][settings.general.gui_scale], { is_from_array: true });
+						: Object.assign([1, 0.75, 1, 1.25][settings.get('gui_scale')], { is_from_array: true });
 
 				let plot = $(e)
 					.attr('plot')
@@ -1234,7 +1180,7 @@ db.tx('servers').then(tx => {
 		});
 });
 
-commands.playsound = (level, name, volume = settings.general.sfx) => {
+commands.playsound = (level, name, volume = settings.get('sfx')) => {
 	if (sound[name]) {
 		playsound(name, volume);
 	} else {
@@ -1309,7 +1255,7 @@ $('#save .new').click(async () => {
 	saves.current = live;
 	live.play(live.playerData.get(player.id));
 	let save = new Save(live.serialize());
-	if (!settings.debug.disable_saves) save.saveToDB();
+	if (!settings.get('disable_saves')) save.saveToDB();
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();
@@ -1383,10 +1329,11 @@ $('button.map.new').click(() => {
 	Waypoint.dialog();
 });
 $('#settings>button:not(.back)').click(e => {
-	let target = $(e.target);
-	$('#settings form')
+	const target = $(e.target),
+		button = target.is('button') ? target : target.parent('button');
+	$('#settings>div')
 		.hide()
-		.filter('.' + (target.is('button') ? target : target.parent('button')).attr('class'))
+		.filter(`[setting-section=${button.attr('setting-section')}]`)
 		.show();
 });
 $('#settings button.mod').click(() => {
@@ -1421,20 +1368,15 @@ $('#q div.warp button.warp').click(() => {
 	});
 	$('#q').toggle();
 });
-$('[label]').each((i, e) => {
+/*$('[label]').each((i, e) => {
 	let val = e.value;
 	$(e).attr('ui-label', random.hex(32));
 	$(`<label>${$(e).attr('label')} ${$(e).attr('display') && e.localName == 'input' ? eval(`\`(${$(e).attr('display')})\``) : ''} </label>`)
 		.attr('for', $(e).attr('ui-label'))
 		.insertBefore($(e));
-});
-$('input[label][display]').mousemove(() => ui.update());
-$('#settings,#settings ').on('click change', () => {
-	settings.general = $('#settings form.gen').formData();
-	settings.debug = $('#settings form.debug').formData();
-});
-$('#settings form.gen input').change(() => ui.update());
-$('#settings form.gen select[name=locale]').change(e => {
+});*/
+$('#settings div.general input').change(() => ui.update());
+$('#settings div.general select[name=locale]').change(e => {
 	let lang = e.target.value;
 	if (locales.has(lang)) {
 		locales.load(lang);
@@ -1468,8 +1410,8 @@ $('html')
 	.mousemove(e => {
 		$('tool-tip').each((i, tooltip) => {
 			let computedStyle = getComputedStyle(tooltip);
-			let left = settings.general.font_size + e.clientX,
-				top = settings.general.font_size + e.clientY;
+			let left = settings.get('font_size') + e.clientX,
+				top = settings.get('font_size') + e.clientY;
 			$(tooltip).css({
 				left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
 				top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height)),
@@ -1503,7 +1445,7 @@ $('#cli').keydown(e => {
 			break;
 	}
 });
-game.canvas.click(e => {
+game.canvas.on('click', e => {
 	if (!game.isPaused) {
 		player.data().cam.attachControl(game.canvas, true);
 		player.data().cam.inputs.attached.pointers.buttons = [1];
@@ -1514,12 +1456,12 @@ game.canvas.click(e => {
 	}
 	ui.update();
 });
-game.canvas.contextmenu(e => {
+game.canvas.on('contextmenu', e => {
 	if (saves.current instanceof Save.Live) {
 		saves.current.handleCanvasRightClick(e, player.data());
 	}
 });
-game.canvas.keydown(e => {
+game.canvas.on('keydown', e => {
 	switch (e.key) {
 		case 'F3':
 			$('#debug').toggle();
@@ -1537,7 +1479,12 @@ game.canvas.keydown(e => {
 			break;
 	}
 });
-game.canvas.keyup(e => {
+$('canvas.game,[ingame-ui],#hud,#tablist').on('keydown', e => {
+	for (let bind of [...settings.items.values()].filter(item => item.type == 'keybind')) {
+		if (e.key == bind.value.key && (!bind.value.alt || e.altKey) && (!bind.value.ctrl || e.ctrlKey)) bind.onTrigger(e);
+	}
+});
+game.canvas.on('keyup', e => {
 	switch (e.key) {
 		case 'Tab':
 			e.preventDefault();
@@ -1546,27 +1493,27 @@ game.canvas.keyup(e => {
 	}
 });
 
-$('#q').keydown(e => {
-	if (e.key == keybind.nav || e.key == 'Escape') {
+$('#q').on('keydown', e => {
+	if (e.key == settings.get('nav') || e.key == 'Escape') {
 		game.changeUI('#q');
 	}
 });
 $('#e')
-	.keydown(e => {
-		if (e.key == keybind.inv || e.key == 'Escape') {
+	.on('keydown', e => {
+		if (e.key == settings.get('inv') || e.key == 'Escape') {
 			game.changeUI('#e');
 		}
 	})
 	.click(() => ui.update());
-$('canvas.game,#esc,#hud').keydown(e => {
+$('canvas.game,#esc,#hud').on('keydown', e => {
 	if (e.key == 'Escape') {
 		game.changeUI('#esc', true);
 		game.isPaused = !game.isPaused;
 	}
 	ui.update();
 });
-$('button').click(() => {
-	playsound(sound.ui, settings.general.sfx);
+$('button').on('click', () => {
+	playsound(sound.ui, settings.get('sfx'));
 });
 setInterval(() => {
 	if (saves.current instanceof Save.Live && !game.isPaused) {
@@ -1579,7 +1526,7 @@ const loop = () => {
 			try {
 				if (player.data().cam.alpha > Math.PI) player.data().cam.alpha -= 2 * Math.PI;
 				if (player.data().cam.alpha < -Math.PI) player.data().cam.alpha += 2 * Math.PI;
-				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.general.sensitivity;
+				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.get('sensitivity');
 				player.updateFleet();
 				saves.current.meshes.forEach(mesh => {
 					if (mesh instanceof CelestialBody) mesh.showBoundingBox = game.hitboxes;
@@ -1606,8 +1553,8 @@ const loop = () => {
 					waypoint.marker
 						.css({
 							position: 'fixed',
-							left: Math.min(Math.max(pos.x, 0), innerWidth - settings.general.font_size) + 'px',
-							top: Math.min(Math.max(pos.y, 0), innerHeight - settings.general.font_size) + 'px',
+							left: Math.min(Math.max(pos.x, 0), innerWidth - settings.get('font_size')) + 'px',
+							top: Math.min(Math.max(pos.y, 0), innerHeight - settings.get('font_size')) + 'px',
 							fill: waypoint.color.toHexString(),
 						})
 						.filter('p')
@@ -1650,6 +1597,9 @@ const loop = () => {
 		}
 	}
 };
+if (config.debug_mode) {
+	Object.assign(window, { core, settings, locales, $, io });
+}
 ui.update();
 $('#loading_cover').fadeOut(1000);
 console.log('Game loaded successful');
