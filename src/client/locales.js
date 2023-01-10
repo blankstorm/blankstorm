@@ -4,15 +4,11 @@ import { settings } from './index.js';
 
 import 'jquery'; /* global $ */
 
-
 export class LocaleStore {
-
 	#store = new Map();
 	#currentLang = 'en';
 
-	constructor(){
-
-	}
+	constructor() {}
 
 	async fetch(url) {
 		let locale = isJSON(url) ? JSON.parse(url) : await $.ajax(url),
@@ -64,7 +60,7 @@ export class LocaleStore {
 		return this.#store.get(this.#store.has(settings.get('locale')) ? settings.get('locale') : 'en')?.text?.[key] || 'Unknown';
 	}
 
-	get languages(){
+	get languages() {
 		return [...this.#store.keys()];
 	}
 

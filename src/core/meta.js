@@ -9,7 +9,7 @@ export const config = {
 		minZ: 0.1,
 		radius: 10,
 	},
-	debug_mode: true
+	debug_mode: true,
 };
 
 export const version = 'alpha_1.4.0';
