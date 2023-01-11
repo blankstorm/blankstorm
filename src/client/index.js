@@ -1,20 +1,43 @@
-import { version, versions, isJSON, isHex, config, commands, runCommand, random, generate, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Planet, Level } from 'core';
+import { version, versions, isJSON, isHex, config, commands, runCommand, random, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Level } from 'core';
 import * as core from 'core';
 
-import { Vector2, Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '@babylonjs/core/Maths/math.color.js';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Engine } from '@babylonjs/core/Engines/engine.js';
-import { Node } from '@babylonjs/core/node.js';
 
 import 'jquery'; /* global $ */
+$.ajaxSetup({ timeout: 3000 });
+
 import 'socket.io-client'; /* global io */
-// eslint doesn't detect them
+
+Object.defineProperties(Object.prototype, {
+	getByString: {
+		value: function (path, seperator) {
+			return path
+				.split(seperator || /[.[\]'"]/)
+				.filter(p => p)
+				.reduce((o, p) => (o ? o[p] : null), this);
+		},
+	},
+	setByString: {
+		value: function (path, value, seperator) {
+			return path
+				.split(seperator || /[.[\]'"]/)
+				.filter(p => p)
+				.reduce((o, p, i) => (o[p] = path.split(seperator || /[.[\]'"]/).filter(p => p).length === ++i ? value : o[p] || {}), this);
+		},
+	},
+});
 
 import db from './db.js';
 import { SettingsStore } from './settings.js';
-import { LocaleStore } from './locales.js';
-import { web, upload, download, minimize, modal, alert, confirm, prompt } from './utils.js';
+import LocaleStore from './locales.js';
+import { web, upload, minimize, alert, confirm, prompt } from './utils.js';
+import Waypoint from './waypoint.js';
+import Save from './save.js';
+import Server from './server.js';
+
+import './contextmenu.js';
+import { PlayableStore } from './playable.js';
 
 export const locales = new LocaleStore();
 
@@ -220,7 +243,7 @@ export const settings = new SettingsStore({
 			label: 'Take Screenshot',
 			value: { key: 'F2' },
 			onTrigger: () => {
-				game.screenshots.push(game.canvas[0].toDataURL('image/png'));
+				game.screenshots.push(canvas[0].toDataURL('image/png'));
 				ui.update();
 			},
 		},
@@ -237,8 +260,8 @@ export const settings = new SettingsStore({
 					saves
 						.get(saves.current.id)
 						.saveToDB()
-						.then(() => game.chat('Game saved.'))
-						.catch(err => game.chat('Failed to save game: ' + err))
+						.then(() => chat('Game saved.'))
+						.catch(err => chat('Failed to save game: ' + err))
 						.finally(() => $('#esc .save').text('Save Game'));
 				} else {
 					throw 'Save Error: you must have a valid save selected.';
@@ -262,53 +285,10 @@ try {
 	console.error('Failed to open IndexedDB: ' + err);
 }
 
-Object.defineProperties(Object.prototype, {
-	getByString: {
-		value: function (path, seperator) {
-			return path
-				.split(seperator || /[.[\]'"]/)
-				.filter(p => p)
-				.reduce((o, p) => (o ? o[p] : null), this);
-		},
-	},
-	setByString: {
-		value: function (path, value, seperator) {
-			return path
-				.split(seperator || /[.[\]'"]/)
-				.filter(p => p)
-				.reduce((o, p, i) => (o[p] = path.split(seperator || /[.[\]'"]/).filter(p => p).length === ++i ? value : o[p] || {}), this);
-		},
-	},
-});
+export const saves = new PlayableStore(),
+	servers = new PlayableStore();
 
-Math._log = Math.log;
-Math.log = (num, base = Math.E) => Math._log(num) / Math._log(base);
-
-//JQuery plugins
-$.ajaxSetup({ timeout: 3000 });
-$.fn.cm = function (...content) {
-	content ||= [$('<p></p>')];
-	let menu = $('<div bg=light class=cm></div>');
-	for (let c of content) {
-		menu.append(c, $('<br>'));
-	}
-	menu.css({ position: 'fixed', width: 'fit-content', height: 'fit-content', 'max-width': '15%', padding: '1em', 'z-index': 9 });
-	this.contextmenu(e => {
-		e.preventDefault();
-		menu.css({ left: settings.get('font_size') + mouse.x, top: settings.get('font_size') + mouse.y });
-		this.parent().append(menu);
-		menu.css({
-			top:
-				settings.get('font_size') + mouse.y + parseFloat(getComputedStyle(menu[0]).height) < innerHeight
-					? settings.get('font_size') + mouse.y
-					: settings.get('font_size') + mouse.y - parseFloat(getComputedStyle(menu[0]).height),
-		});
-	});
-	return this;
-};
-
-const cookie = {},
-	mouse = { x: 0, y: 0, pressed: false },
+export const cookie = {},
 	playsound = (url, vol = 1) => {
 		if (vol > 0) {
 			let a = new Audio(url);
@@ -316,420 +296,23 @@ const cookie = {},
 			a.play();
 		}
 	};
-onmousemove = e => {
-	mouse.x = e.clientX;
-	mouse.y = e.clientY;
-};
 document.cookie.split('; ').forEach(e => {
 	cookie[e.split('=')[0]] = e.split('=')[1];
 });
 
-const servers = new Map(),
-	saves = new Map(),
-	sound = {
-		rift: 'music/rift.mp3',
-		planets: 'music/planets.mp3',
-		destroy_ship: 'sfx/destroy_ship.mp3',
-		warp_start: 'sfx/warp_start.mp3',
-		//warp_end: 'sfx/warp_end.mp3',
-		laser_fire: 'sfx/laser_fire.mp3',
-		laser_hit: 'sfx/laser_hit.mp3',
-		ui: 'sfx/ui.mp3',
-	};
-
-const Waypoint = class extends Node {
-	#readonly = false;
-	static dialog(wp) {
-		modal(
-			[
-				{ name: 'name', placeholder: 'Name', value: wp instanceof Waypoint ? wp.name : null },
-				{ name: 'color', type: 'color', value: wp instanceof Waypoint ? wp.color.toHexString() : null },
-				{ name: 'x', placeholder: 'X', value: wp instanceof Waypoint ? wp.position.x : null },
-				{ name: 'y', placeholder: 'Y', value: wp instanceof Waypoint ? wp.position.y : null },
-				{ name: 'z', placeholder: 'Z', value: wp instanceof Waypoint ? wp.position.z : null },
-			],
-			{ Cancel: false, Save: true }
-		).then(data => {
-			if (data.result) {
-				if (!isHex(data.color.slice(1))) {
-					alert(locales.text`error.waypoint.color`);
-				} else if (Math.abs(data.x) > 99999 || Math.abs(data.y) > 99999 || Math.abs(data.z) > 99999) {
-					alert(locales.text`error.waypoint.range`);
-				} else if (wp instanceof Waypoint) {
-					Object.assign(wp, {
-						name: data.name,
-						color: Color3.FromHexString(data.color),
-						position: new Vector3(data.x, data.y, data.z),
-					});
-					ui.update();
-				} else {
-					new Waypoint(
-						{
-							name: data.name,
-							color: Color3.FromHexString(data.color),
-							position: new Vector3(data.x, data.y, data.z),
-						},
-						saves.current
-					);
-					ui.update();
-				}
-			}
-		});
-	}
-	get readonly() {
-		return this.#readonly;
-	}
-	gui(row) {
-		let ui = $(`
-				<span style=text-align:center;grid-row:${row};grid-column:2;><svg><use href=images/icons.svg#pencil /></svg></span>
-				<span style=text-align:center;grid-row:${row};grid-column:3;><svg><use href=images/icons.svg#trash /></svg></span>
-				<span style=text-align:center;grid-row:${row};grid-column:4;><svg><use href=images/icons.svg#${this.icon} /></svg></span>
-				<span style=text-align:left;grid-row:${row};grid-column:5;color:${this.color.toHexString()}>${this.name}</span>
-			`).attr('bg', 'none');
-		ui
-			.filter('span')
-			.eq(0)
-			.attr('clickable', '')
-			.click(() => {
-				Waypoint.dialog(this);
-			}),
-			ui
-				.filter('span')
-				.eq(1)
-				.attr('clickable', '')
-				.click(() => {
-					confirm().then(() => {
-						this.marker.remove();
-						this.getScene().waypoints.splice(this.getScene().waypoints.indexOf(this), 1);
-					});
-				});
-		return this.readonly ? ui.filter('span:gt(1)') : ui;
-	}
-	get screenPos() {
-		return Vector3.Project(this.position, Matrix.Identity(), saves.current.getTransformMatrix(), { x: 0, y: 0, width: innerWidth, height: innerHeight });
-	}
-	constructor(
-		{
-			id = random.hex(32),
-			name = 'Waypoint',
-			position = Vector3.Zero(),
-			color = new Color3(Math.random(), Math.random(), Math.random()),
-			icon = 'location-dot',
-			readonly = false,
-		},
-		scene = saves.current
-	) {
-		super(id, scene);
-		scene.waypoints.push(this);
-		this.#readonly = readonly;
-		Object.assign(this, { name, position, color, icon });
-		this.marker = $(`<svg ingame><use href=images/icons.svg#${icon} /></svg><p ingame style=justify-self:center></p>`).addClass('marker').hide().appendTo('body');
-		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
-	}
+const sound = {
+	rift: 'music/rift.mp3',
+	planets: 'music/planets.mp3',
+	destroy_ship: 'sfx/destroy_ship.mp3',
+	warp_start: 'sfx/warp_start.mp3',
+	//warp_end: 'sfx/warp_end.mp3',
+	laser_fire: 'sfx/laser_fire.mp3',
+	laser_hit: 'sfx/laser_hit.mp3',
+	ui: 'sfx/ui.mp3',
 };
 
 //Class definitions
-const Save = class {
-	static GUI = function (save) {
-		const gui = $(`<li ofn bg bw style=align-items:center;height:3em;></li>`);
-		gui.delete = $(`<p style=position:absolute;left:10%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(gui);
-		gui.download = $(`<p style=position:absolute;left:15%><svg><use href=images/icons.svg#download /></svg></p>`).appendTo(gui);
-		gui.play = $(`<p style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(gui);
-		gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=images/icons.svg#pencil /></svg></p>`).appendTo(gui);
-		gui.name = $(`<p style=position:absolute;left:30%>${save.data.name}</p>`).appendTo(gui);
-		gui.version = $(`<p style=position:absolute;left:55%>${versions.get(save.data.version) ? versions.get(save.data.version).text : save.data.version}</p>`).appendTo(gui);
-		gui.date = $(`<p style=position:absolute;left:65%>${new Date(save.data.date).toLocaleString()}</p>`).appendTo(gui);
-		$('<p> </p>').appendTo(gui);
 
-		let loadAndPlay = async () => {
-			$('#loading_cover').show();
-			let live = save.load();
-			await live.ready();
-			saves.current = live;
-			live.play(live.playerData.get(player.id));
-			$('#loading_cover').hide();
-		};
-
-		gui.attr('clickable', '')
-			.click(() => {
-				$('.selected').removeClass('selected');
-				saves.selected = save.data.id;
-				gui.addClass('selected');
-			})
-			.dblclick(loadAndPlay);
-		if (!game.mp) gui.prependTo('#load');
-		gui.delete.click(e => {
-			let remove = () => {
-				gui.remove();
-				db.tx('saves', 'readwrite').then(tx => {
-					tx.objectStore('saves').delete(save.data.id);
-					saves.delete(save.data.id);
-				});
-			};
-			e.shiftKey ? remove() : confirm().then(remove);
-		});
-		gui.download.click(() => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
-		gui.play.click(loadAndPlay);
-		gui.edit.click(() => {
-			modal([{ name: 'name', placeholder: 'New name', value: save.data.name }], { Cancel: false, Save: true }).then(result => {
-				if (result.result) {
-					save.data.name = result.name;
-					ui.update();
-				}
-			});
-		});
-		return gui;
-	};
-	static Live = class extends Level {
-		waypoints = [];
-		constructor(name, doNotGenerate) {
-			super(name, game.engine, doNotGenerate);
-		}
-		play(player) {
-			if (this.version == version) {
-				$('#load').hide();
-				game.canvas.show().focus();
-				$('#hud').show();
-				game.engine.resize();
-				saves.selected = this.id;
-				game.isPaused = false;
-				player ??= [...this.playerData][0];
-				if (player instanceof PlayerData) {
-					this.activeCamera = player.cam;
-					player.cam.attachControl(game.canvas, true);
-					player.cam.inputs.attached.pointers.buttons = [1];
-					player.cam.target = player.position;
-				}
-			} else {
-				alert('That save is in compatible with the current game version');
-			}
-		}
-		static Load(saveData) {
-			let save = new Save.Live(saveData.name, true);
-			Level.Load(saveData, game.engine, save);
-			return save;
-		}
-		static async CreateDefault(name, playerID, playerName) {
-			const save = new Save.Live(name);
-
-			await save.ready();
-
-			for (let body of save.bodies.values()) {
-				body.waypoint = new Waypoint(
-					{
-						name: body.name,
-						position: body.position,
-						color: Color3.FromHexString('#88ddff'),
-						icon: Planet.biomes.has(body.biome) && body instanceof Planet ? Planet.biomes.get(body.biome).icon : 'planet-ringed',
-						readonly: true,
-					},
-					save
-				);
-			}
-
-			const playerData = new PlayerData({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
-			playerData._customHardpointProjectileMaterials = [
-				{
-					applies_to: ['laser'],
-					material: Object.assign(new StandardMaterial('player-laser-projectile-material', save), {
-						emissiveColor: Color3.Teal(),
-						albedoColor: Color3.Teal(),
-					}),
-				},
-			];
-			save.playerData.set(playerID, playerData);
-
-			new Ship('mosquito', playerData, save);
-			new Ship('cillus', playerData, save);
-			playerData.addItems(generate.items(5000));
-
-			save.addCamera(playerData.cam);
-			save.activeCamera = playerData.cam;
-
-			return save;
-		}
-	};
-	constructor(data) {
-		try {
-			this.data = data;
-			this.gui = new Save.GUI(this);
-			saves.set(this.data.id, this);
-		} catch (err) {
-			console.error(err.stack);
-		}
-	}
-	load() {
-		let save = Save.Live.Load(this.data);
-		for (let waypoint of save.waypoints) {
-			new Waypoint({
-				id: waypoint.id,
-				name: waypoint.name,
-				color: Color3.FromArray(waypoint.color),
-				position: Vector3.FromArray(waypoint.position),
-			});
-		}
-		return save;
-	}
-	async saveToDB() {
-		let tx = await db.tx('saves', 'readwrite');
-		tx.objectStore('saves').put(this.data, this.data.id);
-		return tx.result;
-	}
-};
-const Server = class {
-	static async dialog(server) {
-		const result = await modal(
-			[
-				{ name: 'name', placeholder: 'Display name', value: server instanceof Server ? server.name : null },
-				{ name: 'url', placeholder: 'Server URL or IP Address', value: server instanceof Server ? server.url : null },
-			],
-			{ Cancel: false, Save: true }
-		);
-		if (result.result) {
-			let tx = await db.tx('servers', 'readwrite');
-			let serverStore = tx.objectStore('servers');
-			if (server instanceof Server) {
-				serverStore.put(result.name, result.url);
-				server.name = result.name;
-				if (server.url != result.url) {
-					serverStore.delete(server.url);
-					server.url = result.url;
-				}
-			} else {
-				if (servers.has(result.url)) {
-					alert('A server with that URL already exists.');
-				} else {
-					new Server(result.url, result.name);
-				}
-			}
-			ui.update();
-		}
-	}
-	constructor(url, name) {
-		Object.assign(this, {
-			url,
-			name,
-			kickMessage: null,
-			socket: null,
-			gui: $(`<li ofn bg style=align-items:center;height:3em></li>`),
-		});
-		db.tx('servers', 'readwrite').then(tx => tx.objectStore('servers').put(name, url));
-		this.socket = io(this.url, { reconnection: false, autoConnect: false, auth: { token: cookie.token, session: cookie.session } });
-		this.socket.on('connect', () => {
-			$('#connect').hide();
-			game.canvas.show().focus();
-			$('#mp_message,#hud').show();
-			game.engine.resize();
-			player.data().cam.attachControl(game.canvas, true);
-			player.data().cam.inputs.attached.pointers.buttons = [1];
-			$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
-		});
-		this.socket.on('connect_error', err => {
-			$('#connect p').text((err.message.startsWith('Connection refused') ? '' : 'Connection Error: ') + err.message);
-			$('#connect button').text('Back');
-		});
-		this.socket.on('connect_failed', err => {
-			$('#connect p').text('Connection failed: ' + err.message);
-			$('#connect button').text('Back');
-		});
-		this.socket.on('packet', packet => {
-			$('#connect p').text('[Server] ' + (packet instanceof Array ? `Array (${packet.length})<br>` + packet.join('<br>') : packet));
-		});
-		this.socket.on('playerlist', list => {
-			$('#tablist p.players').html(list.join('<br>'));
-		});
-		this.socket.on('kick', message => {
-			this.kickMessage = 'Kicked from server: ' + message;
-		});
-		this.socket.on('chat', message => {
-			game.chat(message);
-		});
-		this.socket.on('disconnect', reason => {
-			let message =
-				this.kickMessage ??
-				(reason == 'io server disconnect'
-					? 'Disconnected by server'
-					: reason == 'io client disconnect'
-					? 'Client disconnected'
-					: reason == 'ping timeout' || reason == 'transport error'
-					? 'Connection timed out'
-					: reason == 'transport close'
-					? 'Lost Connection'
-					: reason);
-			$('#connect p').text(message);
-			this.kickMessage = null;
-			$('#connect button').text('Back');
-			$('[ingame]').hide();
-			$(reason == 'io client disconnect' ? '#load' : '#connect').show();
-		});
-		this.gui.delete = $(`<p style=position:absolute;left:15%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(this.gui);
-		this.gui.play = $(`<p style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(this.gui);
-		this.gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=images/icons.svg#pencil /></svg></p>`).appendTo(this.gui);
-		this.gui.name = $(`<p style=position:absolute;left:30%>${this.name}</p>`).appendTo(this.gui);
-		this.gui.info = $(`<p style=position:absolute;left:75%><tool-tip></tool-tip></p>`).appendTo(this.gui);
-		$('<p> </p>').appendTo(this.gui);
-		this.gui
-			.attr('clickable', true)
-			.click(() => {
-				$('.selected').removeClass('selected');
-				this.gui.addClass('selected');
-				servers.sel = this.url;
-			})
-			.dblclick(() => this.connect())
-			.prependTo('#load');
-		this.gui.delete.click(() => {
-			confirm().then(async () => {
-				this.gui.remove();
-				servers.delete(this.url);
-				let tx = await db.tx('servers', 'readwrite');
-				tx.objectStore('servers').delete(this.url);
-			});
-		});
-		this.gui.play.click(() => this.connect());
-		this.gui.edit.click(() => Server.dialog(this));
-		servers.set(this.url, this);
-	}
-	connect() {
-		if (this?.socket?.connected) {
-			throw new ReferenceError(`Can't connect to server: already connected`);
-		}
-		$('#load').hide();
-		$('#connect').show();
-		$('#connect p').text('Connecting...');
-		$('#connect button').text('Back');
-		this.socket.connect();
-	}
-	disconnect() {
-		if (this.socket.connected) {
-			this.socket.disconnect(true);
-		}
-		servers.sel = null;
-		servers.forEach(server => server.ping());
-	}
-	ping() {
-		this.gui.info.html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').css('animation', '2s linear infinite rotate');
-		let beforeTime = performance.now();
-		let url = /.+:(\d){1,5}/.test(this.url) ? this.url : this.url + ':1123';
-		$.get(`${/http(s?):\/\//.test(url) ? url : 'https://' + url}/ping`)
-			.done(data => {
-				if (isJSON(data)) {
-					this.pingData = JSON.parse(data);
-					this.gui.info
-						.text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${this.pingData.currentPlayers}/${this.pingData.maxPlayers}`)
-						.find('tool-tip')
-						.html(`${this.url}<br><br>${this.pingData.version.text}<br><br>${this.pingData.message}`);
-				} else {
-					this.gui.info.html('<svg><use href=images/icons.svg#xmark /></svg>').find('tool-tip').html('Invalid response');
-				}
-			})
-			.fail(() => {
-				this.gui.info.html('<svg><use href=images/icons.svg#xmark /></svg>').find('tool-tip').html(`Can't connect to server`);
-			})
-			.always(() => {
-				this.gui.info.css('animation', 'unset');
-			});
-	}
-};
 //Some stuff done on initalization
 document.title = 'Blankstorm ' + versions.get(version).text;
 $('#main .version a')
@@ -747,15 +330,18 @@ db.tx('mods').then(tx => {
 		});
 });
 
+export let isPaused = true,
+	mp = false,
+	mpEnabled = true,
+	hitboxes = false;
+
+export const canvas = $('canvas.game'),
+	engine = new Engine($('canvas.game')[0], true, { preserveDrawingBuffer: true, stencil: true }),
+	setPaused = paused => (isPaused = paused); //TODO: move engine to core
+
 const game = {
-	canvas: $('canvas.game'),
-	engine: new Engine($('canvas.game')[0], true, { preserveDrawingBuffer: true, stencil: true }), //TODO: move engine to core
 	screenshots: [],
 	mods: new Map(),
-	isPaused: true,
-	mp: false,
-	mpEnabled: true,
-	hitboxes: false,
 	strobeInterval: null,
 	strobe: rate => {
 		if (game.strobeInterval) {
@@ -773,14 +359,14 @@ const game = {
 	toggleChat: command => {
 		$('#chat,#chat_history').toggle();
 		if ($('#cli').toggle().is(':visible')) {
-			player.data().cam.detachControl(game.canvas, true);
+			player.data().cam.detachControl(canvas, true);
 			$('#cli').focus();
 			if (command) {
 				$('#cli').val('/');
 			}
 		} else {
-			game.canvas.focus();
-			player.data().cam.attachControl(game.canvas, true);
+			canvas.focus();
+			player.data().cam.attachControl(canvas, true);
 			player.data().cam.inputs.attached.pointers.buttons = [1];
 		}
 	},
@@ -789,44 +375,45 @@ const game = {
 		return saves.current;
 	},
 	runCommand: command => {
-		if (game.mp) {
+		if (mp) {
 			servers.get(servers.sel).socket.emit('command', command);
 		} else {
 			return runCommand(command, saves.current);
 		}
 	},
-	chat: (...msg) => {
-		for (let m of msg) {
-			$(`<li bg=none></li>`)
-				.text(m)
-				.appendTo('#chat')
-				.fadeOut(1000 * settings.get('chat'));
-			$(`<li bg=none></li>`).text(m).appendTo('#chat_history');
-		}
-	},
 	error: error => {
 		console.error(error);
-		game.chat('Error: ' + error);
+		chat('Error: ' + error);
 	},
 	changeUI: (selector, hideAll) => {
 		if ($(selector).is(':visible')) {
-			game.canvas.focus();
-			player.data().cam.attachControl(game.canvas, true);
+			canvas.focus();
+			player.data().cam.attachControl(canvas, true);
 			player.data().cam.inputs.attached.pointers.buttons = [1];
 			$(selector).hide();
 		} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
-			game.canvas.focus();
-			player.data().cam.attachControl(game.canvas, true);
+			canvas.focus();
+			player.data().cam.attachControl(canvas, true);
 			player.data().cam.inputs.attached.pointers.buttons = [1];
 			$('[game-ui]').hide();
 		} else if (!$('[game-ui]').is(':visible')) {
-			player.data().cam.detachControl(game.canvas, true);
+			player.data().cam.detachControl(canvas, true);
 			$(selector).show().focus();
 		}
 	},
 };
 
-const player = {
+export const chat = (...msg) => {
+	for (let m of msg) {
+		$(`<li bg=none></li>`)
+			.text(m)
+			.appendTo('#chat')
+			.fadeOut(1000 * settings.get('chat'));
+		$(`<li bg=none></li>`).text(m).appendTo('#chat_history');
+	}
+};
+
+export const player = {
 	username: '',
 	getAuthData() {
 		$.ajax({
@@ -840,16 +427,16 @@ const player = {
 					Object.assign(player, res);
 					localStorage.auth = req;
 				} else if (req == undefined) {
-					game.chat('Failed to connect to account servers.');
+					chat('Failed to connect to account servers.');
 				} else if (req == 'ERROR 404') {
-					game.chat('Invalid token, please log in again and reload the game to play multiplayer.');
+					chat('Invalid token, please log in again and reload the game to play multiplayer.');
 				}
 			},
 		});
 	},
 	updateFleet: () => {
 		if (player.data().fleet.length <= 0) {
-			game.chat(locales.text`player.death`);
+			chat(locales.text`player.death`);
 			player.reset();
 			player.wipe();
 			new Ship('mosquito', player.data());
@@ -858,7 +445,7 @@ const player = {
 	},
 	chat: (...msg) => {
 		for (let m of msg) {
-			game.chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
 	stop: (delay = 0) => {
@@ -892,10 +479,10 @@ const player = {
 };
 
 onresize = () => {
-	game.engine.resize();
+	engine.resize();
 	console.warn('Do not paste any code someone gave you, as they may be trying to steal your information');
 };
-if (!game.mpEnabled) {
+if (!mpEnabled) {
 	$('#main .mp').hide();
 	$('#main .options').attr('plot', 'c,360px,350px,50px');
 	$('#main button.exit').attr('plot', 'c,460px,350px,50px');
@@ -908,11 +495,11 @@ if (cookie.token && navigator.onLine) {
 		let data = (player.authData = JSON.parse(localStorage.auth));
 		Object.assign(player, data);
 	} else {
-		game.chat('Error: Invalid auth data.');
+		chat('Error: Invalid auth data.');
 	}
 } else {
-	game.mpEnabled = false;
-	game.chat("You're not logged in, and will not be able to play multiplayer.");
+	mpEnabled = false;
+	chat("You're not logged in, and will not be able to play multiplayer.");
 }
 
 const ui = {
@@ -1081,7 +668,7 @@ const ui = {
 				save.gui.date.text(new Date(save.data.date).toLocaleString());
 			});
 			$(':root').css('--font-size', settings.get('font_size') + 'px');
-			if (game.mp) {
+			if (mp) {
 				$('#esc .quit').text('Disconnect');
 				$('#esc .options').attr('plot', '12.5px,125px,225px,50px,a');
 				$('#esc .quit').attr('plot', '12.5px,187.5px,225px,50px,a');
@@ -1141,6 +728,8 @@ const ui = {
 	lastScene: '#main',
 };
 
+export const updateUI = ui.update;
+
 oncontextmenu = () => {
 	$('.cm').not(':last').remove();
 };
@@ -1174,7 +763,7 @@ db.tx('servers').then(tx => {
 						.objectStore('servers')
 						.get(key)
 						.async()
-						.then(result => new Server(key, result))
+						.then(result => new Server(key, result, player.data()))
 				)
 			);
 		});
@@ -1189,12 +778,12 @@ commands.playsound = (level, name, volume = settings.get('sfx')) => {
 };
 commands.reload = () => {
 	//maybe also reload mods in the future
-	game.engine.resize();
+	engine.resize();
 };
 
 //Event Listeners (UI transitions, creating saves, etc.)
 $('#main .sp').click(() => {
-	game.mp = false;
+	mp = false;
 	$('#load li').detach();
 	saves.forEach(save => save.gui.prependTo('#load'));
 	saves.forEach(save => save.gui.prependTo('#load'));
@@ -1204,7 +793,7 @@ $('#main .sp').click(() => {
 	$('#load').show();
 });
 $('#main .mp').click(() => {
-	game.mp = true;
+	mp = true;
 	$('#main').hide();
 	$('#load button.refresh use').attr('href', 'images/icons.svg#arrows-rotate');
 	$('#load button.refresh span').text(locales.text`menu.refresh`);
@@ -1225,10 +814,10 @@ $('#load .back').click(() => {
 	$('#main').show();
 });
 $('#load .new').click(() => {
-	game.mp ? Server.dialog() : $('#save')[0].showModal();
+	mp ? Server.dialog() : $('#save')[0].showModal();
 });
 $('#load button.upload.refresh').click(() => {
-	if (game.mp) {
+	if (mp) {
 		servers.forEach(server => server.ping());
 	} else {
 		upload('.json')
@@ -1259,9 +848,9 @@ $('#save .new').click(async () => {
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();
-	player.data().cam.attachControl(game.canvas, true);
+	player.data().cam.attachControl(canvas, true);
 	player.data().cam.inputs.attached.pointers.buttons = [1];
-	game.isPaused = false;
+	isPaused = false;
 });
 $('#esc .save').click(() => {
 	if (saves.current instanceof Save.Live) {
@@ -1270,11 +859,11 @@ $('#esc .save').click(() => {
 		save.data = saves.current.serialize();
 		save.saveToDB()
 			.then(() => {
-				game.chat('Game Saved.');
+				chat('Game Saved.');
 				$('#esc .save').text('Save Game');
 			})
 			.catch(err => {
-				game.chat('Failed to save game: ' + err);
+				chat('Failed to save game: ' + err);
 				$('#esc .save').text('Save Game');
 			});
 	} else {
@@ -1287,9 +876,9 @@ $('#esc .options').click(() => {
 	$('#settings').show();
 });
 $('#esc .quit').click(() => {
-	game.isPaused = true;
+	isPaused = true;
 	$('[ingame]').hide();
-	if (game.mp) {
+	if (mp) {
 		servers.get(servers.sel).disconnect();
 	} else {
 		saves.selected = null;
@@ -1326,7 +915,7 @@ $('.nav button.trade').click(() => {
 	$('div.trade').css('display', 'grid');
 });
 $('button.map.new').click(() => {
-	Waypoint.dialog();
+	Waypoint.dialog(saves.current);
 });
 $('#settings>button:not(.back)').click(e => {
 	const target = $(e.target),
@@ -1437,17 +1026,17 @@ $('#cli').keydown(e => {
 			c.counter = 0;
 			if (/[^\s/]/.test($('#cli').val())) {
 				if (c.prev.at(-1) != c.currentInput) c.prev.push($('#cli').val());
-				if ($('#cli').val()[0] == '/') game.chat(game.runCommand($('#cli').val().slice(1)));
-				else game.mp ? servers.get(servers.sel).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val());
+				if ($('#cli').val()[0] == '/') chat(game.runCommand($('#cli').val().slice(1)));
+				else mp ? servers.get(servers.sel).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val());
 				$('#cli').val('');
 				c.line = 0;
 			}
 			break;
 	}
 });
-game.canvas.on('click', e => {
-	if (!game.isPaused) {
-		player.data().cam.attachControl(game.canvas, true);
+canvas.on('click', e => {
+	if (!isPaused) {
+		player.data().cam.attachControl(canvas, true);
 		player.data().cam.inputs.attached.pointers.buttons = [1];
 	}
 
@@ -1456,12 +1045,12 @@ game.canvas.on('click', e => {
 	}
 	ui.update();
 });
-game.canvas.on('contextmenu', e => {
+canvas.on('contextmenu', e => {
 	if (saves.current instanceof Save.Live) {
 		saves.current.handleCanvasRightClick(e, player.data());
 	}
 });
-game.canvas.on('keydown', e => {
+canvas.on('keydown', e => {
 	switch (e.key) {
 		case 'F3':
 			$('#debug').toggle();
@@ -1475,7 +1064,7 @@ game.canvas.on('keydown', e => {
 			break;
 		case 'Tab':
 			e.preventDefault();
-			if (game.mp) $('#tablist').show();
+			if (mp) $('#tablist').show();
 			break;
 	}
 });
@@ -1484,11 +1073,11 @@ $('canvas.game,[ingame-ui],#hud,#tablist').on('keydown', e => {
 		if (e.key == bind.value.key && (!bind.value.alt || e.altKey) && (!bind.value.ctrl || e.ctrlKey)) bind.onTrigger(e);
 	}
 });
-game.canvas.on('keyup', e => {
+canvas.on('keyup', e => {
 	switch (e.key) {
 		case 'Tab':
 			e.preventDefault();
-			if (game.mp) $('#tablist').hide();
+			if (mp) $('#tablist').hide();
 			break;
 	}
 });
@@ -1508,7 +1097,7 @@ $('#e')
 $('canvas.game,#esc,#hud').on('keydown', e => {
 	if (e.key == 'Escape') {
 		game.changeUI('#esc', true);
-		game.isPaused = !game.isPaused;
+		isPaused = !isPaused;
 	}
 	ui.update();
 });
@@ -1516,13 +1105,13 @@ $('button').on('click', () => {
 	playsound(sound.ui, settings.get('sfx'));
 });
 setInterval(() => {
-	if (saves.current instanceof Save.Live && !game.isPaused) {
+	if (saves.current instanceof Save.Live && !isPaused) {
 		saves.current.tick();
 	}
 }, 1000 / Level.tickRate);
 const loop = () => {
 	if (saves.current instanceof Save.Live) {
-		if (!game.isPaused) {
+		if (!isPaused) {
 			try {
 				if (player.data().cam.alpha > Math.PI) player.data().cam.alpha -= 2 * Math.PI;
 				if (player.data().cam.alpha < -Math.PI) player.data().cam.alpha += 2 * Math.PI;
@@ -1569,7 +1158,7 @@ const loop = () => {
 				$('#hud svg.xp rect').attr('width', (player.levelOf(player.data().xp) % 1) * 100 + '%');
 				$('#debug .left').html(`
 						<span>${version} ${game.mods.length ? `[${game.mods.join(', ')}]` : `(vanilla)`}</span><br>
-						<span>${game.engine.getFps().toFixed()} FPS | ${saves.current.tps.toFixed()} TPS</span><br>
+						<span>${engine.getFps().toFixed()} FPS | ${saves.current.tps.toFixed()} TPS</span><br>
 						<span>${saves.selected} (${saves.current.date.toLocaleString()})</span><br><br>
 						<span>
 							P: (${player.data().position.x.toFixed(1)}, ${player.data().position.y.toFixed(1)}, ${player.data().position.z.toFixed(1)}) 
@@ -1579,7 +1168,7 @@ const loop = () => {
 						`);
 				$('#debug .right').html(`
 						<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
-						<span>${game.engine._glRenderer}</span><br>
+						<span>${engine._glRenderer}</span><br>
 						<span>${
 							performance.memory
 								? `${(performance.memory.usedJSHeapSize / 1000000).toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(
@@ -1603,4 +1192,4 @@ if (config.debug_mode) {
 ui.update();
 $('#loading_cover').fadeOut(1000);
 console.log('Game loaded successful');
-game.engine.runRenderLoop(loop);
+engine.runRenderLoop(loop);

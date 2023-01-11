@@ -4,7 +4,7 @@ import { settings } from './index.js';
 
 import 'jquery'; /* global $ */
 
-export class LocaleStore {
+export default class LocaleStore {
 	#store = new Map();
 	#currentLang = 'en';
 
