@@ -1,28 +1,17 @@
-import { random } from './utils.js';
-
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
-import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
+import CelestialBody from './CelestialBody.js';
 
-const StationComponent = class extends TransformNode {
+export default class StationComponent extends CelestialBody {
 	_generic = {};
 	#station;
-	#resolve;
-	instanceReady;
 	connections = [];
-	constructor(type, station, id = random.hex(32)) {
-		//if (!(station instanceof Station)) throw new TypeError(); Station not imported due to overhead
-		//if (!(station.level instanceof Level)) throw new TypeError(); Level not imported due to overhead
-		super(id, station.level);
+	constructor({ id, type, station }) {
+		super({ id, radius: 1, });
 
 		this._generic = StationComponent.generic.get(type);
 
 		this.type = type;
 		this.#station = station;
-
-		let resolve;
-		this.instanceReady = new Promise(res => (resolve = res));
-		this.#resolve = resolve;
-		this.#createInstance().catch(err => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${type}: ${err}`));
 	}
 
 	get station() {
@@ -31,14 +20,6 @@ const StationComponent = class extends TransformNode {
 
 	get level() {
 		return this.#station.level;
-	}
-
-	async #createInstance() {
-		this.mesh = await this.level.instantiateGenericMesh('station.' + this.type);
-		this.mesh.setParent(this);
-		this.mesh.position = Vector3.Zero();
-		this.mesh.rotation = new Vector3(0, 0, Math.PI);
-		this.#resolve();
 	}
 
 	addConnection(component, connecter, componentConnecter) {
@@ -85,16 +66,13 @@ const StationComponent = class extends TransformNode {
 		for (let connection of this.connections) {
 			this.removeConnection(connection);
 		}
-		this.dispose();
 	}
 
-	static generic = new Map([
-		[
-			'core',
-			{
+	static generic = new Map(
+		Object.entries({
+			core: {
 				type: 'core',
 				hp: 100,
-				model: 'models/station/core.glb',
 				connecters: [
 					{ type: '*', position: new Vector3(0, 0, 0), rotation: new Vector3(0, 0, 0) },
 					{ type: '*', position: new Vector3(0, 0, 0), rotation: new Vector3(0, Math.PI / 2, 0) },
@@ -102,20 +80,14 @@ const StationComponent = class extends TransformNode {
 					{ type: '*', position: new Vector3(0, 0, 0), rotation: new Vector3(0, (3 * Math.PI) / 2, 0) },
 				],
 			},
-		],
-		[
-			'connecter_i',
-			{
+			connecter_i: {
 				type: 'connecter',
 				hp: 50,
-				model: 'models/station/connecter_i.glb',
 				connecters: [
 					{ type: '*', position: new Vector3(0, 0, -0.5), rotation: Vector3.Zero() },
 					{ type: '*', position: new Vector3(0, 0, 0.5), rotation: Vector3.Zero() },
 				],
 			},
-		],
-	]);
-};
-
-export default StationComponent;
+		})
+	);
+}

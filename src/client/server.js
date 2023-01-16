@@ -5,7 +5,7 @@ import { modal, alert, confirm } from './utils.js';
 import { isJSON } from 'core';
 import { Playable } from './playable.js';
 import db from './db.js';
-import { servers, cookie, canvas, engine, chat, player, updateUI } from './index.js';
+import { servers, cookie, canvas, chat, player, updateUI } from './index.js';
 
 export default class Server extends Playable {
 	static async dialog(server) {
@@ -51,7 +51,6 @@ export default class Server extends Playable {
 			$('#connect').hide();
 			canvas.show().focus();
 			$('#mp_message,#hud').show();
-			engine.resize();
 			player.data().cam.attachControl(canvas, true);
 			player.data().cam.inputs.attached.pointers.buttons = [1];
 			$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);

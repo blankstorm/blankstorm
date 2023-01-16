@@ -1,15 +1,7 @@
 export const config = {
-	mesh_segments: 32,
-	render_quality: 0,
 	load_remote_manifest: false,
-	playerCamera: {
-		wheelPrecision: 5,
-		lowerRadiusLimit: 1,
-		upperRadiusLimit: 50,
-		minZ: 0.1,
-		radius: 10,
-	},
 	debug_mode: true,
+	planet_max_distance: 5000,
 };
 
 export const version = 'alpha_1.4.0';

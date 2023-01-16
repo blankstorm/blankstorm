@@ -1,14 +1,13 @@
-import { random } from '../utils.js';
 import CelestialBody from './CelestialBody.js';
-import StationComponent from '../StationComponent.js';
+import StationComponent from './StationComponent.js';
 
-const Station = class extends CelestialBody {
+export default class Station extends CelestialBody {
 	components = [];
 	#core;
 	#level;
 
-	constructor({ name = 'Station', id = random.hex(32) }, level) {
-		super(name, id, level);
+	constructor({ id, name = 'Station', level }) {
+		super(id, { name }, level);
 
 		this.#level = level;
 		this.#core = new StationComponent('core', this);
@@ -31,6 +30,4 @@ const Station = class extends CelestialBody {
 	}
 
 	remove() {}
-};
-
-export default Station;
+}

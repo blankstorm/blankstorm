@@ -1,62 +1,36 @@
-import { random, wait } from './utils.js';
-import Ship from './entities/Ship.js';
-import Level from './Level.js';
-
-import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Animation } from '@babylonjs/core/Animations/animation.js';
 
-const Hardpoint = class extends TransformNode {
+import { random, wait } from '../utils.js';
+import Level from '../Level.js';
+import Entity from './Entity.js';
+
+export default class Hardpoint extends Entity {
 	_generic = {};
-	#entity;
-	#resolve;
-	instanceReady;
 	projectiles = [];
-	constructor(data, ship, id = random.hex(32)) {
-		if (!(ship instanceof Ship)) throw new TypeError();
-		if (!(ship.level instanceof Level)) throw new TypeError();
-		super(id);
-		this._generic = Hardpoint.generic.get(data.type);
-		this._data = data;
+	constructor({ id, name, position, rotation, owner, level, type }) {
+		level ?? owner?.level;
+		super({ id, name, position, rotation, owner, level });
 
-		this.type = data.type;
-		this.parent = ship;
-		this.#entity = ship;
-		this.position = data.position || Vector3.Zero();
-		this.rotation = (data.rotation || Vector3.Zero()).addInPlaceFromFloats(0, Math.PI, 0);
+		this.hardpointType = type;
+		this._generic = Hardpoint.generic.get(type);
+
+		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
 		this.reload = this._generic.reload;
-		let resolve;
-		this.instanceReady = new Promise(res => (resolve = res));
-		this.#resolve = resolve;
-		this.#createInstance().catch(err => console.warn(`Failed to create hardpoint mesh instance for #${id} of type ${data.type}: ${err}`));
-		this.instanceReady.then(() => {
-			this.scaling.scaleInPlace(data.scale ?? 1);
-		});
-	}
-
-	get entity() {
-		return this.#entity;
-	}
-
-	get level() {
-		return this.#entity.level;
-	}
-
-	async #createInstance() {
-		this.mesh = await this.level.instantiateGenericMesh(this.type);
-		this.mesh.setParent(this);
-		this.mesh.position = Vector3.Zero();
-		this.mesh.rotation = new Vector3(0, 0, Math.PI);
-		this.#resolve();
-	}
-
-	async createProjectileInstante() {
-		return await this.level.instantiateGenericMesh(this.type + '.projectile');
 	}
 
 	remove() {
-		this.#entity.hardpoints.splice(this.#entity.hardpoints.indexOf(this), 1);
-		this.dispose();
+		super.remove();
+		if(this.owner){
+			this.owner.hardpoints.splice(this.owner.hardpoints.indexOf(this), 1);
+		}
+	}
+
+	serialize(){
+		return Object.assign(super.serialize(), {
+			hardpoint_type: this.hardpointType,
+			reload: this.reload,
+		});
 	}
 
 	fireProjectile(target, options) {
@@ -64,20 +38,17 @@ const Hardpoint = class extends TransformNode {
 		this.reload = this._generic.reload;
 	}
 
-	static generic = new Map([
-		[
-			'laser',
-			{
+	static generic = new Map(
+		Object.entries({
+			laser: {
 				damage: 1,
 				reload: 10,
 				range: 200,
 				critChance: 0.05,
 				critFactor: 1.5,
-				model: 'models/laser.glb',
 				projectiles: 1,
 				projectileInterval: 0, //not needed
 				projectileSpeed: 5,
-				projectileModel: 'models/laser_projectile.glb',
 				async fire(target, { projectileMaterials = [] }) {
 					await wait(random.int(4, 40));
 					const laser = await this.createProjectileInstante(),
@@ -115,8 +86,6 @@ const Hardpoint = class extends TransformNode {
 					};
 				},
 			},
-		],
-	]);
-};
-
-export default Hardpoint;
+		})
+	);
+}

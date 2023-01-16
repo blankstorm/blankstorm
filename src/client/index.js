@@ -1,8 +1,7 @@
-import { version, versions, isJSON, isHex, config, commands, runCommand, random, CelestialBody, Items, Tech, Entity, Ship, PlayerData, Level } from 'core';
+import { version, versions, isJSON, isHex, config, commands, runCommand, random, CelestialBody, Items, Tech, Entity, Ship, Player, Level } from 'core';
 import * as core from 'core';
 
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
-import { Engine } from '@babylonjs/core/Engines/engine.js';
 
 import 'jquery'; /* global $ */
 $.ajaxSetup({ timeout: 3000 });
@@ -35,10 +34,11 @@ import { web, upload, minimize, alert, confirm, prompt } from './utils.js';
 import Waypoint from './waypoint.js';
 import Save from './save.js';
 import Server from './server.js';
-
 import './contextmenu.js';
 import { PlayableStore } from './playable.js';
+import * as renderer from './renderer/index.js';
 
+$('#loading_cover p').text('Loading settings and locales...');
 export const locales = new LocaleStore();
 
 export const settings = new SettingsStore({
@@ -202,7 +202,7 @@ export const settings = new SettingsStore({
 			value: { key: 't' },
 			onTrigger: e => {
 				e.preventDefault();
-				game.toggleChat();
+				toggleChat();
 			},
 		},
 		{
@@ -213,7 +213,7 @@ export const settings = new SettingsStore({
 			value: { key: '/' },
 			onTrigger: e => {
 				e.preventDefault();
-				game.toggleChat(true);
+				toggleChat(true);
 			},
 		},
 		{
@@ -223,7 +223,7 @@ export const settings = new SettingsStore({
 			label: 'Toggle Inventory',
 			value: { key: 'Tab' },
 			onTrigger: () => {
-				game.changeUI('#q');
+				changeUI('#q');
 			},
 		},
 		{
@@ -233,7 +233,7 @@ export const settings = new SettingsStore({
 			label: 'Toggle Shipyard/Lab',
 			value: { key: 'e' },
 			onTrigger: () => {
-				game.changeUI('#e');
+				changeUI('#e');
 			},
 		},
 		{
@@ -243,7 +243,7 @@ export const settings = new SettingsStore({
 			label: 'Take Screenshot',
 			value: { key: 'F2' },
 			onTrigger: () => {
-				game.screenshots.push(canvas[0].toDataURL('image/png'));
+				screenshots.push(canvas[0].toDataURL('image/png'));
 				ui.update();
 			},
 		},
@@ -279,6 +279,7 @@ for (let section of settings.sections.values()) {
 	});
 }
 
+$('#loading_cover p').text('Initalizing IndexedDB...');
 try {
 	await db.init();
 } catch (err) {
@@ -336,72 +337,73 @@ export let isPaused = true,
 	hitboxes = false;
 
 export const canvas = $('canvas.game'),
-	engine = new Engine($('canvas.game')[0], true, { preserveDrawingBuffer: true, stencil: true }),
-	setPaused = paused => (isPaused = paused); //TODO: move engine to core
+	setPaused = paused => (isPaused = paused);
 
-const game = {
-	screenshots: [],
-	mods: new Map(),
-	strobeInterval: null,
-	strobe: rate => {
-		if (game.strobeInterval) {
-			clearInterval(game.strobeInterval);
-			$(':root').css('--hue', 200);
-			game.strobeInterval = null;
-		} else {
-			game.strobeInterval = setInterval(() => {
-				let hue = $(':root').css('--hue');
-				if (hue > 360) hue -= 360;
-				$(':root').css('--hue', ++hue);
-			}, 1000 / rate);
-		}
-	},
-	toggleChat: command => {
-		$('#chat,#chat_history').toggle();
-		if ($('#cli').toggle().is(':visible')) {
-			player.data().cam.detachControl(canvas, true);
-			$('#cli').focus();
-			if (command) {
-				$('#cli').val('/');
-			}
-		} else {
-			canvas.focus();
-			player.data().cam.attachControl(canvas, true);
-			player.data().cam.inputs.attached.pointers.buttons = [1];
-		}
-	},
-	cli: { line: 0, currentInput: '', i: $('#cli').val(), prev: [] },
-	scene: () => {
-		return saves.current;
-	},
-	runCommand: command => {
-		if (mp) {
-			servers.get(servers.sel).socket.emit('command', command);
-		} else {
-			return runCommand(command, saves.current);
-		}
-	},
-	error: error => {
-		console.error(error);
-		chat('Error: ' + error);
-	},
-	changeUI: (selector, hideAll) => {
-		if ($(selector).is(':visible')) {
-			canvas.focus();
-			player.data().cam.attachControl(canvas, true);
-			player.data().cam.inputs.attached.pointers.buttons = [1];
-			$(selector).hide();
-		} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
-			canvas.focus();
-			player.data().cam.attachControl(canvas, true);
-			player.data().cam.inputs.attached.pointers.buttons = [1];
-			$('[game-ui]').hide();
-		} else if (!$('[game-ui]').is(':visible')) {
-			player.data().cam.detachControl(canvas, true);
-			$(selector).show().focus();
-		}
-	},
+$('#loading_cover p').text('Initalizing ');
+try {
+	await renderer.init(canvas[0], msg => {
+		$('#loading_cover p').text(`Initalizing renderer: ${msg}`);
+	});
+} catch (err) {
+	console.error('Failed to initalize renderer: ' + err.stack);
+	alert('Failed to initalize renderer: ' + err.stack);
+}
+
+const screenshots = [],
+	mods = new Map();
+
+let strobeInterval = null;
+const strobe = rate => {
+	if (strobeInterval) {
+		clearInterval(strobeInterval);
+		$(':root').css('--hue', 200);
+		strobeInterval = null;
+	} else {
+		strobeInterval = setInterval(() => {
+			let hue = $(':root').css('--hue');
+			if (hue > 360) hue -= 360;
+			$(':root').css('--hue', ++hue);
+		}, 1000 / rate);
+	}
 };
+const toggleChat = command => {
+	$('#chat,#chat_history').toggle();
+	if ($('#cli').toggle().is(':visible')) {
+		player.data().cam.detachControl(canvas, true);
+		$('#cli').focus();
+		if (command) {
+			$('#cli').val('/');
+		}
+	} else {
+		canvas.focus();
+		player.data().cam.attachControl(canvas, true);
+		player.data().cam.inputs.attached.pointers.buttons = [1];
+	}
+};
+const clientRunCommand = command => {
+	if (mp) {
+		servers.get(servers.sel).socket.emit('command', command);
+	} else {
+		return runCommand(command, saves.current);
+	}
+};
+const changeUI = (selector, hideAll) => {
+	if ($(selector).is(':visible')) {
+		canvas.focus();
+		player.data().cam.attachControl(canvas, true);
+		player.data().cam.inputs.attached.pointers.buttons = [1];
+		$(selector).hide();
+	} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
+		canvas.focus();
+		player.data().cam.attachControl(canvas, true);
+		player.data().cam.inputs.attached.pointers.buttons = [1];
+		$('[game-ui]').hide();
+	} else if (!$('[game-ui]').is(':visible')) {
+		player.data().cam.detachControl(canvas, true);
+		$(selector).show().focus();
+	}
+};
+const cli = { line: 0, currentInput: '', i: $('#cli').val(), prev: [] };
 
 export const chat = (...msg) => {
 	for (let m of msg) {
@@ -479,7 +481,7 @@ export const player = {
 };
 
 onresize = () => {
-	engine.resize();
+	renderer.engine.resize();
 	console.warn('Do not paste any code someone gave you, as they may be trying to steal your information');
 };
 if (!mpEnabled) {
@@ -567,7 +569,7 @@ const ui = {
 	},
 	update: (scene = saves.current) => {
 		try {
-			if (saves.current instanceof Save.Live && player.data() instanceof PlayerData) {
+			if (saves.current instanceof Save.Live && player.data() instanceof Player) {
 				$('div.screenshots').empty();
 				$('div.map>:not(button)').remove();
 				$('svg.item-bar rect').attr('width', (player.data().totalItems / player.data().maxItems) * 100 || 0);
@@ -644,7 +646,7 @@ const ui = {
 			}
 			$('.marker').hide();
 
-			game.screenshots.forEach(s => {
+			screenshots.forEach(s => {
 				$(`<img src=${s} width=256></img>`)
 					.appendTo('#q div.screenshots')
 					.cm(
@@ -653,7 +655,7 @@ const ui = {
 						}),
 						$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').click(() => {
 							confirm().then(() => {
-								game.screenshots.splice(game.screenshots.indexOf(s), 1);
+								screenshots.splice(screenshots.indexOf(s), 1);
 								ui.update();
 							});
 						})
@@ -778,7 +780,7 @@ commands.playsound = (level, name, volume = settings.get('sfx')) => {
 };
 commands.reload = () => {
 	//maybe also reload mods in the future
-	engine.resize();
+	renderer.engine.resize();
 };
 
 //Event Listeners (UI transitions, creating saves, etc.)
@@ -840,10 +842,12 @@ $('#save button.back').click(() => {
 });
 $('#save .new').click(async () => {
 	$('#save')[0].close();
-	let live = await Save.Live.CreateDefault($('#save .name').val(), player.id, player.username);
-	saves.current = live;
-	live.play(live.playerData.get(player.id));
-	let save = new Save(live.serialize());
+	const name = $('#save .name').val();
+	const level = new Level(name);
+	saves.current = level;
+	renderer.clear();
+	renderer.update(level.serialize());
+	let save = new Save(level.serialize());
 	if (!settings.get('disable_saves')) save.saveToDB();
 });
 $('#esc .resume').click(() => {
@@ -937,7 +941,7 @@ $('#settings button.mod').click(() => {
 				alert('Requires reload');
 			}),
 			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locales.text`menu.upload`}</button>`).click(() => {
-				//upload('.js').then(files => [...files].forEach(file => file.text().then(mod => game.loadMod(mod))));
+				//upload('.js').then(files => [...files].forEach(file => file.text().then(mod => loadMod(mod))));
 				alert('Mods are not supported.');
 			})
 		);
@@ -982,7 +986,7 @@ $('html')
 				open(web`bugs/new`, 'target=_blank');
 				break;
 			case 'b':
-				if (e.ctrlKey) game.strobe(100);
+				if (e.ctrlKey) strobe(100);
 				break;
 			case 't':
 				if (e.altKey) {
@@ -1008,28 +1012,27 @@ $('html')
 		});
 	});
 $('#cli').keydown(e => {
-	let c = game.cli;
-	if (c.line == 0) c.currentInput = $('#cli').val();
+	if (cli.line == 0) cli.currentInput = $('#cli').val();
 	switch (e.key) {
 		case 'Escape':
-			game.toggleChat();
+			toggleChat();
 			break;
 		case 'ArrowUp':
-			if (c.line > -c.prev.length) $('#cli').val(c.prev.at(--c.line));
-			if (c.line == -c.prev.length) if (++c.counter == 69) $('#cli').val('nice');
+			if (cli.line > -cli.prev.length) $('#cli').val(cli.prev.at(--cli.line));
+			if (cli.line == -cli.prev.length) if (++cli.counter == 69) $('#cli').val('nice');
 			break;
 		case 'ArrowDown':
-			c.counter = 0;
-			if (c.line < 0) ++c.line == 0 ? $('#cli').val(c.currentInput) : $('#cli').val(c.prev.at(c.line));
+			cli.counter = 0;
+			if (cli.line < 0) ++cli.line == 0 ? $('#cli').val(cli.currentInput) : $('#cli').val(cli.prev.at(cli.line));
 			break;
 		case 'Enter':
-			c.counter = 0;
+			cli.counter = 0;
 			if (/[^\s/]/.test($('#cli').val())) {
-				if (c.prev.at(-1) != c.currentInput) c.prev.push($('#cli').val());
-				if ($('#cli').val()[0] == '/') chat(game.runCommand($('#cli').val().slice(1)));
+				if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#cli').val());
+				if ($('#cli').val()[0] == '/') chat(clientRunCommand($('#cli').val().slice(1)));
 				else mp ? servers.get(servers.sel).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val());
 				$('#cli').val('');
-				c.line = 0;
+				cli.line = 0;
 			}
 			break;
 	}
@@ -1060,7 +1063,7 @@ canvas.on('keydown', e => {
 			break;
 		case 'F4':
 			e.preventDefault();
-			game.hitboxes = !game.hitboxes;
+			hitboxes = !hitboxes;
 			break;
 		case 'Tab':
 			e.preventDefault();
@@ -1084,19 +1087,19 @@ canvas.on('keyup', e => {
 
 $('#q').on('keydown', e => {
 	if (e.key == settings.get('nav') || e.key == 'Escape') {
-		game.changeUI('#q');
+		changeUI('#q');
 	}
 });
 $('#e')
 	.on('keydown', e => {
 		if (e.key == settings.get('inv') || e.key == 'Escape') {
-			game.changeUI('#e');
+			changeUI('#e');
 		}
 	})
 	.click(() => ui.update());
 $('canvas.game,#esc,#hud').on('keydown', e => {
 	if (e.key == 'Escape') {
-		game.changeUI('#esc', true);
+		changeUI('#esc', true);
 		isPaused = !isPaused;
 	}
 	ui.update();
@@ -1118,9 +1121,9 @@ const loop = () => {
 				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.get('sensitivity');
 				player.updateFleet();
 				saves.current.meshes.forEach(mesh => {
-					if (mesh instanceof CelestialBody) mesh.showBoundingBox = game.hitboxes;
-					if (mesh.parent instanceof Entity) mesh.getChildMeshes().forEach(child => (child.showBoundingBox = game.hitboxes));
-					if (mesh != saves.current.skybox && isHex(mesh.id)) mesh.showBoundingBox = game.hitboxes;
+					if (mesh instanceof CelestialBody) mesh.showBoundingBox = hitboxes;
+					if (mesh.parent instanceof Entity) mesh.getChildMeshes().forEach(child => (child.showBoundingBox = hitboxes));
+					if (mesh != saves.current.skybox && isHex(mesh.id)) mesh.showBoundingBox = hitboxes;
 				});
 				for (let ship of saves.current.entities.values()) {
 					if (player.data().fleet.length > 0) {
@@ -1157,8 +1160,8 @@ const loop = () => {
 				$('#hud p.level').text(Math.floor(player.levelOf(player.data().xp)));
 				$('#hud svg.xp rect').attr('width', (player.levelOf(player.data().xp) % 1) * 100 + '%');
 				$('#debug .left').html(`
-						<span>${version} ${game.mods.length ? `[${game.mods.join(', ')}]` : `(vanilla)`}</span><br>
-						<span>${engine.getFps().toFixed()} FPS | ${saves.current.tps.toFixed()} TPS</span><br>
+						<span>${version} ${mods.length ? `[${mods.join(', ')}]` : `(vanilla)`}</span><br>
+						<span>${renderer.engine.getFps().toFixed()} FPS | ${saves.current.tps.toFixed()} TPS</span><br>
 						<span>${saves.selected} (${saves.current.date.toLocaleString()})</span><br><br>
 						<span>
 							P: (${player.data().position.x.toFixed(1)}, ${player.data().position.y.toFixed(1)}, ${player.data().position.z.toFixed(1)}) 
@@ -1167,8 +1170,8 @@ const loop = () => {
 						</span><br>
 						`);
 				$('#debug .right').html(`
-						<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
-						<span>${engine._glRenderer}</span><br>
+						<span>Babylon v${renderer.engine.constructor.Version} | jQuery v${$.fn.jquery}</span><br>
+						<span>${renderer.engine._glRenderer}</span><br>
 						<span>${
 							performance.memory
 								? `${(performance.memory.usedJSHeapSize / 1000000).toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(
@@ -1187,9 +1190,9 @@ const loop = () => {
 	}
 };
 if (config.debug_mode) {
-	Object.assign(window, { core, settings, locales, $, io });
+	Object.assign(window, { core, settings, locales, $, io, renderer });
 }
 ui.update();
 $('#loading_cover').fadeOut(1000);
 console.log('Game loaded successful');
-engine.runRenderLoop(loop);
+renderer.engine.runRenderLoop(loop);

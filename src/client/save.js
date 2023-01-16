@@ -4,8 +4,8 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js'
 
 import 'jquery'; /* global $ */
 
-import { version, versions, random, generate, Ship, PlayerData, Planet, Level } from 'core';
-import { modal, download } from './utils.js';
+import { version, versions, random, generate, Ship, Player, Planet, Level } from 'core';
+import { modal, download, confirm, alert } from './utils.js';
 import Waypoint from './waypoint.js';
 import db from './db.js';
 import { Playable } from './playable.js';
@@ -64,23 +64,20 @@ export default class Save extends Playable {
 	};
 	static Live = class extends Level {
 		waypoints = [];
-		constructor(name, engine, doNotGenerate) {
-			super(name, engine, doNotGenerate);
+		constructor(name, doNotGenerate) {
+			super(name, doNotGenerate);
 		}
 		play(player) {
 			if (this.version == version) {
 				$('#load').hide();
 				canvas.show().focus();
 				$('#hud').show();
-				this.getEngine().resize();
 				saves.selected = this.id;
 				setPaused(false);
-				player ??= [...this.playerData][0];
-				if (player instanceof PlayerData) {
+				if (player instanceof Player) {
 					this.activeCamera = player.cam;
 					player.cam.attachControl(canvas, true);
 					player.cam.inputs.attached.pointers.buttons = [1];
-					player.cam.target = player.position;
 				}
 			} else {
 				alert('That save is in compatible with the current game version');
@@ -109,7 +106,7 @@ export default class Save extends Playable {
 				);
 			}
 
-			const playerData = new PlayerData({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
+			const playerData = new Player({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
 			playerData._customHardpointProjectileMaterials = [
 				{
 					applies_to: ['laser'],

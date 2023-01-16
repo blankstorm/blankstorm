@@ -1,29 +1,17 @@
-import { config } from '../meta.js';
 import CelestialBody from './CelestialBody.js';
 
-import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '@babylonjs/core/Maths/math.color.js';
-import { PointLight } from '@babylonjs/core/Lights/pointLight.js';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
-import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder.js';
 
-export default class extends CelestialBody {
-	constructor({ name, position = Vector3.Zero(), radius = 1, color = Color3.Gray(), scene, id }) {
-		super(name ?? 'Unknown Star', id, scene);
-		CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
-		Object.assign(this, {
-			position,
-			light: Object.assign(new PointLight(this.id + '.light', position, scene), { intensity: 1, range: 10000 }),
-			material: Object.assign(new StandardMaterial(this.id + '.mat', scene), {
-				//emissiveTexture: new NoiseProceduralTexture(this.id + ".texture", config.mesh_segments, scene),
-				emissiveColor: color,
-				disableLighting: true,
-			}),
-			radius,
-			color,
-			isStar: true,
+export default class Star extends CelestialBody {
+	constructor({ id, name = 'Unknown Star', position, rotation, radius, rewards, color = Color3.Random(), level }) {
+		super(id, { name, position, rotation, radius, rewards }, level);
+		this.color = color;
+	}
+
+	serialize(){
+		return Object.assign(super.serialize(), {
+			color: this.color.asArray().map(e => e.toFixed(3)),
+			radius: this.radius,
 		});
-		//Object.assign(s.material.emissiveTexture, {animationSpeedFactor: 0.1, octaves: 8, persistence:0.8});
-		//s.material.Fragment_Before_FragColor(`color = vec4(vec3(color.xyz),1.0);`);
 	}
 }
