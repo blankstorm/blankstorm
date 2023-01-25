@@ -8,6 +8,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 export default class Ship extends Entity {
 	hardpoints = [];
 
+	isTargetable = true;
+
 	constructor({ id, name, position, rotation, owner, level, storage, hp, reload, jumpCooldown, className }) {
 		if (className && !Ship.generic.has(className)) throw new ReferenceError(`Ship type ${className} does not exist`);
 		super({ id, name, position, rotation, owner, level });

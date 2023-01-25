@@ -5,8 +5,10 @@ import ModelRenderer from '../ModelRenderer.js';
 
 export default class ShipRenderer extends ModelRenderer {
 	hardpoints = [];
-	constructor({ id, name, position, rotation, scene, hardpoints }) {
+	constructor({ id, name, position, rotation, scene, hardpoints, type, }) {
 		super({ id, name, position, rotation, scene });
+
+		this.createInstance(type);
 
 		for(let hardpointData of hardpoints){
 			let hardpoint;

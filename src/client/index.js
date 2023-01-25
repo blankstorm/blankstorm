@@ -472,7 +472,7 @@ export const player = {
 			ship.remove();
 		}
 	},
-	data: id => saves.current?.playerData?.get(id ?? player.id) ?? {},
+	data: id => saves.current?.entities?.get(id ?? player.id) ?? {},
 	levelOf: xp => Math.sqrt(xp / 10),
 	xpOf: level => 10 * level ** 2,
 	get isInBattle() {
@@ -740,36 +740,29 @@ onclick = () => {
 };
 
 //load locales
-locales.fetch('locales/en.json').then(() => {
-	locales.load('en');
-	ui.init();
-});
+$('#loading_cover p').text('Loading Locales...');
+await locales.fetch('locales/en.json');
+locales.load('en');
+ui.init();
 
 //Load saves and servers into the game (from the IndexedDB)
-db.tx('saves').then(tx => {
-	tx.objectStore('saves')
-		.getAll()
-		.async()
-		.then(result => {
-			result.forEach(save => new Save(save));
-		});
-});
-db.tx('servers').then(tx => {
-	tx.objectStore('servers')
-		.getAllKeys()
-		.async()
-		.then(result => {
-			result.forEach(key =>
-				db.tx('servers').then(tx =>
-					tx
-						.objectStore('servers')
-						.get(key)
-						.async()
-						.then(result => new Server(key, result, player.data()))
-				)
-			);
-		});
-});
+$('#loading_cover p').text('Loading saves...');
+let tx = await db.tx('saves');
+let result = await tx.objectStore('saves').getAll().async();
+result.forEach(save => new Save(save));
+
+$('#loading_cover p').text('Loading servers...');
+tx = await db.tx('servers');
+result = await tx.objectStore('servers').getAllKeys().async();
+result.forEach(key =>
+	db.tx('servers').then(tx =>
+		tx
+			.objectStore('servers')
+			.get(key)
+			.async()
+			.then(result => new Server(key, result, player.data()))
+	)
+);
 
 commands.playsound = (level, name, volume = settings.get('sfx')) => {
 	if (sound[name]) {
@@ -783,6 +776,7 @@ commands.reload = () => {
 	renderer.engine.resize();
 };
 
+$('#loading_cover p').text('Registering event listeners...');
 //Event Listeners (UI transitions, creating saves, etc.)
 $('#main .sp').click(() => {
 	mp = false;
@@ -1112,12 +1106,11 @@ setInterval(() => {
 		saves.current.tick();
 	}
 }, 1000 / Level.tickRate);
+
 const loop = () => {
 	if (saves.current instanceof Save.Live) {
 		if (!isPaused) {
 			try {
-				if (player.data().cam.alpha > Math.PI) player.data().cam.alpha -= 2 * Math.PI;
-				if (player.data().cam.alpha < -Math.PI) player.data().cam.alpha += 2 * Math.PI;
 				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.get('sensitivity');
 				player.updateFleet();
 				saves.current.meshes.forEach(mesh => {
@@ -1138,8 +1131,6 @@ const loop = () => {
 					}
 				}
 				player.updateFleet();
-				player.data().position.addInPlace(player.data().velocity.scale(saves.current.getAnimationRatio()));
-				player.data().velocity.scaleInPlace(0.9);
 				saves.current.waypoints.forEach(waypoint => {
 					let pos = waypoint.screenPos;
 					waypoint.marker
@@ -1193,6 +1184,7 @@ if (config.debug_mode) {
 	Object.assign(window, { core, settings, locales, $, io, renderer });
 }
 ui.update();
+$('#loading_cover p').text('Done!');
 $('#loading_cover').fadeOut(1000);
 console.log('Game loaded successful');
 renderer.engine.runRenderLoop(loop);

@@ -7,6 +7,11 @@ export default class Entity {
 	_generic = { speed: 1 };
 
 	selected = false;
+	isTargetable = false;
+
+	position = Vector3.Zero();
+	rotation = Vector3.Zero();
+	velocity = Vector3.Zero();
 
 	constructor({id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), owner, level }) {
 		
@@ -16,8 +21,14 @@ export default class Entity {
 
 	}
 
-	get entity() {
-		return this;
+	get absolutePosition(){
+		let parent = this, position = Vector3.Zero();
+		while(parent){
+			position.addInPlace(parent.position);
+			parent = parent.owner;
+		}
+
+		return position;
 	}
 
 	remove() {

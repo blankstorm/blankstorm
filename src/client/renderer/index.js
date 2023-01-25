@@ -63,10 +63,10 @@ const handleCanvasRightClick = (e, owner) => {
 };
 
 export async function init(canvas, messageHandler = () => {}) {
-	messageHandler('engine');
+	await messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 
-	messageHandler('scene');
+	await messageHandler('scene');
 	scene = new Scene(engine);
 
 	scene.registerBeforeRender(() => {
@@ -84,7 +84,7 @@ export async function init(canvas, messageHandler = () => {}) {
 		}
 	});
 
-	messageHandler('skybox');
+	await messageHandler('skybox');
 	skybox = MeshBuilder.CreateBox('skybox', { size: config.skybox_size }, scene);
 	skybox.material = Object.assign(new StandardMaterial('skybox.mat', scene), {
 		backFaceCulling: false,
@@ -95,27 +95,28 @@ export async function init(canvas, messageHandler = () => {}) {
 	skybox.infiniteDistance = true;
 	skybox.isPickable = false;
 
-	messageHandler('glow layer');
+	await messageHandler('glow layer');
 	gl = new GlowLayer('glowLayer', scene);
 	gl.intensity = 0.9;
 
-	messageHandler('highlight layer');
+	await messageHandler('highlight layer');
 	hl = new HighlightLayer('highlight', scene);
 
 	xzPlane = MeshBuilder.CreatePlane('xzPlane', { size: config.plane_size }, scene);
 	xzPlane.rotation.x = Math.PI / 2;
 	xzPlane.setEnabled(false);
 
-	messageHandler('reflection probe');
+	await messageHandler('reflection probe');
 	probe = new ReflectionProbe('probe', 256, scene);
 
-	messageHandler('assets');
+	await messageHandler('assets');
 	const modelKeys = [...ModelRenderer.modelPaths.keys()];
 	// using forEach so we can get the index
-	modelKeys.forEach(async (id, i) => {
-		messageHandler(`model "${id}" (${i + 1}/${modelKeys.length})`);
+	for(let id of modelKeys){
+		const i = modelKeys.indexOf(id);
+		await messageHandler(`model "${id}" (${i + 1}/${modelKeys.length})`);
 		await ModelRenderer.InitModel(id, scene);
-	});
+	}
 }
 
 export async function dispose() {

@@ -2,7 +2,6 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Animation } from '@babylonjs/core/Animations/animation.js';
 
 import { random, wait } from 'core/utils.js';
-import { config } from 'core/meta.js';
 import ModelRenderer from '../ModelRenderer.js';
 
 export default class HardpointRenderer extends ModelRenderer {
@@ -12,6 +11,8 @@ export default class HardpointRenderer extends ModelRenderer {
 
 		this.type = type;
 		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
+		
+		this.createInstance(type);
 	}
 
 	fireProjectile(target, options) {
@@ -19,15 +20,15 @@ export default class HardpointRenderer extends ModelRenderer {
 	}
 
 	static generic = new Map(Object.entries({
-		async laser(target, { projectileMaterials = [] }) {
+		async laser(target, { materials = [], speed }) {
 			await wait(random.int(4, 40));
-			const laser = await this.createProjectileInstante(),
+			const laser = await this.createProjectileInstance(),
 				bounding = this.getHierarchyBoundingVectors(),
 				targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),
 				startPos = this.getAbsolutePosition(),
 				endPos = target.getAbsolutePosition().add(random.cords(targetOffset)),
-				frameFactor = Vector3.Distance(startPos, endPos) / this._generic.projectileSpeed,
-				material = projectileMaterials.find(({ applies_to = [], material }) => {
+				frameFactor = Vector3.Distance(startPos, endPos) / speed,
+				material = materials.find(({ applies_to = [], material }) => {
 					if (applies_to.includes(this.type) && material) {
 						return material;
 					}
@@ -47,12 +48,12 @@ export default class HardpointRenderer extends ModelRenderer {
 				{ frame: 60 * frameFactor, value: endPos },
 			]);
 			laser.animations.push(animation);
-			let result = this.level.beginAnimation(laser, 0, 60 * frameFactor);
+			let result = this.scene.beginAnimation(laser, 0, 60 * frameFactor);
 			result.disposeOnEnd = true;
 			result.onAnimationEnd = () => {
 				this.projectiles.splice(this.projectiles.indexOf(laser), 1);
 				laser.dispose();
-				target.entity.hp -= (this._generic.damage / config.tickRate) * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
+				//update level (core-side)
 			};
 		},
 	}));

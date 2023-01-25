@@ -6,6 +6,8 @@ export default class Station extends CelestialBody {
 	#core;
 	#level;
 
+	isTargetable = true;
+
 	constructor({ id, name = 'Station', level }) {
 		super(id, { name }, level);
 

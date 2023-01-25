@@ -97,6 +97,9 @@ export default class Level {
 				entity.rotation.y += Math.sign(entity.rotation.y) * 2 * Math.PI;
 			}
 
+			entity.position.addInPlace(entity.velocity);
+			entity.velocity.scaleInPlace(0.9);
+
 			if (entity.hp && entity.hp <= 0) {
 				entity.remove();
 				//Events: trigger event, for sounds
@@ -104,12 +107,12 @@ export default class Level {
 				for (let hardpoint of entity.hardpoints) {
 					hardpoint.reload = Math.max(--hardpoint.reload, 0);
 
-					const targets = [...this.entities.values()].filter(e => e.owner != entity.owner && Vector3.Distance(e.position, entity.position) < hardpoint._generic.range);
+					const targets = [...this.entities.values()].filter(e => e.isTargetable && e.owner != entity.owner && Vector3.Distance(e.position, entity.position) < hardpoint._generic.range);
 					const target = targets.reduce(
 						(ac, cur) =>
 							(ac =
-								Vector3.Distance(ac?.getAbsolutePosition ? ac.getAbsolutePosition() : Vector3.One().scale(Infinity), entity.getAbsolutePosition()) <
-								Vector3.Distance(cur.getAbsolutePosition(), entity.getAbsolutePosition())
+								Vector3.Distance(ac?.absolutePosition ? ac.absolutePosition : Vector3.One().scale(Infinity), entity.absolutePosition) <
+								Vector3.Distance(cur.absolutePosition, entity.absolutePosition)
 									? ac
 									: cur),
 						null
@@ -117,7 +120,7 @@ export default class Level {
 
 					if (target) {
 						const targetPoints = [...target.hardpoints, target].filter(targetHardpoint => {
-							const distance = Vector3.Distance(targetHardpoint.position, hardpoint.absolutePosition);
+							const distance = Vector3.Distance(targetHardpoint.absolutePosition, hardpoint.absolutePosition);
 							return distance < hardpoint._generic.range
 						});
 						const targetPoint = targetPoints.reduce((current, newPoint) => {
@@ -127,7 +130,8 @@ export default class Level {
 						}, target);
 
 						if (hardpoint.reload <= 0) {
-							hardpoint.fireProjectile(targetPoint);
+							hardpoint.reload = hardpoint._generic.reload;
+							hardpoint.fire(targetPoint)
 						}
 					}
 				}

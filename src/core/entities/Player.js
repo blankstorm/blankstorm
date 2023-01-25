@@ -10,7 +10,6 @@ export default class Player extends Entity {
 	fleet = [];
 	xp = 0;
 	xpPoints = 0;
-	velocity = Vector3.Zero();
 	speed = 1;
 	get power() {
 		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);

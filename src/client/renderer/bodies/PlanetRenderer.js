@@ -16,7 +16,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		options.mapSize = 1024;
 		options.maxResolution = [64, 256, 1024][config.render_quality];
 		let id = random.hex(8);
-		super('PlanetMaterial.' + id, scene, './shaders/planet', {
+		super('PlanetMaterial.' + id, scene, '../shaders/planet', {
 			attributes: ['position', 'normal', 'uv'],
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
 			needAlphaBlending: true,
@@ -39,7 +39,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		);
 		this.setTexture('textureSampler', this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, './shaders/cloud', { ...options, options: new Vector3(1.0, 0, 0) }, scene);
+		this.cloudTexture = this.generateTexture(id, '../shaders/cloud', { ...options, options: new Vector3(1.0, 0, 0) }, scene);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);

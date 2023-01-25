@@ -11,6 +11,7 @@ export default class PlayerRenderer extends TransformNode {
 
 	constructor({ id, name, position, rotation }, scene) {
 		super(id, scene);
+		this.name = name;
 		this.position = position;
 		this.rotation = rotation;
 		this.camera = new ArcRotateCamera(id, -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), scene);

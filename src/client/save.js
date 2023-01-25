@@ -28,7 +28,7 @@ export default class Save extends Playable {
 			let live = save.load();
 			await live.ready();
 			save.getStore().current = live;
-			live.play(live.playerData.get(playerID));
+			live.play(live.entities.get(playerID));
 			$('#loading_cover').hide();
 		};
 
