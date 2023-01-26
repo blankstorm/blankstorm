@@ -30,6 +30,12 @@ export default class extends Map {
 		this.set(item, this.get(item) + amount);
 	}
 
+	addItems(items){
+		for(let [id, amount] of Object.entries(items)){
+			this.add(id, amount);
+		}
+	}
+
 	remove(item, amount) {
 		this.set(item, this.get(item) - amount);
 	}

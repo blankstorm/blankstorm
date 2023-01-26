@@ -1,9 +1,10 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 import Path from '../Path.js';
+import Node from '../Node.js';
 import { random } from '../utils.js';
 
-export default class Entity {
+export default class Entity extends Node {
 	_generic = { speed: 1 };
 
 	selected = false;
@@ -15,7 +16,7 @@ export default class Entity {
 
 	constructor({id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), owner, level }) {
 		
-		Object.assign(this, { id, name, position, rotation, owner, level });
+		super({ id, name, position, rotation, owner, level });
 
 		level.entities.set(this.id, this);
 
@@ -52,14 +53,10 @@ export default class Entity {
 	}
 
 	serialize() {
-		return {
-			id: this.id,
-			name: this.name,
-			owner: this.owner?.id,
-			type: this.constructor.name.toLowerCase(),
-			position: this.position.asArray().map(num => +num.toFixed(3)),
-			rotation: this.rotation.asArray().map(num => +num.toFixed(3)),
-		};
+		return Object.assign(super.serialize(), {
+			isTargetable: this.isTargetable,
+			selected: this.selected,
+		});
 	}
 
 	static FromData(data, level) {

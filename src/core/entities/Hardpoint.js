@@ -1,10 +1,11 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 import { wait } from '../utils.js';
-import Entity from './Entity.js';
+import Node from '../Node.js';
 import Ship from './Ship.js';
+import Player from './Player.js';
 
-export default class Hardpoint extends Entity {
+export default class Hardpoint extends Node {
 	_generic = {};
 	constructor({ id, name, position, rotation, owner, level, type }) {
 		level ?? owner?.level;
@@ -26,7 +27,7 @@ export default class Hardpoint extends Entity {
 
 	serialize() {
 		return Object.assign(super.serialize(), {
-			hardpoint_type: this.hardpointType,
+			type: this.hardpointType,
 			reload: this.reload,
 		});
 	}
@@ -35,7 +36,25 @@ export default class Hardpoint extends Entity {
 		const time = Vector3.Distance(this.position, target.position) / this._generic.projectile.speed;
 		this.reload = this._generic.reload;
 		await wait(time);
-		(target instanceof Ship ? target : target.owner).hp -= this._generic.damage * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
+		const targetShip = target instanceof Ship ? target : target.owner;
+		targetShip.hp -= this._generic.damage * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
+		if(targetShip.hp <= 0){
+			switch(this.owner.owner.constructor.name.toLowerCase()){
+				case 'player':
+					this.owner.owner.addItems(targetShip._generic.recipe);
+					if (Math.floor(Player.xpToLevel(this.owner.owner.xp + targetShip._generic.xp)) > Math.floor(Player.xpToLevel(this.owner.owner.xp))) {
+						/*level up*/
+						this.owner.owner.xpPoints++;
+					}
+					this.owner.owner.xp += targetShip._generic.xp;
+					break;
+				case 'celestialbody':
+					this.owner.owner.rewards.addItems(targetShip._generic.recipe);
+					break;
+				default:
+			}
+			targetShip.remove();
+		}
 	}
 
 	static generic = new Map(

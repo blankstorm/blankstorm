@@ -19,6 +19,16 @@ export default class HardpointRenderer extends ModelRenderer {
 		this._generic.fire.call(this, target, options);
 	}
 
+	static FromData(data, scene){
+		return new this({
+			id: data.id,
+			position: Vector3.FromArray(data.position),
+			rotation: Vector3.FromArray(data.rotation),
+			scene,
+			type: data.type,
+		});
+	}
+
 	static generic = new Map(Object.entries({
 		async laser(target, { materials = [], speed }) {
 			await wait(random.int(4, 40));

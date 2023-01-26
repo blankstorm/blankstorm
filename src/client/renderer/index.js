@@ -15,12 +15,10 @@ import StarRenderer from './bodies/StarRenderer.js';
 import ModelRenderer from './ModelRenderer.js';
 import ShipRenderer from './entities/ShipRenderer.js';
 
-let skybox, xzPlane;
+let skybox, xzPlane, cache = { entities: {}, bodies: {} };
 export let hl, gl, probe, engine, scene;
 
-const cache = {},
-	bodies = new Map(),
-	entities = new Map();
+const bodies = new Map(), entities = new Map();
 
 const handleCanvasClick = (e, owner) => {
 	owner ??= [...this.playerData][0];
@@ -126,6 +124,9 @@ export async function dispose() {
 	scene.dispose();
 }
 
+/**
+ * Clears out loaded data and flushs the cache.
+ */
 export async function clear() {
 	if (!scene) {
 		throw new ReferenceError(`Renderer not initalized`);
@@ -140,6 +141,8 @@ export async function clear() {
 		entity.dispose();
 		entities.delete(id);
 	}
+
+	cache = { entities: {}, bodies: {} };
 }
 
 export async function load(levelData) {
@@ -149,7 +152,7 @@ export async function load(levelData) {
 
 	for (let [id, data] of Object.entries(levelData.bodies)) {
 		let body;
-		switch (data.type) {
+		switch (data.node_type) {
 			case 'star':
 				body = StarRenderer.FromData(data, scene);
 				break;
@@ -157,7 +160,7 @@ export async function load(levelData) {
 				body = PlanetRenderer.FromData(data, scene);
 				break;
 			default:
-				throw new ReferenceError(`rendering for CelestialBody type "${data.type}" is not supported`);
+				throw new ReferenceError(`rendering for CelestialBody type "${data.node_type}" is not supported`);
 		}
 
 		bodies.set(id, body);
@@ -165,7 +168,7 @@ export async function load(levelData) {
 
 	for (let [id, data] of Object.entries(levelData.entities)) {
 		let entity;
-		switch (data.type) {
+		switch (data.node_type) {
 			case 'player':
 				entity = PlayerRenderer.FromData(data, scene);
 				break;
@@ -173,7 +176,7 @@ export async function load(levelData) {
 				entity = ShipRenderer.FromData(data, scene);
 				break;
 			default:
-				throw new ReferenceError(`rendering for Entity type "${data.type}" is not supported`);
+				throw new ReferenceError(`rendering for Entity type "${data.node_type}" is not supported`);
 		}
 		entities.set(id, entity);
 	}
@@ -181,8 +184,72 @@ export async function load(levelData) {
 
 export async function update(levelData) {
 	if (!scene) {
-		throw new ReferenceError(`Renderer not initalized`);
+		throw new ReferenceError('Renderer not initalized');
 	}
+
+	const dataToUpdate = { bodies: {}, entities: {} };
+
+	if(levelData.id != cache.id && cache.id){
+		console.warn(`Updating the renderer with a different level (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);
+	}
+
+	for(let [id, body] of [...Object.entries(cache.bodies), ...Object.entries(levelData.bodies)]){
+
+		if(!cache.bodies[id]){
+			dataToUpdate.bodies[id] = body;
+			continue;
+		}
+
+		if(!levelData.bodies[id]){
+			bodies.get(id).dispose();
+			bodies.delete(id);
+			continue;
+		}
+
+		/**
+		 * @todo Actually check for changed attributes
+		 */
+		if(JSON.stringify(cache.bodies[id]) != JSON.stringify(levelData.bodies[id])){
+			bodies.get(id).dispose();
+			bodies.delete(id);
+			dataToUpdate.bodies[id] = body;
+		}
+		
+	}
+
+	for(let [id, entity] of [...Object.entries(cache.entities), ...Object.entries(levelData.entities)]){
+
+		if(!cache.entities[id]){
+			dataToUpdate.entities[id] = entity;
+			continue;
+		}
+
+		if(!levelData.entities[id]){
+			entities.get(id).dispose();
+			entities.delete(id);
+			continue;
+		}
+
+		/**
+		 * @todo Actually check for changed attributes
+		 */
+		if(JSON.stringify(cache.entities[id]) != JSON.stringify(levelData.entities[id])){
+			entities.get(id).dispose();
+			entities.delete(id);
+			dataToUpdate.entities[id] = entity;
+		}
+		
+	}
+
+	return await load(dataToUpdate);
+}
+
+export function getPlayer(id){
+	if(!(entities.get(id) instanceof PlayerRenderer)){
+		throw new TypeError(`renderer ${id} does not exist or is not a player renderer`);
+	}
+
+	return entities.get(id);
 }
 
 export async function serialize() {

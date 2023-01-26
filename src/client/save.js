@@ -9,10 +9,11 @@ import { modal, download, confirm, alert } from './utils.js';
 import Waypoint from './waypoint.js';
 import db from './db.js';
 import { Playable } from './playable.js';
-import { updateUI, canvas, setPaused, mp, saves } from './index.js';
+import { canvas, setPaused, mp, saves } from './index.js';
+import { update as updateUI } from './ui.js';
 
 export default class Save extends Playable {
-	static GUI = function (save) {
+	static GUI(save) {
 		const gui = $(`<li ofn bg bw style=align-items:center;height:3em;></li>`);
 		gui.delete = $(`<p style=position:absolute;left:10%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(gui);
 		gui.download = $(`<p style=position:absolute;left:15%><svg><use href=images/icons.svg#download /></svg></p>`).appendTo(gui);
@@ -61,7 +62,7 @@ export default class Save extends Playable {
 			});
 		});
 		return gui;
-	};
+	}
 	static Live = class extends Level {
 		waypoints = [];
 		constructor(name, doNotGenerate) {

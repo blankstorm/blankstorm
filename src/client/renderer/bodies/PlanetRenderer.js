@@ -76,7 +76,8 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 
 export default class PlanetRenderer extends Mesh {
 	constructor({ name, position = Vector3.Zero(), rotation = Vector3.Zero(), biome = 'earthlike', radius = 1, scene, id }) {
-		super(name ?? 'Unknown Planet', id, scene);
+		super(id, scene);
+		this.name = name ?? 'Unknown Planet';
 		CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
 		Object.assign(this, { position, rotation });
 		if(PlanetRenderer.biomes.has(biome)){

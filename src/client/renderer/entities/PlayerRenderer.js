@@ -16,6 +16,7 @@ export default class PlayerRenderer extends TransformNode {
 		this.rotation = rotation;
 		this.camera = new ArcRotateCamera(id, -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), scene);
 		this.camera.parent = this;
+		this.camera.inputs.attached.pointers.buttons = [1];
 		Object.assign(this.camera, config.player_camera);
 
 	}
@@ -26,6 +27,11 @@ export default class PlayerRenderer extends TransformNode {
 		direction.normalize();
 		if (computeMultiplyer) direction.scaleInPlace(this.speed + this.tech.thrust / 10);
 		this.velocity.addInPlace(direction);
+	}
+
+	resetCamera(){
+		this.camera.alpha = -Math.PI / 2;
+		this.camera.beta = Math.PI;
 	}
 
 	static FromData(data, scene){

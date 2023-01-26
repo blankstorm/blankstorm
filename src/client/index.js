@@ -30,17 +30,22 @@ Object.defineProperties(Object.prototype, {
 import db from './db.js';
 import { SettingsStore } from './settings.js';
 import LocaleStore from './locales.js';
-import { web, upload, minimize, alert, confirm, prompt } from './utils.js';
+import { web, upload, minimize, alert, prompt } from './utils.js';
 import Waypoint from './waypoint.js';
 import Save from './save.js';
 import Server from './server.js';
 import './contextmenu.js';
 import { PlayableStore } from './playable.js';
 import * as renderer from './renderer/index.js';
+import * as ui from './ui.js';
 
-$('#loading_cover p').text('Loading settings and locales...');
-export const locales = new LocaleStore();
+//Set the title
+document.title = 'Blankstorm ' + versions.get(version).text;
+$('#main .version a')
+	.text(versions.get(version).text)
+	.attr('href', web('versions#' + version));
 
+$('#loading_cover p').text('Loading...');
 export const settings = new SettingsStore({
 	sections: [
 		{
@@ -312,24 +317,11 @@ const sound = {
 	ui: 'sfx/ui.mp3',
 };
 
-//Class definitions
-
-//Some stuff done on initalization
-document.title = 'Blankstorm ' + versions.get(version).text;
-$('#main .version a')
-	.text(versions.get(version).text)
-	.attr('href', web('versions#' + version));
-console.log(`%cBlankstorm ${versions.get(version).text}`, `color:#f55`);
-
 //load mods (if any)
-db.tx('mods').then(tx => {
-	tx.objectStore('mods')
-		.getAll()
-		.async()
-		.then(result => {
-			console.log('Loaded mods: ' + (result.join('\n') || '(none)'));
-		});
-});
+$('#loading_cover p').text('Loading Mods...');
+let tx = await db.tx('mods');
+let result = await tx.objectStore('mods').getAll().async();
+console.log('Loaded mods: ' + (result.join('\n') || '(none)'));
 
 export let isPaused = true,
 	mp = false,
@@ -349,7 +341,7 @@ try {
 	alert('Failed to initalize renderer: ' + err.stack);
 }
 
-const screenshots = [],
+export const screenshots = [],
 	mods = new Map();
 
 let strobeInterval = null;
@@ -369,15 +361,14 @@ const strobe = rate => {
 const toggleChat = command => {
 	$('#chat,#chat_history').toggle();
 	if ($('#cli').toggle().is(':visible')) {
-		player.data().cam.detachControl(canvas, true);
+		renderer.getPlayer(player.id).camera.detachControl(canvas, true);
 		$('#cli').focus();
 		if (command) {
 			$('#cli').val('/');
 		}
 	} else {
 		canvas.focus();
-		player.data().cam.attachControl(canvas, true);
-		player.data().cam.inputs.attached.pointers.buttons = [1];
+		renderer.getPlayer(player.id).camera.attachControl(canvas, true);
 	}
 };
 const clientRunCommand = command => {
@@ -390,16 +381,14 @@ const clientRunCommand = command => {
 const changeUI = (selector, hideAll) => {
 	if ($(selector).is(':visible')) {
 		canvas.focus();
-		player.data().cam.attachControl(canvas, true);
-		player.data().cam.inputs.attached.pointers.buttons = [1];
+		renderer.getPlayer(player.id).camera.attachControl(canvas, true);
 		$(selector).hide();
 	} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
 		canvas.focus();
-		player.data().cam.attachControl(canvas, true);
-		player.data().cam.inputs.attached.pointers.buttons = [1];
+		renderer.getPlayer(player.id).camera.attachControl(canvas, true);
 		$('[game-ui]').hide();
 	} else if (!$('[game-ui]').is(':visible')) {
-		player.data().cam.detachControl(canvas, true);
+		renderer.getPlayer(player.id).camera.detachControl(canvas, true);
 		$(selector).show().focus();
 	}
 };
@@ -439,8 +428,6 @@ export const player = {
 	updateFleet: () => {
 		if (player.data().fleet.length <= 0) {
 			chat(locales.text`player.death`);
-			player.reset();
-			player.wipe();
 			new Ship('mosquito', player.data());
 			new Ship('cillus', player.data());
 		}
@@ -448,28 +435,6 @@ export const player = {
 	chat: (...msg) => {
 		for (let m of msg) {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
-		}
-	},
-	stop: (delay = 0) => {
-		setTimeout(() => {
-			player.data().velocity = Vector3.Zero();
-		}, +delay || 0);
-	},
-	reset: noStop => {
-		player.data().position = random.cords(random.int(0, 50), true).add(new Vector3(0, 0, -1000));
-		player.data().rotation = Vector3.Zero();
-		player.data().cam.alpha = -Math.PI / 2;
-		player.data().cam.beta = Math.PI;
-		player.data().cam.target = player.data().position;
-		if (!noStop) player.stop();
-	},
-	wipe: () => {
-		player.data().removeAllItems();
-		for (let type of Tech.keys()) {
-			player.data().tech[type] = 0;
-		}
-		for (let ship of player.data().fleet) {
-			ship.remove();
 		}
 	},
 	data: id => saves.current?.entities?.get(id ?? player.id) ?? {},
@@ -504,234 +469,6 @@ if (cookie.token && navigator.onLine) {
 	chat("You're not logged in, and will not be able to play multiplayer.");
 }
 
-const ui = {
-	item: {},
-	tech: {},
-	ship: {},
-	init() {
-		for (let [id, item] of Items) {
-			ui.item[id] = $(`<div>
-						<span style=text-align:right;>${locales.text(`item.${id}.name`)}${item.rare ? ` (rare)` : ``}: </span>
-						<span class=count style=text-align:left;></span>
-					</div>`)
-				.click(() => {
-					if (item.recipe && player.data().hasItems(item.recipe)) {
-						player.data().removeItems(item.recipe);
-						player.data().items[id]++;
-					}
-				})
-				.removeAttr('clickable')
-				.attr('bg', 'none')
-				.appendTo('div.inv');
-		}
-		for (let [id, t] of Tech) {
-			ui.tech[id] = $(`<div>
-						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-						<span class=name style=text-align:center;>${locales.text(`tech.${id}.name`)}</span>
-						<span class="upgrade add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
-					</div>`)
-				.find('.upgrade')
-				.click(() => {
-					if (
-						player.data().hasItems(Tech.priceOf(id, player.data().tech[id])) &&
-						player.data().tech[id] < t.max &&
-						!Tech.isLocked(id, player.data()) &&
-						player.data().xpPoints >= 1
-					) {
-						player.data().removeItems(Tech.priceOf(id, player.data().tech[id]));
-						player.data().tech[id]++;
-						player.data().xpPoints--;
-					}
-					ui.update();
-				})
-				.parent()
-				.attr('bg', 'none')
-				.appendTo('div.lab');
-		}
-		for (let [id, ship] of Ship.generic) {
-			ui.ship[id] = $(`<div>
-						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-						<span class=name style=text-align:center>${locales.text(`entity.${id}.name`)}</span>
-						<span class="add add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
-					</div>`)
-				.find('.add')
-				.click(() => {
-					if (player.data().hasItems(ship.recipe)) {
-						player.data().removeItems(ship.recipe);
-						new Ship(id, player.data());
-					}
-					ui.update();
-				})
-				.parent()
-				.attr('bg', 'none')
-				.appendTo('div.yrd');
-		}
-	},
-	update: (scene = saves.current) => {
-		try {
-			if (saves.current instanceof Save.Live && player.data() instanceof Player) {
-				$('div.screenshots').empty();
-				$('div.map>:not(button)').remove();
-				$('svg.item-bar rect').attr('width', (player.data().totalItems / player.data().maxItems) * 100 || 0);
-				$('div.item-bar p.label').text(`${minimize(player.data().totalItems)} / ${minimize(player.data().maxItems)}`);
-
-				for (let [id, amount] of Object.entries(player.data().items)) {
-					ui.item[id].find('.count').text(minimize(amount));
-				}
-
-				//update tech info
-				for (let [id, t] of Tech) {
-					const materials = Object.entries(Tech.priceOf(id, player.data().tech[id])).reduce(
-						(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.data().items[id])}/${minimize(amount)}`,
-						''
-					);
-					const requires = Object.entries(t.requires).reduce(
-						(result, [id, amount]) =>
-							result + (amount > 0)
-								? `<br>${locales.text(`tech.${id}.name`)}: ${player.data().tech[id]}/${amount}`
-								: `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
-						''
-					);
-					ui.tech[id]
-						.find('.upgrade tool-tip')
-						.html(
-							`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
-								player.data().tech[id] >= t.max
-									? `<strong>Max Level</strong>`
-									: `${player.data().tech[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().tech[id] + 1}`
-							}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
-								settings.get('tooltips') ? '<br>type: ' + id : ''
-							}`
-						);
-					ui.tech[id].find('.locked')[Tech.isLocked(id, player.data()) ? 'show' : 'hide']();
-				}
-
-				//update ship info
-				for (let [id, ship] of Ship.generic) {
-					const materials = Object.entries(ship.recipe).reduce(
-						(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.data().items[id])}/${minimize(amount)}`,
-						''
-					);
-					const requires = Object.entries(ship.requires).reduce(
-						(result, [id, tech]) =>
-							`${result}<br>${
-								tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.data().tech[id]}/${tech}`
-							}`,
-						''
-					);
-					ui.ship[id]
-						.find('.add tool-tip')
-						.html(
-							`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
-								Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
-							}${requires}${settings.debug?.tooltips ? '<br>' + id : ''}`
-						);
-
-					let locked = false;
-					for (let t in ship.requires) {
-						if (Tech.isLocked(t, player.data())) locked = true;
-					}
-					ui.ship[id].find('.locked')[locked ? 'show' : 'hide']();
-				}
-
-				scene.waypoints.forEach((wp, i) => {
-					wp.gui(i + 1).appendTo('div.map');
-					wp.marker.show();
-				});
-				for (let [id, body] of scene.bodies) {
-					if (body instanceof CelestialBody) {
-						$('select.move').append((body.option = $(`<option value=${id}>${body.name}</option>`)));
-					}
-				}
-			}
-			$('.marker').hide();
-
-			screenshots.forEach(s => {
-				$(`<img src=${s} width=256></img>`)
-					.appendTo('#q div.screenshots')
-					.cm(
-						$('<button><svg><use href=images/icons.svg#download /></svg> Download</button>').click(() => {
-							$('<a download=screenshot.png></a>').attr('href', s)[0].click();
-						}),
-						$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').click(() => {
-							confirm().then(() => {
-								screenshots.splice(screenshots.indexOf(s), 1);
-								ui.update();
-							});
-						})
-					);
-			});
-			servers.forEach(server => {
-				server.gui.name.text(server.name);
-			});
-			saves.forEach(save => {
-				save.gui.name.text(save.data.name);
-				save.gui.version.text(versions.get(save.data.version)?.text ?? save.data.version);
-				save.gui.date.text(new Date(save.data.date).toLocaleString());
-			});
-			$(':root').css('--font-size', settings.get('font_size') + 'px');
-			if (mp) {
-				$('#esc .quit').text('Disconnect');
-				$('#esc .options').attr('plot', '12.5px,125px,225px,50px,a');
-				$('#esc .quit').attr('plot', '12.5px,187.5px,225px,50px,a');
-				$('#esc .save').hide();
-			} else {
-				$('#esc .quit').text('Exit Game');
-				$('#esc .save').attr('plot', '12.5px,125px,225px,50px,a');
-				$('#esc .options').attr('plot', '12.5px,187.5px,225px,50px,a');
-				$('#esc .quit').attr('plot', '12.5px,250px,225px,50px,a');
-				$('#esc .save').show();
-			}
-
-			$('[plot]').each((i, e) => {
-				let scale =
-					settings.get('gui_scale') == 0
-						? innerHeight <= 475
-							? 0.5
-							: innerHeight <= 650
-							? 0.75
-							: innerHeight <= 800
-							? 1
-							: 1.25
-						: Object.assign([1, 0.75, 1, 1.25][settings.get('gui_scale')], { is_from_array: true });
-
-				let plot = $(e)
-					.attr('plot')
-					.replaceAll(/[\d.]+(px|em)/g, str => parseFloat(str) * scale + str.slice(-2))
-					.split(',');
-				plot[0][0] == 'c' && !plot[0].startsWith('calc')
-					? $(e).css('left', `${plot[0].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[2]}/2))${plot[0].slice(1) ? ` + ${plot[0].slice(1)})` : ''}`)
-					: plot[0][0] == 'r'
-					? $(e).css('right', plot[0].slice(1))
-					: plot[0][0] == 'l'
-					? $(e).css('left', plot[0].slice(1))
-					: $(e).css('left', plot[0]);
-				plot[1][0] == 'c' && !plot[1].startsWith('calc')
-					? $(e).css('top', `${plot[1].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[3]}/2))${plot[1].slice(1) ? ` + ${plot[1].slice(1)})` : ''}`)
-					: plot[1][0] == 'b'
-					? $(e).css('bottom', plot[1].slice(1))
-					: plot[1][0] == 't'
-					? $(e).css('top', plot[1].slice(1))
-					: $(e).css('top', plot[1]);
-				$(e).css({
-					width: plot[2],
-					height: plot[3],
-					position: ['absolute', 'fixed', 'relative', 'sticky'].includes(plot[4])
-						? plot[4]
-						: /^(a|s|f|r)$/.test(plot[4])
-						? { a: 'absolute', f: 'fixed', r: 'relative', s: 'sticky' }[plot[4]]
-						: 'fixed',
-				});
-			});
-		} catch (err) {
-			console.error('Failed to update UI: ' + err.stack);
-		}
-	},
-	lastScene: '#main',
-};
-
-export const updateUI = ui.update;
-
 oncontextmenu = () => {
 	$('.cm').not(':last').remove();
 };
@@ -739,49 +476,45 @@ onclick = () => {
 	$('.cm').remove();
 };
 
-//load locales
 $('#loading_cover p').text('Loading Locales...');
+export const locales = new LocaleStore();
 await locales.fetch('locales/en.json');
 locales.load('en');
 ui.init();
 
 //Load saves and servers into the game (from the IndexedDB)
 $('#loading_cover p').text('Loading saves...');
-let tx = await db.tx('saves');
-let result = await tx.objectStore('saves').getAll().async();
+tx = await db.tx('saves');
+result = await tx.objectStore('saves').getAll().async();
 result.forEach(save => new Save(save));
 
 $('#loading_cover p').text('Loading servers...');
 tx = await db.tx('servers');
 result = await tx.objectStore('servers').getAllKeys().async();
-result.forEach(key =>
-	db.tx('servers').then(tx =>
-		tx
-			.objectStore('servers')
-			.get(key)
-			.async()
-			.then(result => new Server(key, result, player.data()))
-	)
-);
+for(let id of result){
+	let data = await tx.objectStore('servers').get(id).async();
+	new Server(id, data, player.data());
+}
 
-commands.playsound = (level, name, volume = settings.get('sfx')) => {
-	if (sound[name]) {
-		playsound(name, volume);
-	} else {
-		throw new ReferenceError(`sound "${name}" does not exist`);
-	}
-};
-commands.reload = () => {
-	//maybe also reload mods in the future
-	renderer.engine.resize();
-};
+Object.assign(commands, {
+	playsound(level, name, volume = settings.get('sfx')) {
+		if (sound[name]) {
+			playsound(name, volume);
+		} else {
+			throw new ReferenceError(`sound "${name}" does not exist`);
+		}
+	},
+	reload() {
+		//maybe also reload mods in the future
+		renderer.engine.resize();
+	},
+});
 
 $('#loading_cover p').text('Registering event listeners...');
 //Event Listeners (UI transitions, creating saves, etc.)
 $('#main .sp').click(() => {
 	mp = false;
 	$('#load li').detach();
-	saves.forEach(save => save.gui.prependTo('#load'));
 	saves.forEach(save => save.gui.prependTo('#load'));
 	$('#main').hide();
 	$('#load button.upload use').attr('href', 'images/icons.svg#upload');
@@ -801,7 +534,7 @@ $('#main .mp').click(() => {
 	});
 });
 $('#main .options').click(() => {
-	ui.LastScene = '#main';
+	ui.setLast('#main');
 	$('#settings').show();
 	ui.update();
 });
@@ -846,8 +579,7 @@ $('#save .new').click(async () => {
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();
-	player.data().cam.attachControl(canvas, true);
-	player.data().cam.inputs.attached.pointers.buttons = [1];
+	renderer.getPlayer(player.id).camera.attachControl(canvas, true);
 	isPaused = false;
 });
 $('#esc .save').click(() => {
@@ -869,7 +601,7 @@ $('#esc .save').click(() => {
 	}
 });
 $('#esc .options').click(() => {
-	ui.LastScene = '#esc';
+	ui.setLast('#esc');
 	$('#esc').hide();
 	$('#settings').show();
 });
@@ -943,7 +675,7 @@ $('#settings button.mod').click(() => {
 });
 $('#settings button.back').click(() => {
 	$('#settings').hide();
-	$(ui.LastScene).show();
+	$(ui.getLast()).show();
 	ui.update();
 });
 $('#q div.warp button.warp').click(() => {
@@ -1033,8 +765,7 @@ $('#cli').keydown(e => {
 });
 canvas.on('click', e => {
 	if (!isPaused) {
-		player.data().cam.attachControl(canvas, true);
-		player.data().cam.inputs.attached.pointers.buttons = [1];
+		renderer.getPlayer(player.id).camera.attachControl(canvas, true);
 	}
 
 	if (saves.current instanceof Save.Live) {
@@ -1111,25 +842,14 @@ const loop = () => {
 	if (saves.current instanceof Save.Live) {
 		if (!isPaused) {
 			try {
-				player.data().cam.angularSensibilityX = player.data().cam.angularSensibilityY = 2000 / settings.get('sensitivity');
+				
+				renderer.getPlayer(player.id).camera.angularSensibilityX = renderer.getPlayer(player.id).camera.angularSensibilityY = 2000 / settings.get('sensitivity');
 				player.updateFleet();
 				saves.current.meshes.forEach(mesh => {
 					if (mesh instanceof CelestialBody) mesh.showBoundingBox = hitboxes;
 					if (mesh.parent instanceof Entity) mesh.getChildMeshes().forEach(child => (child.showBoundingBox = hitboxes));
 					if (mesh != saves.current.skybox && isHex(mesh.id)) mesh.showBoundingBox = hitboxes;
 				});
-				for (let ship of saves.current.entities.values()) {
-					if (player.data().fleet.length > 0) {
-						if (ship.hp <= 0) {
-							player.data().addItems(ship._generic.recipe);
-							if (Math.floor(player.levelOf(player.data().xp + ship._generic.xp)) > Math.floor(player.levelOf(player.data().xp))) {
-								/*level up*/
-								player.data().xpPoints++;
-							}
-							player.data().xp += ship._generic.xp;
-						}
-					}
-				}
 				player.updateFleet();
 				saves.current.waypoints.forEach(waypoint => {
 					let pos = waypoint.screenPos;

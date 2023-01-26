@@ -59,7 +59,7 @@ export default class ModelRenderer extends TransformNode {
 	static modelPaths = new Map(Object.entries({
 		wind: 'models/wind.glb',
 		mosquito: 'models/mosquito.glb',
-		cilus: 'models/cillus.glb',
+		cillus: 'models/cillus.glb',
 		inca: 'models/inca.glb',
 		pilsung: 'models/pilsung.glb',
 		apis: 'models/apis.glb',

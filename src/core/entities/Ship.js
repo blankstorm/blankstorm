@@ -61,7 +61,7 @@ export default class Ship extends Entity {
 			hp: this.hp.toFixed(3),
 			jumpCooldown: this.jumpCooldown.toFixed(3),
 			storage: this.storage.serialize().items,
-			hardpoints: this.hardpoints.map(hp => hp.id),
+			hardpoints: this.hardpoints.map(hp => hp.serialize()),
 		});
 	}
 	static generic = new Map(

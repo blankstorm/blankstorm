@@ -109,10 +109,28 @@ export default class Player extends Entity {
 		this.velocity.addInPlace(direction);
 	}
 
+	reset() {
+		this.removeAllItems();
+		for (let type of Tech.keys()) {
+			this.tech[type] = 0;
+		}
+		for (let ship of this.fleet) {
+			ship.remove();
+		}
+	}
+
 	serialize() {
 		return Object.assign(super.serialize(), {
 			fleet: this.fleet.map(ship => ship.id),
 		});
+	}
+
+	static xpToLevel(xp){
+		return Math.sqrt(xp / 10);
+	}
+
+	static levelToXp(level){
+		return 10 * level ** 2;
 	}
 
 	static FromData(data, level) {
