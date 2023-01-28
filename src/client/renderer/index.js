@@ -25,7 +25,7 @@ let skybox,
 	gl;
 export let engine, scene, hl, probe;
 
-export function setHitboxes(value){
+export function setHitboxes(value) {
 	hitboxes = !!value;
 }
 

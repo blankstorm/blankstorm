@@ -8,10 +8,9 @@ import { settings } from 'client/index.js';
 import { hl } from '../index.js';
 
 export default class EntityRenderer extends TransformNode {
-
 	#selected = false;
 
-	constructor({id, scene }) {
+	constructor({ id, scene }) {
 		super(id, scene);
 		this.id = id;
 	}
@@ -80,7 +79,6 @@ export default class EntityRenderer extends TransformNode {
 			}
 		});
 	}
-
 
 	static FromData(data, scene) {
 		return new this({

@@ -25,7 +25,7 @@ export default class StarRenderer extends Mesh {
 		//s.material.Fragment_Before_FragColor(`color = vec4(vec3(color.xyz),1.0);`);
 	}
 
-	static FromData(data, scene){
+	static FromData(data, scene) {
 		return new this({
 			id: data.id,
 			name: data.name,

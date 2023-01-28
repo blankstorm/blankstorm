@@ -267,7 +267,7 @@ export default class Ship extends Entity {
 			hp: +data.hp,
 			reload: +data.reload,
 			jumpCooldown: +data.jumpCooldown,
-			level
+			level,
 		});
 	}
 }

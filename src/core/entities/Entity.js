@@ -14,17 +14,16 @@ export default class Entity extends Node {
 	rotation = Vector3.Zero();
 	velocity = Vector3.Zero();
 
-	constructor({id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), owner, level }) {
-		
+	constructor({ id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), owner, level }) {
 		super({ id, name, position, rotation, owner, level });
 
 		level.entities.set(this.id, this);
-
 	}
 
-	get absolutePosition(){
-		let parent = this, position = Vector3.Zero();
-		while(parent){
+	get absolutePosition() {
+		let parent = this,
+			position = Vector3.Zero();
+		while (parent) {
 			position.addInPlace(parent.position);
 			parent = parent.owner;
 		}
@@ -44,7 +43,6 @@ export default class Entity extends Node {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : Vector3.Zero()), this.level);
 
-		
 		/*return await renderer.update({
 			[this.id]: {
 				path: this.currentPath

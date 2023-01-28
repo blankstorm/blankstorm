@@ -26,7 +26,7 @@ export default class Save extends Playable {
 		gui.date = $(`<p style=position:absolute;left:65%>${new Date(save.data.date).toLocaleString()}</p>`).appendTo(gui);
 		$('<p> </p>').appendTo(gui);
 
-		let loadAndPlay = async playerID => {
+		let loadAndPlay = async () => {
 			$('#loading_cover').show();
 			let live = save.load();
 			await live.ready();
@@ -114,8 +114,8 @@ export default class Save extends Playable {
 			];
 			save.entities.set(playerID, playerData);
 
-			new Ship({ className: 'mosquito', owner: playerData, level: save});
-			new Ship({ className: 'cillus', owner: playerData, level: save});
+			new Ship({ className: 'mosquito', owner: playerData, level: save });
+			new Ship({ className: 'cillus', owner: playerData, level: save });
 			playerData.addItems(generate.items(5000));
 
 			return save;

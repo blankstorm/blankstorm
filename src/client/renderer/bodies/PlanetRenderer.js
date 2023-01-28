@@ -80,7 +80,7 @@ export default class PlanetRenderer extends Mesh {
 		this.name = name ?? 'Unknown Planet';
 		CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
 		Object.assign(this, { position, rotation });
-		if(PlanetRenderer.biomes.has(biome)){
+		if (PlanetRenderer.biomes.has(biome)) {
 			this.material = new PlanetRendererMaterial(PlanetRenderer.biomes.get(biome), scene);
 		} else {
 			throw new ReferenceError(`Biome "${biome}" does not exist`);
@@ -93,7 +93,7 @@ export default class PlanetRenderer extends Mesh {
 		];
 	}
 
-	static FromData(data, scene){
+	static FromData(data, scene) {
 		return new this({
 			id: data.id,
 			name: data.name,

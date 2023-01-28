@@ -492,7 +492,7 @@ result.forEach(save => new Save(save));
 $('#loading_cover p').text('Loading servers...');
 tx = await db.tx('servers');
 result = await tx.objectStore('servers').getAllKeys().async();
-for(let id of result){
+for (let id of result) {
 	let data = await tx.objectStore('servers').get(id).async();
 	new Server(id, data, player.data());
 }
@@ -843,7 +843,6 @@ const loop = () => {
 	if (saves.current instanceof Save.Live) {
 		if (!isPaused) {
 			try {
-				
 				renderer.getCamera().angularSensibilityX = renderer.getCamera().angularSensibilityY = 2000 / settings.get('sensitivity');
 				saves.current.waypoints.forEach(waypoint => {
 					let pos = waypoint.screenPos;

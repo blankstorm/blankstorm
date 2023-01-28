@@ -107,7 +107,9 @@ export default class Level {
 				for (let hardpoint of entity.hardpoints) {
 					hardpoint.reload = Math.max(--hardpoint.reload, 0);
 
-					const targets = [...this.entities.values()].filter(e => e.isTargetable && e.owner != entity.owner && Vector3.Distance(e.position, entity.position) < hardpoint._generic.range);
+					const targets = [...this.entities.values()].filter(
+						e => e.isTargetable && e.owner != entity.owner && Vector3.Distance(e.position, entity.position) < hardpoint._generic.range
+					);
 					const target = targets.reduce(
 						(ac, cur) =>
 							(ac =
@@ -121,7 +123,7 @@ export default class Level {
 					if (target) {
 						const targetPoints = [...target.hardpoints, target].filter(targetHardpoint => {
 							const distance = Vector3.Distance(targetHardpoint.absolutePosition, hardpoint.absolutePosition);
-							return distance < hardpoint._generic.range
+							return distance < hardpoint._generic.range;
 						});
 						const targetPoint = targetPoints.reduce((current, newPoint) => {
 							const oldDistance = Vector3.Distance(current.absolutePosition, hardpoint.absolutePosition);
@@ -131,7 +133,7 @@ export default class Level {
 
 						if (hardpoint.reload <= 0) {
 							hardpoint.reload = hardpoint._generic.reload;
-							hardpoint.fire(targetPoint)
+							hardpoint.fire(targetPoint);
 						}
 					}
 				}

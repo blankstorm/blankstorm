@@ -3,7 +3,6 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { random } from './utils.js';
 
 export default class Node {
-
 	selected = false;
 	isTargetable = false;
 
@@ -11,15 +10,14 @@ export default class Node {
 	rotation = Vector3.Zero();
 	velocity = Vector3.Zero();
 
-	constructor({id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), owner, level }) {
-		
+	constructor({ id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), owner, level }) {
 		Object.assign(this, { id, name, position, rotation, owner, level });
-
 	}
 
-	get absolutePosition(){
-		let parent = this, position = Vector3.Zero();
-		while(parent){
+	get absolutePosition() {
+		let parent = this,
+			position = Vector3.Zero();
+		while (parent) {
 			position.addInPlace(parent.position);
 			parent = parent.owner;
 		}
@@ -27,7 +25,7 @@ export default class Node {
 		return position;
 	}
 
-	serialize(){
+	serialize() {
 		return {
 			id: this.id,
 			name: this.name,

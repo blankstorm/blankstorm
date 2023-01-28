@@ -16,7 +16,6 @@ export default class CelestialBody extends Node {
 	}
 
 	constructor(id = random.hex(32), { name = '', radius = 1, fleet = [], owner = null, rewards = {}, position = Vector3.Zero(), rotation = Vector3.Zero() }, level) {
-
 		super({ id, name, owner, position, rotation, level });
 		this.radius = radius;
 		this.rewards = StorageData.FromData({ items: rewards, max: 1e10 });
@@ -27,7 +26,7 @@ export default class CelestialBody extends Node {
 			if (shipOrType instanceof Ship) {
 				this.fleet.push(shipOrType);
 			} else {
-				let ship = new Ship({ className: shipOrType, owner: this, level});
+				let ship = new Ship({ className: shipOrType, owner: this, level });
 				ship.position.addInPlace(this.fleetPosition);
 			}
 		}
@@ -37,7 +36,7 @@ export default class CelestialBody extends Node {
 		this.level.bodies.delete(this.id);
 	}
 
-	serialize(){
+	serialize() {
 		return Object.assign(super.serialize(), {
 			fleetPosition: this.fleetPosition.asArray().map(e => e.toFixed(3)),
 			fleet: this.fleet.map(ship => ship.id),
@@ -46,7 +45,7 @@ export default class CelestialBody extends Node {
 		});
 	}
 
-	static FromData(data, level){
+	static FromData(data, level) {
 		data ||= {};
 		let body = new CelestialBody(data.name, {
 			id: data.id,
@@ -57,9 +56,9 @@ export default class CelestialBody extends Node {
 			fleetPosition: Vector3.FromArray(data.fleetPosition || [0, 0, 0]),
 		});
 
-		if(level.entities.has(data.owner)){
+		if (level.entities.has(data.owner)) {
 			body.owner = level.entities.get(data.owner);
-		}else if(level.bodies.has(data.owner)){
+		} else if (level.bodies.has(data.owner)) {
 			body.owner = level.bodies.get(data.owner);
 		}
 	}

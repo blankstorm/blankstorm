@@ -10,4 +10,4 @@ export default {
 		minZ: 0.1,
 		radius: 10,
 	},
-}
+};

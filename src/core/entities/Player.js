@@ -125,11 +125,11 @@ export default class Player extends Entity {
 		});
 	}
 
-	static xpToLevel(xp){
+	static xpToLevel(xp) {
 		return Math.sqrt(xp / 10);
 	}
 
-	static levelToXp(level){
+	static levelToXp(level) {
 		return 10 * level ** 2;
 	}
 

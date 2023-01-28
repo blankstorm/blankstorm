@@ -18,8 +18,7 @@ export default class StationRenderer extends TransformNode {
 			id: data.id,
 			position: Vector3.FromArray(data.position),
 			rotation: Vector3.FromArray(data.rotation),
-			scene
+			scene,
 		});
 	}
-
 }

@@ -2,7 +2,6 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 
 export default class PlayerRenderer extends TransformNode {
-
 	velocity = Vector3.Zero();
 
 	constructor({ id, name, position, rotation }, scene) {
@@ -10,8 +9,6 @@ export default class PlayerRenderer extends TransformNode {
 		this.name = name;
 		this.position = position;
 		this.rotation = rotation;
-		
-
 	}
 
 	addVelocity(vector = Vector3.Zero(), computeMultiplyer) {
@@ -22,12 +19,15 @@ export default class PlayerRenderer extends TransformNode {
 		this.velocity.addInPlace(direction);
 	}
 
-	static FromData(data, scene){
-		return new this({
-			id: data.id,
-			name: data.name,
-			position: Vector3.FromArray(data.position || [0, 0, 0]),
-			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
-		}, scene);
+	static FromData(data, scene) {
+		return new this(
+			{
+				id: data.id,
+				name: data.name,
+				position: Vector3.FromArray(data.position || [0, 0, 0]),
+				rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
+			},
+			scene
+		);
 	}
 }

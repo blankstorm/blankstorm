@@ -5,32 +5,27 @@ import ModelRenderer from '../ModelRenderer.js';
 
 export default class ShipRenderer extends ModelRenderer {
 	hardpoints = [];
-	constructor({ id, name, position, rotation, scene, hardpoints, type, }) {
+	constructor({ id, name, position, rotation, scene, hardpoints, type }) {
 		super({ id, name, position, rotation, scene });
 
 		this.createInstance(type);
 
-		for(let hardpointData of hardpoints){
+		for (let hardpointData of hardpoints) {
 			let hardpoint;
-			if(hardpointData instanceof HardpointRenderer){
+			if (hardpointData instanceof HardpointRenderer) {
 				hardpoint = hardpointData;
-			}else{
+			} else {
 				hardpoint = HardpointRenderer.FromData(hardpointData, scene);
 			}
-			
+
 			this.hardpoints.push(hardpoint);
 			hardpoint.parent = this;
-
 		}
 	}
 
-	select(){
+	select() {}
 
-	}
-
-	unselect(){
-		
-	}
+	unselect() {}
 
 	static FromData(data, scene) {
 		return new this({

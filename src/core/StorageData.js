@@ -30,8 +30,8 @@ export default class extends Map {
 		this.set(item, this.get(item) + amount);
 	}
 
-	addItems(items){
-		for(let [id, amount] of Object.entries(items)){
+	addItems(items) {
+		for (let [id, amount] of Object.entries(items)) {
 			this.add(id, amount);
 		}
 	}
@@ -40,7 +40,7 @@ export default class extends Map {
 		this.set(item, this.get(item) - amount);
 	}
 
-	static FromData(data){
+	static FromData(data) {
 		return new this(data.max, data.items);
 	}
 }

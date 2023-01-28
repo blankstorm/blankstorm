@@ -38,8 +38,8 @@ export default class Hardpoint extends Node {
 		await wait(time);
 		const targetShip = target instanceof Ship ? target : target.owner;
 		targetShip.hp -= this._generic.damage * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
-		if(targetShip.hp <= 0){
-			switch(this.owner.owner.constructor.name.toLowerCase()){
+		if (targetShip.hp <= 0) {
+			switch (this.owner.owner.constructor.name.toLowerCase()) {
 				case 'player':
 					this.owner.owner.addItems(targetShip._generic.recipe);
 					if (Math.floor(Player.xpToLevel(this.owner.owner.xp + targetShip._generic.xp)) > Math.floor(Player.xpToLevel(this.owner.owner.xp))) {
