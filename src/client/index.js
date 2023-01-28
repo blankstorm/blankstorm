@@ -8,25 +8,6 @@ $.ajaxSetup({ timeout: 3000 });
 
 import 'socket.io-client'; /* global io */
 
-Object.defineProperties(Object.prototype, {
-	getByString: {
-		value: function (path, seperator) {
-			return path
-				.split(seperator || /[.[\]'"]/)
-				.filter(p => p)
-				.reduce((o, p) => (o ? o[p] : null), this);
-		},
-	},
-	setByString: {
-		value: function (path, value, seperator) {
-			return path
-				.split(seperator || /[.[\]'"]/)
-				.filter(p => p)
-				.reduce((o, p, i) => (o[p] = path.split(seperator || /[.[\]'"]/).filter(p => p).length === ++i ? value : o[p] || {}), this);
-		},
-	},
-});
-
 import db from './db.js';
 import { SettingsStore } from './settings.js';
 import LocaleStore from './locales.js';
@@ -770,13 +751,13 @@ canvas.on('click', e => {
 	}
 
 	if (saves.current instanceof Save.Live) {
-		saves.current.handleCanvasClick(e, player.data());
+		renderer.handleCanvasClick(e, player.data());
 	}
 	ui.update();
 });
 canvas.on('contextmenu', e => {
 	if (saves.current instanceof Save.Live) {
-		saves.current.handleCanvasRightClick(e, player.data());
+		renderer.handleCanvasRightClick(e, player.data());
 	}
 });
 canvas.on('keydown', e => {

@@ -16,7 +16,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		options.mapSize = 1024;
 		options.maxResolution = [64, 256, 1024][config.render_quality];
 		let id = random.hex(8);
-		super('PlanetMaterial.' + id, scene, '../shaders/planet', {
+		super('PlanetMaterial.' + id, scene, './shaders/planet', {
 			attributes: ['position', 'normal', 'uv'],
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
 			needAlphaBlending: true,

@@ -220,7 +220,7 @@ class SettingsItem {
 			throw new SettingsError('Attempted to call onTrigger for a non-keybind', this);
 		}
 
-		this.onTrigger(evt);
+		this.#onTrigger(evt);
 	}
 
 	update(options) {

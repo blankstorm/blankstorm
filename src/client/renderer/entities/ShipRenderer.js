@@ -1,10 +1,13 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 
 import HardpointRenderer from './HardpointRenderer.js';
 import ModelRenderer from '../ModelRenderer.js';
+import { hl } from '../index.js';
 
 export default class ShipRenderer extends ModelRenderer {
 	hardpoints = [];
+	#selected = false;
 	constructor({ id, name, position, rotation, scene, hardpoints, type }) {
 		super({ id, name, position, rotation, scene });
 
@@ -23,9 +26,29 @@ export default class ShipRenderer extends ModelRenderer {
 		}
 	}
 
-	select() {}
+	select() {
+		if(!this.isInstanciated){
+			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
+		}
+		[this.instance, ...this.hardpoints.map(hp => hp.instance)].forEach(mesh => {
+			mesh.getChildMeshes().forEach(child => {
+				hl.addMesh(child, Color3.Green());
+			});
+		});
+		this.#selected = true;
+	}
 
-	unselect() {}
+	unselect() {
+		if(!this.isInstanciated){
+			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
+		}
+		[this.instance, ...this.hardpoints.map(hp => hp.instance)].forEach(mesh => {
+			mesh.getChildMeshes().forEach(child => {
+				hl.removeMesh(child);
+			});
+		});
+		this.#selected = false;
+	}
 
 	static FromData(data, scene) {
 		return new this({

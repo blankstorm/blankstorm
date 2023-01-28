@@ -126,6 +126,7 @@ export default class Level {
 							return distance < hardpoint._generic.range;
 						});
 						const targetPoint = targetPoints.reduce((current, newPoint) => {
+							if(!current) return newPoint;
 							const oldDistance = Vector3.Distance(current.absolutePosition, hardpoint.absolutePosition);
 							const newDistance = Vector3.Distance(newPoint.absolutePosition, hardpoint.absolutePosition);
 							current = oldDistance < newDistance ? current : newPoint;

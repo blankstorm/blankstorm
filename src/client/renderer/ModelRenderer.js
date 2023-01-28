@@ -13,6 +13,7 @@ import { probe } from './index.js';
 export default class ModelRenderer extends TransformNode {
 	#instance;
 	#createdInstance = false;
+	#selected = false;
 
 	constructor({ id, name, position, rotation, parent, scene }) {
 		super(id, scene);

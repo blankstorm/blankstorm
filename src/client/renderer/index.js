@@ -32,11 +32,13 @@ export function setHitboxes(value) {
 const bodies = new Map(),
 	entities = new Map();
 
-const handleCanvasClick = (ev, owner) => {
-	owner ??= [...this.playerData][0];
+export function handleCanvasClick(ev, owner){
+	owner ??= [...this.entities].filter(e => e instanceof PlayerRenderer)[0];
 	if (!ev.shiftKey) {
-		for (let entity of this.entities.values()) {
-			entity.unselect();
+		for (let entity of entities.values()) {
+			if(entity instanceof ShipRenderer){
+				entity.unselect();
+			}
 		}
 	}
 	let pickInfo = scene.pick(ev.pointerX, ev.pointerY, mesh => {
@@ -62,30 +64,31 @@ const handleCanvasClick = (ev, owner) => {
 			}
 		}
 	}
-};
-const handleCanvasRightClick = (e, owner) => {
+}
+export function handleCanvasRightClick(e, owner){
 	for (let entity of entities.values()) {
 		if (entity.selected && entity.owner == owner) {
-			let newPosition = this.screenToWorldPlane(e.clientX, e.clientY, entity.position.y);
+			let newPosition = scene.screenToWorldPlane(e.clientX, e.clientY, entity.position.y);
 			entity.moveTo(newPosition, false);
 		}
 	}
-};
+}
 
 export function resetCamera() {
 	camera.alpha = -Math.PI / 2;
-	camera.beta = Math.PI;
+	camera.beta = Math.PI / 2;
 }
 
 export async function init(canvas, messageHandler = () => {}) {
 	await messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+	engine.resize();
 
 	await messageHandler('scene');
 	scene = new Scene(engine);
 
 	await messageHandler('camera');
-	camera = new ArcRotateCamera('camera', -Math.PI / 2, Math.PI, 5, Vector3.Zero(), scene);
+	camera = new ArcRotateCamera('camera', -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), scene);
 	scene.activeCamera = camera;
 	camera.inputs.attached.pointers.buttons = [1];
 	Object.assign(camera, config.player_camera);
