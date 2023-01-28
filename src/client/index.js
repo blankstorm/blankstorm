@@ -1,4 +1,4 @@
-import { version, versions, isJSON, isHex, config, commands, runCommand, random, CelestialBody, Items, Tech, Entity, Ship, Player, Level } from 'core';
+import { version, versions, isJSON, config, commands, runCommand, random, Ship, Level } from 'core';
 import * as core from 'core';
 
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
@@ -361,14 +361,14 @@ const strobe = rate => {
 const toggleChat = command => {
 	$('#chat,#chat_history').toggle();
 	if ($('#cli').toggle().is(':visible')) {
-		renderer.getPlayer(player.id).camera.detachControl(canvas, true);
+		renderer.getCamera().detachControl(canvas, true);
 		$('#cli').focus();
 		if (command) {
 			$('#cli').val('/');
 		}
 	} else {
 		canvas.focus();
-		renderer.getPlayer(player.id).camera.attachControl(canvas, true);
+		renderer.getCamera().attachControl(canvas, true);
 	}
 };
 const clientRunCommand = command => {
@@ -381,14 +381,14 @@ const clientRunCommand = command => {
 const changeUI = (selector, hideAll) => {
 	if ($(selector).is(':visible')) {
 		canvas.focus();
-		renderer.getPlayer(player.id).camera.attachControl(canvas, true);
+		renderer.getCamera().attachControl(canvas, true);
 		$(selector).hide();
 	} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
 		canvas.focus();
-		renderer.getPlayer(player.id).camera.attachControl(canvas, true);
+		renderer.getCamera().attachControl(canvas, true);
 		$('[game-ui]').hide();
 	} else if (!$('[game-ui]').is(':visible')) {
-		renderer.getPlayer(player.id).camera.detachControl(canvas, true);
+		renderer.getCamera().detachControl(canvas, true);
 		$(selector).show().focus();
 	}
 };
@@ -405,7 +405,8 @@ export const chat = (...msg) => {
 };
 
 export const player = {
-	username: '',
+	id: '[guest]',
+	username: '[guest]',
 	getAuthData() {
 		$.ajax({
 			url: web`api/user`,
@@ -570,7 +571,7 @@ $('#save button.back').click(() => {
 $('#save .new').click(async () => {
 	$('#save')[0].close();
 	const name = $('#save .name').val();
-	const level = new Level(name);
+	const level = await Save.Live.CreateDefault(name, player.id, player.name);
 	saves.current = level;
 	renderer.clear();
 	renderer.update(level.serialize());
@@ -579,7 +580,7 @@ $('#save .new').click(async () => {
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();
-	renderer.getPlayer(player.id).camera.attachControl(canvas, true);
+	renderer.getCamera().attachControl(canvas, true);
 	isPaused = false;
 });
 $('#esc .save').click(() => {
@@ -765,7 +766,7 @@ $('#cli').keydown(e => {
 });
 canvas.on('click', e => {
 	if (!isPaused) {
-		renderer.getPlayer(player.id).camera.attachControl(canvas, true);
+		renderer.getCamera().attachControl(canvas, true);
 	}
 
 	if (saves.current instanceof Save.Live) {
@@ -843,14 +844,7 @@ const loop = () => {
 		if (!isPaused) {
 			try {
 				
-				renderer.getPlayer(player.id).camera.angularSensibilityX = renderer.getPlayer(player.id).camera.angularSensibilityY = 2000 / settings.get('sensitivity');
-				player.updateFleet();
-				saves.current.meshes.forEach(mesh => {
-					if (mesh instanceof CelestialBody) mesh.showBoundingBox = hitboxes;
-					if (mesh.parent instanceof Entity) mesh.getChildMeshes().forEach(child => (child.showBoundingBox = hitboxes));
-					if (mesh != saves.current.skybox && isHex(mesh.id)) mesh.showBoundingBox = hitboxes;
-				});
-				player.updateFleet();
+				renderer.getCamera().angularSensibilityX = renderer.getCamera().angularSensibilityY = 2000 / settings.get('sensitivity');
 				saves.current.waypoints.forEach(waypoint => {
 					let pos = waypoint.screenPos;
 					waypoint.marker
@@ -877,7 +871,7 @@ const loop = () => {
 						<span>
 							P: (${player.data().position.x.toFixed(1)}, ${player.data().position.y.toFixed(1)}, ${player.data().position.z.toFixed(1)}) 
 							V: (${player.data().velocity.x.toFixed(1)}, ${player.data().velocity.y.toFixed(1)}, ${player.data().velocity.z.toFixed(1)}) 
-							R: (${player.data().cam.alpha.toFixed(2)}, ${player.data().cam.beta.toFixed(2)})
+							R: (${renderer.getCamera().alpha.toFixed(2)}, ${renderer.getCamera().beta.toFixed(2)})
 						</span><br>
 						`);
 				$('#debug .right').html(`
@@ -893,7 +887,7 @@ const loop = () => {
 						<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
 					`);
 
-				saves.current.render();
+				renderer.render();
 			} catch (err) {
 				console.error(`loop() failed: ${err.stack ?? err}`);
 			}
@@ -901,7 +895,7 @@ const loop = () => {
 	}
 };
 if (config.debug_mode) {
-	Object.assign(window, { core, settings, locales, $, io, renderer });
+	Object.assign(window, { core, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI });
 }
 ui.update();
 $('#loading_cover p').text('Done!');

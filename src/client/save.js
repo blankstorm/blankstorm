@@ -11,6 +11,8 @@ import db from './db.js';
 import { Playable } from './playable.js';
 import { canvas, setPaused, mp, saves } from './index.js';
 import { update as updateUI } from './ui.js';
+import PlanetRenderer from './renderer/bodies/PlanetRenderer.js';
+import { scene } from './renderer/index.js';
 
 export default class Save extends Playable {
 	static GUI(save) {
@@ -29,7 +31,7 @@ export default class Save extends Playable {
 			let live = save.load();
 			await live.ready();
 			save.getStore().current = live;
-			live.play(live.entities.get(playerID));
+			live.play();
 			$('#loading_cover').hide();
 		};
 
@@ -41,25 +43,23 @@ export default class Save extends Playable {
 			})
 			.dblclick(loadAndPlay);
 		if (!mp) gui.prependTo('#load');
-		gui.delete.click(e => {
-			let remove = () => {
+		gui.delete.click(async e => {
+			let remove = async () => {
 				gui.remove();
-				db.tx('saves', 'readwrite').then(tx => {
-					tx.objectStore('saves').delete(save.data.id);
-					save.delete();
-				});
+				const tx = await db.tx('saves', 'readwrite');
+				tx.objectStore('saves').delete(save.data.id);
+				save.delete();
 			};
 			e.shiftKey ? remove() : confirm().then(remove);
 		});
 		gui.download.click(() => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
 		gui.play.click(loadAndPlay);
-		gui.edit.click(() => {
-			modal([{ name: 'name', placeholder: 'New name', value: save.data.name }], { Cancel: false, Save: true }).then(result => {
-				if (result.result) {
-					save.data.name = result.name;
-					updateUI();
-				}
-			});
+		gui.edit.click(async () => {
+			const result = await modal([{ name: 'name', placeholder: 'New name', value: save.data.name }], { Cancel: false, Save: true });
+			if (result.result) {
+				save.data.name = result.name;
+				updateUI();
+			}
 		});
 		return gui;
 	}
@@ -68,18 +68,13 @@ export default class Save extends Playable {
 		constructor(name, doNotGenerate) {
 			super(name, doNotGenerate);
 		}
-		play(player) {
+		play() {
 			if (this.version == version) {
 				$('#load').hide();
 				canvas.show().focus();
 				$('#hud').show();
 				saves.selected = this.id;
 				setPaused(false);
-				if (player instanceof Player) {
-					this.activeCamera = player.cam;
-					player.cam.attachControl(canvas, true);
-					player.cam.inputs.attached.pointers.buttons = [1];
-				}
 			} else {
 				alert('That save is in compatible with the current game version');
 			}
@@ -100,31 +95,28 @@ export default class Save extends Playable {
 						name: body.name,
 						position: body.position,
 						color: Color3.FromHexString('#88ddff'),
-						icon: Planet.biomes.has(body.biome) && body instanceof Planet ? Planet.biomes.get(body.biome).icon : 'planet-ringed',
+						icon: PlanetRenderer.biomes.has(body.biome) && body instanceof Planet ? PlanetRenderer.biomes.get(body.biome).icon : 'planet-ringed',
 						readonly: true,
 					},
 					save
 				);
 			}
 
-			const playerData = new Player({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)) }, save);
+			const playerData = new Player({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)), level: save });
 			playerData._customHardpointProjectileMaterials = [
 				{
 					applies_to: ['laser'],
-					material: Object.assign(new StandardMaterial('player-laser-projectile-material', save), {
+					material: Object.assign(new StandardMaterial('player-laser-projectile-material', scene), {
 						emissiveColor: Color3.Teal(),
 						albedoColor: Color3.Teal(),
 					}),
 				},
 			];
-			save.playerData.set(playerID, playerData);
+			save.entities.set(playerID, playerData);
 
-			new Ship('mosquito', playerData, save);
-			new Ship('cillus', playerData, save);
+			new Ship({ className: 'mosquito', owner: playerData, level: save});
+			new Ship({ className: 'cillus', owner: playerData, level: save});
 			playerData.addItems(generate.items(5000));
-
-			save.addCamera(playerData.cam);
-			save.activeCamera = playerData.cam;
 
 			return save;
 		}
@@ -133,7 +125,7 @@ export default class Save extends Playable {
 		super(data.id, saves);
 		try {
 			this.data = data;
-			this.gui = new Save.GUI(this);
+			this.gui = Save.GUI(this);
 			saves.set(this.data.id, this);
 		} catch (err) {
 			console.error(err.stack);

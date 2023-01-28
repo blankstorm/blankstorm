@@ -5,7 +5,8 @@ import { modal, alert, confirm } from './utils.js';
 import { isJSON } from 'core';
 import { Playable } from './playable.js';
 import db from './db.js';
-import { servers, cookie, canvas, chat, player, updateUI } from './index.js';
+import { servers, cookie, canvas, chat, player } from './index.js';
+import { update as updateUI } from './ui.js';
 
 export default class Server extends Playable {
 	static async dialog(server) {

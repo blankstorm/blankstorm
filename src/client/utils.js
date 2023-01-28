@@ -60,3 +60,16 @@ export const modal = (input = 'Are you sure?', options = { Cancel: false, Ok: tr
 			throw false;
 		}
 	};
+
+export function getByString(object, path, seperator = /[.[\]'"]/){
+	return path
+	.split(seperator)
+	.filter(p => p)
+	.reduce((o, p) => (o ? o[p] : null), this);
+}
+export function setByString(object, path, value, seperator = /[.[\]'"]/){
+	return path
+	.split(seperator)
+	.filter(p => p)
+	.reduce((o, p, i) => (o[p] = path.split(seperator).filter(p => p).length === ++i ? value : o[p] || {}), this);
+}

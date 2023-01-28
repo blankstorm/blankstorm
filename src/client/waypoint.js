@@ -7,6 +7,7 @@ import 'jquery'; /* global $ */
 import { isHex, random } from 'core/utils.js';
 import { modal } from './utils.js';
 import { locales } from './index.js';
+import { scene } from './renderer/index.js';
 
 export default class Waypoint extends Node {
 	#readonly = false;
@@ -88,7 +89,7 @@ export default class Waypoint extends Node {
 		},
 		level
 	) {
-		super(id, level);
+		super(id, scene);
 		level.waypoints.push(this);
 		this.#readonly = readonly;
 		Object.assign(this, { name, position, color, icon });

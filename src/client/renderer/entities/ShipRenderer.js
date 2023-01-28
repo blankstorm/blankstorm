@@ -24,6 +24,14 @@ export default class ShipRenderer extends ModelRenderer {
 		}
 	}
 
+	select(){
+
+	}
+
+	unselect(){
+		
+	}
+
 	static FromData(data, scene) {
 		return new this({
 			id: data.id,

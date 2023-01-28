@@ -7,6 +7,7 @@ import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe.js';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.js';
 import { Engine } from '@babylonjs/core/Engines/engine.js';
+import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera.js';
 
 import config from './config.js';
 import PlayerRenderer from './entities/PlayerRenderer.js';
@@ -14,20 +15,31 @@ import { default as PlanetRenderer, PlanetRendererMaterial } from './bodies/Plan
 import StarRenderer from './bodies/StarRenderer.js';
 import ModelRenderer from './ModelRenderer.js';
 import ShipRenderer from './entities/ShipRenderer.js';
+import EntityRenderer from './entities/EntityRenderer.js';
 
-let skybox, xzPlane, cache = { entities: {}, bodies: {} };
-export let hl, gl, probe, engine, scene;
+let skybox,
+	xzPlane,
+	camera,
+	cache = { entities: {}, bodies: {} },
+	hitboxes = false,
+	gl;
+export let engine, scene, hl, probe;
 
-const bodies = new Map(), entities = new Map();
+export function setHitboxes(value){
+	hitboxes = !!value;
+}
 
-const handleCanvasClick = (e, owner) => {
+const bodies = new Map(),
+	entities = new Map();
+
+const handleCanvasClick = (ev, owner) => {
 	owner ??= [...this.playerData][0];
-	if (!e.shiftKey) {
+	if (!ev.shiftKey) {
 		for (let entity of this.entities.values()) {
 			entity.unselect();
 		}
 	}
-	let pickInfo = this.pick(this.pointerX, this.pointerY, mesh => {
+	let pickInfo = scene.pick(ev.pointerX, ev.pointerY, mesh => {
 		let node = mesh;
 		while (node.parent) {
 			node = node.parent;
@@ -52,7 +64,7 @@ const handleCanvasClick = (e, owner) => {
 	}
 };
 const handleCanvasRightClick = (e, owner) => {
-	for (let entity of this.entities.values()) {
+	for (let entity of entities.values()) {
 		if (entity.selected && entity.owner == owner) {
 			let newPosition = this.screenToWorldPlane(e.clientX, e.clientY, entity.position.y);
 			entity.moveTo(newPosition, false);
@@ -60,12 +72,23 @@ const handleCanvasRightClick = (e, owner) => {
 	}
 };
 
+export function resetCamera() {
+	camera.alpha = -Math.PI / 2;
+	camera.beta = Math.PI;
+}
+
 export async function init(canvas, messageHandler = () => {}) {
 	await messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 
 	await messageHandler('scene');
 	scene = new Scene(engine);
+
+	await messageHandler('camera');
+	camera = new ArcRotateCamera('camera', -Math.PI / 2, Math.PI, 5, Vector3.Zero(), scene);
+	scene.activeCamera = camera;
+	camera.inputs.attached.pointers.buttons = [1];
+	Object.assign(camera, config.player_camera);
 
 	scene.registerBeforeRender(() => {
 		let ratio = scene.getAnimationRatio();
@@ -110,7 +133,7 @@ export async function init(canvas, messageHandler = () => {}) {
 	await messageHandler('assets');
 	const modelKeys = [...ModelRenderer.modelPaths.keys()];
 	// using forEach so we can get the index
-	for(let id of modelKeys){
+	for (let id of modelKeys) {
 		const i = modelKeys.indexOf(id);
 		await messageHandler(`model "${id}" (${i + 1}/${modelKeys.length})`);
 		await ModelRenderer.InitModel(id, scene);
@@ -119,9 +142,23 @@ export async function init(canvas, messageHandler = () => {}) {
 
 export async function dispose() {
 	if (!scene) {
-		throw new ReferenceError(`Renderer not initalized`);
+		throw new ReferenceError('Renderer not initalized');
 	}
 	scene.dispose();
+}
+
+export async function render() {
+	if (!scene) {
+		throw new ReferenceError('Renderer not initalized');
+	}
+
+	scene.meshes.forEach(mesh => {
+		if (mesh instanceof PlanetRenderer || mesh instanceof StarRenderer) mesh.showBoundingBox = hitboxes;
+		if (mesh.parent instanceof EntityRenderer) mesh.getChildMeshes().forEach(child => (child.showBoundingBox = hitboxes));
+		//if (mesh != skybox && isHex(mesh.id)) mesh.showBoundingBox = hitboxes;
+	});
+
+	scene.render();
 }
 
 /**
@@ -129,7 +166,7 @@ export async function dispose() {
  */
 export async function clear() {
 	if (!scene) {
-		throw new ReferenceError(`Renderer not initalized`);
+		throw new ReferenceError('Renderer not initalized');
 	}
 
 	for (let [id, body] of bodies) {
@@ -147,7 +184,7 @@ export async function clear() {
 
 export async function load(levelData) {
 	if (!scene) {
-		throw new ReferenceError(`Renderer not initalized`);
+		throw new ReferenceError('Renderer not initalized');
 	}
 
 	for (let [id, data] of Object.entries(levelData.bodies)) {
@@ -189,18 +226,17 @@ export async function update(levelData) {
 
 	const dataToUpdate = { bodies: {}, entities: {} };
 
-	if(levelData.id != cache.id && cache.id){
+	if (levelData.id != cache.id && cache.id) {
 		console.warn(`Updating the renderer with a different level (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);
 	}
 
-	for(let [id, body] of [...Object.entries(cache.bodies), ...Object.entries(levelData.bodies)]){
-
-		if(!cache.bodies[id]){
+	for (let [id, body] of [...Object.entries(cache.bodies), ...Object.entries(levelData.bodies)]) {
+		if (!cache.bodies[id]) {
 			dataToUpdate.bodies[id] = body;
 			continue;
 		}
 
-		if(!levelData.bodies[id]){
+		if (!levelData.bodies[id]) {
 			bodies.get(id).dispose();
 			bodies.delete(id);
 			continue;
@@ -209,22 +245,20 @@ export async function update(levelData) {
 		/**
 		 * @todo Actually check for changed attributes
 		 */
-		if(JSON.stringify(cache.bodies[id]) != JSON.stringify(levelData.bodies[id])){
+		if (JSON.stringify(cache.bodies[id]) != JSON.stringify(levelData.bodies[id])) {
 			bodies.get(id).dispose();
 			bodies.delete(id);
 			dataToUpdate.bodies[id] = body;
 		}
-		
 	}
 
-	for(let [id, entity] of [...Object.entries(cache.entities), ...Object.entries(levelData.entities)]){
-
-		if(!cache.entities[id]){
+	for (let [id, entity] of [...Object.entries(cache.entities), ...Object.entries(levelData.entities)]) {
+		if (!cache.entities[id]) {
 			dataToUpdate.entities[id] = entity;
 			continue;
 		}
 
-		if(!levelData.entities[id]){
+		if (!levelData.entities[id]) {
 			entities.get(id).dispose();
 			entities.delete(id);
 			continue;
@@ -233,23 +267,22 @@ export async function update(levelData) {
 		/**
 		 * @todo Actually check for changed attributes
 		 */
-		if(JSON.stringify(cache.entities[id]) != JSON.stringify(levelData.entities[id])){
+		if (JSON.stringify(cache.entities[id]) != JSON.stringify(levelData.entities[id])) {
 			entities.get(id).dispose();
 			entities.delete(id);
 			dataToUpdate.entities[id] = entity;
 		}
-		
 	}
 
 	return await load(dataToUpdate);
 }
 
-export function getPlayer(id){
-	if(!(entities.get(id) instanceof PlayerRenderer)){
-		throw new TypeError(`renderer ${id} does not exist or is not a player renderer`);
+export function getCamera() {
+	if (!scene) {
+		throw new ReferenceError(`Renderer not initalized`);
 	}
 
-	return entities.get(id);
+	return camera;
 }
 
 export async function serialize() {

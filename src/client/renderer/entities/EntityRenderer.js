@@ -3,8 +3,8 @@ import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 import { Animation } from '@babylonjs/core/Animations/animation.js';
 
-import Path from '../Path.js';
-import { config } from '../meta.js';
+import Path from 'core/Path.js';
+import { settings } from 'client/index.js';
 import { hl } from '../index.js';
 
 export default class EntityRenderer extends TransformNode {
@@ -14,11 +14,6 @@ export default class EntityRenderer extends TransformNode {
 	constructor({id, scene }) {
 		super(id, scene);
 		this.id = id;
-	}
-
-	remove() {
-		this.mesh.dispose();
-		this.getScene().entities.delete(this.id);
 	}
 
 	select() {
@@ -76,11 +71,11 @@ export default class EntityRenderer extends TransformNode {
 
 	moveTo(location, isRelative) {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
-		if (this.currentPath && config.settings.debug.show_path_gizmos) this.currentPath.disposeGizmo();
+		if (this.currentPath && settings.get('show_path_gizmos')) this.currentPath.disposeGizmo();
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : Vector3.Zero()), this.level);
-		if (config.settings.debug.show_path_gizmos) this.currentPath.drawGizmo(this.level, Color3.Green());
+		if (settings.get('show_path_gizmos')) this.currentPath.drawGizmo(this.level, Color3.Green());
 		this.followPath(this.currentPath).then(() => {
-			if (config.settings.debug.show_path_gizmos) {
+			if (settings.get('show_path_gizmos')) {
 				this.currentPath.disposeGizmo();
 			}
 		});
