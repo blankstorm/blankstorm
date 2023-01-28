@@ -32,11 +32,11 @@ export function setHitboxes(value) {
 const bodies = new Map(),
 	entities = new Map();
 
-export function handleCanvasClick(ev, owner){
+export function handleCanvasClick(ev, owner) {
 	owner ??= [...this.entities].filter(e => e instanceof PlayerRenderer)[0];
 	if (!ev.shiftKey) {
 		for (let entity of entities.values()) {
-			if(entity instanceof ShipRenderer){
+			if (entity instanceof ShipRenderer) {
 				entity.unselect();
 			}
 		}
@@ -65,7 +65,7 @@ export function handleCanvasClick(ev, owner){
 		}
 	}
 }
-export function handleCanvasRightClick(e, owner){
+export function handleCanvasRightClick(e, owner) {
 	for (let entity of entities.values()) {
 		if (entity.selected && entity.owner == owner) {
 			let newPosition = scene.screenToWorldPlane(e.clientX, e.clientY, entity.position.y);

@@ -27,7 +27,7 @@ export default class ShipRenderer extends ModelRenderer {
 	}
 
 	select() {
-		if(!this.isInstanciated){
+		if (!this.isInstanciated) {
 			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
 		}
 		[this.instance, ...this.hardpoints.map(hp => hp.instance)].forEach(mesh => {
@@ -39,7 +39,7 @@ export default class ShipRenderer extends ModelRenderer {
 	}
 
 	unselect() {
-		if(!this.isInstanciated){
+		if (!this.isInstanciated) {
 			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
 		}
 		[this.instance, ...this.hardpoints.map(hp => hp.instance)].forEach(mesh => {
