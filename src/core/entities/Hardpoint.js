@@ -34,7 +34,7 @@ export default class Hardpoint extends Node {
 	}
 
 	/**
-	 * @todo implement projectile logic on the core 
+	 * @todo implement projectile logic on the core
 	 */
 	async fire(target) {
 		let evt = new LevelEvent('projectile.fire', this, { target, projectile: this._generic.projectile });

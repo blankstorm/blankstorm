@@ -15,7 +15,18 @@ export default class CelestialBody extends Node {
 		return this.fleet.reduce((total, ship) => total + ship._generic.power, 0) ?? 0;
 	}
 
-	constructor({id = random.hex(32), name = '', radius = 1, fleet = [], owner = null, rewards = {}, position = Vector3.Zero(), rotation = Vector3.Zero(), fleetPosition = Vector3.Zero(), level }) {
+	constructor({
+		id = random.hex(32),
+		name = '',
+		radius = 1,
+		fleet = [],
+		owner = null,
+		rewards = {},
+		position = Vector3.Zero(),
+		rotation = Vector3.Zero(),
+		fleetPosition = Vector3.Zero(),
+		level,
+	}) {
 		super({ id, name, owner, position, rotation, level });
 		this.radius = radius;
 		this.rewards = StorageData.FromData({ items: rewards, max: 1e10 });

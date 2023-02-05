@@ -15,7 +15,7 @@ export default class Star extends CelestialBody {
 			radius: this.radius,
 		});
 	}
-	
+
 	static FromData(data, level) {
 		const owner = level.getNodeByID(data.owner);
 		return new this({
@@ -31,5 +31,4 @@ export default class Star extends CelestialBody {
 			level,
 		});
 	}
-
 }

@@ -20,7 +20,5 @@ export default class Planet extends CelestialBody {
 			owner,
 			level,
 		});
-
 	}
-
 }

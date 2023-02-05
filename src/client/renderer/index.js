@@ -286,17 +286,17 @@ export function getCamera() {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	if(!camera) {
-		throw new ReferenceError('Camera not initalized')
+	if (!camera) {
+		throw new ReferenceError('Camera not initalized');
 	}
 
 	return camera;
 }
 
-export function fireProjectile(hardpoint, target, options){
+export function fireProjectile(hardpoint, target, options) {
 	const hardpointRenderer = scene.getTransformNodeByID(hardpoint.id),
-	targetRenderer = scene.getTransformNodeByID(target.id);
-	hardpointRenderer.fireProjectile(targetRenderer, options)
+		targetRenderer = scene.getTransformNodeByID(target.id);
+	hardpointRenderer.fireProjectile(targetRenderer, options);
 }
 
 export async function serialize() {

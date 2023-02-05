@@ -67,7 +67,7 @@ export default class Ship extends Entity {
 
 	static FromData(data, level) {
 		const max = this.generic.get(data.class);
-		const owner = level.getNodeByID(data.owner)
+		const owner = level.getNodeByID(data.owner);
 		return new this({
 			id: data.id,
 			className: data.class,

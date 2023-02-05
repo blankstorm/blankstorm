@@ -54,13 +54,13 @@ export default class Level extends EventTarget {
 		return this;
 	}
 
-	getNodeByID(nodeID){
-		for(let [id, entity] of this.entities){
-			if(id == nodeID) return entity;
+	getNodeByID(nodeID) {
+		for (let [id, entity] of this.entities) {
+			if (id == nodeID) return entity;
 		}
 
-		for(let [id, body] of this.bodies){
-			if(id == nodeID) return body;
+		for (let [id, body] of this.bodies) {
+			if (id == nodeID) return body;
 		}
 
 		return null;
@@ -139,7 +139,7 @@ export default class Level extends EventTarget {
 							return distance < hardpoint._generic.range;
 						});
 						const targetPoint = targetPoints.reduce((current, newPoint) => {
-							if (!current || !newPoint){
+							if (!current || !newPoint) {
 								return current;
 							}
 							const oldDistance = Vector3.Distance(current.absolutePosition, hardpoint.absolutePosition);
@@ -332,8 +332,8 @@ export default class Level extends EventTarget {
 		level.version = levelData.version;
 		level.difficulty = levelData.difficulty;
 
-		for(let data of Object.values(levelData.bodies)){
-			switch(data.node_type){
+		for (let data of Object.values(levelData.bodies)) {
+			switch (data.node_type) {
 				case 'star':
 					Star.FromData(data, level);
 					break;
@@ -341,13 +341,11 @@ export default class Level extends EventTarget {
 					Planet.FromData(data, level);
 					break;
 				default:
-
 			}
-
 		}
 
-		for(let data of Object.values(levelData.entities)){
-			switch(data.node_type){
+		for (let data of Object.values(levelData.entities)) {
+			switch (data.node_type) {
 				case 'player':
 					Player.FromData(data, level);
 					break;
@@ -355,11 +353,9 @@ export default class Level extends EventTarget {
 					Ship.FromData(data, level);
 					break;
 				default:
-
 			}
 		}
 
 		return level;
-
 	}
 }

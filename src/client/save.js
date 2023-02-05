@@ -68,7 +68,7 @@ export default class Save extends Playable {
 		waypoints = [];
 		constructor(name, doNotGenerate) {
 			super(name, doNotGenerate);
-			for(let [id, listener] of listeners.core){
+			for (let [id, listener] of listeners.core) {
 				this.addEventListener(id, listener);
 			}
 		}
