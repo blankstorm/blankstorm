@@ -61,7 +61,7 @@ export default class HardpointRenderer extends ModelRenderer {
 					{ frame: 60 * frameFactor, value: endPos },
 				]);
 				laser.animations.push(animation);
-				let result = this._scene.beginAnimation(laser, 0, 60 * frameFactor);
+				let result = this.getScene().beginAnimation(laser, 0, 60 * frameFactor);
 				result.disposeOnEnd = true;
 				result.onAnimationEnd = () => {
 					this.projectiles.splice(this.projectiles.indexOf(laser), 1);
