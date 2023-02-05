@@ -61,7 +61,6 @@ export default class HardpointRenderer extends ModelRenderer {
 					{ frame: 60 * frameFactor, value: endPos },
 				]);
 				laser.animations.push(animation);
-				console.log(this._scene, this._scene.beginAnimation);
 				let result = this._scene.beginAnimation(laser, 0, 60 * frameFactor);
 				result.disposeOnEnd = true;
 				result.onAnimationEnd = () => {
