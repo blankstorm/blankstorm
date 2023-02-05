@@ -9,6 +9,7 @@ export default class HardpointRenderer extends ModelRenderer {
 	constructor({ id, position, rotation, ship: parent, scene, type }) {
 		super({ id, position, rotation, scene, parent });
 
+		this._projectile = HardpointRenderer.projectiles.get(type);
 		this.type = type;
 		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
 
@@ -16,7 +17,7 @@ export default class HardpointRenderer extends ModelRenderer {
 	}
 
 	fireProjectile(target, options) {
-		this._generic.fire.call(this, target, options);
+		this._projectile.call(this, target, options);
 	}
 
 	static FromData(data, scene) {
@@ -29,12 +30,13 @@ export default class HardpointRenderer extends ModelRenderer {
 		});
 	}
 
-	static generic = new Map(
+	static projectiles = new Map(
 		Object.entries({
-			async laser(target, { materials = [], speed }) {
+			async laser(target, { materials = [], speed, id: modelID } = {}) {
 				await wait(random.int(4, 40));
-				const laser = await this.createProjectileInstance(),
-					bounding = this.getHierarchyBoundingVectors(),
+				const laser = new ModelRenderer({ id: random.hex(32), scene: this.getScene() });
+				await laser.createInstance(modelID);
+				const bounding = this.getHierarchyBoundingVectors(),
 					targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),
 					startPos = this.getAbsolutePosition(),
 					endPos = target.getAbsolutePosition().add(random.cords(targetOffset)),
@@ -45,9 +47,9 @@ export default class HardpointRenderer extends ModelRenderer {
 						}
 					}, this);
 				this.projectiles.push(laser);
-				laser.material = material.material;
+				laser.material = material?.material;
 				for (let child of laser.getChildMeshes()) {
-					child.material = material.material;
+					child.material = material?.material;
 				}
 				laser.scaling = this.scaling;
 				laser.position = startPos;
@@ -59,7 +61,8 @@ export default class HardpointRenderer extends ModelRenderer {
 					{ frame: 60 * frameFactor, value: endPos },
 				]);
 				laser.animations.push(animation);
-				let result = this.scene.beginAnimation(laser, 0, 60 * frameFactor);
+				console.log(this._scene, this._scene.beginAnimation);
+				let result = this._scene.beginAnimation(laser, 0, 60 * frameFactor);
 				result.disposeOnEnd = true;
 				result.onAnimationEnd = () => {
 					this.projectiles.splice(this.projectiles.indexOf(laser), 1);

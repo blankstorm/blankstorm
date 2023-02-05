@@ -226,6 +226,7 @@ export async function update(levelData) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
+	engine.resize();
 
 	const dataToUpdate = { bodies: {}, entities: {} };
 
@@ -282,14 +283,24 @@ export async function update(levelData) {
 
 export function getCamera() {
 	if (!scene) {
-		throw new ReferenceError(`Renderer not initalized`);
+		throw new ReferenceError('Renderer not initalized');
+	}
+
+	if(!camera) {
+		throw new ReferenceError('Camera not initalized')
 	}
 
 	return camera;
 }
 
+export function fireProjectile(hardpoint, target, options){
+	const hardpointRenderer = scene.getTransformNodeByID(hardpoint.id),
+	targetRenderer = scene.getTransformNodeByID(target.id);
+	hardpointRenderer.fireProjectile(targetRenderer, options)
+}
+
 export async function serialize() {
 	if (!scene) {
-		throw new ReferenceError(`Renderer not initalized`);
+		throw new ReferenceError('Renderer not initalized');
 	}
 }

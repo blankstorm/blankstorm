@@ -9,7 +9,7 @@ export default class Station extends CelestialBody {
 	isTargetable = true;
 
 	constructor({ id, name = 'Station', level }) {
-		super(id, { name }, level);
+		super({ id, name, level });
 
 		this.#level = level;
 		this.#core = new StationComponent('core', this);

@@ -13,6 +13,7 @@ import { canvas, setPaused, mp, saves } from './index.js';
 import { update as updateUI } from './ui.js';
 import PlanetRenderer from './renderer/bodies/PlanetRenderer.js';
 import { scene } from './renderer/index.js';
+import * as listeners from './listeners.js';
 
 export default class Save extends Playable {
 	static GUI(save) {
@@ -67,6 +68,9 @@ export default class Save extends Playable {
 		waypoints = [];
 		constructor(name, doNotGenerate) {
 			super(name, doNotGenerate);
+			for(let [id, listener] of listeners.core){
+				this.addEventListener(id, listener);
+			}
 		}
 		play() {
 			if (this.version == version) {
@@ -79,9 +83,9 @@ export default class Save extends Playable {
 				alert('That save is in compatible with the current game version');
 			}
 		}
-		static Load(saveData, engine) {
+		static Load(saveData) {
 			let save = new Save.Live(saveData.name, true);
-			Level.Load(saveData, engine, save);
+			Level.Load(saveData, save);
 			return save;
 		}
 		static async CreateDefault(name, playerID, playerName) {

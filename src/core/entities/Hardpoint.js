@@ -4,12 +4,13 @@ import { wait } from '../utils.js';
 import Node from '../Node.js';
 import Ship from './Ship.js';
 import Player from './Player.js';
+import { LevelEvent } from '../events.js';
 
 export default class Hardpoint extends Node {
 	_generic = {};
 	constructor({ id, name, position, rotation, owner, level, type }) {
 		level ?? owner?.level;
-		super({ id, name, position, rotation, owner, level });
+		super({ id, name, position, rotation, owner, parent: owner, level });
 
 		this.hardpointType = type;
 		this._generic = Hardpoint.generic.get(type);
@@ -32,29 +33,51 @@ export default class Hardpoint extends Node {
 		});
 	}
 
+	/**
+	 * @todo implement projectile logic on the core 
+	 */
 	async fire(target) {
-		const time = Vector3.Distance(this.position, target.position) / this._generic.projectile.speed;
+		let evt = new LevelEvent('projectile.fire', this, { target, projectile: this._generic.projectile });
+		this.level.dispatchEvent(evt);
+		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this._generic.projectile.speed;
 		this.reload = this._generic.reload;
 		await wait(time);
 		const targetShip = target instanceof Ship ? target : target.owner;
 		targetShip.hp -= this._generic.damage * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
 		if (targetShip.hp <= 0) {
-			switch (this.owner.owner.constructor.name.toLowerCase()) {
+			const evt = new LevelEvent('entity.death', targetShip);
+			this.level.dispatchEvent(evt);
+			const owner = this.owner.owner;
+			switch (owner.constructor.name.toLowerCase()) {
 				case 'player':
-					this.owner.owner.addItems(targetShip._generic.recipe);
-					if (Math.floor(Player.xpToLevel(this.owner.owner.xp + targetShip._generic.xp)) > Math.floor(Player.xpToLevel(this.owner.owner.xp))) {
-						/*level up*/
-						this.owner.owner.xpPoints++;
+					owner.addItems(targetShip._generic.recipe);
+					if (Math.floor(Player.xpToLevel(owner.xp + targetShip._generic.xp)) > Math.floor(Player.xpToLevel(owner.xp))) {
+						const evt = new LevelEvent('player.levelup', owner);
+						this.level.dispatchEvent(evt);
+						owner.xpPoints++;
 					}
-					this.owner.owner.xp += targetShip._generic.xp;
+					owner.xp += targetShip._generic.xp;
 					break;
 				case 'celestialbody':
-					this.owner.owner.rewards.addItems(targetShip._generic.recipe);
+					owner.rewards.addItems(targetShip._generic.recipe);
 					break;
 				default:
 			}
 			targetShip.remove();
 		}
+	}
+
+	static FromData(data, level) {
+		const owner = level.getNodeByID(data.owner);
+		return new this({
+			id: data.id,
+			name: data.name,
+			position: Vector3.FromArray(data.position),
+			rotation: Vector3.FromArray(data.rotation),
+			owner,
+			level,
+			type: data.type,
+		});
 	}
 
 	static generic = new Map(

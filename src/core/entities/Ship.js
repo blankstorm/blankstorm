@@ -10,12 +10,11 @@ export default class Ship extends Entity {
 
 	isTargetable = true;
 
-	constructor({ id, name, position, rotation, owner, level, storage, hp, reload, jumpCooldown, className }) {
+	constructor({ id, name, position, rotation, owner, level, storage, hp, reload, jumpCooldown, className, hardpoints = [] }) {
 		if (className && !Ship.generic.has(className)) throw new ReferenceError(`Ship type ${className} does not exist`);
 		super({ id, name, position, rotation, owner, level });
 
-		let x = random.int(0, owner.power),
-			distance = Math.log(x ** 3 + 1); //IMPORTANT TODO: Move to ship creation
+		let distance = Math.log(random.int(0, owner?.power || 1) ** 3 + 1); //IMPORTANT TODO: Move to ship creation
 
 		this._generic = Ship.generic.get(className);
 
@@ -27,15 +26,16 @@ export default class Ship extends Entity {
 			jumpCooldown: jumpCooldown ?? this._generic.jumpCooldown,
 		});
 
-		for (let generic of this._generic.hardpoints) {
+		this._generic.hardpoints.forEach((generic, i) => {
 			if (!Hardpoint.generic.has(generic.type)) {
 				console.warn(`Hardpoint type ${generic.type} doesn't exist, skipping`);
-				continue;
+				return;
 			}
 
-			let hp = new Hardpoint({ ...generic, owner: this, level });
+			let hp = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint({ ...generic, owner: this, level });
 			this.hardpoints.push(hp);
-		}
+		});
+
 		if (owner?.fleet instanceof Array) {
 			owner.fleet.push(this);
 		}
@@ -64,6 +64,25 @@ export default class Ship extends Entity {
 			hardpoints: this.hardpoints.map(hp => hp.serialize()),
 		});
 	}
+
+	static FromData(data, level) {
+		const max = this.generic.get(data.class);
+		const owner = level.getNodeByID(data.owner)
+		return new this({
+			id: data.id,
+			className: data.class,
+			owner,
+			position: Vector3.FromArray(data.position || [0, 0, 0]),
+			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
+			storage: StorageData.FromData({ ...data.storage, max }),
+			hp: +data.hp || 0,
+			reload: +data.reload || 0,
+			jumpCooldown: +data.jumpCooldown || 0,
+			hardpoints: data.hardpoints || [],
+			level,
+		});
+	}
+
 	static generic = new Map(
 		Object.entries({
 			wind: {
@@ -255,19 +274,4 @@ export default class Ship extends Entity {
 			},
 		})
 	);
-
-	static FromData(data, level) {
-		const maxItems = this.generic.get(data.class);
-		return new this({
-			id: data.id,
-			class: data.class,
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			storage: StorageData.FromData(maxItems, data.storage),
-			hp: +data.hp,
-			reload: +data.reload,
-			jumpCooldown: +data.jumpCooldown,
-			level,
-		});
-	}
 }

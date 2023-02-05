@@ -1,6 +1,5 @@
 import { version, versions, isJSON, config, commands, runCommand, random, Ship, Level } from 'core';
 import * as core from 'core';
-
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 import 'jquery'; /* global $ */
@@ -875,7 +874,7 @@ const loop = () => {
 	}
 };
 if (config.debug_mode) {
-	Object.assign(window, { core, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI });
+	Object.assign(window, { core, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, Vector3 });
 }
 ui.update();
 $('#loading_cover p').text('Done!');

@@ -1,3 +1,7 @@
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor.js';
+
 import { random, generate, greek, range } from './utils.js';
 import { version, versions, config } from './meta.js';
 
@@ -7,13 +11,11 @@ import Star from './bodies/Star.js';
 
 import Entity from './entities/Entity.js';
 import Ship from './entities/Ship.js';
-import PlayerData from './entities/Player.js';
+import Player from './entities/Player.js';
 
-import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '@babylonjs/core/Maths/math.color.js';
-import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor.js';
+import { LevelEvent } from './events.js';
 
-export default class Level {
+export default class Level extends EventTarget {
 	id = random.hex(16);
 	name = '';
 	version = version;
@@ -25,6 +27,7 @@ export default class Level {
 	#performanceMonitor = new PerformanceMonitor(60);
 
 	constructor(name, doNotGenerate) {
+		super();
 		this.name = name;
 
 		this.#initPromise = doNotGenerate ? Promise.resolve(this) : this.init();
@@ -51,15 +54,23 @@ export default class Level {
 		return this;
 	}
 
-	getPlayerData(nameOrID) {
-		return [...this.playerData].filter(([id, data]) => data.name == nameOrID || id == nameOrID)[0]?.[1];
+	getNodeByID(nodeID){
+		for(let [id, entity] of this.entities){
+			if(id == nodeID) return entity;
+		}
+
+		for(let [id, body] of this.bodies){
+			if(id == nodeID) return body;
+		}
+
+		return null;
 	}
 
 	getEntities(selector) {
 		if (typeof selector != 'string') throw new TypeError('getEntity: selector must be of type string');
 		switch (selector[0]) {
 			case '@':
-				if (this.getPlayerData(selector.slice(1)) instanceof PlayerData) {
+				if (this.getPlayerData(selector.slice(1)) instanceof Player) {
 					return this.getPlayerData(selector.slice(1));
 				} else {
 					console.warn(`Player ${selector} does not exist`);
@@ -102,6 +113,8 @@ export default class Level {
 
 			if (entity.hp && entity.hp <= 0) {
 				entity.remove();
+				const evt = new LevelEvent('entity.death', entity);
+				this.dispatchEvent(evt);
 				//Events: trigger event, for sounds
 			} else if (entity instanceof Ship) {
 				for (let hardpoint of entity.hardpoints) {
@@ -126,10 +139,12 @@ export default class Level {
 							return distance < hardpoint._generic.range;
 						});
 						const targetPoint = targetPoints.reduce((current, newPoint) => {
-							if (!current) return newPoint;
+							if (!current || !newPoint){
+								return current;
+							}
 							const oldDistance = Vector3.Distance(current.absolutePosition, hardpoint.absolutePosition);
 							const newDistance = Vector3.Distance(newPoint.absolutePosition, hardpoint.absolutePosition);
-							current = oldDistance < newDistance ? current : newPoint;
+							return oldDistance < newDistance ? current : newPoint;
 						}, target);
 
 						if (hardpoint.reload <= 0) {
@@ -305,10 +320,46 @@ export default class Level {
 		},
 	};
 
-	static Load(levelData, engine, level) {
+	static Load(levelData, level) {
 		if (levelData.version != version) {
 			alert(`Can't load save: wrong version`);
 			throw new Error(`Can't load save from data: wrong version (${levelData.version})`);
 		}
+
+		level ??= new Level(levelData.name, true);
+		level.id = levelData.id;
+		level.date = new Date(levelData.date);
+		level.version = levelData.version;
+		level.difficulty = levelData.difficulty;
+
+		for(let data of Object.values(levelData.bodies)){
+			switch(data.node_type){
+				case 'star':
+					Star.FromData(data, level);
+					break;
+				case 'planet':
+					Planet.FromData(data, level);
+					break;
+				default:
+
+			}
+
+		}
+
+		for(let data of Object.values(levelData.entities)){
+			switch(data.node_type){
+				case 'player':
+					Player.FromData(data, level);
+					break;
+				case 'ship':
+					Ship.FromData(data, level);
+					break;
+				default:
+
+			}
+		}
+
+		return level;
+
 	}
 }

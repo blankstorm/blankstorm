@@ -9,25 +9,24 @@ export default class CelestialBody extends Node {
 	fleet = [];
 	rewards = {};
 	radius = 0;
-	fleetPosition = Vector3.Zero();
+	fleetPosition;
 
 	get power() {
 		return this.fleet.reduce((total, ship) => total + ship._generic.power, 0) ?? 0;
 	}
 
-	constructor(id = random.hex(32), { name = '', radius = 1, fleet = [], owner = null, rewards = {}, position = Vector3.Zero(), rotation = Vector3.Zero() }, level) {
+	constructor({id = random.hex(32), name = '', radius = 1, fleet = [], owner = null, rewards = {}, position = Vector3.Zero(), rotation = Vector3.Zero(), fleetPosition = Vector3.Zero(), level }) {
 		super({ id, name, owner, position, rotation, level });
 		this.radius = radius;
 		this.rewards = StorageData.FromData({ items: rewards, max: 1e10 });
 		level.bodies.set(id, this);
 
-		this.fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true);
+		this.fleetPosition = fleetPosition || random.cords(random.int(radius + 5, radius * 1.2), true);
 		for (let shipOrType of fleet) {
 			if (shipOrType instanceof Ship) {
 				this.fleet.push(shipOrType);
 			} else {
-				let ship = new Ship({ className: shipOrType, owner: this, level });
-				ship.position.addInPlace(this.fleetPosition);
+				let ship = new Ship({ className: shipOrType, owner: this, parent: this, level });
 			}
 		}
 	}
@@ -46,21 +45,18 @@ export default class CelestialBody extends Node {
 	}
 
 	static FromData(data, level) {
-		data ||= {};
-		let body = new CelestialBody(data.name, {
+		const owner = level.getNodeByID(data.owner);
+		return new this({
 			id: data.id,
+			name: data.name,
 			radius: data.radius,
 			rewards: data.rewards,
 			position: Vector3.FromArray(data.position || [0, 0, 0]),
 			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
 			fleetPosition: Vector3.FromArray(data.fleetPosition || [0, 0, 0]),
+			owner,
+			level,
 		});
-
-		if (level.entities.has(data.owner)) {
-			body.owner = level.entities.get(data.owner);
-		} else if (level.bodies.has(data.owner)) {
-			body.owner = level.bodies.get(data.owner);
-		}
 	}
 }
 

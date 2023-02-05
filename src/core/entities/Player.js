@@ -22,8 +22,7 @@ export default class Player extends Entity {
 			if (shipData instanceof Ship) {
 				this.fleet.push(shipData);
 			} else {
-				const ship = Ship.FromData({ ...shipData, owner: this.id }, level);
-				this.fleet.push(ship);
+				const ship = Ship.FromData({ ...shipData, owner: this.id, parent: this.id }, level);
 			}
 		}
 	}
@@ -134,13 +133,12 @@ export default class Player extends Entity {
 	}
 
 	static FromData(data, level) {
-		const fleet = (data.fleet || []).map(shipData => (shipData instanceof Ship ? Ship : level.entities.get(shipData)));
 		return new this({
 			id: data.id,
 			name: data.name,
 			position: Vector3.FromArray(data.position),
 			rotation: Vector3.FromArray(data.rotation),
-			fleet,
+			fleet: [],
 			level,
 		});
 	}
