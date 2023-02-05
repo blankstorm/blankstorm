@@ -61,7 +61,7 @@
 		"socket.io-client": "4.x.x"
 	},
 	"devDependencies": {
-		"electron": "^21.3.0",
+		"electron": "^22.2.0",
 		"electron-builder": "^23.6.0",
 		"eslint": "^8.24.0",
 		"eslint-formatter-azure-devops": "^0.2.0",
