@@ -1,4 +1,5 @@
 import { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 import { Scene } from '@babylonjs/core/scene.js';
 import '@babylonjs/core/Animations/animatable.js';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
@@ -21,10 +22,14 @@ import EntityRenderer from './entities/EntityRenderer.js';
 let skybox,
 	xzPlane,
 	camera,
-	cache = { entities: {}, bodies: {} },
+	cache = { entities: [], bodies: [] },
 	hitboxes = false,
 	gl;
 export let engine, scene, hl, probe;
+
+export let warning_flags = {
+	complex_data_update: 0
+};
 
 export function setHitboxes(value) {
 	hitboxes = !!value;
@@ -183,7 +188,7 @@ export async function clear() {
 		entities.delete(id);
 	}
 
-	cache = { entities: {}, bodies: {} };
+	cache = { entities: [], bodies: [] };
 }
 
 export async function load(levelData) {
@@ -191,7 +196,7 @@ export async function load(levelData) {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	for (let [id, data] of Object.entries(levelData.bodies)) {
+	for (let data of levelData.bodies) {
 		let body;
 		switch (data.node_type) {
 			case 'star':
@@ -204,10 +209,10 @@ export async function load(levelData) {
 				throw new ReferenceError(`rendering for CelestialBody type "${data.node_type}" is not supported`);
 		}
 
-		bodies.set(id, body);
+		bodies.set(data.id, body);
 	}
 
-	for (let [id, data] of Object.entries(levelData.entities)) {
+	for (let data of levelData.entities) {
 		let entity;
 		switch (data.node_type) {
 			case 'player':
@@ -219,7 +224,7 @@ export async function load(levelData) {
 			default:
 				throw new ReferenceError(`rendering for Entity type "${data.node_type}" is not supported`);
 		}
-		entities.set(id, entity);
+		entities.set(data.id, entity);
 	}
 }
 
@@ -228,57 +233,90 @@ export async function update(levelData) {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	const dataToUpdate = { bodies: {}, entities: {} };
+	const renderersToAdd = { bodies: [], entities: [] };
 
 	if (levelData.id != cache.id && cache.id) {
 		console.warn(`Updating the renderer with a different level (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);
 	}
 
-	for (let [id, body] of [...Object.entries(cache.bodies), ...Object.entries(levelData.bodies)]) {
-		if (!cache.bodies[id]) {
-			dataToUpdate.bodies[id] = body;
+	for (let body of [...cache.bodies, ...levelData.bodies]) {
+		const data = levelData.bodies.find(_body => _body.id == body.id),
+		cached = cache.bodies.find(_body => _body.id == body.id);
+		if (!cached) {
+			renderersToAdd.bodies.push(body);
 			continue;
 		}
 
-		if (!levelData.bodies[id]) {
-			bodies.get(id).dispose();
-			bodies.delete(id);
+		if (!data) {
+			bodies.get(body.id).dispose();
+			bodies.delete(body.id);
 			continue;
 		}
 
-		/**
-		 * @todo Actually check for changed attributes
-		 */
-		if (JSON.stringify(cache.bodies[id]) != JSON.stringify(levelData.bodies[id])) {
-			bodies.get(id).dispose();
-			bodies.delete(id);
-			dataToUpdate.bodies[id] = body;
+		for (let [key, value] of Object.entries(body)) {
+			if (value instanceof Array) { // serialized Vector or Color
+				const changed = value.reduce((previous, current, i) => previous || cached[key][i] != data[key][i], false);
+
+				/**
+				 * @todo add support for complex data types (maybe a more thorough class deserializer)
+				 */
+				if (changed) {
+					bodies.get(body.id)[key] = key == 'color' ? Color3.FromArray(value) : Vector3.FromArray(value);
+				}
+			}
+			else if(typeof value == 'object'){ //serialized complex data (e.g. StorageData)
+				if(warning_flags.complex_data_update < 1){
+					console.warn('Updating complex data not supported. No more warnings will be reported to the console.');
+					warning_flags.complex_data_update++;
+				}
+				
+			}
+			else if (cached[key] != data[key]) {
+				bodies.get(body.id)[key] = value;
+			}
 		}
 	}
 
-	for (let [id, entity] of [...Object.entries(cache.entities), ...Object.entries(levelData.entities)]) {
-		if (!cache.entities[id]) {
-			dataToUpdate.entities[id] = entity;
+	for (let entity of [...cache.entities, ...levelData.entities]) {
+		const data = levelData.entities.find(_entity => _entity.id == entity.id),
+		cached = cache.entities.find(_entity => _entity.id == entity.id);
+		if (!cached) {
+			renderersToAdd.entities.push(entity);
 			continue;
 		}
 
-		if (!levelData.entities[id]) {
-			entities.get(id).dispose();
-			entities.delete(id);
+		if (!data) {
+			entities.get(entity.id).dispose();
+			entities.delete(entity.id);
 			continue;
 		}
 
-		/**
-		 * @todo Actually check for changed attributes
-		 */
-		if (JSON.stringify(cache.entities[id]) != JSON.stringify(levelData.entities[id])) {
-			entities.get(id).dispose();
-			entities.delete(id);
-			dataToUpdate.entities[id] = entity;
+		for (let [key, value] of Object.entries(entity)) {
+			if (value instanceof Array) { // serialized Vector or Color
+				const changed = value.reduce((previous, current, i) => previous || cached[key][i] != data[key][i], false);
+
+				/**
+				 * @todo add support for complex data types (maybe a more thorough class deserializer)
+				 */
+				if (changed) {
+					entities.get(entity.id)[key] = key == 'color' ? Color3.FromArray(value) : Vector3.FromArray(value);
+				}
+			}
+			else if(typeof value == 'object'){ //serialized complex data (e.g. StorageData)
+				if(warning_flags.complex_data_update < 1){
+					console.warn('Updating complex data not supported. No more warnings will be reported to the console.');
+					warning_flags.complex_data_update++;
+				}
+			}
+			else if (cached[key] != data[key]) {
+				entities.get(entity.id)[key] = value;
+			}
 		}
 	}
 
-	return await load(dataToUpdate);
+	const result = await load(renderersToAdd);
+	cache = levelData;
+	return result;
 }
 
 export function getCamera() {
