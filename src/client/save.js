@@ -69,7 +69,9 @@ export default class Save extends Playable {
 		constructor(name, doNotGenerate) {
 			super(name, doNotGenerate);
 			for (let [id, listener] of listeners.core) {
-				this.addEventListener(id, listener);
+				this.addEventListener(id, evt => {
+					listener(evt);
+				}, {passive: true});
 			}
 		}
 		play() {

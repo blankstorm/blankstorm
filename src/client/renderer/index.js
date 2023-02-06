@@ -227,7 +227,6 @@ export async function update(levelData) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
-	engine.resize();
 
 	const dataToUpdate = { bodies: {}, entities: {} };
 
