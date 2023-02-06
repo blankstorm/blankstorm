@@ -1,5 +1,6 @@
 import { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
 import { Scene } from '@babylonjs/core/scene.js';
+import '@babylonjs/core/Animations/animatable.js';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
 import { GlowLayer } from '@babylonjs/core/Layers/glowLayer.js';
 import { HighlightLayer } from '@babylonjs/core/Layers/highlightLayer.js';
