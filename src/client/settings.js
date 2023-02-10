@@ -104,8 +104,12 @@ class SettingsItem {
 		this.#ui_container.after('<br><br>');
 
 		this.#ui.on('change', { item: this }, e => {
-			e.data.item.value = e.target.value;
+			e.data.item.value = e.data.item.type == 'boolean' ? e.target.checked : e.target.value;
 		});
+
+		if(options.value){
+			this.value = options.value;
+		}
 	}
 
 	get id() {
@@ -141,7 +145,7 @@ class SettingsItem {
 			case 'boolean':
 			case 'checkbox':
 				this.#ui[0].checked = val;
-				this.#store.set(this.#id, !!val);
+				this.#store.set(this.#id, val);
 				break;
 			case 'number':
 			case 'range':
@@ -305,7 +309,7 @@ export class SettingsStore {
 
 		//update item
 		if (!this.items.has(key)) {
-			const opts = { type: typeof value, ...options };
+			const opts = { type: typeof value, ...options, value };
 			const item = this.createItem(key, opts);
 			item.value = value;
 		} else {
