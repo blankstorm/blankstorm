@@ -10,8 +10,8 @@ export default class Entity extends Node {
 	selected = false;
 	isTargetable = false;
 
-	constructor({ id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), owner, level }) {
-		super({ id, name, position, rotation, owner, level });
+	constructor({ id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), parent, owner, level }) {
+		super({ id, name, position, rotation, owner, parent, level });
 
 		level.entities.set(this.id, this);
 	}
@@ -27,12 +27,6 @@ export default class Entity extends Node {
 	async moveTo(location, isRelative) {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
 		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : Vector3.Zero()), this.level);
-
-		/*return await renderer.update({
-			[this.id]: {
-				path: this.currentPath
-			}	
-		});*/
 	}
 
 	serialize() {

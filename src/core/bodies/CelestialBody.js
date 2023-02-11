@@ -20,24 +20,26 @@ export default class CelestialBody extends Node {
 		name = '',
 		radius = 1,
 		fleet = [],
-		owner = null,
+		owner,
+		parent,
 		rewards = {},
 		position = Vector3.Zero(),
 		rotation = Vector3.Zero(),
-		fleetPosition = Vector3.Zero(),
+		fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true),
 		level,
 	}) {
-		super({ id, name, owner, position, rotation, level });
+		super({ id, name, owner, parent, position, rotation, level });
 		this.radius = radius;
 		this.rewards = StorageData.FromData({ items: rewards, max: 1e10 });
 		level.bodies.set(id, this);
 
-		this.fleetPosition = fleetPosition || random.cords(random.int(radius + 5, radius * 1.2), true);
+		this.fleetPosition = fleetPosition;
 		for (let shipOrType of fleet) {
 			if (shipOrType instanceof Ship) {
 				this.fleet.push(shipOrType);
 			} else {
 				let ship = new Ship({ type: shipOrType, owner: this, parent: this, level });
+				ship.position.addInPlace(this.fleetPosition);
 			}
 		}
 	}

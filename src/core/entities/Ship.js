@@ -9,10 +9,10 @@ export default class Ship extends Entity {
 	hardpoints = [];
 
 	isTargetable = true;
-
-	constructor({ id, name, position, rotation, owner, level, storage, hp, reload, jumpCooldown, type, hardpoints = [] }) {
+	
+	constructor({ id, name, position, rotation, parent, owner, level, storage, hp, reload, jumpCooldown, type, hardpoints = [] }) {
 		if (type && !Ship.generic.has(type)) throw new ReferenceError(`Ship type ${type} does not exist`);
-		super({ id, name, position, rotation, owner, level });
+		super({ id, name, position, rotation, parent, owner, level });
 
 		let distance = Math.log(random.int(0, owner?.power || 1) ** 3 + 1); //IMPORTANT TODO: Move to ship creation
 

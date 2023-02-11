@@ -769,6 +769,7 @@ canvas.on('keydown', e => {
 		case 'F4':
 			e.preventDefault();
 			hitboxes = !hitboxes;
+			renderer.setHitboxes(hitboxes);
 			break;
 		case 'Tab':
 			e.preventDefault();
@@ -875,6 +876,7 @@ const loop = () => {
 };
 
 if (config.debug_mode) {
+	$('#loading_cover p').text('Debug: Assigning variables...');
 	const BABYLON = await import('@babylonjs/core/index.js');
 	const core = await import('core');
 	Object.assign(window, { core, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, BABYLON });
