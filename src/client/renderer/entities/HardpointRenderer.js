@@ -6,28 +6,25 @@ import ModelRenderer from '../ModelRenderer.js';
 
 export default class HardpointRenderer extends ModelRenderer {
 	projectiles = [];
-	constructor({ id, position, rotation, ship: parent, scene, type }) {
-		super({ id, position, rotation, scene, parent });
-
-		this._projectile = HardpointRenderer.projectiles.get(type);
-		this.type = type;
-		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
-
-		this.createInstance(type);
+	constructor(id, scene) {
+		super(id, scene);
 	}
 
 	fireProjectile(target, options) {
 		this._projectile.call(this, target, options);
 	}
 
-	static FromData(data, scene) {
-		return new this({
-			id: data.id,
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			scene,
-			type: data.type,
-		});
+	async update({ name, position, rotation, type } = {}){
+		if(this.type != type){
+			this._projectile = HardpointRenderer.projectiles.get(type);
+		}
+		await super.update({ name, position, rotation, type });
+	}
+
+	static async FromData(data, scene) {
+		const hardpoint = new this(data.id);
+		await hardpoint.update(data);
+		return hardpoint;
 	}
 
 	static projectiles = new Map(

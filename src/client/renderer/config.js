@@ -10,4 +10,8 @@ export default {
 		minZ: 0.1,
 		radius: 10,
 	},
+	star_light: {
+		intensity: 1,
+		range: 10000
+	},
 };

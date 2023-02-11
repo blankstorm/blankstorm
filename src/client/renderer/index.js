@@ -9,7 +9,6 @@ import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe.js';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.js';
 import { Engine } from '@babylonjs/core/Engines/engine.js';
-import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera.js';
 
 import config from './config.js';
 import PlayerRenderer from './entities/PlayerRenderer.js';
@@ -18,6 +17,7 @@ import StarRenderer from './bodies/StarRenderer.js';
 import ModelRenderer from './ModelRenderer.js';
 import ShipRenderer from './entities/ShipRenderer.js';
 import EntityRenderer from './entities/EntityRenderer.js';
+import Camera from './Camera.js'
 
 let skybox,
 	xzPlane,
@@ -80,11 +80,6 @@ export function handleCanvasRightClick(e, owner) {
 	}
 }
 
-export function resetCamera() {
-	camera.alpha = -Math.PI / 2;
-	camera.beta = Math.PI / 2;
-}
-
 export async function init(canvas, messageHandler = () => {}) {
 	await messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
@@ -94,10 +89,7 @@ export async function init(canvas, messageHandler = () => {}) {
 	scene = new Scene(engine);
 
 	await messageHandler('camera');
-	camera = new ArcRotateCamera('camera', -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), scene);
-	scene.activeCamera = camera;
-	camera.inputs.attached.pointers.buttons = [1];
-	Object.assign(camera, config.player_camera);
+	camera = new Camera(scene);
 
 	scene.registerBeforeRender(() => {
 		let ratio = scene.getAnimationRatio();
@@ -200,10 +192,10 @@ export async function load(levelData) {
 		let body;
 		switch (data.node_type) {
 			case 'star':
-				body = StarRenderer.FromData(data, scene);
+				body = await StarRenderer.FromData(data, scene);
 				break;
 			case 'planet':
-				body = PlanetRenderer.FromData(data, scene);
+				body = await PlanetRenderer.FromData(data, scene);
 				break;
 			default:
 				throw new ReferenceError(`rendering for CelestialBody type "${data.node_type}" is not supported`);
@@ -216,10 +208,14 @@ export async function load(levelData) {
 		let entity;
 		switch (data.node_type) {
 			case 'player':
-				entity = PlayerRenderer.FromData(data, scene);
+				entity = await PlayerRenderer.FromData(data, scene);
+				/**
+				 * @todo change this
+				 */
+				camera.target = entity.position;
 				break;
 			case 'ship':
-				entity = ShipRenderer.FromData(data, scene);
+				entity = await ShipRenderer.FromData(data, scene);
 				break;
 			default:
 				throw new ReferenceError(`rendering for Entity type "${data.node_type}" is not supported`);
@@ -252,29 +248,8 @@ export async function update(levelData) {
 			bodies.delete(body.id);
 			continue;
 		}
-
-		for (let [key, value] of Object.entries(body)) {
-			if (value instanceof Array) { // serialized Vector or Color
-				const changed = value.reduce((previous, current, i) => previous || cached[key][i] != data[key][i], false);
-
-				/**
-				 * @todo add support for complex data types (maybe a more thorough class deserializer)
-				 */
-				if (changed) {
-					bodies.get(body.id)[key] = key == 'color' ? Color3.FromArray(value) : Vector3.FromArray(value);
-				}
-			}
-			else if(typeof value == 'object'){ //serialized complex data (e.g. StorageData)
-				if(warning_flags.complex_data_update < 1){
-					console.warn('Updating complex data not supported. No more warnings will be reported to the console.');
-					warning_flags.complex_data_update++;
-				}
-				
-			}
-			else if (cached[key] != data[key]) {
-				bodies.get(body.id)[key] = value;
-			}
-		}
+		
+		bodies.get(body.id).update(data);
 	}
 
 	for (let entity of [...cache.entities, ...levelData.entities]) {
@@ -291,27 +266,7 @@ export async function update(levelData) {
 			continue;
 		}
 
-		for (let [key, value] of Object.entries(entity)) {
-			if (value instanceof Array) { // serialized Vector or Color
-				const changed = value.reduce((previous, current, i) => previous || cached[key][i] != data[key][i], false);
-
-				/**
-				 * @todo add support for complex data types (maybe a more thorough class deserializer)
-				 */
-				if (changed) {
-					entities.get(entity.id)[key] = key == 'color' ? Color3.FromArray(value) : Vector3.FromArray(value);
-				}
-			}
-			else if(typeof value == 'object'){ //serialized complex data (e.g. StorageData)
-				if(warning_flags.complex_data_update < 1){
-					console.warn('Updating complex data not supported. No more warnings will be reported to the console.');
-					warning_flags.complex_data_update++;
-				}
-			}
-			else if (cached[key] != data[key]) {
-				entities.get(entity.id)[key] = value;
-			}
-		}
+		entities.get(entity.id).update(data);
 	}
 
 	const result = await load(renderersToAdd);

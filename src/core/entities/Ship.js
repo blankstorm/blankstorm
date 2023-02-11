@@ -10,16 +10,16 @@ export default class Ship extends Entity {
 
 	isTargetable = true;
 
-	constructor({ id, name, position, rotation, owner, level, storage, hp, reload, jumpCooldown, className, hardpoints = [] }) {
-		if (className && !Ship.generic.has(className)) throw new ReferenceError(`Ship type ${className} does not exist`);
+	constructor({ id, name, position, rotation, owner, level, storage, hp, reload, jumpCooldown, type, hardpoints = [] }) {
+		if (type && !Ship.generic.has(type)) throw new ReferenceError(`Ship type ${type} does not exist`);
 		super({ id, name, position, rotation, owner, level });
 
 		let distance = Math.log(random.int(0, owner?.power || 1) ** 3 + 1); //IMPORTANT TODO: Move to ship creation
 
-		this._generic = Ship.generic.get(className);
+		this._generic = Ship.generic.get(type);
 
 		Object.assign(this, {
-			class: className,
+			type: type,
 			storage: storage instanceof StorageData ? storage : new StorageData(this._generic.storage),
 			hp: hp ?? this._generic.hp,
 			reload: reload ?? this._generic.reload,
@@ -57,20 +57,20 @@ export default class Ship extends Entity {
 
 	serialize() {
 		return Object.assign(super.serialize(), {
-			class: this.class,
-			hp: this.hp.toFixed(3),
-			jumpCooldown: this.jumpCooldown.toFixed(3),
+			type: this.type,
+			hp: +this.hp.toFixed(3),
+			jumpCooldown: +this.jumpCooldown.toFixed(3),
 			storage: this.storage.serialize().items,
 			hardpoints: this.hardpoints.map(hp => hp.serialize()),
 		});
 	}
 
 	static FromData(data, level) {
-		const max = this.generic.get(data.class);
+		const max = this.generic.get(data.type);
 		const owner = level.getNodeByID(data.owner);
 		return new this({
 			id: data.id,
-			className: data.class,
+			type: data.type,
 			owner,
 			position: Vector3.FromArray(data.position || [0, 0, 0]),
 			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),

@@ -37,7 +37,7 @@ export default class CelestialBody extends Node {
 			if (shipOrType instanceof Ship) {
 				this.fleet.push(shipOrType);
 			} else {
-				let ship = new Ship({ className: shipOrType, owner: this, parent: this, level });
+				let ship = new Ship({ type: shipOrType, owner: this, parent: this, level });
 			}
 		}
 	}

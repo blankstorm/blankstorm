@@ -100,14 +100,6 @@ export default class Player extends Entity {
 		return Object.values(items).every(item => item <= 0);
 	}
 
-	addVelocity(vector = Vector3.Zero(), computeMultiplyer) {
-		let direction = this.cam.getDirection(vector).scale(1 / Math.PI);
-		direction.y = 0;
-		direction.normalize();
-		if (computeMultiplyer) direction.scaleInPlace(this.speed + this.tech.thrust / 10);
-		this.velocity.addInPlace(direction);
-	}
-
 	reset() {
 		this.removeAllItems();
 		for (let type of Tech.keys()) {

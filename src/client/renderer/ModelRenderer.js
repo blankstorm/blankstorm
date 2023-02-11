@@ -15,22 +15,8 @@ export default class ModelRenderer extends TransformNode {
 	#createdInstance = false;
 	#selected = false;
 
-	constructor({ id, name, position, rotation, parent, scene }) {
+	constructor(id, scene) {
 		super(id, scene);
-
-		this.name = name ?? id;
-
-		if (position instanceof Vector3) {
-			this.position = position;
-		}
-
-		if (rotation instanceof Vector3) {
-			this.rotation = rotation;
-		}
-
-		if (parent instanceof TransformNode) {
-			this.parent = parent;
-		}
 	}
 
 	get instance() {
@@ -55,6 +41,22 @@ export default class ModelRenderer extends TransformNode {
 		this.#createdInstance = true;
 
 		return this.#instance;
+	}
+
+	async update({ name, position, rotation, type } = {}){
+		this.name = name;
+		this.position = Vector3.FromArray(position);
+		this.rotation = Vector3.FromArray(rotation);
+		if(this.type != type){
+			this.type = type;
+			await this.createInstance(type);
+		}
+	}
+
+	static async FromData(data, scene){
+		const model = new this(data.id, scene);
+		model.update(data);
+		return model;
 	}
 
 	static modelPaths = new Map(

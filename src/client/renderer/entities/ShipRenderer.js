@@ -6,24 +6,10 @@ import ModelRenderer from '../ModelRenderer.js';
 import { hl } from '../index.js';
 
 export default class ShipRenderer extends ModelRenderer {
-	hardpoints = [];
+	hardpoints = new Map();
 	#selected = false;
-	constructor({ id, name, position, rotation, scene, hardpoints, type }) {
-		super({ id, name, position, rotation, scene });
-
-		this.createInstance(type);
-
-		for (let hardpointData of hardpoints) {
-			let hardpoint;
-			if (hardpointData instanceof HardpointRenderer) {
-				hardpoint = hardpointData;
-			} else {
-				hardpoint = HardpointRenderer.FromData(hardpointData, scene);
-			}
-
-			this.hardpoints.push(hardpoint);
-			hardpoint.parent = this;
-		}
+	constructor(id, scene) {
+		super(id, scene);
 	}
 
 	select() {
@@ -50,14 +36,22 @@ export default class ShipRenderer extends ModelRenderer {
 		this.#selected = false;
 	}
 
-	static FromData(data, scene) {
-		return new this({
-			id: data.id,
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			scene,
-			type: data.class,
-			hardpoints: data.hardpoints,
-		});
+	async update({ name, position, rotation, hardpoints = [], type } = {}) {
+		await super.update({ name, position, rotation, type });
+		for (let hardpointData of [...hardpoints]) {
+			if (this.hardpoints.has(hardpointData.id)) {
+				this.hardpoints.get(hardpointData.id).update(hardpointData);
+			} else {
+				const hardpoint = await HardpointRenderer.FromData(hardpointData, this.getScene());
+				hardpoint.parent = this;
+				this.hardpoints.set(hardpoint.id, hardpoint);
+			}
+		}
+	}
+
+	static async FromData(data, scene) {
+		const ship = new this(data.id, scene);
+		await ship.update(data);
+		return ship;
 	}
 }

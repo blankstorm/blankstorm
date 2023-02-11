@@ -4,30 +4,20 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 export default class PlayerRenderer extends TransformNode {
 	velocity = Vector3.Zero();
 
-	constructor({ id, name, position, rotation }, scene) {
+	constructor(id, scene) {
 		super(id, scene);
+	}
+
+	async update({ name, position, rotation, velocity } = {}){
 		this.name = name;
-		this.position = position;
-		this.rotation = rotation;
+		this.position = Vector3.FromArray(position);
+		this.rotation = Vector3.FromArray(rotation);
+		this.velocity = Vector3.FromArray(velocity);
 	}
 
-	addVelocity(vector = Vector3.Zero(), computeMultiplyer) {
-		let direction = this.camera.getDirection(vector).scale(1 / Math.PI);
-		direction.y = 0;
-		direction.normalize();
-		if (computeMultiplyer) direction.scaleInPlace(this.speed + this.tech.thrust / 10);
-		this.velocity.addInPlace(direction);
-	}
-
-	static FromData(data, scene) {
-		return new this(
-			{
-				id: data.id,
-				name: data.name,
-				position: Vector3.FromArray(data.position || [0, 0, 0]),
-				rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
-			},
-			scene
-		);
+	static async FromData(data, scene) {
+		const player = new this(data.id, scene);
+		await player.update(data);
+		return player;
 	}
 }

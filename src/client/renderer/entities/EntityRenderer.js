@@ -10,9 +10,8 @@ import { hl } from '../index.js';
 export default class EntityRenderer extends TransformNode {
 	#selected = false;
 
-	constructor({ id, scene }) {
+	constructor(id, scene) {
 		super(id, scene);
-		this.id = id;
 	}
 
 	select() {
@@ -80,11 +79,15 @@ export default class EntityRenderer extends TransformNode {
 		});
 	}
 
-	static FromData(data, scene) {
-		return new this({
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			scene,
-		});
+	async update({ name, position, rotation } = {}){
+		this.name = name;
+		this.position = Vector3.FromArray(position);
+		this.rotation = Vector3.FromArray(rotation);
+	}
+
+	static async FromData(data, scene) {
+		const entity = new this(data.id, scene);
+		await entity.update(data);
+		return entity;
 	}
 }

@@ -6,19 +6,23 @@ import StationComponentRenderer from './StationComponentRenderer.js';
 export default class StationRenderer extends TransformNode {
 	components = [];
 
-	constructor({ name = 'Station', id }, level) {
-		super(name, id, level);
+	constructor(id, scene) {
+		super(id, scene);
 
-		this.core = new StationComponentRenderer('core', this);
+		this.core = new StationComponentRenderer(id + ':core', this);
 		this.core.parent = this;
 	}
 
-	static FromData(data, scene) {
-		return new this({
-			id: data.id,
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			scene,
-		});
+	async update({ name, position, rotation } = {}){
+		this.name = name;
+		this.position = Vector3.FromArray(position);
+		this.rotation = Vector3.FromArray(rotation);
+	}
+
+	static async FromData(data, scene) {
+		const station = new this(data.id, scene);
+		await station.update();
+		return station;
+
 	}
 }

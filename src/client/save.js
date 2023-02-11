@@ -120,8 +120,8 @@ export default class Save extends Playable {
 			];
 			save.entities.set(playerID, playerData);
 
-			new Ship({ className: 'mosquito', owner: playerData, level: save });
-			new Ship({ className: 'cillus', owner: playerData, level: save });
+			new Ship({ type: 'mosquito', owner: playerData, level: save });
+			new Ship({ type: 'cillus', owner: playerData, level: save });
 			playerData.addItems(generate.items(5000));
 
 			return save;

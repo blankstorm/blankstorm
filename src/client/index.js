@@ -1,5 +1,4 @@
 import { version, versions, isJSON, config, commands, runCommand, random, Ship, Level } from 'core';
-import * as core from 'core';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 import 'jquery'; /* global $ */
@@ -146,7 +145,7 @@ export const settings = new SettingsStore({
 			label: 'Forward',
 			value: { key: 'w' },
 			onTrigger: () => {
-				player.data().addVelocity(Vector3.Forward(), true);
+				renderer.getCamera().addVelocity(Vector3.Forward(), true);
 			},
 		},
 		{
@@ -156,7 +155,7 @@ export const settings = new SettingsStore({
 			label: 'Strafe Left',
 			value: { key: 'a' },
 			onTrigger: () => {
-				player.data().addVelocity(Vector3.Left(), true);
+				renderer.getCamera().addVelocity(Vector3.Left(), true);
 			},
 		},
 		{
@@ -166,7 +165,7 @@ export const settings = new SettingsStore({
 			label: 'Strafe Right',
 			value: { key: 'd' },
 			onTrigger: () => {
-				player.data().addVelocity(Vector3.Right(), true);
+				renderer.getCamera().addVelocity(Vector3.Right(), true);
 			},
 		},
 		{
@@ -176,7 +175,7 @@ export const settings = new SettingsStore({
 			label: 'Backward',
 			value: { key: 's' },
 			onTrigger: () => {
-				player.data().addVelocity(Vector3.Backward(), true);
+				renderer.getCamera().addVelocity(Vector3.Backward(), true);
 			},
 		},
 		{
@@ -823,7 +822,8 @@ const loop = () => {
 	if (saves.current instanceof Save.Live) {
 		if (!isPaused) {
 			try {
-				renderer.getCamera().angularSensibilityX = renderer.getCamera().angularSensibilityY = 2000 / settings.get('sensitivity');
+				const camera = renderer.getCamera();
+				camera.angularSensibilityX = camera.angularSensibilityY = 2000 / settings.get('sensitivity');
 				saves.current.waypoints.forEach(waypoint => {
 					let pos = waypoint.screenPos;
 					waypoint.marker
@@ -848,9 +848,9 @@ const loop = () => {
 						<span>${renderer.engine.getFps().toFixed()} FPS | ${saves.current.tps.toFixed()} TPS</span><br>
 						<span>${saves.selected} (${saves.current.date.toLocaleString()})</span><br><br>
 						<span>
-							P: (${player.data().position.x.toFixed(1)}, ${player.data().position.y.toFixed(1)}, ${player.data().position.z.toFixed(1)}) 
-							V: (${player.data().velocity.x.toFixed(1)}, ${player.data().velocity.y.toFixed(1)}, ${player.data().velocity.z.toFixed(1)}) 
-							R: (${renderer.getCamera().alpha.toFixed(2)}, ${renderer.getCamera().beta.toFixed(2)})
+							P: (${camera.target.asArray().map(e => e.toFixed(1)).join(', ')}) 
+							V: (${camera.velocity.asArray().map(e => e.toFixed(1)).join(', ')}}) 
+							R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
 						</span><br>
 						`);
 				$('#debug .right').html(`
@@ -873,8 +873,11 @@ const loop = () => {
 		}
 	}
 };
+
 if (config.debug_mode) {
-	Object.assign(window, { core, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, Vector3 });
+	const BABYLON = await import('@babylonjs/core/index.js');
+	const core = await import('core');
+	Object.assign(window, { core, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, BABYLON });
 }
 ui.update();
 $('#loading_cover p').text('Done!');

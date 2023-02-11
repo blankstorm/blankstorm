@@ -75,16 +75,10 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 }
 
 export default class PlanetRenderer extends Mesh {
-	constructor({ name, position = Vector3.Zero(), rotation = Vector3.Zero(), biome = 'earthlike', radius = 1, scene, id }) {
+	biome = '';
+	radius = 0;
+	constructor(id, scene) {
 		super(id, scene);
-		this.name = name ?? 'Unknown Planet';
-		CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
-		Object.assign(this, { position, rotation });
-		if (PlanetRenderer.biomes.has(biome)) {
-			this.material = new PlanetRendererMaterial(PlanetRenderer.biomes.get(biome), scene);
-		} else {
-			throw new ReferenceError(`Biome "${biome}" does not exist`);
-		}
 		this._customHardpointProjectileMaterials = [
 			{
 				applies_to: ['laser'],
@@ -93,16 +87,29 @@ export default class PlanetRenderer extends Mesh {
 		];
 	}
 
-	static FromData(data, scene) {
-		return new this({
-			id: data.id,
-			name: data.name,
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			biome: data.biome,
-			radius: data.radius,
-			scene,
-		});
+	async update({ name, radius, biome, position, rotation } = {}){
+		this.name = name;
+		this.position = Vector3.FromArray(position);
+		this.rotation = Vector3.FromArray(rotation);
+		if(this.radius != radius){
+			this.radius = radius;
+			CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
+		}
+		if(this.biome != biome){
+			if (PlanetRenderer.biomes.has(biome)) {
+				this.biome = biome;
+				this.material = new PlanetRendererMaterial(PlanetRenderer.biomes.get(biome), this.getScene());
+			} else {
+				throw new ReferenceError(`Biome "${biome}" does not exist`);
+			}
+		}
+		
+	}
+
+	static async FromData(data, scene) {
+		const planet = new this(data.id, scene);
+		await planet.update(data);
+		return planet;
 	}
 
 	static biomes = new Map([
