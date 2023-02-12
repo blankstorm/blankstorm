@@ -9,7 +9,7 @@ import { modal, download, confirm, alert } from './utils.js';
 import Waypoint from './waypoint.js';
 import db from './db.js';
 import { Playable } from './playable.js';
-import { canvas, setPaused, mp, saves } from './index.js';
+import { canvas, setPaused, mp, saves, eventLog } from './index.js';
 import { update as updateUI } from './ui.js';
 import PlanetRenderer from './renderer/bodies/PlanetRenderer.js';
 import { scene } from './renderer/index.js';
@@ -70,6 +70,7 @@ export default class Save extends Playable {
 			super(name, doNotGenerate);
 			for (let [id, listener] of listeners.core) {
 				this.addEventListener(id, evt => {
+					eventLog.push(evt);
 					listener(evt);
 				}, {passive: true});
 			}

@@ -17,6 +17,7 @@ import './contextmenu.js';
 import { PlayableStore } from './playable.js';
 import * as renderer from './renderer/index.js';
 import * as ui from './ui.js';
+import { sounds, playsound } from './audio.js';
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
@@ -273,28 +274,10 @@ try {
 export const saves = new PlayableStore(),
 	servers = new PlayableStore();
 
-export const cookie = {},
-	playsound = (url, vol = 1) => {
-		if (vol > 0) {
-			let a = new Audio(url);
-			a.volume = +vol;
-			a.play();
-		}
-	};
+export const cookie = {};
 document.cookie.split('; ').forEach(e => {
 	cookie[e.split('=')[0]] = e.split('=')[1];
 });
-
-const sound = {
-	rift: 'music/rift.mp3',
-	planets: 'music/planets.mp3',
-	destroy_ship: 'sfx/destroy_ship.mp3',
-	warp_start: 'sfx/warp_start.mp3',
-	//warp_end: 'sfx/warp_end.mp3',
-	laser_fire: 'sfx/laser_fire.mp3',
-	laser_hit: 'sfx/laser_hit.mp3',
-	ui: 'sfx/ui.mp3',
-};
 
 //load mods (if any)
 $('#loading_cover p').text('Loading Mods...');
@@ -478,8 +461,8 @@ for (let id of result) {
 
 Object.assign(commands, {
 	playsound(level, name, volume = settings.get('sfx')) {
-		if (sound[name]) {
-			playsound(name, volume);
+		if (sounds.has(name)) {
+			playsound(sounds.get(name), volume);
 		} else {
 			throw new ReferenceError(`sound "${name}" does not exist`);
 		}
@@ -492,6 +475,7 @@ Object.assign(commands, {
 
 $('#loading_cover p').text('Registering event listeners...');
 //Event Listeners (UI transitions, creating saves, etc.)
+export const eventLog = [];
 $('#main .sp').click(() => {
 	mp = false;
 	$('#load li').detach();
@@ -811,7 +795,7 @@ $('canvas.game,#esc,#hud').on('keydown', e => {
 	ui.update();
 });
 $('button').on('click', () => {
-	playsound(sound.ui, settings.get('sfx'));
+	playsound(sounds.get('ui'), settings.get('sfx'));
 });
 setInterval(() => {
 	if (saves.current instanceof Save.Live && !isPaused) {

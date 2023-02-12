@@ -1,5 +1,3 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
-
 import ModelRenderer from '../ModelRenderer';
 
 export default class StationComponentRenderer extends ModelRenderer {

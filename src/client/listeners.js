@@ -1,4 +1,7 @@
 import * as renderer from './renderer/index.js';
+import { sounds, playsound } from './audio.js';
+import Ship from 'core/entities/Ship.js';
+import { settings } from './index.js';
 
 export const core = new Map([
 	[
@@ -13,12 +16,17 @@ export const core = new Map([
 			renderer.update(evt.emitter.serialize());
 		},
 	],
-	['player.levelup', async evt => {}],
+	['player.levelup', async () => {
+	}],
 	[
 		'player.death',
-		async evt => {
+		async () => {
 			renderer.getCamera().reset();
 		},
 	],
-	['entity.death', async evt => {}],
+	['entity.death', async evt => {
+		if(evt.emitter instanceof Ship){
+			playsound(sounds.get('destroy_ship'), settings.get('sfx'));
+		}
+	}],
 ]);
