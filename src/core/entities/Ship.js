@@ -15,6 +15,7 @@ export default class Ship extends Entity {
 		super({ id, name, position, rotation, parent, owner, level });
 
 		let distance = Math.log(random.int(0, owner?.power || 1) ** 3 + 1); //IMPORTANT TODO: Move to ship creation
+		this.position.addInPlace(random.cords(distance, true));
 
 		this._generic = Ship.generic.get(type);
 
@@ -33,6 +34,7 @@ export default class Ship extends Entity {
 			}
 
 			let hp = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint({ ...generic, owner: this, level });
+			hp.info = generic;
 			this.hardpoints.push(hp);
 		});
 
@@ -66,12 +68,13 @@ export default class Ship extends Entity {
 	}
 
 	static FromData(data, level) {
-		const max = this.generic.get(data.type);
-		const owner = level.getNodeByID(data.owner);
+		const max = this.generic.get(data.type).storage;
+		const parent = level.getNodeByID(data.owner);
 		return new this({
 			id: data.id,
 			type: data.type,
-			owner,
+			parent,
+			owner: parent,
 			position: Vector3.FromArray(data.position || [0, 0, 0]),
 			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
 			storage: StorageData.FromData({ ...data.storage, max }),

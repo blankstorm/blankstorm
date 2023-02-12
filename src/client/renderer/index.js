@@ -1,5 +1,4 @@
 import { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 import { Scene } from '@babylonjs/core/scene.js';
 import '@babylonjs/core/Animations/animatable.js';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
@@ -27,10 +26,6 @@ let skybox,
 	gl;
 export let engine, scene, hl, probe;
 
-export let warning_flags = {
-	complex_data_update: 0
-};
-
 export function setHitboxes(value) {
 	hitboxes = !!value;
 }
@@ -47,7 +42,7 @@ export function handleCanvasClick(ev, owner) {
 			}
 		}
 	}
-	let pickInfo = scene.pick(ev.pointerX, ev.pointerY, mesh => {
+	let pickInfo = scene.pick(ev.clientX, ev.clientY, mesh => {
 		let node = mesh;
 		while (node.parent) {
 			node = node.parent;
@@ -59,10 +54,10 @@ export function handleCanvasClick(ev, owner) {
 	});
 	if (pickInfo.pickedMesh) {
 		let node = pickInfo.pickedMesh;
-		while (node.parent) {
+		while (node.parent && !(node instanceof ShipRenderer)) {
 			node = node.parent;
 		}
-		if (node instanceof ShipRenderer && node.owner == owner) {
+		if (node instanceof ShipRenderer && node.parent == owner) {
 			if (node.selected) {
 				node.unselect();
 			} else {
@@ -71,11 +66,15 @@ export function handleCanvasClick(ev, owner) {
 		}
 	}
 }
+
 export function handleCanvasRightClick(e, owner) {
 	for (let entity of entities.values()) {
-		if (entity.selected && entity.owner == owner) {
-			let newPosition = scene.screenToWorldPlane(e.clientX, e.clientY, entity.position.y);
-			entity.moveTo(newPosition, false);
+		if (entity.selected && entity.parent == owner) {
+			xzPlane.position.y = entity.position.y;
+			let pickInfo = scene.pick(e.clientX, e.clientY, (mesh) => mesh == xzPlane);
+			if(pickInfo.pickedPoint){
+				entity.moveTo(pickInfo.pickedPoint, false);
+			}
 		}
 	}
 }

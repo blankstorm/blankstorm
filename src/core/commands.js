@@ -1,25 +1,23 @@
-import Ship from './entities/Ship.js';
-
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+
+import Ship from './entities/Ship.js';
+import { isJSON } from './utils.js';
 
 export const commands = {
 	help: () => {
 		return 'See https://bs.drvortex.dev/docs/commands for command documentation';
 	},
 	kill: (level, selector) => {
-		let entities = level.getEntities(selector);
-		if (entities.constructor.name == 'Array') {
-			entities.forEach(e => e.remove());
-			return `killed ${entities.length} entities`;
-		} else {
-			entities.remove();
-			return `killed entity #${entities.id} ("${entities.name}")`;
-		}
+		let entities = level.getNodesBySelector(selector);
+		entities.forEach(e => e.remove());
+		return `killed ${entities.length} entities`;
 	},
-	spawn: (level, type, selector, x, y, z) => {
-		let entity = level.getEntities(selector);
-		let spawned = new Ship(type, entity, level);
-		spawned.position.addInPlace(Vector3.FromArray(+x, +y, +z));
+	spawn: (level, type, selector, extra) => {
+		const parent = level.getNodeBySelector(selector);
+		const spawned = new Ship({ parent, owner: parent, level, type });
+		if(isJSON(extra)){
+			spawned.update(JSON.parse(extra));
+		}
 	},
 	data: {
 		get: (level, selector, path = '') => {

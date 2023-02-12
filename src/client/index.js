@@ -749,13 +749,13 @@ canvas.on('click', e => {
 	}
 
 	if (saves.current instanceof Save.Live) {
-		renderer.handleCanvasClick(e, player.data());
+		renderer.handleCanvasClick(e, renderer.scene.getNodeById(player.id));
 	}
 	ui.update();
 });
 canvas.on('contextmenu', e => {
 	if (saves.current instanceof Save.Live) {
-		renderer.handleCanvasRightClick(e, player.data());
+		renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
 	}
 });
 canvas.on('keydown', e => {

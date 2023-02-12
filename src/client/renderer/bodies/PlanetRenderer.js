@@ -87,7 +87,7 @@ export default class PlanetRenderer extends Mesh {
 		];
 	}
 
-	async update({ name, radius, biome, position, rotation } = {}){
+	async update({ name, radius, biome, position, rotation, parent } = {}){
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
@@ -103,7 +103,10 @@ export default class PlanetRenderer extends Mesh {
 				throw new ReferenceError(`Biome "${biome}" does not exist`);
 			}
 		}
-		
+		const _parent = this.getScene().getNodeById(parent);
+		if(_parent != this.parent){
+			this.parent = _parent;
+		}
 	}
 
 	static async FromData(data, scene) {

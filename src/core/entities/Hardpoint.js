@@ -8,6 +8,7 @@ import { LevelEvent } from '../events.js';
 
 export default class Hardpoint extends Node {
 	_generic = {};
+	info = {};
 	constructor({ id, name, position, rotation, owner, level, type }) {
 		level ?? owner?.level;
 		super({ id, name, position, rotation, owner, parent: owner, level });
@@ -29,6 +30,7 @@ export default class Hardpoint extends Node {
 	serialize() {
 		return Object.assign(super.serialize(), {
 			type: this.hardpointType,
+			info: this.info,
 			reload: this.reload,
 		});
 	}

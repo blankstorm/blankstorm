@@ -22,7 +22,7 @@ export default class StarRenderer extends Mesh {
 		*/
 	}
 
-	async update({ name, radius, color, position, rotation } = {}){
+	async update({ name, radius, color, position, rotation, parent } = {}){
 		this.name = name;
 		if(this.radius != radius){
 			this.radius = radius;
@@ -31,6 +31,10 @@ export default class StarRenderer extends Mesh {
 		this.material.emissiveColor = Color3.FromArray(color);
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
+		const _parent = this.getScene().getNodeById(parent);
+		if(_parent != this.parent){
+			this.parent = _parent;
+		}
 	}
 
 	static async FromData(data, scene) {

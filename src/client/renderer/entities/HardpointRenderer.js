@@ -14,15 +14,18 @@ export default class HardpointRenderer extends ModelRenderer {
 		this._projectile.call(this, target, options);
 	}
 
-	async update({ name, position, rotation, type } = {}){
+	async update({ name, position, rotation, type, parent, info } = {}){
 		if(this.type != type){
 			this._projectile = HardpointRenderer.projectiles.get(type);
 		}
-		await super.update({ name, position, rotation, type });
+		await super.update({ name, position, rotation, type, parent });
+		if(typeof info?.scale == 'number'){
+			this.instance.scalingDeterminant = info.scale;
+		}
 	}
 
 	static async FromData(data, scene) {
-		const hardpoint = new this(data.id);
+		const hardpoint = new this(data.id, scene);
 		await hardpoint.update(data);
 		return hardpoint;
 	}
@@ -31,7 +34,7 @@ export default class HardpointRenderer extends ModelRenderer {
 		Object.entries({
 			async laser(target, { materials = [], speed, id: modelID } = {}) {
 				await wait(random.int(4, 40));
-				const laser = new ModelRenderer({ id: random.hex(32), scene: this.getScene() });
+				const laser = new ModelRenderer(random.hex(32), this.getScene());
 				await laser.createInstance(modelID);
 				const bounding = this.getHierarchyBoundingVectors(),
 					targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),

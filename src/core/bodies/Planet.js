@@ -18,6 +18,7 @@ export default class Planet extends CelestialBody {
 		return new this({
 			id: data.id,
 			name: data.name,
+			biome: data.biome,
 			radius: data.radius,
 			rewards: data.rewards,
 			position: Vector3.FromArray(data.position || [0, 0, 0]),

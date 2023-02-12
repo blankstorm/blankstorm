@@ -13,7 +13,6 @@ import { probe } from './index.js';
 export default class ModelRenderer extends TransformNode {
 	#instance;
 	#createdInstance = false;
-	#selected = false;
 
 	constructor(id, scene) {
 		super(id, scene);
@@ -35,21 +34,26 @@ export default class ModelRenderer extends TransformNode {
 		}
 
 		this.#instance = ModelRenderer.genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0];
-		this.#instance.id = this.id;
+		this.#instance.id = this.id + ':instance';
 		this.#instance.parent = this;
+		this.#instance.rotation.y += Math.PI;
 
 		this.#createdInstance = true;
 
 		return this.#instance;
 	}
 
-	async update({ name, position, rotation, type } = {}){
+	async update({ name, position, rotation, type, parent } = {}){
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
 		if(this.type != type){
 			this.type = type;
 			await this.createInstance(type);
+		}
+		const _parent = this.getScene().getNodeById(parent);
+		if(_parent != this.parent){
+			this.parent = _parent;
 		}
 	}
 

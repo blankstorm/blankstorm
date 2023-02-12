@@ -122,18 +122,15 @@ export default class Level extends EventTarget {
 				for (let hardpoint of entity.hardpoints) {
 					hardpoint.reload = Math.max(--hardpoint.reload, 0);
 
-					const targets = [...this.entities.values()].filter(
-						e => e.isTargetable && e.owner != entity.owner && Vector3.Distance(e.position, entity.position) < hardpoint._generic.range
-					);
-					const target = targets.reduce(
-						(ac, cur) =>
-							(ac =
-								Vector3.Distance(ac?.absolutePosition ? ac.absolutePosition : Vector3.One().scale(Infinity), entity.absolutePosition) <
-								Vector3.Distance(cur.absolutePosition, entity.absolutePosition)
-									? ac
-									: cur),
-						null
-					);
+					const targets = [...this.entities.values()].filter(e => {
+						const distance = Vector3.Distance(e.absolutePosition, entity.absolutePosition);
+						return e.isTargetable && e.owner != entity.owner && distance < hardpoint._generic.range;
+					}, null);
+					const target = targets.reduce((previous, current) => {
+						let previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), entity.absolutePosition);
+						let currentDistance = Vector3.Distance(current.absolutePosition, entity.absolutePosition);
+						return previousDistance < currentDistance ? previous : current;
+					}, null);
 
 					if (target) {
 						const targetPoints = [...target.hardpoints, target].filter(targetHardpoint => {
@@ -310,7 +307,7 @@ export default class Level extends EventTarget {
 				let planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i],
 					radius = random.int(25, 50);
 				planets[i] = new Planet({
-					name: random.int(0, 9999) == 0 ? 'Jude' : planetName,
+					name: random.int(0, 999) == 0 ? 'Jude' : planetName,
 					position: random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true),
 					radius,
 					biome: ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)],
