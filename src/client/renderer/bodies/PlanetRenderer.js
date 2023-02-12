@@ -87,15 +87,15 @@ export default class PlanetRenderer extends Mesh {
 		];
 	}
 
-	async update({ name, radius, biome, position, rotation, parent } = {}){
+	async update({ name, radius, biome, position, rotation, parent } = {}) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
-		if(this.radius != radius){
+		if (this.radius != radius) {
 			this.radius = radius;
 			CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
 		}
-		if(this.biome != biome){
+		if (this.biome != biome) {
 			if (PlanetRenderer.biomes.has(biome)) {
 				this.biome = biome;
 				this.material = new PlanetRendererMaterial(PlanetRenderer.biomes.get(biome), this.getScene());
@@ -104,7 +104,7 @@ export default class PlanetRenderer extends Mesh {
 			}
 		}
 		const _parent = this.getScene().getNodeById(parent);
-		if(_parent != this.parent){
+		if (_parent != this.parent) {
 			this.parent = _parent;
 		}
 	}

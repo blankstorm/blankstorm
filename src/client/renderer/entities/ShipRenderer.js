@@ -16,7 +16,7 @@ export default class ShipRenderer extends ModelRenderer {
 		super(id, scene);
 	}
 
-	get selected(){
+	get selected() {
 		return this.#selected;
 	}
 

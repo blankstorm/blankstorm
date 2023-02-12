@@ -16,17 +16,19 @@ export const core = new Map([
 			renderer.update(evt.emitter.serialize());
 		},
 	],
-	['player.levelup', async () => {
-	}],
+	['player.levelup', async () => {}],
 	[
 		'player.death',
 		async () => {
 			renderer.getCamera().reset();
 		},
 	],
-	['entity.death', async evt => {
-		if(evt.emitter instanceof Ship){
-			playsound(sounds.get('destroy_ship'), settings.get('sfx'));
-		}
-	}],
+	[
+		'entity.death',
+		async evt => {
+			if (evt.emitter instanceof Ship) {
+				playsound(sounds.get('destroy_ship'), settings.get('sfx'));
+			}
+		},
+	],
 ]);

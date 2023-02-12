@@ -22,9 +22,9 @@ export default class StarRenderer extends Mesh {
 		*/
 	}
 
-	async update({ name, radius, color, position, rotation, parent } = {}){
+	async update({ name, radius, color, position, rotation, parent } = {}) {
 		this.name = name;
-		if(this.radius != radius){
+		if (this.radius != radius) {
 			this.radius = radius;
 			CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
 		}
@@ -32,7 +32,7 @@ export default class StarRenderer extends Mesh {
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
 		const _parent = this.getScene().getNodeById(parent);
-		if(_parent != this.parent){
+		if (_parent != this.parent) {
 			this.parent = _parent;
 		}
 	}

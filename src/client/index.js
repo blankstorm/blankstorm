@@ -833,8 +833,14 @@ const loop = () => {
 						<span>${renderer.engine.getFps().toFixed()} FPS | ${saves.current.tps.toFixed()} TPS</span><br>
 						<span>${saves.selected} (${saves.current.date.toLocaleString()})</span><br><br>
 						<span>
-							P: (${camera.target.asArray().map(e => e.toFixed(1)).join(', ')}) 
-							V: (${camera.velocity.asArray().map(e => e.toFixed(1)).join(', ')}}) 
+							P: (${camera.target
+								.asArray()
+								.map(e => e.toFixed(1))
+								.join(', ')}) 
+							V: (${camera.velocity
+								.asArray()
+								.map(e => e.toFixed(1))
+								.join(', ')}}) 
 							R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
 						</span><br>
 						`);

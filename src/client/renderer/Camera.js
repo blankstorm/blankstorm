@@ -6,7 +6,7 @@ import config from './config.js';
 export default class Camera extends ArcRotateCamera {
 	velocity = Vector3.Zero();
 
-	constructor(scene){
+	constructor(scene) {
 		super('camera', -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), scene);
 		scene.activeCamera = this;
 		this.inputs.attached.pointers.buttons = [1];
@@ -19,7 +19,7 @@ export default class Camera extends ArcRotateCamera {
 		});
 	}
 
-	reset(){
+	reset() {
 		this.alpha = -Math.PI / 2;
 		this.beta = Math.PI / 2;
 		this.velocity = Vector3.Zero();

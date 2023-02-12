@@ -12,6 +12,6 @@ export default {
 	},
 	star_light: {
 		intensity: 1,
-		range: 10000
+		range: 10000,
 	},
 };

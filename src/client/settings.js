@@ -107,7 +107,7 @@ class SettingsItem {
 			e.data.item.value = e.data.item.type == 'boolean' ? e.target.checked : e.target.value;
 		});
 
-		if(options.value){
+		if (options.value) {
 			this.value = options.value;
 		}
 	}

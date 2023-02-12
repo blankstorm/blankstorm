@@ -69,10 +69,14 @@ export default class Save extends Playable {
 		constructor(name, doNotGenerate) {
 			super(name, doNotGenerate);
 			for (let [id, listener] of listeners.core) {
-				this.addEventListener(id, evt => {
-					eventLog.push(evt);
-					listener(evt);
-				}, {passive: true});
+				this.addEventListener(
+					id,
+					evt => {
+						eventLog.push(evt);
+						listener(evt);
+					},
+					{ passive: true }
+				);
 			}
 		}
 		play() {
@@ -123,7 +127,7 @@ export default class Save extends Playable {
 			new Ship({ type: 'mosquito', owner: playerData, parent: playerData, level: save });
 			new Ship({ type: 'cillus', owner: playerData, parent: playerData, level: save });
 			playerData.fleet[0].position.z += 4;
-			
+
 			playerData.addItems(generate.items(5000));
 
 			return save;

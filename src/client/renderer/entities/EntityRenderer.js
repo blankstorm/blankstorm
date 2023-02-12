@@ -79,12 +79,12 @@ export default class EntityRenderer extends TransformNode {
 		});
 	}
 
-	async update({ name, position, rotation, parent } = {}){
+	async update({ name, position, rotation, parent } = {}) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
 		const _parent = this.getScene().getNodeById(parent);
-		if(_parent != this.parent){
+		if (_parent != this.parent) {
 			this.parent = _parent;
 		}
 	}

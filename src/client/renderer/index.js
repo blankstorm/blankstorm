@@ -16,7 +16,7 @@ import StarRenderer from './bodies/StarRenderer.js';
 import ModelRenderer from './ModelRenderer.js';
 import ShipRenderer from './entities/ShipRenderer.js';
 import EntityRenderer from './entities/EntityRenderer.js';
-import Camera from './Camera.js'
+import Camera from './Camera.js';
 
 let skybox,
 	xzPlane,
@@ -71,8 +71,8 @@ export function handleCanvasRightClick(e, owner) {
 	for (let entity of entities.values()) {
 		if (entity.selected && entity.parent == owner) {
 			xzPlane.position.y = entity.position.y;
-			let pickInfo = scene.pick(e.clientX, e.clientY, (mesh) => mesh == xzPlane);
-			if(pickInfo.pickedPoint){
+			let pickInfo = scene.pick(e.clientX, e.clientY, mesh => mesh == xzPlane);
+			if (pickInfo.pickedPoint) {
 				entity.moveTo(pickInfo.pickedPoint, false);
 			}
 		}
@@ -236,7 +236,7 @@ export async function update(levelData) {
 
 	for (let body of [...cache.bodies, ...levelData.bodies]) {
 		const data = levelData.bodies.find(_body => _body.id == body.id),
-		cached = cache.bodies.find(_body => _body.id == body.id);
+			cached = cache.bodies.find(_body => _body.id == body.id);
 		if (!cached) {
 			renderersToAdd.bodies.push(body);
 			continue;
@@ -247,13 +247,13 @@ export async function update(levelData) {
 			bodies.delete(body.id);
 			continue;
 		}
-		
+
 		bodies.get(body.id).update(data);
 	}
 
 	for (let entity of [...cache.entities, ...levelData.entities]) {
 		const data = levelData.entities.find(_entity => _entity.id == entity.id),
-		cached = cache.entities.find(_entity => _entity.id == entity.id);
+			cached = cache.entities.find(_entity => _entity.id == entity.id);
 		if (!cached) {
 			renderersToAdd.entities.push(entity);
 			continue;

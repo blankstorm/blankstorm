@@ -9,7 +9,7 @@ export default class Ship extends Entity {
 	hardpoints = [];
 
 	isTargetable = true;
-	
+
 	constructor({ id, name, position, rotation, parent, owner, level, storage, hp, reload, jumpCooldown, type, hardpoints = [] }) {
 		if (type && !Ship.generic.has(type)) throw new ReferenceError(`Ship type ${type} does not exist`);
 		super({ id, name, position, rotation, parent, owner, level });

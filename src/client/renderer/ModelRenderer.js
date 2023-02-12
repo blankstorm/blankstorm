@@ -43,21 +43,21 @@ export default class ModelRenderer extends TransformNode {
 		return this.#instance;
 	}
 
-	async update({ name, position, rotation, type, parent } = {}){
+	async update({ name, position, rotation, type, parent } = {}) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
-		if(this.type != type){
+		if (this.type != type) {
 			this.type = type;
 			await this.createInstance(type);
 		}
 		const _parent = this.getScene().getNodeById(parent);
-		if(_parent != this.parent){
+		if (_parent != this.parent) {
 			this.parent = _parent;
 		}
 	}
 
-	static async FromData(data, scene){
+	static async FromData(data, scene) {
 		const model = new this(data.id, scene);
 		model.update(data);
 		return model;

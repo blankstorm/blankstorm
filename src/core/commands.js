@@ -15,7 +15,7 @@ export const commands = {
 	spawn: (level, type, selector, extra) => {
 		const parent = level.getNodeBySelector(selector);
 		const spawned = new Ship({ parent, owner: parent, level, type });
-		if(isJSON(extra)){
+		if (isJSON(extra)) {
 			spawned.update(JSON.parse(extra));
 		}
 	},

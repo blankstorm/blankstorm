@@ -7,7 +7,7 @@ export default class Planet extends CelestialBody {
 		this.biome = biome;
 	}
 
-	serialize(){
+	serialize() {
 		return Object.assign(super.serialize(), {
 			biome: this.biome,
 		});

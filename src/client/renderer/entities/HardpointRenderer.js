@@ -14,12 +14,12 @@ export default class HardpointRenderer extends ModelRenderer {
 		this._projectile.call(this, target, options);
 	}
 
-	async update({ name, position, rotation, type, parent, info } = {}){
-		if(this.type != type){
+	async update({ name, position, rotation, type, parent, info } = {}) {
+		if (this.type != type) {
 			this._projectile = HardpointRenderer.projectiles.get(type);
 		}
 		await super.update({ name, position, rotation, type, parent });
-		if(typeof info?.scale == 'number'){
+		if (typeof info?.scale == 'number') {
 			this.instance.scalingDeterminant = info.scale;
 		}
 	}
