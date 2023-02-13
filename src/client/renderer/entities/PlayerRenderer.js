@@ -1,4 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
 
 export default class PlayerRenderer extends TransformNode {
@@ -6,6 +8,15 @@ export default class PlayerRenderer extends TransformNode {
 
 	constructor(id, scene) {
 		super(id, scene);
+		this.customHardpointProjectileMaterials = [
+			{
+				applies_to: ['laser'],
+				material: Object.assign(new StandardMaterial('player-laser-projectile-material', scene), {
+					emissiveColor: Color3.Teal(),
+					albedoColor: Color3.Teal(),
+				}),
+			},
+		];
 	}
 
 	async update({ name, position, rotation, velocity, parent } = {}) {

@@ -79,7 +79,7 @@ export default class PlanetRenderer extends Mesh {
 	radius = 0;
 	constructor(id, scene) {
 		super(id, scene);
-		this._customHardpointProjectileMaterials = [
+		this.customHardpointProjectileMaterials = [
 			{
 				applies_to: ['laser'],
 				material: Object.assign(new StandardMaterial('player-laser-projectile-material', scene), { emissiveColor: Color3.Red() }),

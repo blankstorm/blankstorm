@@ -1,6 +1,5 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '@babylonjs/core/Maths/math.color.js';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
 
 import 'jquery'; /* global $ */
 
@@ -12,7 +11,6 @@ import { Playable } from './playable.js';
 import { canvas, setPaused, mp, saves, eventLog } from './index.js';
 import { update as updateUI } from './ui.js';
 import PlanetRenderer from './renderer/bodies/PlanetRenderer.js';
-import { scene } from './renderer/index.js';
 import * as listeners from './listeners.js';
 import * as renderer from './renderer/index.js';
 
@@ -120,15 +118,6 @@ export default class Save extends Playable {
 			}
 
 			const playerData = new Player({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)), level: save });
-			playerData._customHardpointProjectileMaterials = [
-				{
-					applies_to: ['laser'],
-					material: Object.assign(new StandardMaterial('player-laser-projectile-material', scene), {
-						emissiveColor: Color3.Teal(),
-						albedoColor: Color3.Teal(),
-					}),
-				},
-			];
 
 			new Ship({ type: 'mosquito', owner: playerData, parent: playerData, level: save });
 			new Ship({ type: 'cillus', owner: playerData, parent: playerData, level: save });

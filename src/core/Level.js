@@ -21,6 +21,7 @@ export default class Level extends EventTarget {
 	version = version;
 	date = new Date();
 	difficulty = 1;
+	nodes = new Map();
 	bodies = new Map();
 	entities = new Map();
 	#initPromise = new Promise(() => {});
@@ -66,39 +67,41 @@ export default class Level extends EventTarget {
 		return null;
 	}
 
-	getEntities(selector) {
-		if (typeof selector != 'string') throw new TypeError('getEntity: selector must be of type string');
-		switch (selector[0]) {
-			case '@':
-				if (this.getPlayerData(selector.slice(1)) instanceof Player) {
-					return this.getPlayerData(selector.slice(1));
-				} else {
-					console.warn(`Player ${selector} does not exist`);
-				}
-				break;
+	getNodesBySelector(selector){
+		if (typeof selector != 'string') throw new TypeError('selector must be of type string');
+		switch(selector[0]){
 			case '*':
-				return [...this.entities.values()];
+				return [...this.nodes.values()];
+			case '@':
+				return [...this.entities.values()].filter(entity => entity.name == selector.substring(1));
 			case '#':
-				if (this.entities.has(selector.slice(1))) {
-					return this.entities.get(selector.slice(1));
-				} else {
-					console.warn(`Entity ${selector} does not exist`);
-				}
-				break;
+				return [...this.nodes.values()].filter(node => node.id == selector.substring(1));
+			case '.':
+				return [...this.nodes.values()].filter(node => {
+					let proto = node;
+					while(proto){
+						if(proto.constructor?.name == 'Function' || proto.constructor?.name == 'Object'){
+							return false;
+						}
+
+						if(proto.constructor.name.toLowerCase() == selector.substring(1)){
+							return true;
+						}
+
+						proto = Object.getPrototypeOf(proto);
+					}
+				});
+			default:
+				throw 'Invalid selector';
 		}
 	}
 
-	getBodies(selector) {
-		if (typeof selector != 'string') throw new TypeError('getBody: selector must be of type string');
-		switch (selector[0]) {
-			case '*':
-				return [...this.bodies.values()];
-			case '#':
-				for (let [id, body] of this.bodies) {
-					if (id == selector.slice(1)) return body;
-				}
-				break;
-		}
+	getNodesBySelectors(...selectors){
+		return selectors.flatMap(selector => this.getNodesBySelector(selector));
+	}
+
+	getNodeBySelector(selector){
+		return this.getNodesBySelector(selector)[0];
 	}
 
 	tick() {

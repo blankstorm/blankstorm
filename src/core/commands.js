@@ -18,12 +18,12 @@ export const commands = {
 		if (isJSON(extra)) {
 			spawned.update(JSON.parse(extra));
 		}
+		return `Spawned ${spawned.constructor.name} with id #${spawned.id}`;
 	},
 	data: {
 		get: (level, selector, path = '') => {
-			let entityOrBody = level.getEntities(selector) ?? level.getBodies(selector);
-			if (entityOrBody instanceof Array) throw new SyntaxError('passed selector can only return one entity or body');
-			let data = entityOrBody.getByString(path),
+			let node = level.getNodeBySelector(selector);
+			let data = node.getByString(path),
 				output = data;
 			if (typeof data == 'object' || typeof data == 'function') {
 				output = {};
@@ -31,27 +31,24 @@ export const commands = {
 					output[p] = data[p];
 				}
 			}
-			return `Data of entity #${entityOrBody.id}: ${output}`;
+			return `Data of entity #${node.id}: ${output}`;
 		},
 		set: (level, selector, path, value) => {
-			let entityOrBody = level.getEntities(selector) ?? level.getBodies(selector);
-			if (entityOrBody instanceof Array) throw new SyntaxError('passed selector can only return one entity or body');
-			entityOrBody.setByString(path, eval?.(value));
+			let node = level.getNodeBySelector(selector);
+			node.setByString(path, eval?.(value));
 		},
 	},
+	/**
+	 * @todo implement executor position as default
+	 * @todo
+	 */
 	tp: (level, selector, x, y, z) => {
-		let entities = level.getEntities(selector),
-			location = new Vector3(+x || 0, +y || 0, +z || 0); //TODO: || 0 -> || executor.position
-		if (entities instanceof Array) {
-			entities.forEach(entity => {
-				entity.position = location;
-				//TODO: properly implement with checks for ships
-			});
-			return `Teleported ${entities.length} to ${location.display()}`;
-		} else {
-			entities.position = location;
-			return `Teleported entities #${entities.id} to ${location.display()}`;
-		}
+		let nodes = level.getNodesBySelector(selector),
+			location = new Vector3(+x || 0, +y || 0, +z || 0);
+		nodes.forEach(entity => {
+			entity.position = location;
+		});
+		return `Teleported ${nodes.length} to ${location.display()}`;
 	},
 };
 export const runCommand = (command, level) => {

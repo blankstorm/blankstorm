@@ -12,6 +12,7 @@ export default class Node {
 
 	constructor({ id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), velocity = Vector3.Zero(), owner, parent, level }) {
 		Object.assign(this, { id, name, position, rotation, velocity, parent, owner, level });
+		level.nodes.set(id, this);
 	}
 
 	get absolutePosition() {

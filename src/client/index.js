@@ -531,7 +531,7 @@ $('#save button.back').click(() => {
 $('#save .new').click(async () => {
 	$('#save')[0].close();
 	const name = $('#save .name').val();
-	const level = await Save.Live.CreateDefault(name, player.id, player.name);
+	const level = await Save.Live.CreateDefault(name, player.id, player.username);
 	let save = new Save(level.serialize());
 	level.play();
 	if (!settings.get('disable_saves')) save.saveToDB();

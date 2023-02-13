@@ -288,7 +288,11 @@ export function getCamera() {
 export function fireProjectile(hardpoint, target, options) {
 	const hardpointRenderer = scene.getTransformNodeByID(hardpoint.id),
 		targetRenderer = scene.getTransformNodeByID(target.id);
-	hardpointRenderer.fireProjectile(targetRenderer, options);
+	let materials = [];
+	if(hardpointRenderer.parent?.parent?.customHardpointProjectileMaterials){
+		materials = hardpointRenderer.parent.parent.customHardpointProjectileMaterials;
+	}
+	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials });
 }
 
 export async function serialize() {
