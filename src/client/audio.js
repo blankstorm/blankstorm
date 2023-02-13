@@ -11,7 +11,7 @@ export const sounds = new Map(
 	})
 );
 
-export default function playsound(url, vol = 1) {
+export function playsound(url, vol = 1) {
 	if (vol > 0) {
 		let a = new Audio(url);
 		a.volume = +vol;

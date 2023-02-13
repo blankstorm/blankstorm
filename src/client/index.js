@@ -330,7 +330,6 @@ const toggleChat = command => {
 		}
 	} else {
 		canvas.focus();
-		renderer.getCamera().attachControl(canvas, true);
 	}
 };
 const clientRunCommand = command => {
@@ -343,11 +342,9 @@ const clientRunCommand = command => {
 const changeUI = (selector, hideAll) => {
 	if ($(selector).is(':visible')) {
 		canvas.focus();
-		renderer.getCamera().attachControl(canvas, true);
 		$(selector).hide();
 	} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
 		canvas.focus();
-		renderer.getCamera().attachControl(canvas, true);
 		$('[game-ui]').hide();
 	} else if (!$('[game-ui]').is(':visible')) {
 		renderer.getCamera().detachControl(canvas, true);
@@ -535,15 +532,13 @@ $('#save .new').click(async () => {
 	$('#save')[0].close();
 	const name = $('#save .name').val();
 	const level = await Save.Live.CreateDefault(name, player.id, player.name);
-	saves.current = level;
-	renderer.clear();
-	renderer.update(level.serialize());
 	let save = new Save(level.serialize());
+	level.play();
 	if (!settings.get('disable_saves')) save.saveToDB();
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();
-	renderer.getCamera().attachControl(canvas, true);
+	canvas.focus();
 	isPaused = false;
 });
 $('#esc .save').click(() => {
@@ -726,6 +721,9 @@ $('#cli').keydown(e => {
 			}
 			break;
 	}
+});
+canvas.on('focus', () => {
+		renderer.getCamera().attachControl(canvas, true);
 });
 canvas.on('click', e => {
 	if (!isPaused) {

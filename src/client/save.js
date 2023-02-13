@@ -14,6 +14,7 @@ import { update as updateUI } from './ui.js';
 import PlanetRenderer from './renderer/bodies/PlanetRenderer.js';
 import { scene } from './renderer/index.js';
 import * as listeners from './listeners.js';
+import * as renderer from './renderer/index.js';
 
 export default class Save extends Playable {
 	static GUI(save) {
@@ -82,9 +83,14 @@ export default class Save extends Playable {
 		play() {
 			if (this.version == version) {
 				$('#load').hide();
-				canvas.show().focus();
+				canvas.show();
+				canvas.focus();
 				$('#hud').show();
 				saves.selected = this.id;
+				saves.current = this;
+				renderer.clear();
+				renderer.update(this.serialize());
+				renderer.engine.resize()
 				setPaused(false);
 			} else {
 				alert('That save is in compatible with the current game version');
