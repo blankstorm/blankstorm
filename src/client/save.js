@@ -88,7 +88,7 @@ export default class Save extends Playable {
 				saves.current = this;
 				renderer.clear();
 				renderer.update(this.serialize());
-				renderer.engine.resize()
+				renderer.engine.resize();
 				setPaused(false);
 			} else {
 				alert('That save is in compatible with the current game version');

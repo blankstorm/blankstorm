@@ -289,7 +289,7 @@ export function fireProjectile(hardpoint, target, options) {
 	const hardpointRenderer = scene.getTransformNodeByID(hardpoint.id),
 		targetRenderer = scene.getTransformNodeByID(target.id);
 	let materials = [];
-	if(hardpointRenderer.parent?.parent?.customHardpointProjectileMaterials){
+	if (hardpointRenderer.parent?.parent?.customHardpointProjectileMaterials) {
 		materials = hardpointRenderer.parent.parent.customHardpointProjectileMaterials;
 	}
 	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials });

@@ -723,7 +723,7 @@ $('#cli').keydown(e => {
 	}
 });
 canvas.on('focus', () => {
-		renderer.getCamera().attachControl(canvas, true);
+	renderer.getCamera().attachControl(canvas, true);
 });
 canvas.on('click', e => {
 	if (!isPaused) {

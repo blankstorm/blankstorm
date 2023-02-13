@@ -67,9 +67,9 @@ export default class Level extends EventTarget {
 		return null;
 	}
 
-	getNodesBySelector(selector){
+	getNodesBySelector(selector) {
 		if (typeof selector != 'string') throw new TypeError('selector must be of type string');
-		switch(selector[0]){
+		switch (selector[0]) {
 			case '*':
 				return [...this.nodes.values()];
 			case '@':
@@ -79,12 +79,12 @@ export default class Level extends EventTarget {
 			case '.':
 				return [...this.nodes.values()].filter(node => {
 					let proto = node;
-					while(proto){
-						if(proto.constructor?.name == 'Function' || proto.constructor?.name == 'Object'){
+					while (proto) {
+						if (proto.constructor?.name == 'Function' || proto.constructor?.name == 'Object') {
 							return false;
 						}
 
-						if(proto.constructor.name.toLowerCase() == selector.substring(1)){
+						if (proto.constructor.name.toLowerCase() == selector.substring(1)) {
 							return true;
 						}
 
@@ -96,11 +96,11 @@ export default class Level extends EventTarget {
 		}
 	}
 
-	getNodesBySelectors(...selectors){
+	getNodesBySelectors(...selectors) {
 		return selectors.flatMap(selector => this.getNodesBySelector(selector));
 	}
 
-	getNodeBySelector(selector){
+	getNodeBySelector(selector) {
 		return this.getNodesBySelector(selector)[0];
 	}
 
