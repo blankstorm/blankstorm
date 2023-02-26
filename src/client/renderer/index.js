@@ -273,17 +273,27 @@ export function handleCanvasClick(ev, owner) {
 	}
 }
 
+/**
+ * @todo simplify returned data?
+ */
 export function handleCanvasRightClick(evt, owner) {
-	for (let entity of entities.values()) {
-		if (entity.selected && entity.parent == owner) {
-			xzPlane.position.y = entity.position.y;
+	const returnData = [];
+	for (let entityRenderer of entities.values()) {
+		if (entityRenderer.selected && entityRenderer.parent == owner) {
+			xzPlane.position.y = entityRenderer.position.y;
 			let pickInfo = scene.pick(evt.clientX, evt.clientY, mesh => mesh == xzPlane);
 			if (pickInfo.pickedPoint) {
-				entity.moveTo(pickInfo.pickedPoint, false);
-				
+				returnData.push({ entityRenderer, point: pickInfo.pickedPoint });
 			}
 		}
 	}
+
+	return returnData;
+}
+
+export async function startFollowingPath(entity, path){
+	const renderer = entities.get(entity.id);
+	await renderer.followPath(path);
 }
 
 export function fireProjectile(hardpoint, target, options) {

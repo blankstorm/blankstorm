@@ -1,10 +1,5 @@
-import { random } from './utils.js';
-
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
-import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 import { Path3D } from '@babylonjs/core/Maths/math.path.js';
-import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
-import { Scene } from '@babylonjs/core/scene.js';
 
 const Path = class extends Path3D {
 	static Node = class {
@@ -50,7 +45,7 @@ const Path = class extends Path3D {
 	gizmo = null;
 	path = [];
 	#pathFound = false;
-	constructor(start, end, scene) {
+	constructor(start, end, level) {
 		super([]);
 		try {
 			if (!(start instanceof Vector3)) throw new TypeError('Start must be a Vector');
@@ -80,11 +75,8 @@ const Path = class extends Path3D {
 						: new Path.Node(currentNode.position.add(v), currentNode)
 				);
 				for (let neighbor of neighbors) {
-					if (scene instanceof Scene) {
-						//Should be Level. Level is not imported due to overhead.
-						scene.bodies.forEach(body => {
-							if (Vector3.Distance(body.position, neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
-						});
+					for(let body of level.bodies.values()){
+						if (Vector3.Distance(body.absolutePosition, neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
 					}
 					if (!neighbor.intersects.length && !this.closedNodes.some(node => node.equals(neighbor))) {
 						let costToNeighbor = currentNode.gCost + Path.nodeDistance(currentNode, neighbor);
@@ -99,19 +91,6 @@ const Path = class extends Path3D {
 		} catch (e) {
 			throw e.stack;
 		}
-	}
-	drawGizmo(scene, color = Color3.White()) {
-		if (this.path.length > 0) {
-			if (!(scene instanceof Scene)) throw new TypeError('scene must be a scene');
-			if (this.gizmo) console.warn('Path gizmo was already drawn!');
-			this.gizmo = MeshBuilder.CreateLines('pathGizmo.' + random.hex(16), { points: this.path.map(node => node.position) }, scene);
-			this.gizmo.color = color;
-			return this.gizmo;
-		}
-	}
-	disposeGizmo() {
-		if (this.gizmo) this.gizmo.dispose();
-		this.gizmo = undefined;
 	}
 };
 

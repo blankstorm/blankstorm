@@ -2,7 +2,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 import Path from '../Path.js';
 import Node from '../Node.js';
-import { random } from '../utils.js';
+import { LevelEvent } from '../events.js';
 
 export default class Entity extends Node {
 	_generic = { speed: 1 };
@@ -10,7 +10,7 @@ export default class Entity extends Node {
 	selected = false;
 	isTargetable = false;
 
-	constructor({ id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), parent, owner, level }) {
+	constructor({ id, name, position, rotation, parent, owner, level }) {
 		super({ id, name, position, rotation, owner, parent, level });
 
 		level.entities.set(this.id, this);
@@ -26,7 +26,15 @@ export default class Entity extends Node {
 
 	async moveTo(location, isRelative) {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
-		this.currentPath = new Path(this.position, location.add(isRelative ? this.position : Vector3.Zero()), this.level);
+		const path = new Path(this.absolutePosition, location.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.level);
+		if (path.path.length > 0) {
+			const evt = new LevelEvent('entity.follow_path.start', this, { path });
+			this.level.dispatchEvent(evt);
+			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);
+			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.path.at(-2).position, path.path.at(-1).position);
+			rotation.x -= Math.PI / 2
+			this.rotation = rotation;
+		}
 	}
 
 	serialize() {

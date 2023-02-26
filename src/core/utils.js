@@ -1,7 +1,7 @@
 import Items from './items.js';
-import Ship from './entities/Ship.js';
 
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import ships from './entities/ships.js';
 
 export const filterObject = (object, ...keys) => Object.fromEntries(Object.entries(object).filter(([key]) => keys.includes(key)));
 export const greek = [
@@ -81,7 +81,7 @@ export const generate = {
 		//enemy spawning algorithm
 		let e = [];
 		e.power = power;
-		let generic = [...Ship.generic];
+		let generic = [...ships.values()];
 		generic.sort((a, b) => b[1].power - a[1].power); //decending
 		for (let [name, ship] of generic) {
 			for (let j = 0; j < Math.floor(power / ship.power); j++) {

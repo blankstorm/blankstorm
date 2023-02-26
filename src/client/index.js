@@ -737,7 +737,11 @@ canvas.on('click', e => {
 });
 canvas.on('contextmenu', e => {
 	if (saves.current instanceof Save.Live) {
-		renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
+		const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
+		for(let { entityRenderer, point } of data){
+			const entity = saves.current.getNodeByID(entityRenderer.id);
+			entity.moveTo(point, false);
+		}
 	}
 });
 canvas.on('keydown', e => {

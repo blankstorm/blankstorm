@@ -3,6 +3,8 @@ import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader.js';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 import { Animation } from '@babylonjs/core/Animations/animation.js';
+import { hl } from './index.js';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
 
 import '@babylonjs/loaders/glTF/index.js';
 
@@ -10,7 +12,7 @@ import config from './config.js';
 import { probe } from './index.js';
 import Path from 'core/Path.js';
 import { settings } from 'client/index.js';
-import { hl } from './index.js';
+import { random } from 'core/utils.js';
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
@@ -20,6 +22,7 @@ export default class ModelRenderer extends TransformNode {
 	#selected = false;
 	#currentPath;
 	#createdInstance = false;
+	#pathGizmo;
 
 	constructor(id, scene) {
 		super(id, scene);
@@ -53,46 +56,52 @@ export default class ModelRenderer extends TransformNode {
 		return this.#currentPath;
 	}
 
-	followPath(path) {
+	async followPath(path) {
 		if (!(path instanceof Path)) throw new TypeError('path must be a Path');
-		return new Promise(resolve => {
-			let animation = new Animation('pathFollow', 'position', 60 * this._generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
-				rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this._generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+		if (path.path.length == 0) {
+			return;
+		}
+		if (this.#pathGizmo && settings.get('show_path_gizmos')) {
+			this.#pathGizmo.dispose();
+			this.#pathGizmo = null;
+		}
+		this.#currentPath = path;
+		if (this.#pathGizmo) {
+			console.warn('Path gizmo was already drawn and not disposed');
+		} else if (settings.get('show_path_gizmos')) {
+			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + random.hex(16), { points: path.path.map(node => node.position) }, this.getScene());
+			this.#pathGizmo.color = Color3.Green();
+		}
 
-			animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this._generic.speed, value: node.position })));
-			rotateAnimation.setKeys(
-				path.path.flatMap((node, i) => {
-					if (i != 0) {
-						let value = Vector3.PitchYawRollToMoveBetweenPoints(path.path[i - 1].position, node.position);
-						value.x -= Math.PI / 2;
-						return [
-							{ frame: i * 60 * this._generic.agility - 30, value },
-							{ frame: i * 60 * this._generic.agility - 10, value },
-						];
-					} else {
-						return [{ frame: 0, value: this.rotation }];
-					}
-				})
-			);
-			if (path.path.length > 0) {
-				this.animations.push(animation);
-				this.animations.push(rotateAnimation);
-				let result = this.getScene().beginAnimation(this, 0, path.path.length * 60);
-				result.disposeOnEnd = true;
-				result.onAnimationEnd = resolve;
-			}
-		});
-	}
+		let animation = new Animation('pathFollow', 'position', 60 * this._generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
+			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this._generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-	async moveTo(location, isRelative) {
-		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
-		if (this.#currentPath && settings.get('show_path_gizmos')) this.#currentPath.disposeGizmo();
-		this.#currentPath = new Path(this.position, location.add(isRelative ? this.position : Vector3.Zero()), this.level);
-		if (settings.get('show_path_gizmos')) this.#currentPath.drawGizmo(this.level, Color3.Green());
-		await this.followPath(this.#currentPath);
-		if (settings.get('show_path_gizmos')) {
-			this.#currentPath.disposeGizmo();
-			this.#currentPath = null;
+		animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this._generic.speed, value: node.position.subtract(this.parent.absolutePosition) })));
+		rotateAnimation.setKeys(
+			path.path.flatMap((node, i) => {
+				if (i != 0) {
+					let value = Vector3.PitchYawRollToMoveBetweenPoints(path.path[i - 1].position, node.position);
+					value.x -= Math.PI / 2;
+					return [
+						{ frame: i * 60 * this._generic.agility - 30, value },
+						{ frame: i * 60 * this._generic.agility - 10, value },
+					];
+				} else {
+					return [{ frame: 0, value: this.rotation }];
+				}
+			})
+		);
+		this.animations.push(animation);
+		this.animations.push(rotateAnimation);
+
+		let result = this.getScene().beginAnimation(this, 0, path.path.length * 60);
+		result.disposeOnEnd = true;
+		await result.waitAsync();
+		this.#currentPath = null;
+
+		if (this.#pathGizmo) {
+			this.#pathGizmo.dispose();
+			this.#pathGizmo = null;
 		}
 	}
 
