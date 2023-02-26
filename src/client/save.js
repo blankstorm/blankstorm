@@ -100,11 +100,11 @@ export default class Save extends Playable {
 			return save;
 		}
 		static async CreateDefault(name, playerID, playerName) {
-			const save = new Save.Live(name);
+			const level = new Save.Live(name);
 
-			await save.ready();
+			await level.ready();
 
-			for (let body of save.bodies.values()) {
+			for (let body of level.bodies.values()) {
 				body.waypoint = new Waypoint(
 					{
 						name: body.name,
@@ -113,19 +113,19 @@ export default class Save extends Playable {
 						icon: PlanetRenderer.biomes.has(body.biome) && body instanceof Planet ? PlanetRenderer.biomes.get(body.biome).icon : 'planet-ringed',
 						readonly: true,
 					},
-					save
+					level
 				);
 			}
 
-			const playerData = new Player({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)), level: save });
+			const playerData = new Player({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)), level });
 
-			new Ship({ type: 'mosquito', owner: playerData, parent: playerData, level: save });
-			new Ship({ type: 'cillus', owner: playerData, parent: playerData, level: save });
+			new Ship({ type: 'mosquito', owner: playerData, parent: playerData, level });
+			new Ship({ type: 'cillus', owner: playerData, parent: playerData, level });
 			playerData.fleet[0].position.z += 4;
 
 			playerData.addItems(generate.items(5000));
 
-			return save;
+			return level;
 		}
 	};
 	constructor(data) {

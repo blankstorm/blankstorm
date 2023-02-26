@@ -33,52 +33,6 @@ export function setHitboxes(value) {
 const bodies = new Map(),
 	entities = new Map();
 
-export function handleCanvasClick(ev, owner) {
-	owner ??= [...this.entities].filter(e => e instanceof PlayerRenderer)[0];
-	if (!ev.shiftKey) {
-		for (let entity of entities.values()) {
-			if (entity instanceof ShipRenderer) {
-				entity.unselect();
-			}
-		}
-	}
-	let pickInfo = scene.pick(ev.clientX, ev.clientY, mesh => {
-		let node = mesh;
-		while (node.parent) {
-			node = node.parent;
-			if (node instanceof ShipRenderer) {
-				return true;
-			}
-		}
-		return false;
-	});
-	if (pickInfo.pickedMesh) {
-		let node = pickInfo.pickedMesh;
-		while (node.parent && !(node instanceof ShipRenderer)) {
-			node = node.parent;
-		}
-		if (node instanceof ShipRenderer && node.parent == owner) {
-			if (node.selected) {
-				node.unselect();
-			} else {
-				node.select();
-			}
-		}
-	}
-}
-
-export function handleCanvasRightClick(e, owner) {
-	for (let entity of entities.values()) {
-		if (entity.selected && entity.parent == owner) {
-			xzPlane.position.y = entity.position.y;
-			let pickInfo = scene.pick(e.clientX, e.clientY, mesh => mesh == xzPlane);
-			if (pickInfo.pickedPoint) {
-				entity.moveTo(pickInfo.pickedPoint, false);
-			}
-		}
-	}
-}
-
 export async function init(canvas, messageHandler = () => {}) {
 	await messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
@@ -283,6 +237,53 @@ export function getCamera() {
 	}
 
 	return camera;
+}
+
+export function handleCanvasClick(ev, owner) {
+	owner ??= [...this.entities].filter(e => e instanceof PlayerRenderer)[0];
+	if (!ev.shiftKey) {
+		for (let entity of entities.values()) {
+			if (entity instanceof ShipRenderer) {
+				entity.unselect();
+			}
+		}
+	}
+	let pickInfo = scene.pick(ev.clientX, ev.clientY, mesh => {
+		let node = mesh;
+		while (node.parent) {
+			node = node.parent;
+			if (node instanceof ShipRenderer) {
+				return true;
+			}
+		}
+		return false;
+	});
+	if (pickInfo.pickedMesh) {
+		let node = pickInfo.pickedMesh;
+		while (node.parent && !(node instanceof ShipRenderer)) {
+			node = node.parent;
+		}
+		if (node instanceof ShipRenderer && node.parent == owner) {
+			if (node.selected) {
+				node.unselect();
+			} else {
+				node.select();
+			}
+		}
+	}
+}
+
+export function handleCanvasRightClick(evt, owner) {
+	for (let entity of entities.values()) {
+		if (entity.selected && entity.parent == owner) {
+			xzPlane.position.y = entity.position.y;
+			let pickInfo = scene.pick(evt.clientX, evt.clientY, mesh => mesh == xzPlane);
+			if (pickInfo.pickedPoint) {
+				entity.moveTo(pickInfo.pickedPoint, false);
+				
+			}
+		}
+	}
 }
 
 export function fireProjectile(hardpoint, target, options) {
