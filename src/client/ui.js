@@ -163,7 +163,7 @@ export function update(scene = saves.current) {
 				);
 		});
 		servers.forEach(server => {
-			server.gui.name.ui.text(server.name);
+			server.gui.name.text(server.name);
 		});
 		saves.forEach(save => {
 			save.gui.name.text(save.data.name);
