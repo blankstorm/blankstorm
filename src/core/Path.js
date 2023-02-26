@@ -75,7 +75,7 @@ const Path = class extends Path3D {
 						: new Path.Node(currentNode.position.add(v), currentNode)
 				);
 				for (let neighbor of neighbors) {
-					for(let body of level.bodies.values()){
+					for (let body of level.bodies.values()) {
 						if (Vector3.Distance(body.absolutePosition, neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
 					}
 					if (!neighbor.intersects.length && !this.closedNodes.some(node => node.equals(neighbor))) {

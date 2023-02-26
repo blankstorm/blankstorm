@@ -738,7 +738,7 @@ canvas.on('click', e => {
 canvas.on('contextmenu', e => {
 	if (saves.current instanceof Save.Live) {
 		const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
-		for(let { entityRenderer, point } of data){
+		for (let { entityRenderer, point } of data) {
 			const entity = saves.current.getNodeByID(entityRenderer.id);
 			entity.moveTo(point, false);
 		}

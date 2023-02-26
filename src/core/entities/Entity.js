@@ -32,7 +32,7 @@ export default class Entity extends Node {
 			this.level.dispatchEvent(evt);
 			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);
 			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.path.at(-2).position, path.path.at(-1).position);
-			rotation.x -= Math.PI / 2
+			rotation.x -= Math.PI / 2;
 			this.rotation = rotation;
 		}
 	}

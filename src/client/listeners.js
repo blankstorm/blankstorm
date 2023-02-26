@@ -23,9 +23,12 @@ export const core = new Map([
 			renderer.getCamera().reset();
 		},
 	],
-	['entity.follow_path.start', async evt => {
-		renderer.startFollowingPath(evt.emitter, evt.data.path);
-	}],
+	[
+		'entity.follow_path.start',
+		async evt => {
+			renderer.startFollowingPath(evt.emitter, evt.data.path);
+		},
+	],
 	[
 		'entity.death',
 		async evt => {

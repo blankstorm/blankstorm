@@ -6,7 +6,6 @@ import Hardpoint from './Hardpoint.js';
 import StorageData from '../StorageData.js';
 import generic from './ships.js';
 
-
 export default class Ship extends Entity {
 	hardpoints = [];
 

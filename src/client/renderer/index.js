@@ -291,7 +291,7 @@ export function handleCanvasRightClick(evt, owner) {
 	return returnData;
 }
 
-export async function startFollowingPath(entity, path){
+export async function startFollowingPath(entity, path) {
 	const renderer = entities.get(entity.id);
 	await renderer.followPath(path);
 }

@@ -1,7 +1,6 @@
 import ModelRenderer from '../ModelRenderer.js';
 
 export default class EntityRenderer extends ModelRenderer {
-
 	constructor(id, scene) {
 		super(id, scene);
 	}
