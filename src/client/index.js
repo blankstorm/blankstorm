@@ -871,7 +871,7 @@ if (config.debug_mode) {
 	$('#loading_cover p').text('Debug: Assigning variables...');
 	const BABYLON = await import('@babylonjs/core/index.js');
 	const core = await import('core');
-	
+
 	Object.assign(window, { core, eventLog, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, BABYLON });
 }
 ui.update();
