@@ -280,7 +280,7 @@ export function handleCanvasRightClick(evt, owner) {
 	const returnData = [];
 	for (let entityRenderer of entities.values()) {
 		if (entityRenderer.selected && entityRenderer.parent == owner) {
-			xzPlane.position.y = entityRenderer.position.y;
+			xzPlane.position = entityRenderer.absolutePosition.clone();
 			let pickInfo = scene.pick(evt.clientX, evt.clientY, mesh => mesh == xzPlane);
 			if (pickInfo.pickedPoint) {
 				returnData.push({ entityRenderer, point: pickInfo.pickedPoint });

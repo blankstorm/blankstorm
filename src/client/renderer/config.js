@@ -1,7 +1,7 @@
 export default {
 	render_quality: 0,
 	mesh_segments: 32,
-	skybox_size: 5000,
+	skybox_size: 10000,
 	plane_size: 5000,
 	player_camera: {
 		wheelPrecision: 5,
