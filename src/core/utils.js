@@ -81,7 +81,7 @@ export const generate = {
 		//enemy spawning algorithm
 		let e = [];
 		e.power = power;
-		let generic = [...ships.values()];
+		let generic = [...ships];
 		generic.sort((a, b) => b[1].power - a[1].power); //decending
 		for (let [name, ship] of generic) {
 			for (let j = 0; j < Math.floor(power / ship.power); j++) {
