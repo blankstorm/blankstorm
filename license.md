@@ -2,7 +2,7 @@
 
 ## Accounts
 
-Individuals may create an account to play the Game. Accounts created are specific to individual who create them, and may not be sold or rented to anyone else. Accounts may be transferred as the licensors discretion.
+Individuals may create an account to play the Game. Accounts created are specific to individual who create them, and may not be sold or rented to anyone else. Accounts may be transferred at the licensors discretion.
 
 Although the licensor gives you permission to create an account and play the Game, they are still the owners of it. They are also the owners of any brands and content contained in the Game. Therefore, when you create and account for the Game, you are getting the right to play and use the Game in accordance with this document - you are not getting the Game itself. The only permissions you have in connection with the Game and your usage of it are the permissions set out in this document.
 
@@ -22,7 +22,7 @@ The licensed material and derivatives may NOT be used for any commerical purpose
 
 In order to ensure the integrity of the Game, all Game downloads and updates must come from an authorized source. It's also important that 3rd party tools/services don't seem "official" as their quality can't be guaranteed.
 
-If you make any content available on or through the Game, you agree to give the licensor permission to use, copy, modify, adapt, distribute, and publicly display that content. This permission is irrevocable, and you also agree to let the licensor permit other people to use, copy, modify, adapt, distribute, and publicly display your content. You are not giving up your ownership rights in your content, you are just giving the licensor and other users permission to use it. For example, they may need to copy, reformat, and distribute content that you post on a website so others can read it. If you don't want to give the licensor these permissions, do not make content available on or through the Game. Please think carefully before you make any content available, because it may be made public and might even be used by other people in a way you don't like.
+If you make any content available on or through the Game, you agree to give the licensor permission to use, copy, modify, adapt, distribute, and publicly display that content. This permission is irrevocable, and you also agree to let the licensor permit other people to use, copy, modify, adapt, distribute, and publicly display your content. You are not giving up your ownership rights to your content, you are just giving the licensor and other users permission to use it. For example, they may need to copy, reformat, and distribute content that you post on a website so others can read it. If you don't want to give the licensor these permissions, do not make content available on or through the Game. Please think carefully before you make any content available, because it may be made public and might even be used by other people in a way you don't like.
 
 If you are going to make something available on or through the Game, it must not be offensive to people or illegal, it must be honest, and it must be your own creation. Some examples of the types of things you must not make available using the Game include: posts that include racist or homophobic language; posts that are bullying or trolling; posts that are offensive or that damage our or another person's reputation; posts that include porn or someone else's creation or image; or posts that impersonate a moderator or try to trick or exploit people.
 
