@@ -18,8 +18,5 @@
 			"no-empty": "warn",
 			"no-case-declarations": "off"
 		},
-		"globals": {
-			"BABYLON": "readonly"
-		},
 		"ignorePatterns": [	"scripts/*.js" ]
 }

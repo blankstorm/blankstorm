@@ -1,0 +1,22 @@
+{
+	"env": {
+		"es2022": true,
+		"node": true
+	},
+	"extends": "eslint:recommended",
+	"parserOptions": {
+		"ecmaVersion": "latest",
+		"sourceType": "module"
+	},
+	"rules": {
+		"no-useless-escape": "warn",
+		"no-unused-vars": "warn",
+		"no-mixed-spaces-and-tabs": "warn",
+		"no-unreachable": "warn",
+		"no-extra-semi": "warn",
+		"no-fallthrough": "off",
+		"no-empty": "warn",
+		"no-case-declarations": "off"
+	},
+	"ignorePatterns": [	"scripts/*.js" ]
+}
