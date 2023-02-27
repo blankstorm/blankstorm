@@ -3,7 +3,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { random } from '../utils.js';
 import Ship from '../entities/Ship.js';
 import Node from '../Node.js';
-import StorageData from '../StorageData.js';
+import Storage from '../Storage.js';
 
 export default class CelestialBody extends Node {
 	fleet = [];
@@ -30,7 +30,7 @@ export default class CelestialBody extends Node {
 	}) {
 		super({ id, name, owner, parent, position, rotation, level });
 		this.radius = radius;
-		this.rewards = StorageData.FromData({ items: rewards, max: 1e10 });
+		this.rewards = Storage.FromData({ items: rewards, max: 1e10 });
 		level.bodies.set(id, this);
 
 		this.fleetPosition = fleetPosition;

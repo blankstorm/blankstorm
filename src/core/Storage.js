@@ -1,6 +1,6 @@
 import items from './items.js';
 
-export default class extends Map {
+export default class Storage extends Map {
 	#max = 1;
 	constructor(max = 1, _items = {}) {
 		super([...items.keys()].map(i => [i, 0]));

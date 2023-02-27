@@ -3,7 +3,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { random } from '../utils.js';
 import Entity from './Entity.js';
 import Hardpoint from './Hardpoint.js';
-import StorageData from '../StorageData.js';
+import Storage from '../Storage.js';
 import generic from './ships.js';
 
 export default class Ship extends Entity {
@@ -22,7 +22,7 @@ export default class Ship extends Entity {
 
 		Object.assign(this, {
 			type: type,
-			storage: storage instanceof StorageData ? storage : new StorageData(this._generic.storage),
+			storage: storage instanceof Storage ? storage : new Storage(this._generic.storage),
 			hp: hp ?? this._generic.hp,
 			reload: reload ?? this._generic.reload,
 			jumpCooldown: jumpCooldown ?? this._generic.jumpCooldown,
@@ -78,7 +78,7 @@ export default class Ship extends Entity {
 			owner: parent,
 			position: Vector3.FromArray(data.position || [0, 0, 0]),
 			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
-			storage: StorageData.FromData({ ...data.storage, max }),
+			storage: Storage.FromData({ ...data.storage, max }),
 			hp: +data.hp || 0,
 			reload: +data.reload || 0,
 			jumpCooldown: +data.jumpCooldown || 0,

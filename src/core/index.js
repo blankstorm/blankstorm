@@ -3,7 +3,7 @@ import { version, versions } from './meta.js';
 import Items from './items.js';
 import Tech from './tech.js';
 import Path from './Path.js';
-import StorageData from './StorageData.js';
+import Storage from './Storage.js';
 
 import Entity from './entities/Entity.js';
 import Player from './entities/Player.js';
@@ -21,6 +21,6 @@ import Level from './Level.js';
 export * from './meta.js';
 export * from './utils.js';
 export * from './commands.js';
-export { Items, Tech, Path, StorageData, Player, Hardpoint, Entity, Ship, CelestialBody, Planet, Star, StationComponent, Station, Level };
+export { Items, Tech, Path, Storage, Player, Hardpoint, Entity, Ship, CelestialBody, Planet, Star, StationComponent, Station, Level };
 
 console.log(`Blankstorm Core (${versions.get(version).text}) loaded successfully`);
