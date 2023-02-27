@@ -117,13 +117,13 @@ export default class Save extends Playable {
 				);
 			}
 
-			const playerData = new Player({ id: playerID, name: playerName, position: new Vector3(0, 0, -1000).add(random.cords(50, true)), level });
+			const fleet = ['mosquito', 'cillus'].map(type => new Ship(null, level, { type }));
+			fleet[0].position.z += 4;
+			const player = new Player(playerID, level, { fleet });
+			player.name = playerName;
+			player.position = new Vector3(0, 0, -1000).add(random.cords(50, true));
 
-			new Ship({ type: 'mosquito', owner: playerData, parent: playerData, level });
-			new Ship({ type: 'cillus', owner: playerData, parent: playerData, level });
-			playerData.fleet[0].position.z += 4;
-
-			playerData.addItems(generate.items(5000));
+			player.addItems(generate.items(5000));
 
 			return level;
 		}

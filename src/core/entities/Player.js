@@ -15,8 +15,8 @@ export default class Player extends Entity {
 		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);
 	}
 
-	constructor({ id, name, position, rotation, level, fleet = [] }) {
-		super({ id, name, position, rotation, level });
+	constructor(id, level, { fleet }) {
+		super(id, level);
 
 		for (let shipData of fleet) {
 			if (shipData instanceof Ship) {
@@ -125,13 +125,6 @@ export default class Player extends Entity {
 	}
 
 	static FromData(data, level) {
-		return new this({
-			id: data.id,
-			name: data.name,
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			fleet: [],
-			level,
-		});
+		return super.FromData(data, level, data);
 	}
 }

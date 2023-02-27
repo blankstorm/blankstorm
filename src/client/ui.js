@@ -49,17 +49,19 @@ export function init() {
 			.attr('bg', 'none')
 			.appendTo('div.lab');
 	}
-	for (let [id, ship] of Ship.generic) {
-		ship_ui[id] = $(`<div>
+	for (let [type, ship] of Ship.generic) {
+		ship_ui[type] = $(`<div>
 						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-						<span class=name style=text-align:center>${locales.text(`entity.${id}.name`)}</span>
+						<span class=name style=text-align:center>${locales.text(`entity.${type}.name`)}</span>
 						<span class="add add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
 					</div>`)
 			.find('.add')
 			.click(() => {
 				if (player.data().hasItems(ship.recipe)) {
 					player.data().removeItems(ship.recipe);
-					new Ship(id, player.data());
+					const ship = new Ship(null, player.data().level, { type });
+					ship.parent = ship.owner = player.data();
+					player.data().fleet.push(ship);
 				}
 				update();
 			})

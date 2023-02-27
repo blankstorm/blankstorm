@@ -291,17 +291,14 @@ export default class Level extends EventTarget {
 
 	static generate = {
 		system: async (name, position, level) => {
-			let star = new Star({
-				name,
-				position,
-				radius: random.int(300, 500),
-				color: new Color3(
-					Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-					Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-					Math.random() ** 3 / 2 + random.float(0.3, 0.4)
-				),
-				level,
-			});
+			const star = new Star(null, level, { radius: random.int(300, 500) });
+			star.name = name;
+			star.position = position;
+			star.color = Color3.FromArray([
+				Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+				Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+				Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+			]);
 			let nameMode = random.bool,
 				planetNum = random.int(1, Level.system.maxPlanets),
 				names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
@@ -309,15 +306,17 @@ export default class Level extends EventTarget {
 			for (let i in names) {
 				let planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i],
 					radius = random.int(25, 50);
-				planets[i] = new Planet({
-					name: random.int(0, 999) == 0 ? 'Jude' : planetName,
-					position: random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true),
+				const planet = new Planet(null, level, {
 					radius,
-					biome: ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)],
 					fleet: generate.enemies(level.difficulty * (i + 1)),
 					rewards: generate.items(1000 * i * (2 - level.difficulty)),
-					level,
 				});
+
+				planet.name = random.int(0, 999) == 0 ? 'Jude' : planetName;
+				planet.position = random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true);
+				planet.biome = ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)];
+
+				planets[i] = planet;
 			}
 		},
 	};

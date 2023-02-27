@@ -5,8 +5,8 @@ export default class StationComponent extends CelestialBody {
 	_generic = {};
 	#station;
 	connections = [];
-	constructor({ id, type, station }) {
-		super({ id, radius: 1 });
+	constructor(id, level, { type }) {
+		super(id, level, { radius: 1 });
 
 		this._generic = StationComponent.generic.get(type);
 
@@ -52,13 +52,10 @@ export default class StationComponent extends CelestialBody {
 	}
 
 	serialize() {
-		return {
-			id: this.id,
+		return Object.assign(super.serialize(), {
 			type: this.type,
-			position: this.position.asArray(),
-			rotation: this.rotation.asArray(),
 			connections: this.connections.map(component => component.serialize()),
-		};
+		});
 	}
 
 	remove() {
@@ -66,6 +63,10 @@ export default class StationComponent extends CelestialBody {
 		for (let connection of this.connections) {
 			this.removeConnection(connection);
 		}
+	}
+
+	static FromData(data, level) {
+		return super.FromData(data, level, data);
 	}
 
 	static generic = new Map(

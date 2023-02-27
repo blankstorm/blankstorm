@@ -388,8 +388,11 @@ export const player = {
 	updateFleet: () => {
 		if (player.data().fleet.length <= 0) {
 			chat(locales.text`player.death`);
-			new Ship('mosquito', player.data());
-			new Ship('cillus', player.data());
+			for (let type of ['mosquito', 'cillus']) {
+				const ship = new Ship(null, player.data().level, { type });
+				ship.parent = ship.owner = player.data();
+				player.data().fleet.push(ship);
+			}
 		}
 	},
 	chat: (...msg) => {

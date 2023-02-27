@@ -10,8 +10,8 @@ export default class Node {
 	rotation = Vector3.Zero();
 	velocity = Vector3.Zero();
 
-	constructor({ id = random.hex(32), name, position = Vector3.Zero(), rotation = Vector3.Zero(), velocity = Vector3.Zero(), owner, parent, level }) {
-		Object.assign(this, { id, name, position, rotation, velocity, parent, owner, level });
+	constructor(id = random.hex(32), level) {
+		Object.assign(this, { id, level });
 		level.nodes.set(id, this);
 	}
 
@@ -38,5 +38,15 @@ export default class Node {
 			rotation: this.rotation.asArray().map(num => +num.toFixed(3)),
 			velocity: this.velocity.asArray().map(num => +num.toFixed(3)),
 		};
+	}
+
+	static FromData(data, level, constructorOptions) {
+		const node = new this(data.id, level, constructorOptions);
+		node.position = Vector3.FromArray(data.position || [0, 0, 0]);
+		node.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);
+		node.velocity = Vector3.FromArray(data.velocity || [0, 0, 0]);
+		node.parent = level.getNodeByID(data.parent);
+		node.owner = level.getNodeByID(data.owner);
+		return node;
 	}
 }

@@ -9,15 +9,15 @@ import { LevelEvent } from '../events.js';
 export default class Hardpoint extends Node {
 	_generic = {};
 	info = {};
-	constructor({ id, name, position, rotation, owner, level, type }) {
+	constructor(id, level, { type, reload }) {
 		level ?? owner?.level;
-		super({ id, name, position, rotation, owner, parent: owner, level });
+		super(id, level);
 
 		this.hardpointType = type;
 		this._generic = Hardpoint.generic.get(type);
+		this.reload = reload ?? this._generic.reload;
 
 		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
-		this.reload = this._generic.reload;
 	}
 
 	remove() {
@@ -70,16 +70,7 @@ export default class Hardpoint extends Node {
 	}
 
 	static FromData(data, level) {
-		const owner = level.getNodeByID(data.owner);
-		return new this({
-			id: data.id,
-			name: data.name,
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			owner,
-			level,
-			type: data.type,
-		});
+		return super.FromData(data, level, data);
 	}
 
 	static generic = new Map(

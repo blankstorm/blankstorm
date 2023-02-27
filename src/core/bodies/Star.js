@@ -4,9 +4,8 @@ import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 export default class Star extends CelestialBody {
-	constructor({ id, name = 'Unknown Star', position, rotation, radius, rewards, fleetPosition, color = Color3.Random(), level }) {
-		super({ id, name, position, rotation, radius, rewards, fleetPosition, level });
-		this.color = color;
+	constructor(id, level, options) {
+		super(id, level, options);
 	}
 
 	serialize() {
@@ -16,19 +15,9 @@ export default class Star extends CelestialBody {
 		});
 	}
 
-	static FromData(data, level) {
-		const owner = level.getNodeByID(data.owner);
-		return new this({
-			id: data.id,
-			name: data.name,
-			radius: data.radius,
-			rewards: data.rewards,
-			position: Vector3.FromArray(data.position || [0, 0, 0]),
-			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
-			fleetPosition: Vector3.FromArray(data.fleetPosition || [0, 0, 0]),
-			color: Color3.FromArray(data.color || [0, 0, 0]),
-			owner,
-			level,
-		});
+	static FromData(data, level, constructorOptions) {
+		const star = super.FromData(data, level, constructorOptions);
+		star.color = Color3.FromArray(data.color) || Color3.Random();
+		return star;
 	}
 }

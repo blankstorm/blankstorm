@@ -11,7 +11,7 @@ export default class Ship extends Entity {
 
 	isTargetable = true;
 
-	constructor({ id, name, position, rotation, parent, owner, level, storage, hp, reload, jumpCooldown, type, hardpoints = [] }) {
+	constructor(id, level, { storage, hp, reload, jumpCooldown, type, hardpoints = [] }) {
 		if (type && !Ship.generic.has(type)) throw new ReferenceError(`Ship type ${type} does not exist`);
 		super({ id, name, position, rotation, parent, owner, level });
 
@@ -34,7 +34,8 @@ export default class Ship extends Entity {
 				return;
 			}
 
-			let hp = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint({ ...generic, owner: this, level });
+			let hp = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint(null, level, generic);
+			hp.parent = hp.owner = this;
 			hp.info = generic;
 			this.hardpoints.push(hp);
 		});
@@ -70,21 +71,7 @@ export default class Ship extends Entity {
 
 	static FromData(data, level) {
 		const max = this.generic.get(data.type).storage;
-		const parent = level.getNodeByID(data.owner);
-		return new this({
-			id: data.id,
-			type: data.type,
-			parent,
-			owner: parent,
-			position: Vector3.FromArray(data.position || [0, 0, 0]),
-			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
-			storage: Storage.FromData({ ...data.storage, max }),
-			hp: +data.hp || 0,
-			reload: +data.reload || 0,
-			jumpCooldown: +data.jumpCooldown || 0,
-			hardpoints: data.hardpoints || [],
-			level,
-		});
+		return super.FromData(data, level, { ...data, storage: Storage.FromData({ ...data.storage, max }) });
 	}
 
 	static generic = generic;

@@ -8,8 +8,8 @@ export default class Station extends CelestialBody {
 
 	isTargetable = true;
 
-	constructor({ id, name = 'Station', level }) {
-		super({ id, name, level });
+	constructor(id, level, options) {
+		super(id, level, options);
 
 		this.#level = level;
 		this.#core = new StationComponent('core', this);
@@ -25,11 +25,16 @@ export default class Station extends CelestialBody {
 	}
 
 	serialize() {
-		return {
+		return Object.assign(super.serialize(), {
 			id: this.id,
 			components: this.#core.serialize(),
-		};
+		});
 	}
 
-	remove() {}
+	/**
+	 * @todo actually implement
+	 */
+	static FromData(data, level) {
+		return super.FromData(data, level, data);
+	}
 }

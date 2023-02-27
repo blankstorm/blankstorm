@@ -10,8 +10,8 @@ export default class Entity extends Node {
 	selected = false;
 	isTargetable = false;
 
-	constructor({ id, name, position, rotation, parent, owner, level }) {
-		super({ id, name, position, rotation, owner, parent, level });
+	constructor(id, level) {
+		super(id, level);
 
 		level.entities.set(this.id, this);
 	}
@@ -44,14 +44,7 @@ export default class Entity extends Node {
 		});
 	}
 
-	static FromData(data, level) {
-		return new this({
-			id: data.id,
-			name: data.name,
-			owner: level.get(data.owner),
-			position: Vector3.FromArray(data.position),
-			rotation: Vector3.FromArray(data.rotation),
-			level,
-		});
+	static FromData(data, level, constructorOptions) {
+		return super.FromData(data, level, constructorOptions);
 	}
 }

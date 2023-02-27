@@ -15,20 +15,8 @@ export default class CelestialBody extends Node {
 		return this.fleet.reduce((total, ship) => total + ship._generic.power, 0) ?? 0;
 	}
 
-	constructor({
-		id = random.hex(32),
-		name = '',
-		radius = 1,
-		fleet = [],
-		owner,
-		parent,
-		rewards = {},
-		position = Vector3.Zero(),
-		rotation = Vector3.Zero(),
-		fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true),
-		level,
-	}) {
-		super({ id, name, owner, parent, position, rotation, level });
+	constructor(id, level, { radius, rewards, fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true) }) {
+		super(id, level);
 		this.radius = radius;
 		this.rewards = Storage.FromData({ items: rewards, max: 1e10 });
 		level.bodies.set(id, this);
@@ -38,7 +26,8 @@ export default class CelestialBody extends Node {
 			if (shipOrType instanceof Ship) {
 				this.fleet.push(shipOrType);
 			} else {
-				let ship = new Ship({ type: shipOrType, owner: this, parent: this, level });
+				let ship = new Ship(null, level, { type: shipOrType });
+				ship.parent = ship.owner = this;
 				ship.position.addInPlace(this.fleetPosition);
 			}
 		}
@@ -57,18 +46,12 @@ export default class CelestialBody extends Node {
 		});
 	}
 
-	static FromData(data, level) {
-		const owner = level.getNodeByID(data.owner);
-		return new this({
-			id: data.id,
-			name: data.name,
+	static FromData(data, level, constructorOptions) {
+		return super.FromData(data, level, {
 			radius: data.radius,
 			rewards: data.rewards,
-			position: Vector3.FromArray(data.position || [0, 0, 0]),
-			rotation: Vector3.FromArray(data.rotation || [0, 0, 0]),
 			fleetPosition: Vector3.FromArray(data.fleetPosition || [0, 0, 0]),
-			owner,
-			level,
+			...constructorOptions,
 		});
 	}
 }
