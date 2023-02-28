@@ -1,10 +1,11 @@
-import { version, versions, isJSON, config, commands, runCommand, random, Ship, Level } from 'core';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 import 'jquery'; /* global $ */
 $.ajaxSetup({ timeout: 3000 });
 
 import 'socket.io-client'; /* global io */
+
+import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level } from 'core';
 
 import db from './db.js';
 import { SettingsStore } from './settings.js';
@@ -336,7 +337,7 @@ const clientRunCommand = command => {
 	if (mp) {
 		servers.get(servers.sel).socket.emit('command', command);
 	} else {
-		return runCommand(command, saves.current);
+		return execCommandString(command, player.data());
 	}
 };
 const changeUI = (selector, hideAll) => {
@@ -389,7 +390,7 @@ export const player = {
 		if (player.data().fleet.length <= 0) {
 			chat(locales.text`player.death`);
 			for (let type of ['mosquito', 'cillus']) {
-				const ship = new Ship(null, player.data().level, { type });
+				const ship = new Ship(null, player.data().level, { type, power: player.data().power });
 				ship.parent = ship.owner = player.data();
 				player.data().fleet.push(ship);
 			}
@@ -459,19 +460,24 @@ for (let id of result) {
 	new Server(id, data, player.data());
 }
 
-Object.assign(commands, {
-	playsound(level, name, volume = settings.get('sfx')) {
+commands.set(
+	'playsound',
+	new Command((name, volume = settings.get('sfx')) => {
 		if (sounds.has(name)) {
 			playsound(sounds.get(name), volume);
 		} else {
 			throw new ReferenceError(`sound "${name}" does not exist`);
 		}
-	},
-	reload() {
+	}, 0)
+);
+
+commands.set(
+	'reload',
+	new Command(() => {
 		//maybe also reload mods in the future
 		renderer.engine.resize();
-	},
-});
+	}, 0)
+);
 
 $('#loading_cover p').text('Registering event listeners...');
 //Event Listeners (UI transitions, creating saves, etc.)

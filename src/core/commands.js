@@ -3,27 +3,46 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import Ship from './entities/Ship.js';
 import { isJSON } from './utils.js';
 
-export const commands = {
-	help: () => {
-		return 'See https://bs.drvortex.dev/docs/commands for command documentation';
-	},
-	kill: (level, selector) => {
-		let entities = level.getNodesBySelector(selector);
-		entities.forEach(e => e.remove());
-		return `killed ${entities.length} entities`;
-	},
-	spawn: (level, type, selector, extra) => {
-		const parent = level.getNodeBySelector(selector);
-		const spawned = new Ship(null, level, { type });
-		spawned.parent = spawned.owner = parent;
-		if (isJSON(extra)) {
-			spawned.update(JSON.parse(extra));
+export class Command {
+	#exec = () => {};
+	#oplvl = 0;
+	constructor(exec, oplvl) {
+		this.#exec = exec;
+		this.#oplvl = oplvl;
+	}
+
+	get oplvl() {
+		return this.#oplvl;
+	}
+
+	exec(args, executor) {
+		if (executor?.oplvl >= this.oplvl) {
+			this.#exec.apply({ executor }, args);
 		}
-		return `Spawned ${spawned.constructor.name} with id #${spawned.id}`;
-	},
-	data: {
-		get: (level, selector, path = '') => {
-			let node = level.getNodeBySelector(selector);
+	}
+}
+
+export const commands = new Map(
+	Object.entries({
+		help: new Command(() => {
+			return 'See https://bs.drvortex.dev/docs/commands for command documentation';
+		}, 0),
+		kill: new Command((selector) => {
+			let entities = this.executor.level.getNodesBySelector(selector);
+			entities.forEach(e => e.remove());
+			return `killed ${entities.length} entities`;
+		}, 3),
+		spawn: new Command((type, selector, extra) => {
+			const parent = this.executor.level.getNodeBySelector(selector);
+			const spawned = new Ship(null, this.executor.level, { type, power: this.executor.power });
+			spawned.parent = spawned.owner = parent;
+			if (isJSON(extra)) {
+				spawned.update(JSON.parse(extra));
+			}
+			return `Spawned ${spawned.constructor.name} with id #${spawned.id}`;
+		}, 3),
+		'data get': new Command((selector, path = '') => {
+			let node = this.executor.level.getNodeBySelector(selector);
 			let data = node.getByString(path),
 				output = data;
 			if (typeof data == 'object' || typeof data == 'function') {
@@ -33,42 +52,36 @@ export const commands = {
 				}
 			}
 			return `Data of entity #${node.id}: ${output}`;
-		},
-		set: (level, selector, path, value) => {
-			let node = level.getNodeBySelector(selector);
+		}, 3),
+		'data set': new Command((selector, path, value) => {
+			let node = this.executor.level.getNodeBySelector(selector);
 			node.setByString(path, eval?.(value));
-		},
-	},
-	/**
-	 * @todo implement executor position as default
-	 * @todo
-	 */
-	tp: (level, selector, x, y, z) => {
-		let nodes = level.getNodesBySelector(selector),
-			location = new Vector3(+x || 0, +y || 0, +z || 0);
-		nodes.forEach(entity => {
-			entity.position = location;
-		});
-		return `Teleported ${nodes.length} to ${location.display()}`;
-	},
-};
-export const runCommand = (command, level) => {
-	//if (!(level instanceof Level)) throw new TypeError('Failed to run command: no level selected'); Level not imported due to overhead
-	let splitCmd = command.split(' '),
-		hasRun = false;
-	let result =
-		splitCmd
-			.filter(p => p)
-			.reduce(
-				(o, p, i) =>
-					typeof o?.[p] == 'function'
-						? ((hasRun = true), o?.[p](level, ...splitCmd.slice(i + 1)))
-						: hasRun
-						? o
-						: o?.[p]
-						? o?.[p]
-						: new ReferenceError('Command does not exist'),
-				commands
-			) ?? '';
-	return result;
+		}, 3),
+		/**
+		 * @todo implement executor position as default
+		 */
+		tp: new Command((selector, x, y, z) => {
+			let nodes = this.executor.level.getNodesBySelector(selector),
+				location = new Vector3(+x || 0, +y || 0, +z || 0);
+			nodes.forEach(entity => {
+				entity.position = location;
+			});
+			return `Teleported ${nodes.length} to ${location.display()}`;
+		}, 3),
+	})
+);
+
+export const execCommandString = (string, executor) => {
+	for (let [name, command] of commands) {
+		if (!command.startsWith(name)) {
+			continue;
+		}
+
+		const args = string
+			.slice(name.length)
+			.split(/\s/)
+			.filter(a => a);
+
+		return command.exec(args, executor);
+	}
 };

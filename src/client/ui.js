@@ -59,7 +59,7 @@ export function init() {
 			.click(() => {
 				if (player.data().hasItems(ship.recipe)) {
 					player.data().removeItems(ship.recipe);
-					const ship = new Ship(null, player.data().level, { type });
+					const ship = new Ship(null, player.data().level, { type, power: player.data().power });
 					ship.parent = ship.owner = player.data();
 					player.data().fleet.push(ship);
 				}

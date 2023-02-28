@@ -11,11 +11,11 @@ export default class Ship extends Entity {
 
 	isTargetable = true;
 
-	constructor(id, level, { storage, hp, reload, jumpCooldown, type, hardpoints = [] }) {
+	constructor(id, level, { storage, hp, reload, jumpCooldown, type, hardpoints = [], power }) {
 		if (type && !Ship.generic.has(type)) throw new ReferenceError(`Ship type ${type} does not exist`);
-		super({ id, name, position, rotation, parent, owner, level });
+		super(id, level);
 
-		let distance = Math.log(random.int(0, owner?.power || 1) ** 3 + 1); //IMPORTANT TODO: Move to ship creation
+		let distance = Math.log(random.int(0, power || 1) ** 3 + 1); //IMPORTANT TODO: Move to ship creation
 		this.position.addInPlace(random.cords(distance, true));
 
 		this._generic = Ship.generic.get(type);
@@ -39,10 +39,6 @@ export default class Ship extends Entity {
 			hp.info = generic;
 			this.hardpoints.push(hp);
 		});
-
-		if (owner?.fleet instanceof Array) {
-			owner.fleet.push(this);
-		}
 	}
 
 	remove() {
