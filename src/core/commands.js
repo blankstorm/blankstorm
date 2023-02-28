@@ -16,9 +16,11 @@ export class Command {
 	}
 
 	exec(args, executor) {
-		if (executor?.oplvl >= this.oplvl) {
-			this.#exec.apply({ executor }, args);
+		if (executor?.oplvl < this.oplvl) {
+			return 'You do not have permission to run that command';
 		}
+
+		return this.#exec.apply({ executor }, args);
 	}
 }
 
@@ -27,7 +29,7 @@ export const commands = new Map(
 		help: new Command(() => {
 			return 'See https://bs.drvortex.dev/docs/commands for command documentation';
 		}, 0),
-		kill: new Command((selector) => {
+		kill: new Command(selector => {
 			let entities = this.executor.level.getNodesBySelector(selector);
 			entities.forEach(e => e.remove());
 			return `killed ${entities.length} entities`;
