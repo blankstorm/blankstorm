@@ -1,5 +1,3 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
-
 import Items from '../items.js';
 import Tech from '../tech.js';
 import Entity from './Entity.js';

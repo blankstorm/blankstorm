@@ -1,4 +1,3 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import CelestialBody from './CelestialBody.js';
 
 export default class Planet extends CelestialBody {
