@@ -12,7 +12,7 @@ export default class Station extends CelestialBody {
 		super(id, level, options);
 
 		this.#level = level;
-		this.#core = new StationComponent('core', this);
+		this.#core = new StationComponent(null, level, {type: 'core', station: this});
 		this.#core.parent = this;
 	}
 

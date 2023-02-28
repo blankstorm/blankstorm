@@ -10,7 +10,7 @@ export default class Hardpoint extends Node {
 	_generic = {};
 	info = {};
 	constructor(id, level, { type, reload }) {
-		level ?? owner?.level;
+		level;
 		super(id, level);
 
 		this.hardpointType = type;

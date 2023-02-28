@@ -5,7 +5,7 @@ export default class StationComponent extends CelestialBody {
 	_generic = {};
 	#station;
 	connections = [];
-	constructor(id, level, { type }) {
+	constructor(id, level, { type, station }) {
 		super(id, level, { radius: 1 });
 
 		this._generic = StationComponent.generic.get(type);
@@ -16,6 +16,10 @@ export default class StationComponent extends CelestialBody {
 
 	get station() {
 		return this.#station;
+	}
+
+	set station(val) {
+		this.#station = val;
 	}
 
 	get level() {

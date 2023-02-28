@@ -1,7 +1,6 @@
 import CelestialBody from './CelestialBody.js';
 
 import { Color3 } from '@babylonjs/core/Maths/math.color.js';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 export default class Star extends CelestialBody {
 	constructor(id, level, options) {
