@@ -21,6 +21,7 @@ import Level from './Level.js';
 export * from './meta.js';
 export * from './utils.js';
 export * from './commands.js';
+export * from './api.js';
 export { Items, Tech, Path, Storage, Player, Hardpoint, Entity, Ship, CelestialBody, Planet, Star, StationComponent, Station, Level };
 
 console.log(`Blankstorm Core (${versions.get(version).text}) loaded successfully`);

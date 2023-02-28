@@ -5,7 +5,7 @@ $.ajaxSetup({ timeout: 3000 });
 
 import 'socket.io-client'; /* global io */
 
-import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level } from 'core';
+import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, requestUserInfo } from 'core';
 
 import db from './db.js';
 import { SettingsStore } from './settings.js';
@@ -367,24 +367,17 @@ export const chat = (...msg) => {
 export const player = {
 	id: '[guest]',
 	username: '[guest]',
-	getAuthData() {
-		$.ajax({
-			url: web`api/user`,
-			async: false,
-			data: { token: cookie.token, session: true },
-			success: req => {
-				player.authData = req;
-				if (isJSON(req)) {
-					let res = JSON.parse(req);
-					Object.assign(player, res);
-					localStorage.auth = req;
-				} else if (req == undefined) {
-					chat('Failed to connect to account servers.');
-				} else if (req == 'ERROR 404') {
-					chat('Invalid token, please log in again and reload the game to play multiplayer.');
-				}
-			},
-		});
+	parseAuthData(text) {
+		player.authData = text;
+		if (isJSON(text)) {
+			let info = JSON.parse(text);
+			localStorage.auth = text;
+			Object.assign(player, info);
+		} else if (text == undefined) {
+			chat('Failed to connect to account servers.');
+		} else if (text == 'ERROR 404') {
+			chat('Invalid token, please log in again and reload the game to play multiplayer.');
+		}
 	},
 	updateFleet: () => {
 		if (player.data().fleet.length <= 0) {
@@ -420,10 +413,12 @@ if (!mpEnabled) {
 }
 
 if (cookie.token && navigator.onLine) {
-	player.authData = player.getAuthData();
+	const data = await requestUserInfo('token', cookie.token);
+	player.authData = data;
 } else if (localStorage.auth) {
 	if (isJSON(localStorage.auth) && JSON.parse(localStorage.auth)) {
-		let data = (player.authData = JSON.parse(localStorage.auth));
+		let data = JSON.parse(localStorage.auth);
+		player.authData = data;
 		Object.assign(player, data);
 	} else {
 		chat('Error: Invalid auth data.');
