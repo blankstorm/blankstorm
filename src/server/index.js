@@ -1,21 +1,38 @@
-import * as fs from 'fs';
+import path from 'path';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 
-import { version, requestUserInfo, execCommandString } from 'core';
+import { version } from '../core/meta.js';
+import { execCommandString } from '../core/commands.js';
+import { requestUserInfo } from '../core/api.js';
 
+import { readJSONFile } from './utils.js';
+import { Log, LogEntry, LogLevel } from './Log.js';
 import Client from './Client.js';
 
 const logs = [], clients = new Map();
 
 //load config and settings and things
-const config = fs.existsSync('./config.ini') ? ini.parse(fs.readFileSync('./config.ini', 'utf-8')) : {};
+let config = {}, ops = {}, whitelist = [], blacklist = [];
 
-const ops = fs.existsSync('./ops.json') ? JSON.parse(fs.readFileSync('./ops.json', 'utf-8')) : {};
+for(let [name, filePath] of {
+	config: 'config.json',
+	ops: 'ops.json',
+	whitelist: 'whitelist.json',
+	blacklist: 'blacklist.json',
+}){
+	const data = readJSONFile(filePath);
+	if(data){
+		globalThis[name] = data;
+	}else{
+		console.log(`Warning: Failed to load "${name}" from ${path.resolve(filePath)}`);
+	}
+}
 
-const whitelist = fs.existsSync('./whitelist.json') ? JSON.parse(fs.readFileSync('./whitelist.json', 'utf-8')) : {};
+const log = (...msg) => {
+	console.log(`[${performance.now()}] ${msg}`);
 
-const blacklist = fs.existsSync('./blacklist.json') ? JSON.parse(fs.readFileSync('./blacklist.json', 'utf-8')) : {};
+}
 
 const server = createServer((req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,11 +44,11 @@ const server = createServer((req, res) => {
 				message: config.message,
 				version,
 			};
-			if (config.debug.public_uptime) data.uptime = process.uptime();
+			if (config.debug?.public_uptime) data.uptime = process.uptime();
 			res.end(JSON.stringify(data));
 			break;
 		case '/log':
-			if (config.debug.public_log) {
+			if (config.debug?.public_log) {
 				let _log = logs.join('\n');
 				res.end(_log);
 			} else {
@@ -62,7 +79,7 @@ io.use(async (socket, next) => {
 		} else if (clients.getByID(clientData.id)) {
 			next(new Error('Connection refused: already connected'));
 		} else {
-			let client = new Client(clientData.id, null, socket);
+			let client = new Client(clientData.id, null, { socket });
 			log(`${clientData.username} connected with socket id ${socket.id}`);
 			io.emit('chat', `${clientData.username} joined`);
 			next();
