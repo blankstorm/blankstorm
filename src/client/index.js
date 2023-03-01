@@ -12,8 +12,8 @@ import { SettingsStore } from './settings.js';
 import LocaleStore from './locales.js';
 import { web, upload, minimize, alert, prompt } from './utils.js';
 import Waypoint from './waypoint.js';
-import Save from './save.js';
-import Server from './server.js';
+import Save from './Save.js';
+import Server from './Server.js';
 import './contextmenu.js';
 import { PlayableStore } from './playable.js';
 import * as renderer from './renderer/index.js';
@@ -508,7 +508,7 @@ $('#load .back').click(() => {
 	$('#main').show();
 });
 $('#load .new').click(() => {
-	mp ? Server.dialog() : $('#save')[0].showModal();
+	mp ? Server.Dialog() : $('#save')[0].showModal();
 });
 $('#load button.upload.refresh').click(() => {
 	if (mp) {

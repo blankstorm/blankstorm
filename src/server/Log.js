@@ -51,7 +51,7 @@ export class Log {
 		return this.#entries.slice(0);
 	}
 
-	logMessage(message, level, doNotOutput){
+	addMessage(message, level, doNotOutput){
 		const entry = new LogEntry(message, level);
 		this.#entries.push(entry);
 
@@ -60,6 +60,8 @@ export class Log {
 		}
 	}
 
-	toString()
+	toString(){
+		return this.entries.map(entry => entry.toString()).join('\n');
+	}
 }
 

@@ -9,7 +9,7 @@ import { servers, cookie, canvas, chat, player } from './index.js';
 import { update as updateUI } from './ui.js';
 
 export default class Server extends Playable {
-	static async dialog(server) {
+	static async Dialog(server) {
 		const result = await modal(
 			[
 				{ name: 'name', placeholder: 'Display name', value: server instanceof Server ? server.name : null },
@@ -28,7 +28,7 @@ export default class Server extends Playable {
 					server.url = result.url;
 				}
 			} else {
-				if (server.getStore().has(result.url)) {
+				if (servers.has(result.url)) {
 					alert('A server with that URL already exists.');
 				} else {
 					new Server(result.url, result.name, player.data());
@@ -57,7 +57,7 @@ export default class Server extends Playable {
 			$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
 		});
 		this.socket.on('connect_error', err => {
-			$('#connect p').text((err.message.startsWith('Connection refused') ? '' : 'Connection Error: ') + err.message);
+			$('#connect p').text('Connection refused: ' + err.message);
 			$('#connect button').text('Back');
 		});
 		this.socket.on('connect_failed', err => {
@@ -118,7 +118,7 @@ export default class Server extends Playable {
 			});
 		});
 		this.gui.play.click(() => this.connect());
-		this.gui.edit.click(() => Server.dialog(this));
+		this.gui.edit.click(() => Server.Dialog(this));
 		this.getStore().set(this.url, this);
 	}
 	connect() {
@@ -147,7 +147,7 @@ export default class Server extends Playable {
 				if (isJSON(data)) {
 					this.pingData = JSON.parse(data);
 					this.gui.info
-						.text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${this.pingData.currentPlayers}/${this.pingData.maxPlayers}`)
+						.text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${this.pingData.current_clients}/${this.pingData.max_clients}`)
 						.find('tool-tip')
 						.html(`${this.url}<br><br>${this.pingData.version.text}<br><br>${this.pingData.message}`);
 				} else {

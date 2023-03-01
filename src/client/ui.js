@@ -1,5 +1,5 @@
 import 'jquery'; /* global $ */
-import Save from './save.js';
+import Save from './Save.js';
 import { locales, saves, servers, settings, mp, screenshots } from './index.js';
 import { versions, CelestialBody, Items, Tech, Ship, Player } from 'core';
 import { minimize, confirm } from './utils.js';
