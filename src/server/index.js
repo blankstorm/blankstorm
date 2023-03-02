@@ -6,6 +6,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { version } from '../core/meta.js';
 import { Command, commands, execCommandString } from '../core/commands.js';
 import { requestUserInfo } from '../core/api.js';
+import Level from '../core/Level.js';
 
 import { readJSONFile } from './utils.js';
 import { Log, LogLevel } from './Log.js';
@@ -108,13 +109,16 @@ let config = {
 	},
 	ops = {},
 	whitelist = [],
-	blacklist = [];
+	blacklist = [],
+	levelData,
+	level;
 
 for (let [name, filePath] of Object.entries({
 	config: 'config.json',
 	ops: 'ops.json',
 	whitelist: 'whitelist.json',
 	blacklist: 'blacklist.json',
+	levelData: 'level.json',
 })) {
 	const data = readJSONFile(filePath);
 	if (data) {
@@ -154,6 +158,27 @@ const io = new SocketIOServer(server, {
 	cors: { origin: config.allow_from_all ? '*' : 'https://blankstorm.drvortex.dev' },
 });
 
+if(levelData){
+	level = Level.FromData(levelData);
+}else{
+	log.addMessage('No level detected. Generating...');
+	level = new Level('server_level');
+}
+
+level.addEventListener('projectile.fire', async evt => {
+	io.emit('event', evt.type, evt.data.target.serialize(), JSON.stringify(evt.data.projectile));
+});
+level.addEventListener('level.tick', async evt => {
+	io.emit('event', evt.type, evt.level.serialize());
+});
+level.addEventListener('player.death', async evt => {
+	io.emit('event', evt.type, evt.emitter.serialize());
+});
+level.addEventListener('entity.follow_path.start', async evt => {
+	io.emit('event', evt.type, evt.level);
+});
+
+
 io.use(async (socket, next) => {
 	try {
 		let clientData;
@@ -174,7 +199,7 @@ io.use(async (socket, next) => {
 		} else if (clients.getByID(clientData.id)) {
 			next(new Error('already connected'));
 		} else {
-			let client = new Client(clientData.id, null, { socket });
+			let client = new Client(clientData.id, level, { socket });
 			clients.set(socket.id, client);
 			log.addMessage(`${clientData.username} connected with socket id ${socket.id}`);
 			io.emit('chat', `${clientData.username} joined`);

@@ -16,6 +16,7 @@ export class Client extends Player {
 		]);
 		return reasons.has(reason) ? reasons.get(reason) : reason;
 	}
+
 }
 
 export class ClientStore extends Map {

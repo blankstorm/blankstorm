@@ -26,7 +26,7 @@ export default class Entity extends Node {
 
 	async moveTo(location, isRelative) {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
-		const path = new Path(this.absolutePosition, location.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.level);
+		const path = Path.Find(this.absolutePosition, location.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.level);
 		if (path.path.length > 0) {
 			const evt = new LevelEvent('entity.follow_path.start', this, { path });
 			this.level.dispatchEvent(evt);

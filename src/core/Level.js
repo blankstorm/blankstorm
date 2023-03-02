@@ -321,7 +321,7 @@ export default class Level extends EventTarget {
 		},
 	};
 
-	static Load(levelData, level) {
+	static FromData(levelData, level) {
 		if (levelData.version != version) {
 			alert(`Can't load save: wrong version`);
 			throw new Error(`Can't load save from data: wrong version (${levelData.version})`);

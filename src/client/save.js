@@ -96,7 +96,7 @@ export default class Save extends Playable {
 		}
 		static Load(saveData) {
 			let save = new Save.Live(saveData.name, true);
-			Level.Load(saveData, save);
+			Level.FromData(saveData, save);
 			return save;
 		}
 		static async CreateDefault(name, playerID, playerName) {

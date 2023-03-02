@@ -13,7 +13,7 @@ export const core = new Map([
 	[
 		'level.tick',
 		async evt => {
-			renderer.update(evt.emitter.serialize());
+			renderer.update(evt.level.serialize());
 		},
 	],
 	['player.levelup', async () => {}],
