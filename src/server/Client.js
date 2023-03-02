@@ -1,6 +1,6 @@
 import Player from '../core/entities/Player.js';
 
-export default class Client extends Player {
+export class Client extends Player {
 	constructor(id, level, { fleet, socket }) {
 		super(id, level, { fleet });
 		this.socket = socket;
@@ -15,5 +15,28 @@ export default class Client extends Player {
 			['transport error', 'Connection failed'],
 		]);
 		return reasons.has(reason) ? reasons.get(reason) : reason;
+	}
+}
+
+export class ClientStore extends Map {
+
+	constructor(){
+		super()
+	}
+
+	getBy(attr, val){
+		for(let client of this.values()){
+			if(client[attr] == val){
+				return client;
+			}
+		}
+	}
+
+	getByID(id){
+		return this.getBy('id', id);
+	}
+
+	getByName(name){
+		return this.getBy('username', name);
 	}
 }

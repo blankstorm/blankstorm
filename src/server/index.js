@@ -9,11 +9,11 @@ import { requestUserInfo } from '../core/api.js';
 
 import { readJSONFile } from './utils.js';
 import { Log, LogLevel } from './Log.js';
-import Client from './Client.js';
+import { Client, ClientStore } from './Client.js';
 
 const log = new Log();
 
-const clients = new Map();
+const clients = new ClientStore();
 commands.set(
 	'kick',
 	new Command((player, ...reason) => {
@@ -100,14 +100,15 @@ let config = {
 		max_clients: 10,
 		message: '',
 		log_verbose: false,
+		allow_from_all: true,
 		debug: {
-			public_uptime: true,
+			public_uptime: false,
 			public_log: true,
 		},
 	},
 	ops = {},
-	whitelist = {},
-	blacklist = {};
+	whitelist = [],
+	blacklist = [];
 
 for (let [name, filePath] of Object.entries({
 	config: 'config.json',
@@ -140,6 +141,7 @@ const server = createServer((req, res) => {
 			if (config.debug?.public_log) {
 				res.end(log.toString());
 			} else {
+				res.statusCode = 403;
 				res.end('Log is not public.');
 			}
 			break;
@@ -154,8 +156,13 @@ const io = new SocketIOServer(server, {
 
 io.use(async (socket, next) => {
 	try {
-		const clientData = await requestUserInfo('token', socket.handshake.auth.token);
-
+		let clientData;
+		try{
+			clientData = await requestUserInfo('token', socket.handshake.auth.token);
+		}catch(err){
+			next(new Error('invalid token'));
+		}
+		
 		if (config.whitelist && !whitelist.includes(clientData.id)) {
 			next(new Error('you are not whitelisted'));
 		} else if (config.blacklist && blacklist.includes(clientData.id)) {
@@ -174,7 +181,8 @@ io.use(async (socket, next) => {
 			next();
 		}
 	} catch (err) {
-		next(new Error('invalid token'));
+		log.addMessage('Client auth failed: ' + err.stack, LogLevel.ERROR);
+		next(new Error('Server error'));
 	}
 });
 io.on('connection', socket => {

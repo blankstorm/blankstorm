@@ -413,8 +413,10 @@ if (!mpEnabled) {
 }
 
 if (cookie.token && navigator.onLine) {
-	const data = await requestUserInfo('token', cookie.token);
-	player.authData = data;
+	const info = await requestUserInfo('token', cookie.token);
+	player.id = info.id;
+	player.username = info.username;
+	player.authData = info;
 } else if (localStorage.auth) {
 	if (isJSON(localStorage.auth) && JSON.parse(localStorage.auth)) {
 		let data = JSON.parse(localStorage.auth);
