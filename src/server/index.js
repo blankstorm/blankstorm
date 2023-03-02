@@ -165,19 +165,11 @@ if(levelData){
 	level = new Level('server_level');
 }
 
-level.addEventListener('projectile.fire', async evt => {
-	io.emit('event', evt.type, evt.data.target.serialize(), JSON.stringify(evt.data.projectile));
-});
-level.addEventListener('level.tick', async evt => {
-	io.emit('event', evt.type, evt.level.serialize());
-});
-level.addEventListener('player.death', async evt => {
-	io.emit('event', evt.type, evt.emitter.serialize());
-});
-level.addEventListener('entity.follow_path.start', async evt => {
-	io.emit('event', evt.type, evt.emitter.serialize(), evt.data.path.serialize());
-});
-
+for(let type of ['projectile.fire', 'level.tick', 'player.death', 'entity.follow_path.start']){
+	level.addEventListener(type, async evt => {
+		io.emit('event', type, evt.emitter, evt.data);
+	});
+}
 
 io.use(async (socket, next) => {
 	try {
@@ -185,6 +177,7 @@ io.use(async (socket, next) => {
 		try{
 			clientData = await requestUserInfo('token', socket.handshake.auth.token);
 		}catch(err){
+			log.addMessage(`Client auth API request failed: ` + err.stack, LogLevel.ERROR);
 			next(new Error('invalid token'));
 		}
 		
@@ -199,7 +192,7 @@ io.use(async (socket, next) => {
 		} else if (clients.getByID(clientData.id)) {
 			next(new Error('already connected'));
 		} else {
-			let client = new Client(clientData.id, level, { socket });
+			let client = new Client(clientData.id, level, { socket, fleet: [] });
 			clients.set(socket.id, client);
 			log.addMessage(`${clientData.username} connected with socket id ${socket.id}`);
 			io.emit('chat', `${clientData.username} joined`);

@@ -9,6 +9,8 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js'
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.js';
 import { Engine } from '@babylonjs/core/Engines/engine.js';
 
+import Path from '../../core/Path.js';
+
 import config from './config.js';
 import PlayerRenderer from './entities/PlayerRenderer.js';
 import { default as PlanetRenderer, PlanetRendererMaterial } from './bodies/PlanetRenderer.js';
@@ -293,7 +295,7 @@ export function handleCanvasRightClick(evt, owner) {
 
 export async function startFollowingPath(entity, path) {
 	const renderer = entities.get(entity.id);
-	await renderer.followPath(path);
+	await renderer.followPath(Path.FromData(path));
 }
 
 export function fireProjectile(hardpoint, target, options) {

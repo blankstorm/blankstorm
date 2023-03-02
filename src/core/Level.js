@@ -106,7 +106,7 @@ export default class Level extends EventTarget {
 
 	tick() {
 		this.#performanceMonitor.sampleFrame();
-		let evt = new LevelEvent('level.tick', this);
+		let evt = new LevelEvent('level.tick', this.serialize());
 		this.dispatchEvent(evt);
 		for (let entity of this.entities.values()) {
 			if (Math.abs(entity.rotation.y) > Math.PI) {
@@ -118,7 +118,7 @@ export default class Level extends EventTarget {
 
 			if (entity.hp && entity.hp <= 0) {
 				entity.remove();
-				let evt = new LevelEvent('entity.death', entity);
+				let evt = new LevelEvent('entity.death', entity.serialize());
 				this.dispatchEvent(evt);
 				//Events: trigger event, for sounds
 			} else if (entity instanceof Ship) {

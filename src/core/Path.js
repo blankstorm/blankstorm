@@ -23,23 +23,22 @@ export class PathNode {
 	}
 }
 
-export class Path extends Path3D {
+export default class Path extends Path3D {
 	openNodes = [];
 	closedNodes = [];
 	startNode = null;
 	endNode = null;
 	gizmo = null;
-	path = [];
 	constructor(path = []) {
 		super(path);
 	}
 
 	serialize(){
-
+		return this.path.map(node => node.position.asArray());
 	}
 
 	FromData(path){
-		return new this(path.map(vector => Vector3.FromArray(vector)));
+		return new this(path.map(vector => new PathNode(Vector3.FromArray(vector))));
 	}
 
 	static NodeDistance(nodeA, nodeB) {

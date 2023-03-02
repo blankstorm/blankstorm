@@ -7,6 +7,9 @@ import { Playable } from './playable.js';
 import db from './db.js';
 import { servers, cookie, canvas, chat, player } from './index.js';
 import { update as updateUI } from './ui.js';
+import * as listeners from './listeners.js';
+import * as renderer from './renderer/index.js';
+import { LevelEvent } from '../core/events.js';
 
 export default class Server extends Playable {
 	static async Dialog(server) {
@@ -50,11 +53,11 @@ export default class Server extends Playable {
 		this.socket = io(this.url, { reconnection: false, autoConnect: false, auth: { token: cookie.token, session: cookie.session } });
 		this.socket.on('connect', () => {
 			$('#connect').hide();
-			canvas.show().focus();
-			$('#mp_message,#hud').show();
-			player.data().cam.attachControl(canvas, true);
-			player.data().cam.inputs.attached.pointers.buttons = [1];
+			canvas.show();
+			canvas.focus();
+			$('#hud').show();
 			$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
+			renderer.clear();
 		});
 		this.socket.on('connect_error', err => {
 			$('#connect p').text('Connection refused: ' + err.message);
@@ -64,9 +67,6 @@ export default class Server extends Playable {
 			$('#connect p').text('Connection failed: ' + err.message);
 			$('#connect button').text('Back');
 		});
-		this.socket.on('packet', packet => {
-			$('#connect p').text('[Server] ' + (packet instanceof Array ? `Array (${packet.length})<br>` + packet.join('<br>') : packet));
-		});
 		this.socket.on('playerlist', list => {
 			$('#tablist p.players').html(list.join('<br>'));
 		});
@@ -75,6 +75,14 @@ export default class Server extends Playable {
 		});
 		this.socket.on('chat', message => {
 			chat(message);
+		});
+		this.socket.on('event', (type, emitter, data) => {
+			if(!listeners.core.has(type)){
+				console.warn(new Error(`Recieved invalid packet type "${type}"`));
+			}else{
+				const evt = new LevelEvent(type, emitter, data);
+				listeners.core.get(type)(evt);
+			}
 		});
 		this.socket.on('disconnect', reason => {
 			let message =

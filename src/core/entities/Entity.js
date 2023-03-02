@@ -28,7 +28,7 @@ export default class Entity extends Node {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
 		const path = Path.Find(this.absolutePosition, location.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.level);
 		if (path.path.length > 0) {
-			const evt = new LevelEvent('entity.follow_path.start', this, { path });
+			const evt = new LevelEvent('entity.follow_path.start', this.serialize(), { path: path.serialize() });
 			this.level.dispatchEvent(evt);
 			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);
 			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.path.at(-2).position, path.path.at(-1).position);

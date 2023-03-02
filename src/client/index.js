@@ -878,7 +878,7 @@ if (config.debug_mode) {
 	const BABYLON = await import('@babylonjs/core/index.js');
 	const core = await import('core');
 
-	Object.assign(window, { core, eventLog, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, BABYLON });
+	Object.assign(window, { core, cookie, eventLog, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, BABYLON });
 }
 ui.update();
 $('#loading_cover p').text('Done!');
