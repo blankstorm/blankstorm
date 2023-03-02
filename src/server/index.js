@@ -175,7 +175,7 @@ level.addEventListener('player.death', async evt => {
 	io.emit('event', evt.type, evt.emitter.serialize());
 });
 level.addEventListener('entity.follow_path.start', async evt => {
-	io.emit('event', evt.type, evt.level);
+	io.emit('event', evt.type, evt.emitter.serialize(), evt.data.path.serialize());
 });
 
 
