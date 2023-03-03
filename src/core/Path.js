@@ -33,11 +33,11 @@ export default class Path extends Path3D {
 		super(path);
 	}
 
-	serialize(){
+	serialize() {
 		return this.path.map(node => node.position.asArray());
 	}
 
-	FromData(path){
+	FromData(path) {
 		return new this(path.map(vector => new PathNode(Vector3.FromArray(vector))));
 	}
 
@@ -58,48 +58,46 @@ export default class Path extends Path3D {
 		return path.reverse();
 	}
 
-	static Find(start, end, level){
+	static Find(start, end, level) {
 		const path = new this();
 		if (!(start instanceof Vector3)) throw new TypeError('Start must be a Vector');
-			if (!(end instanceof Vector3)) throw new TypeError('End must be a Vector');
-			path.startNode = new PathNode(start);
-			path.endNode = new PathNode(end);
-			path.openNodes.push(path.startNode);
-			let pathFound = false;
-			while (!pathFound && path.openNodes.length > 0 && path.openNodes.length < 1e4 && path.closedNodes.length < 1e4) {
-				let currentNode = path.openNodes.reduce(
-					(previous, current) => (previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current),
-					path.openNodes[0]
-				);
-				path.openNodes.splice(
-					path.openNodes.findIndex(node => node == currentNode),
-					1
-				);
-				path.closedNodes.push(currentNode);
-				if (currentNode.equals(path.endNode)) {
-					path.endNode = currentNode;
-					path.path = this.Trace(path.startNode, path.endNode);
-					pathFound = true;
+		if (!(end instanceof Vector3)) throw new TypeError('End must be a Vector');
+		path.startNode = new PathNode(start);
+		path.endNode = new PathNode(end);
+		path.openNodes.push(path.startNode);
+		let pathFound = false;
+		while (!pathFound && path.openNodes.length > 0 && path.openNodes.length < 1e4 && path.closedNodes.length < 1e4) {
+			let currentNode = path.openNodes.reduce(
+				(previous, current) => (previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current),
+				path.openNodes[0]
+			);
+			path.openNodes.splice(
+				path.openNodes.findIndex(node => node == currentNode),
+				1
+			);
+			path.closedNodes.push(currentNode);
+			if (currentNode.equals(path.endNode)) {
+				path.endNode = currentNode;
+				path.path = this.Trace(path.startNode, path.endNode);
+				pathFound = true;
+			}
+			let relatives = [0, 1, -1].flatMap(x => [0, 1, -1].map(y => new Vector3(x, 0, y))).filter(v => v.x != 0 || v.z != 0);
+			let neighbors = relatives.map(v =>
+				path.openNodes.some(node => node.position.equals(v)) ? path.openNodes.find(node => node.position.equals(v)) : new PathNode(currentNode.position.add(v), currentNode)
+			);
+			for (let neighbor of neighbors) {
+				for (let body of level.bodies.values()) {
+					if (Vector3.Distance(body.absolutePosition, neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
 				}
-				let relatives = [0, 1, -1].flatMap(x => [0, 1, -1].map(y => new Vector3(x, 0, y))).filter(v => v.x != 0 || v.z != 0);
-				let neighbors = relatives.map(v =>
-					path.openNodes.some(node => node.position.equals(v))
-						? path.openNodes.find(node => node.position.equals(v))
-						: new PathNode(currentNode.position.add(v), currentNode)
-				);
-				for (let neighbor of neighbors) {
-					for (let body of level.bodies.values()) {
-						if (Vector3.Distance(body.absolutePosition, neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
-					}
-					if (!neighbor.intersects.length && !path.closedNodes.some(node => node.equals(neighbor))) {
-						let costToNeighbor = currentNode.gCost + this.NodeDistance(currentNode, neighbor);
-						if (costToNeighbor < neighbor.gCost || !path.openNodes.some(node => node.equals(neighbor))) {
-							neighbor.gCost = costToNeighbor;
-							neighbor.hCost = this.NodeDistance(neighbor, path.endNode);
-							if (!path.openNodes.some(node => node.equals(neighbor))) path.openNodes.push(neighbor);
-						}
+				if (!neighbor.intersects.length && !path.closedNodes.some(node => node.equals(neighbor))) {
+					let costToNeighbor = currentNode.gCost + this.NodeDistance(currentNode, neighbor);
+					if (costToNeighbor < neighbor.gCost || !path.openNodes.some(node => node.equals(neighbor))) {
+						neighbor.gCost = costToNeighbor;
+						neighbor.hCost = this.NodeDistance(neighbor, path.endNode);
+						if (!path.openNodes.some(node => node.equals(neighbor))) path.openNodes.push(neighbor);
 					}
 				}
 			}
+		}
 	}
 }

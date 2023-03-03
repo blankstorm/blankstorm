@@ -18,44 +18,57 @@ const log = new Log();
 const clients = new ClientStore();
 commands.set(
 	'kick',
-	new Command((player, ...reason) => {
-		clients.getByName(player).kick(reason);
-		log.addMessage(`${this.executor.username} kicked ${player}. Reason: ${reason.join(' ')}`);
+	new Command(function (player, ...reason) {
+		const client = clients.getByName(player);
+		if (!client) {
+			return 'Player is not online or does not exist';
+		}
+		client.kick(reason);
+		log.addMessage(`${this.executor.name} kicked ${player}. Reason: ${reason.join(' ')}`);
 		return 'Kicked ' + player;
 	}, 3)
 );
 commands.set(
 	'ban',
-	new Command((player, ...reason) => {
-		clients.getByName(player).ban(reason);
-		log.addMessage(`${this.executor.username} banned ${player}. Reason: ${reason.join(' ')}`);
+	new Command(function (player, ...reason) {
+		const client = clients.getByName(player);
+		if (!client) {
+			return 'Player is not online or does not exist';
+		}
+		client.ban(reason);
+		log.addMessage(`${this.executor.name} banned ${player}. Reason: ${reason.join(' ')}`);
 		return 'Banned ' + player;
 	}, 4)
 );
 commands.set(
 	'unban',
-	new Command((player, ...reason) => {
-		Client.GetID(player).then(id => {
-			blacklist.splice(blacklist.indexOf(id), 1);
-			fs.writeFileSync('./blacklist.json', JSON.stringify(blacklist));
-			log.addMessage(`${this.executor.username} unbanned ${player}. Reason: ${reason.join(' ')}`);
-		});
+	new Command(function (player, ...reason) {
+		requestUserInfo('name', player)
+			.then(client => {
+				blacklist.splice(blacklist.indexOf(client.id), 1);
+				fs.writeFileSync('./blacklist.json', JSON.stringify(blacklist));
+				log.addMessage(`${this.executor.name} unbanned ${player}. Reason: ${reason.join(' ')}`);
+				this.executor.socket.emit('chat', `Unbanned ${player}`);
+			})
+			.catch(() => {
+				this.executor.socket.emit('chat', 'Player is not online or does not exist');
+			});
 	}, 4)
 );
 commands.set(
 	'log',
-	new Command((...message) => {
-		log.addMessage(`${this.executor.username} logged ${message.join(' ')}`);
+	new Command(function (...message) {
+		log.addMessage(`${this.executor.name} logged ${message.join(' ')}`);
 	}, 1)
 );
 commands.set(
 	'msg',
-	new Command((player, ...message) => {
+	new Command(function (player, ...message) {
 		if (clients.getByName(player) instanceof Client) {
-			clients.getByName(player).socket.emit(`[${this.executor.username} -> me] ${message.join(' ')}`);
-			log.addMessage(`[${this.executor.username} -> ${player}] ${message.join(' ')}`);
+			clients.getByName(player).socket.emit(`[${this.executor.name} -> me] ${message.join(' ')}`);
+			log.addMessage(`[${this.executor.name} -> ${player}] ${message.join(' ')}`);
 			clients.getByName(player).lastMessager = this.executor;
-			return `[me -> ${this.executor.username}] ${message.join(' ')}`;
+			return `[me -> ${this.executor.name}] ${message.join(' ')}`;
 		} else {
 			return 'That user is not online';
 		}
@@ -63,13 +76,13 @@ commands.set(
 );
 commands.set(
 	'reply',
-	new Command((...message) => {
-		return this.executor.lastMessager ? commands.msg.run(this.executor, [this.executor.lastMessager.username, ...message]) : 'No one messaged you yet =(';
+	new Command(function (...message) {
+		return this.executor.lastMessager ? commands.msg.run(this.executor, [this.executor.lastMessager.name, ...message]) : 'No one messaged you yet =(';
 	}, 0)
 );
 commands.set(
 	'stop',
-	new Command((...message) => {
+	new Command(function (...message) {
 		for (let client of clients.values()) {
 			client.kick('Server shutting down');
 		}
@@ -78,7 +91,7 @@ commands.set(
 );
 commands.set(
 	'restart',
-	new Command((...message) => {
+	new Command(function (...message) {
 		for (let client of clients.values()) {
 			client.kick('Server restarting');
 		}
@@ -159,9 +172,9 @@ const io = new SocketIOServer(server, {
 	cors: { origin: config.allow_from_all ? '*' : 'https://blankstorm.drvortex.dev' },
 });
 
-if(levelData){
+if (levelData) {
 	level = Level.FromData(levelData);
-}else{
+} else {
 	log.addMessage('No level detected. Generating...');
 	level = new Level('server_level');
 }
@@ -170,7 +183,7 @@ setInterval(() => {
 	level.tick();
 }, 1000 / Level.tickRate);
 
-for(let type of ['projectile.fire', 'level.tick', 'player.death', 'entity.follow_path.start']){
+for (let type of ['projectile.fire', 'level.tick', 'player.death', 'entity.follow_path.start']) {
 	level.addEventListener(type, async evt => {
 		io.emit('event', type, evt.emitter, evt.data);
 	});
@@ -179,13 +192,13 @@ for(let type of ['projectile.fire', 'level.tick', 'player.death', 'entity.follow
 io.use(async (socket, next) => {
 	try {
 		let clientData;
-		try{
+		try {
 			clientData = await requestUserInfo('token', socket.handshake.auth.token);
-		}catch(err){
+		} catch (err) {
 			log.addMessage(`Client auth API request failed: ` + err.stack, LogLevel.ERROR);
 			next(new Error('invalid token'));
 		}
-		
+
 		if (config.whitelist && !whitelist.includes(clientData.id)) {
 			next(new Error('you are not whitelisted'));
 		} else if (config.blacklist && blacklist.includes(clientData.id)) {
@@ -198,7 +211,7 @@ io.use(async (socket, next) => {
 			next(new Error('already connected'));
 		} else {
 			let client = new Client(clientData.id, level, { socket, fleet: [] });
-			client.name = clientData.username
+			client.name = clientData.username;
 			clients.set(socket.id, client);
 			log.addMessage(`${client.name} connected with socket id ${socket.id}`);
 			io.emit('chat', `${client.name} joined`);
@@ -229,7 +242,10 @@ io.on('connection', socket => {
 		);
 	});
 	socket.on('command', commandString => {
-		execCommandString(commandString, client);
+		const result = execCommandString(commandString, client);
+		if (result) {
+			socket.emit('chat', result);
+		}
 	});
 	socket.on('chat', data => {
 		log.addMessage(`[Chat] ${client.name}: ${data}`);

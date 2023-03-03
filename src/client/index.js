@@ -337,7 +337,7 @@ const runCommand = command => {
 	if (mp) {
 		servers.get(servers.selected).socket.emit('command', command);
 	} else {
-		return execCommandString(command, player.data());
+		return execCommandString(command, player.data(), true);
 	}
 };
 const changeUI = (selector, hideAll) => {

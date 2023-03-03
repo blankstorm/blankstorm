@@ -77,9 +77,9 @@ export default class Server extends Playable {
 			chat(message);
 		});
 		this.socket.on('event', (type, emitter, data) => {
-			if(!listeners.core.has(type)){
+			if (!listeners.core.has(type)) {
 				console.warn(new Error(`Recieved invalid packet type "${type}"`));
-			}else{
+			} else {
 				const evt = new LevelEvent(type, emitter, data);
 				listeners.core.get(type)(evt);
 			}

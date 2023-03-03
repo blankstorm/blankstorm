@@ -13,55 +13,49 @@ export const LogLevel = {
 	2: 'ERROR',
 	3: 'DEBUG',
 	4: 'VERBOSE',
-}
+};
 
 export class LogEntry {
-
 	time = performance.now();
 	level;
 	message;
-	constructor(message = '', level = LogLevel.LOG){
-		this.message = message
+	constructor(message = '', level = LogLevel.LOG) {
+		this.message = message;
 		this.level = typeof level == 'number' ? level : LogLevel[level];
 	}
 
-	toString(){
+	toString() {
 		return `(${this.getTimeString()}) [${LogLevel[this.level]}] ${this.message}`;
 	}
 
-	getTimeString(){
+	getTimeString() {
 		const time = parseInt(this.time / 1000);
 		const seconds = time % 60;
 		const minutes = (time - seconds) % 3600;
 		const hours = (time - minutes - seconds) / 3600;
 		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 	}
-
 }
 
 export class Log {
-
 	#entries = [];
 
-	constructor(){
+	constructor() {}
 
-	}
-
-	get entries(){
+	get entries() {
 		return this.#entries.slice(0);
 	}
 
-	addMessage(message, level, doNotOutput){
+	addMessage(message, level, doNotOutput) {
 		const entry = new LogEntry(message, level);
 		this.#entries.push(entry);
 
-		if(!doNotOutput){
+		if (!doNotOutput) {
 			console.log(entry.toString());
 		}
 	}
 
-	toString(){
+	toString() {
 		return this.entries.map(entry => entry.toString()).join('\n');
 	}
 }
-

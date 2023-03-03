@@ -8,17 +8,6 @@ export class Client extends Player {
 		this.socket = socket;
 	}
 
-	static GetDisconnectReason(reason) {
-		let reasons = new Map([
-			['server namespace disconnect', 'Disconnected by server'],
-			['client namespace disconnect', 'Client disconnected'],
-			['ping timeout', 'Connection timed out'],
-			['transport close', 'Lost Connection'],
-			['transport error', 'Connection failed'],
-		]);
-		return reasons.has(reason) ? reasons.get(reason) : reason;
-	}
-
 	kick(message) {
 		this.socket.emit('kick', message);
 		this.socket.disconnect(true);
@@ -30,27 +19,36 @@ export class Client extends Player {
 		writeFileSync('./blacklist.json', JSON.stringify(blacklist));
 	}
 
+	static GetDisconnectReason(reason) {
+		let reasons = new Map([
+			['server namespace disconnect', 'Disconnected by server'],
+			['client namespace disconnect', 'Client disconnected'],
+			['ping timeout', 'Connection timed out'],
+			['transport close', 'Lost Connection'],
+			['transport error', 'Connection failed'],
+		]);
+		return reasons.has(reason) ? reasons.get(reason) : reason;
+	}
 }
 
 export class ClientStore extends Map {
-
-	constructor(){
-		super()
+	constructor() {
+		super();
 	}
 
-	getBy(attr, val){
-		for(let client of this.values()){
-			if(client[attr] == val){
+	getBy(attr, val) {
+		for (let client of this.values()) {
+			if (client[attr] == val) {
 				return client;
 			}
 		}
 	}
 
-	getByID(id){
+	getByID(id) {
 		return this.getBy('id', id);
 	}
 
-	getByName(name){
-		return this.getBy('username', name);
+	getByName(name) {
+		return this.getBy('name', name);
 	}
 }
