@@ -1,6 +1,7 @@
 import path from 'path';
 import * as fs from 'fs';
 import { createServer } from 'http';
+import { spawn } from 'child_process';
 import { Server as SocketIOServer } from 'socket.io';
 
 import { version } from '../core/meta.js';
@@ -82,8 +83,8 @@ commands.set(
 			client.kick('Server restarting');
 		}
 		setTimeout(e => {
-			process.on('exit', function () {
-				require('child_process').spawn(process.argv.shift(), process.argv, {
+			process.on('exit', () => {
+				spawn(process.argv.shift(), process.argv, {
 					cwd: process.cwd(),
 					detached: true,
 					stdio: 'inherit',
@@ -95,7 +96,7 @@ commands.set(
 );
 
 //load config and settings and things
-let config = {
+export let config = {
 		whitelist: false,
 		blacklist: true,
 		max_clients: 10,
@@ -165,6 +166,10 @@ if(levelData){
 	level = new Level('server_level');
 }
 
+setInterval(() => {
+	level.tick();
+}, 1000 / Level.tickRate);
+
 for(let type of ['projectile.fire', 'level.tick', 'player.death', 'entity.follow_path.start']){
 	level.addEventListener(type, async evt => {
 		io.emit('event', type, evt.emitter, evt.data);
@@ -193,9 +198,10 @@ io.use(async (socket, next) => {
 			next(new Error('already connected'));
 		} else {
 			let client = new Client(clientData.id, level, { socket, fleet: [] });
+			client.name = clientData.username
 			clients.set(socket.id, client);
-			log.addMessage(`${clientData.username} connected with socket id ${socket.id}`);
-			io.emit('chat', `${clientData.username} joined`);
+			log.addMessage(`${client.name} connected with socket id ${socket.id}`);
+			io.emit('chat', `${client.name} joined`);
 			next();
 		}
 	} catch (err) {
@@ -207,27 +213,27 @@ io.on('connection', socket => {
 	let client = clients.get(socket.id);
 	io.emit(
 		'playerlist',
-		[...clients.values()].slice(0, 25).map(data => data.username)
+		[...clients.values()].slice(0, 25).map(client => client.name)
 	);
 	socket.onAny(eventName => {
 		client.sentPackets++;
 	});
 	socket.on('disconnect', reason => {
 		let message = Client.GetDisconnectReason(reason);
-		log.addMessage(`${client.username} left (${message})`);
-		io.emit('chat', `${client.username} left`);
+		log.addMessage(`${client.name} left (${message})`);
+		io.emit('chat', `${client.name} left`);
 		clients.delete(socket.id);
 		io.emit(
 			'playerlist',
-			[...clients.values()].slice(0, 25).map(data => data.username)
+			[...clients.values()].slice(0, 25).map(client => client.name)
 		);
 	});
 	socket.on('command', commandString => {
 		execCommandString(commandString, client);
 	});
 	socket.on('chat', data => {
-		log.addMessage(`[Chat] ${client.username}: ${data}`);
-		io.emit('chat', `${client.username}: ${data}`);
+		log.addMessage(`[Chat] ${client.name}: ${data}`);
+		io.emit('chat', `${client.name}: ${data}`);
 	});
 });
 

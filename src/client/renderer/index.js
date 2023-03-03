@@ -163,6 +163,7 @@ export async function load(levelData) {
 		let entity;
 		switch (data.node_type) {
 			case 'player':
+			case 'client':
 				entity = await PlayerRenderer.FromData(data, scene);
 				/**
 				 * @todo change this

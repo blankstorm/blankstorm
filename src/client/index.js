@@ -333,9 +333,9 @@ const toggleChat = command => {
 		canvas.focus();
 	}
 };
-const clientRunCommand = command => {
+const runCommand = command => {
 	if (mp) {
-		servers.get(servers.sel).socket.emit('command', command);
+		servers.get(servers.selected).socket.emit('command', command);
 	} else {
 		return execCommandString(command, player.data());
 	}
@@ -720,8 +720,8 @@ $('#cli').keydown(e => {
 			cli.counter = 0;
 			if (/[^\s/]/.test($('#cli').val())) {
 				if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#cli').val());
-				if ($('#cli').val()[0] == '/') chat(clientRunCommand($('#cli').val().slice(1)));
-				else mp ? servers.get(servers.sel).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val());
+				if ($('#cli').val()[0] == '/') chat(runCommand($('#cli').val().slice(1)));
+				else mp ? servers.get(servers.selected).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val());
 				$('#cli').val('');
 				cli.line = 0;
 			}

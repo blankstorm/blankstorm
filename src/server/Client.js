@@ -1,4 +1,6 @@
+import { writeFileSync } from 'fs';
 import Player from '../core/entities/Player.js';
+import { blacklist } from './index.js';
 
 export class Client extends Player {
 	constructor(id, level, { fleet, socket }) {
@@ -15,6 +17,17 @@ export class Client extends Player {
 			['transport error', 'Connection failed'],
 		]);
 		return reasons.has(reason) ? reasons.get(reason) : reason;
+	}
+
+	kick(message) {
+		this.socket.emit('kick', message);
+		this.socket.disconnect(true);
+	}
+
+	ban(message) {
+		this.kick(`You have been banned from this server: ${message}`);
+		blacklist.push(this.id);
+		writeFileSync('./blacklist.json', JSON.stringify(blacklist));
 	}
 
 }

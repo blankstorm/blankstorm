@@ -75,7 +75,7 @@ export const commands = new Map(
 
 export const execCommandString = (string, executor) => {
 	for (let [name, command] of commands) {
-		if (!command.startsWith(name)) {
+		if (!string.startsWith(name)) {
 			continue;
 		}
 
