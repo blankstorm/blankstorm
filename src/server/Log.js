@@ -31,8 +31,8 @@ export class LogEntry {
 	getTimeString() {
 		const time = parseInt(this.time / 1000);
 		const seconds = time % 60;
-		const minutes = (time - seconds) % 3600;
-		const hours = (time - minutes - seconds) / 3600;
+		const minutes = (time - seconds) / 60 % 60;
+		const hours = (time - seconds - minutes * 60) / 3600;
 		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 	}
 }
