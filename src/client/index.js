@@ -27,6 +27,10 @@ $('#main .version a')
 	.attr('href', web('versions#' + version));
 
 $('#loading_cover p').text('Loading...');
+export let current;
+export function setCurrent(val){
+	current = val;
+}
 export const settings = new SettingsStore({
 	sections: [
 		{
@@ -240,11 +244,11 @@ export const settings = new SettingsStore({
 			label: 'Save Game',
 			value: { key: 's', ctrl: true },
 			onTrigger: () => {
-				if (saves.current instanceof Save.Live) {
+				if (current instanceof Save.Live) {
 					$('#esc .save').text('Saving...');
-					saves.get(saves.current.id).data = saves.current.serialize();
+					saves.get(current.id).data = current.serialize();
 					saves
-						.get(saves.current.id)
+						.get(current.id)
 						.saveToDB()
 						.then(() => chat('Game saved.'))
 						.catch(err => chat('Failed to save game: ' + err))
@@ -394,7 +398,7 @@ export const player = {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
-	data: id => (mp ? servers.get(servers.selected)?.level : saves.current)?.entities?.get(id ?? player.id) ?? {},
+	data: id => (mp ? servers.get(servers.selected)?.level : current)?.entities?.get(id ?? player.id) ?? {},
 	levelOf: xp => Math.sqrt(xp / 10),
 	xpOf: level => 10 * level ** 2,
 	get isInBattle() {
@@ -548,10 +552,10 @@ $('#esc .resume').click(() => {
 	isPaused = false;
 });
 $('#esc .save').click(() => {
-	if (saves.current instanceof Save.Live) {
+	if (current instanceof Save.Live) {
 		$('#esc .save').text('Saving...');
-		let save = saves.get(saves.current.id);
-		save.data = saves.current.serialize();
+		let save = saves.get(current.id);
+		save.data = current.serialize();
 		save.saveToDB()
 			.then(() => {
 				chat('Game Saved.');
@@ -610,7 +614,7 @@ $('.nav button.trade').click(() => {
 	$('div.trade').css('display', 'grid');
 });
 $('button.map.new').click(() => {
-	Waypoint.dialog(saves.current);
+	Waypoint.dialog(current);
 });
 $('#settings>button:not(.back)').click(e => {
 	const target = $(e.target),
@@ -736,16 +740,16 @@ canvas.on('click', e => {
 		renderer.getCamera().attachControl(canvas, true);
 	}
 
-	if (saves.current instanceof Save.Live) {
+	if (current instanceof Save.Live) {
 		renderer.handleCanvasClick(e, renderer.scene.getNodeById(player.id));
 	}
 	ui.update();
 });
 canvas.on('contextmenu', e => {
-	if (saves.current instanceof Save.Live) {
+	if (current instanceof Save.Live) {
 		const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
 		for (let { entityRenderer, point } of data) {
-			const entity = saves.current.getNodeByID(entityRenderer.id);
+			const entity = current.getNodeByID(entityRenderer.id);
 			entity.moveTo(point, false);
 		}
 	}
@@ -806,13 +810,12 @@ $('button').on('click', () => {
 	playsound(sounds.get('ui'), settings.get('sfx'));
 });
 setInterval(() => {
-	if (saves.current instanceof Save.Live && !isPaused) {
-		saves.current.tick();
+	if (current instanceof Save.Live && !isPaused) {
+		current.tick();
 	}
 }, 1000 / Level.tickRate);
 
 const loop = () => {
-	const current = mp ? servers.get(servers.selected)?.level : saves.current;
 	if (current instanceof Level && !isPaused) {
 		try {
 			const camera = renderer.getCamera();
@@ -877,7 +880,7 @@ if (config.debug_mode) {
 	const BABYLON = await import('@babylonjs/core/index.js');
 	const core = await import('core');
 
-	Object.assign(window, { core, cookie, eventLog, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, BABYLON });
+	Object.assign(window, { core, cookie, eventLog, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, BABYLON, getCurrent(){ return current; } });
 }
 ui.update();
 $('#loading_cover p').text('Done!');

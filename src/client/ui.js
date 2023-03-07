@@ -1,6 +1,6 @@
 import 'jquery'; /* global $ */
-import Save from './Save.js';
-import { locales, saves, servers, settings, mp, screenshots } from './index.js';
+import Level from '../core/Level.js';
+import { locales, saves, servers, settings, mp, screenshots, current } from './index.js';
 import { versions, CelestialBody, Items, Tech, Ship, Player } from 'core';
 import { minimize, confirm } from './utils.js';
 
@@ -70,9 +70,9 @@ export function init() {
 			.appendTo('div.yrd');
 	}
 }
-export function update(scene = saves.current) {
+export function update(scene = current) {
 	try {
-		if (saves.current instanceof Save.Live && player.data() instanceof Player) {
+		if (current instanceof Level && player.data() instanceof Player) {
 			$('div.screenshots').empty();
 			$('div.map>:not(button)').remove();
 			$('svg.item-bar rect').attr('width', (player.data().totalItems / player.data().maxItems) * 100 || 0);

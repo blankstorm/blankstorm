@@ -8,7 +8,7 @@ import { modal, download, confirm, alert } from './utils.js';
 import Waypoint from './waypoint.js';
 import db from './db.js';
 import { Playable } from './playable.js';
-import { canvas, setPaused, mp, saves, eventLog } from './index.js';
+import { canvas, setPaused, mp, saves, eventLog, setCurrent } from './index.js';
 import { update as updateUI } from './ui.js';
 import PlanetRenderer from './renderer/bodies/PlanetRenderer.js';
 import * as listeners from './listeners.js';
@@ -85,7 +85,7 @@ export default class Save extends Playable {
 				canvas.focus();
 				$('#hud').show();
 				saves.selected = this.id;
-				saves.current = this;
+				setCurrent(this);
 				renderer.clear();
 				renderer.update(this.serialize());
 				renderer.engine.resize();

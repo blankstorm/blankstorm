@@ -5,7 +5,7 @@ import { modal, alert, confirm } from './utils.js';
 import { isJSON } from 'core';
 import { Playable } from './playable.js';
 import db from './db.js';
-import { servers, cookie, canvas, chat, player, setPaused } from './index.js';
+import { servers, cookie, canvas, chat, player, setPaused, setCurrent } from './index.js';
 import { update as updateUI } from './ui.js';
 import * as listeners from './listeners.js';
 import * as renderer from './renderer/index.js';
@@ -85,6 +85,7 @@ export default class Server extends Playable {
 		this.socket.on('event', (type, emitter, data) => {
 			if(type == 'level.tick'){
 				Level.FromData(emitter, this.level);
+				setCurrent(this.level);
 				this.level.sampleTick();
 			}
 			if (!listeners.core.has(type)) {

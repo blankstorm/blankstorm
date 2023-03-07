@@ -11,7 +11,7 @@ export default class Node {
 	velocity = Vector3.Zero();
 
 	constructor(id, level) {
-		id ||= random.hex(32);
+		id ??= random.hex(32);
 		Object.assign(this, { id, level });
 		level.nodes.set(id, this);
 	}
