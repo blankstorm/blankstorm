@@ -10,7 +10,8 @@ export default class Node {
 	rotation = Vector3.Zero();
 	velocity = Vector3.Zero();
 
-	constructor(id = random.hex(32), level) {
+	constructor(id, level) {
+		id ||= random.hex(32);
 		Object.assign(this, { id, level });
 		level.nodes.set(id, this);
 	}

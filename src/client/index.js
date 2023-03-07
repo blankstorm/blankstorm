@@ -394,7 +394,7 @@ export const player = {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
-	data: id => saves.current?.entities?.get(id ?? player.id) ?? {},
+	data: id => (mp ? servers.get(servers.selected)?.level : saves.current)?.entities?.get(id ?? player.id) ?? {},
 	levelOf: xp => Math.sqrt(xp / 10),
 	xpOf: level => 10 * level ** 2,
 	get isInBattle() {
@@ -574,7 +574,7 @@ $('#esc .quit').click(() => {
 	isPaused = true;
 	$('[ingame]').hide();
 	if (mp) {
-		servers.get(servers.sel).disconnect();
+		servers.get(servers.selected).disconnect();
 	} else {
 		saves.selected = null;
 		$('#main').show();
@@ -812,34 +812,34 @@ setInterval(() => {
 }, 1000 / Level.tickRate);
 
 const loop = () => {
-	if (saves.current instanceof Save.Live) {
-		if (!isPaused) {
-			try {
-				const camera = renderer.getCamera();
-				camera.angularSensibilityX = camera.angularSensibilityY = 2000 / settings.get('sensitivity');
-				saves.current.waypoints.forEach(waypoint => {
-					let pos = waypoint.screenPos;
-					waypoint.marker
-						.css({
-							position: 'fixed',
-							left: Math.min(Math.max(pos.x, 0), innerWidth - settings.get('font_size')) + 'px',
-							top: Math.min(Math.max(pos.y, 0), innerHeight - settings.get('font_size')) + 'px',
-							fill: waypoint.color.toHexString(),
-						})
-						.filter('p')
-						.text(
-							Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.marker.eq(0).is(':hover') || waypoint.marker.eq(1).is(':hover')
-								? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km`
-								: ''
-						);
-					waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
-				});
-				$('#hud p.level').text(Math.floor(player.levelOf(player.data().xp)));
-				$('#hud svg.xp rect').attr('width', (player.levelOf(player.data().xp) % 1) * 100 + '%');
-				$('#debug .left').html(`
+	const current = mp ? servers.get(servers.selected)?.level : saves.current;
+	if (current instanceof Level && !isPaused) {
+		try {
+			const camera = renderer.getCamera();
+			camera.angularSensibilityX = camera.angularSensibilityY = 2000 / settings.get('sensitivity');
+			current.waypoints.forEach(waypoint => {
+				let pos = waypoint.screenPos;
+				waypoint.marker
+					.css({
+						position: 'fixed',
+						left: Math.min(Math.max(pos.x, 0), innerWidth - settings.get('font_size')) + 'px',
+						top: Math.min(Math.max(pos.y, 0), innerHeight - settings.get('font_size')) + 'px',
+						fill: waypoint.color.toHexString(),
+					})
+					.filter('p')
+					.text(
+						Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.marker.eq(0).is(':hover') || waypoint.marker.eq(1).is(':hover')
+							? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km`
+							: ''
+					);
+				waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
+			});
+			$('#hud p.level').text(Math.floor(player.levelOf(player.data().xp)));
+			$('#hud svg.xp rect').attr('width', (player.levelOf(player.data().xp) % 1) * 100 + '%');
+			$('#debug .left').html(`
 						<span>${version} ${mods.length ? `[${mods.join(', ')}]` : `(vanilla)`}</span><br>
-						<span>${renderer.engine.getFps().toFixed()} FPS | ${saves.current.tps.toFixed()} TPS</span><br>
-						<span>${saves.selected} (${saves.current.date.toLocaleString()})</span><br><br>
+						<span>${renderer.engine.getFps().toFixed()} FPS | ${current.tps.toFixed()} TPS</span><br>
+						<span>${current.id} (${current.date.toLocaleString()})</span><br><br>
 						<span>
 							P: (${camera.target
 								.asArray()
@@ -852,7 +852,7 @@ const loop = () => {
 							R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
 						</span><br>
 						`);
-				$('#debug .right').html(`
+			$('#debug .right').html(`
 						<span>Babylon v${renderer.engine.constructor.Version} | jQuery v${$.fn.jquery}</span><br>
 						<span>${renderer.engine._glRenderer}</span><br>
 						<span>${
@@ -865,10 +865,9 @@ const loop = () => {
 						<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
 					`);
 
-				renderer.render();
-			} catch (err) {
-				console.error(`loop() failed: ${err.stack ?? err}`);
-			}
+			renderer.render();
+		} catch (err) {
+			console.error(`loop() failed: ${err.stack ?? err}`);
 		}
 	}
 };

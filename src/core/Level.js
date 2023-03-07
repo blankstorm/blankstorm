@@ -104,6 +104,10 @@ export default class Level extends EventTarget {
 		return this.getNodesBySelector(selector)[0];
 	}
 
+	sampleTick(){
+		this.#performanceMonitor.sampleFrame();
+	}
+
 	tick() {
 		this.#performanceMonitor.sampleFrame();
 		let evt = new LevelEvent('level.tick', this.serialize());

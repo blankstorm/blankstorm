@@ -122,7 +122,7 @@ export default class Save extends Playable {
 			const player = new Player(playerID, level, { fleet });
 			player.name = playerName;
 			player.position = new Vector3(0, 0, -1000).add(random.cords(50, true));
-
+			player.rotation = new Vector3(0, 0, 0);
 			player.addItems(generate.items(5000));
 
 			return level;

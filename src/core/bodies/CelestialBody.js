@@ -19,7 +19,7 @@ export default class CelestialBody extends Node {
 		super(id, level);
 		this.radius = radius;
 		this.rewards = Storage.FromData({ items: rewards, max: 1e10 });
-		level.bodies.set(id, this);
+		level.bodies.set(this.id, this);
 
 		this.fleetPosition = fleetPosition;
 		for (let shipOrType of fleet) {

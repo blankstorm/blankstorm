@@ -5,11 +5,12 @@ import { modal, alert, confirm } from './utils.js';
 import { isJSON } from 'core';
 import { Playable } from './playable.js';
 import db from './db.js';
-import { servers, cookie, canvas, chat, player } from './index.js';
+import { servers, cookie, canvas, chat, player, setPaused } from './index.js';
 import { update as updateUI } from './ui.js';
 import * as listeners from './listeners.js';
 import * as renderer from './renderer/index.js';
 import { LevelEvent } from '../core/events.js';
+import Level from '../core/Level.js';
 
 export default class Server extends Playable {
 	static async Dialog(server) {
@@ -40,8 +41,10 @@ export default class Server extends Playable {
 			updateUI();
 		}
 	}
+	level = new Level('server_level', true);
 	constructor(url, name) {
 		super(url, servers);
+		
 		Object.assign(this, {
 			url,
 			name,
@@ -49,6 +52,7 @@ export default class Server extends Playable {
 			socket: null,
 			gui: $(`<li ofn bg style=align-items:center;height:3em></li>`),
 		});
+		this.level.waypoints = [];
 		db.tx('servers', 'readwrite').then(tx => tx.objectStore('servers').put(name, url));
 		this.socket = io(this.url, { reconnection: false, autoConnect: false, auth: { token: cookie.token, session: cookie.session } });
 		this.socket.on('connect', () => {
@@ -58,6 +62,8 @@ export default class Server extends Playable {
 			$('#hud').show();
 			$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
 			renderer.clear();
+			renderer.engine.resize();
+			setPaused(false);
 		});
 		this.socket.on('connect_error', err => {
 			$('#connect p').text('Connection refused: ' + err.message);
@@ -77,6 +83,10 @@ export default class Server extends Playable {
 			chat(message);
 		});
 		this.socket.on('event', (type, emitter, data) => {
+			if(type == 'level.tick'){
+				Level.FromData(emitter, this.level);
+				this.level.sampleTick();
+			}
 			if (!listeners.core.has(type)) {
 				console.warn(new Error(`Recieved invalid packet type "${type}"`));
 			} else {

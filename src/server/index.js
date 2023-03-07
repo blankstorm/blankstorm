@@ -107,6 +107,14 @@ commands.set(
 		}, 1000);
 	}, 4)
 );
+commands.set(
+	'save',
+	new Command(function () {
+		log.addMessage('Saved the current level');
+		fs.writeFileSync('level.json', JSON.stringify(level.serialize()), { encoding: 'utf-8' });
+		return 'Saved the current level';
+	}, 4)
+);
 
 //load config and settings and things
 export let config = {
