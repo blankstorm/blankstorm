@@ -64,6 +64,7 @@
 	"dependencies": {
 		"@babylonjs/core": "5.27.x",
 		"@babylonjs/loaders": "5.27.x",
+		"browserfs": "^2.0.0",
 		"jquery": "^3.6.2",
 		"socket.io": "^4.6.1",
 		"socket.io-client": "4.x.x"

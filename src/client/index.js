@@ -4,10 +4,10 @@ import 'jquery'; /* global $ */
 $.ajaxSetup({ timeout: 3000 });
 
 import 'socket.io-client'; /* global io */
+import 'browserfs'; /* global BrowserFS */
 
 import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, requestUserInfo } from 'core';
 
-import db from './db.js';
 import { SettingsStore } from './settings.js';
 import LocaleStore from './locales.js';
 import { web, upload, minimize, alert, prompt } from './utils.js';
@@ -28,7 +28,7 @@ $('#main .version a')
 
 $('#loading_cover p').text('Loading...');
 export let current;
-export function setCurrent(val){
+export function setCurrent(val) {
 	current = val;
 }
 export const settings = new SettingsStore({
@@ -269,12 +269,26 @@ for (let section of settings.sections.values()) {
 	});
 }
 
-$('#loading_cover p').text('Initalizing IndexedDB...');
+$('#loading_cover p').text('Initalizing FS...');
+const inBrowser = eval?.('!!window');
 try {
-	await db.init();
+	if (inBrowser) {
+		await new Promise(resolve => BrowserFS.configure({
+			fs: 'AsyncMirror',
+			options: {
+				sync: {
+					fs: 'InMemory',
+				},
+				async: {
+					fs: 'IndexedDB',
+				},
+			},
+		}, resolve));
+	}
 } catch (err) {
-	console.error('Failed to open IndexedDB: ' + err);
+	console.error('Failed to initalize FS: ' + err);
 }
+const fs = inBrowser ? BrowserFS.BFSRequire('fs') : import('fs');
 
 export const saves = new PlayableStore(),
 	servers = new PlayableStore();
@@ -286,9 +300,16 @@ document.cookie.split('; ').forEach(e => {
 
 //load mods (if any)
 $('#loading_cover p').text('Loading Mods...');
-let tx = await db.tx('mods');
-let result = await tx.objectStore('mods').getAll().async();
-console.log('Loaded mods: ' + (result.join('\n') || '(none)'));
+try {
+	if(!fs.existsSync('mods')){
+		fs.mkdirSync('mods');
+	}
+
+	const mods = fs.readdirSync('mods');
+	console.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
+} catch(err){
+	console.error('Failed to load mods: ' + err);
+}
 
 export let isPaused = true,
 	mp = false,
@@ -447,11 +468,17 @@ await locales.fetch('locales/en.json');
 locales.load('en');
 ui.init();
 
-//Load saves and servers into the game (from the IndexedDB)
+//Load saves and servers into the game
 $('#loading_cover p').text('Loading saves...');
-tx = await db.tx('saves');
-result = await tx.objectStore('saves').getAll().async();
-result.forEach(save => new Save(save));
+if(!fs.existsSync('saves')){
+	fs.mkdirSync('saves');
+}
+
+const names = fs.readdirSync('saves');
+for(let name of names){
+	const content = fs.readFileSync('saves/' + name, { encoding: 'utf-8' });
+	isJSON(content);
+}
 
 $('#loading_cover p').text('Loading servers...');
 tx = await db.tx('servers');
@@ -880,7 +907,27 @@ if (config.debug_mode) {
 	const BABYLON = await import('@babylonjs/core/index.js');
 	const core = await import('core');
 
-	Object.assign(window, { core, cookie, eventLog, settings, locales, $, io, renderer, player, saves, servers, db, config, ui, changeUI, BABYLON, getCurrent(){ return current; } });
+	Object.assign(window, {
+		core,
+		cookie,
+		eventLog,
+		settings,
+		locales,
+		$,
+		io,
+		renderer,
+		player,
+		saves,
+		servers,
+		db,
+		config,
+		ui,
+		changeUI,
+		BABYLON,
+		getCurrent() {
+			return current;
+		},
+	});
 }
 ui.update();
 $('#loading_cover p').text('Done!');
