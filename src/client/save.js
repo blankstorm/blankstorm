@@ -6,13 +6,13 @@ import 'jquery'; /* global $ */
 import { version, versions, random, generate, Ship, Player, Planet, Level } from 'core';
 import { modal, download, confirm, alert } from './utils.js';
 import Waypoint from './waypoint.js';
-import db from './db.js';
 import { Playable } from './playable.js';
 import { canvas, setPaused, mp, saves, eventLog, setCurrent } from './index.js';
 import { update as updateUI } from './ui.js';
 import PlanetRenderer from './renderer/bodies/PlanetRenderer.js';
 import * as listeners from './listeners.js';
 import * as renderer from './renderer/index.js';
+import fs from './fs.js';
 
 export default class Save extends Playable {
 	static GUI(save) {
@@ -46,8 +46,9 @@ export default class Save extends Playable {
 		gui.delete.click(async e => {
 			let remove = async () => {
 				gui.remove();
-				const tx = await db.tx('saves', 'readwrite');
-				tx.objectStore('saves').delete(save.data.id);
+				if(fs.existsSync(save.path)){
+					fs.rmSync(save.path);
+				}
 				save.delete();
 			};
 			e.shiftKey ? remove() : confirm().then(remove);
@@ -138,6 +139,11 @@ export default class Save extends Playable {
 			console.error(err.stack);
 		}
 	}
+
+	get path(){
+		return `saves/${this.data.id}.json`;
+	}
+
 	load() {
 		let save = Save.Live.Load(this.data);
 		for (let waypoint of save.waypoints) {
@@ -150,9 +156,12 @@ export default class Save extends Playable {
 		}
 		return save;
 	}
-	async saveToDB() {
-		let tx = await db.tx('saves', 'readwrite');
-		tx.objectStore('saves').put(this.data, this.data.id);
-		return tx.result;
+
+	saveToStorage() {
+		if(!fs.existsSync('saves')){
+			fs.mkdirSync('saves');
+		}
+
+		fs.writeFileSync(this.path, JSON.stringify(this.data), { encoding: 'utf-8' });
 	}
 }

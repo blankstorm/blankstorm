@@ -4,7 +4,6 @@ import 'jquery'; /* global $ */
 $.ajaxSetup({ timeout: 3000 });
 
 import 'socket.io-client'; /* global io */
-import 'browserfs'; /* global BrowserFS */
 
 import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, requestUserInfo } from 'core';
 
@@ -17,6 +16,7 @@ import Server from './Server.js';
 import './contextmenu.js';
 import { PlayableStore } from './playable.js';
 import * as renderer from './renderer/index.js';
+import fs from './fs.js';
 import * as ui from './ui.js';
 import { sounds, playsound } from './audio.js';
 
@@ -244,18 +244,18 @@ export const settings = new SettingsStore({
 			label: 'Save Game',
 			value: { key: 's', ctrl: true },
 			onTrigger: () => {
-				if (current instanceof Save.Live) {
-					$('#esc .save').text('Saving...');
-					saves.get(current.id).data = current.serialize();
-					saves
-						.get(current.id)
-						.saveToDB()
-						.then(() => chat('Game saved.'))
-						.catch(err => chat('Failed to save game: ' + err))
-						.finally(() => $('#esc .save').text('Save Game'));
-				} else {
+				if (!(current instanceof Save.Live)) {
 					throw 'Save Error: you must have a valid save selected.';
 				}
+				$('#esc .save').text('Saving...');
+				saves.get(current.id).data = current.serialize();
+				try {
+					saves.get(current.id).saveToStorage();
+					chat('Game saved.');
+				} catch (err) {
+					chat('Failed to save game: ' + err);
+				}
+				$('#esc .save').text('Save Game');
 			},
 		},
 	],
@@ -269,27 +269,6 @@ for (let section of settings.sections.values()) {
 	});
 }
 
-$('#loading_cover p').text('Initalizing FS...');
-const inBrowser = eval?.('!!window');
-try {
-	if (inBrowser) {
-		await new Promise(resolve => BrowserFS.configure({
-			fs: 'AsyncMirror',
-			options: {
-				sync: {
-					fs: 'InMemory',
-				},
-				async: {
-					fs: 'IndexedDB',
-				},
-			},
-		}, resolve));
-	}
-} catch (err) {
-	console.error('Failed to initalize FS: ' + err);
-}
-const fs = inBrowser ? BrowserFS.BFSRequire('fs') : import('fs');
-
 export const saves = new PlayableStore(),
 	servers = new PlayableStore();
 
@@ -301,13 +280,13 @@ document.cookie.split('; ').forEach(e => {
 //load mods (if any)
 $('#loading_cover p').text('Loading Mods...');
 try {
-	if(!fs.existsSync('mods')){
+	if (!fs.existsSync('mods')) {
 		fs.mkdirSync('mods');
 	}
 
 	const mods = fs.readdirSync('mods');
 	console.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
-} catch(err){
+} catch (err) {
 	console.error('Failed to load mods: ' + err);
 }
 
@@ -470,22 +449,27 @@ ui.init();
 
 //Load saves and servers into the game
 $('#loading_cover p').text('Loading saves...');
-if(!fs.existsSync('saves')){
+if (!fs.existsSync('saves')) {
 	fs.mkdirSync('saves');
 }
 
-const names = fs.readdirSync('saves');
-for(let name of names){
+for (let name of fs.readdirSync('saves')) {
 	const content = fs.readFileSync('saves/' + name, { encoding: 'utf-8' });
-	isJSON(content);
+	if (isJSON(content)) {
+		new Save(JSON.parse(content));
+	}
 }
 
 $('#loading_cover p').text('Loading servers...');
-tx = await db.tx('servers');
-result = await tx.objectStore('servers').getAllKeys().async();
-for (let id of result) {
-	let data = await tx.objectStore('servers').get(id).async();
-	new Server(id, data, player.data());
+if (!fs.existsSync('servers')) {
+	fs.mkdirSync('servers');
+}
+
+for (let name of fs.readdirSync('servers')) {
+	const content = fs.readFileSync('servers/' + name, { encoding: 'utf-8' });
+	if (isJSON(content)) {
+		new Server(JSON.parse(content));
+	}
 }
 
 commands.set(
@@ -571,7 +555,7 @@ $('#save .new').click(async () => {
 	const level = await Save.Live.CreateDefault(name, player.id, player.username);
 	let save = new Save(level.serialize());
 	level.play();
-	if (!settings.get('disable_saves')) save.saveToDB();
+	if (!settings.get('disable_saves')) save.saveToStorage();
 });
 $('#esc .resume').click(() => {
 	$('#esc').hide();
@@ -579,22 +563,18 @@ $('#esc .resume').click(() => {
 	isPaused = false;
 });
 $('#esc .save').click(() => {
-	if (current instanceof Save.Live) {
-		$('#esc .save').text('Saving...');
-		let save = saves.get(current.id);
-		save.data = current.serialize();
-		save.saveToDB()
-			.then(() => {
-				chat('Game Saved.');
-				$('#esc .save').text('Save Game');
-			})
-			.catch(err => {
-				chat('Failed to save game: ' + err);
-				$('#esc .save').text('Save Game');
-			});
-	} else {
+	if (!(current instanceof Save.Live)) {
 		throw 'Save Error: you must have a valid save selected.';
 	}
+	$('#esc .save').text('Saving...');
+	saves.get(current.id).data = current.serialize();
+	try {
+		saves.get(current.id).saveToStorage();
+		chat('Game saved.');
+	} catch (err) {
+		chat('Failed to save game: ' + err);
+	}
+	$('#esc .save').text('Save Game');
 });
 $('#esc .options').click(() => {
 	ui.setLast('#esc');
@@ -658,8 +638,12 @@ $('#settings button.mod').click(() => {
 		.append(
 			$('<h2 style=text-align:center>Mods</h2>'),
 			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=images/icons.svg#trash /></svg>&nbsp;Reset</button>').click(async () => {
-				let tx = await db.tx('mods', 'readwrite');
-				await tx.objectStore('mods').clear().async();
+				if (!fs.existsSync('mods')) {
+					fs.mkdirSync('mods');
+				}
+				for (let name of fs.readdirSync('mods')) {
+					fs.rmSync('mods/' + name);
+				}
 				alert('Requires reload');
 			}),
 			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locales.text`menu.upload`}</button>`).click(() => {
@@ -919,7 +903,7 @@ if (config.debug_mode) {
 		player,
 		saves,
 		servers,
-		db,
+		fs,
 		config,
 		ui,
 		changeUI,

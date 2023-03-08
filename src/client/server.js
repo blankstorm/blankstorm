@@ -4,13 +4,13 @@ import 'socket.io-client'; /* global io */
 import { modal, alert, confirm } from './utils.js';
 import { isJSON } from 'core';
 import { Playable } from './playable.js';
-import db from './db.js';
 import { servers, cookie, canvas, chat, player, setPaused, setCurrent } from './index.js';
 import { update as updateUI } from './ui.js';
 import * as listeners from './listeners.js';
 import * as renderer from './renderer/index.js';
 import { LevelEvent } from '../core/events.js';
 import Level from '../core/Level.js';
+import fs from './fs.js';
 
 export default class Server extends Playable {
 	static async Dialog(server) {
@@ -22,10 +22,11 @@ export default class Server extends Playable {
 			{ Cancel: false, Save: true }
 		);
 		if (result.result) {
-			let tx = await db.tx('servers', 'readwrite');
-			let serverStore = tx.objectStore('servers');
+			if (!fs.existsSync('servers')) {
+				fs.mkdirSync('servers');
+			}
 			if (server instanceof Server) {
-				serverStore.put(result.name, result.url);
+				fs.serverStore.put(result.name, result.url);
 				server.name = result.name;
 				if (server.url != result.url) {
 					serverStore.delete(server.url);
@@ -44,7 +45,7 @@ export default class Server extends Playable {
 	level = new Level('server_level', true);
 	constructor(url, name) {
 		super(url, servers);
-		
+
 		Object.assign(this, {
 			url,
 			name,
@@ -83,7 +84,7 @@ export default class Server extends Playable {
 			chat(message);
 		});
 		this.socket.on('event', (type, emitter, data) => {
-			if(type == 'level.tick'){
+			if (type == 'level.tick') {
 				Level.FromData(emitter, this.level);
 				setCurrent(this.level);
 				this.level.sampleTick();
@@ -132,8 +133,10 @@ export default class Server extends Playable {
 			confirm().then(async () => {
 				this.gui.remove();
 				this.getStore().delete(this.url);
-				let tx = await db.tx('servers', 'readwrite');
-				tx.objectStore('servers').delete(this.url);
+				if (!fs.existsSync('servers')) {
+					fs.mkdirSync('servers');
+				}
+				fs.rmSync(this.path);
 			});
 		});
 		this.gui.play.click(() => this.connect());
@@ -179,5 +182,20 @@ export default class Server extends Playable {
 			.always(() => {
 				this.gui.info.css('animation', 'unset');
 			});
+	}
+
+	get path() {
+		return `servers/${this.id}.json`;
+	}
+
+	saveToStorage() {
+		if (!fs.existsSync('servers')) {
+			fs.mkdirSync('servers');
+		}
+
+		fs.writeFileSync(this.path, JSON.stringify({
+			url: this.url,
+			name: this.name,
+		}), { encoding: 'utf-8' });
 	}
 }
