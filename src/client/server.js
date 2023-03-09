@@ -22,14 +22,12 @@ export default class Server extends Playable {
 			{ Cancel: false, Save: true }
 		);
 		if (result.result) {
-			if (!fs.existsSync('servers')) {
-				fs.mkdirSync('servers');
-			}
 			if (server instanceof Server) {
+				server.saveToStorage()
 				fs.serverStore.put(result.name, result.url);
 				server.name = result.name;
 				if (server.url != result.url) {
-					serverStore.delete(server.url);
+					server.removeFromStorage();
 					server.url = result.url;
 				}
 			} else {
@@ -54,7 +52,7 @@ export default class Server extends Playable {
 			gui: $(`<li ofn bg style=align-items:center;height:3em></li>`),
 		});
 		this.level.waypoints = [];
-		db.tx('servers', 'readwrite').then(tx => tx.objectStore('servers').put(name, url));
+		this.saveToStorage();
 		this.socket = io(this.url, { reconnection: false, autoConnect: false, auth: { token: cookie.token, session: cookie.session } });
 		this.socket.on('connect', () => {
 			$('#connect').hide();
@@ -197,5 +195,13 @@ export default class Server extends Playable {
 			url: this.url,
 			name: this.name,
 		}), { encoding: 'utf-8' });
+	}
+
+	removeFromStorage(){
+		if (!fs.existsSync('servers')) {
+			fs.mkdirSync('servers');
+		}
+
+		fs.rmSync(this.path);
 	}
 }

@@ -1,8 +1,8 @@
-const fs = require('fs'),
-	path = require('path'),
-	mime = require('mime-types'),
-	{ parseArgs } = require('node:util'),
-	fsOptions = { recursive: true, force: true };
+import * as fs from 'fs';
+import path from 'path';
+import mime from 'mime-types';
+import { parseArgs } from 'node:util';
+const fsOptions = { recursive: true, force: true };
 
 const { values, positionals } = parseArgs({
 	options: {
