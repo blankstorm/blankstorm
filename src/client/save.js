@@ -46,7 +46,7 @@ export default class Save extends Playable {
 		gui.delete.click(async e => {
 			let remove = async () => {
 				gui.remove();
-				if(fs.existsSync(save.path)){
+				if (fs.existsSync(save.path)) {
 					fs.rmSync(save.path);
 				}
 				save.delete();
@@ -140,7 +140,7 @@ export default class Save extends Playable {
 		}
 	}
 
-	get path(){
+	get path() {
 		return `saves/${this.data.id}.json`;
 	}
 
@@ -158,7 +158,7 @@ export default class Save extends Playable {
 	}
 
 	saveToStorage() {
-		if(!fs.existsSync('saves')){
+		if (!fs.existsSync('saves')) {
 			fs.mkdirSync('saves');
 		}
 

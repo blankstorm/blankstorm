@@ -104,7 +104,7 @@ export default class Level extends EventTarget {
 		return this.getNodesBySelector(selector)[0];
 	}
 
-	sampleTick(){
+	sampleTick() {
 		this.#performanceMonitor.sampleFrame();
 	}
 

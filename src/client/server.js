@@ -23,7 +23,7 @@ export default class Server extends Playable {
 		);
 		if (result.result) {
 			if (server instanceof Server) {
-				server.saveToStorage()
+				server.saveToStorage();
 				fs.serverStore.put(result.name, result.url);
 				server.name = result.name;
 				if (server.url != result.url) {
@@ -191,13 +191,17 @@ export default class Server extends Playable {
 			fs.mkdirSync('servers');
 		}
 
-		fs.writeFileSync(this.path, JSON.stringify({
-			url: this.url,
-			name: this.name,
-		}), { encoding: 'utf-8' });
+		fs.writeFileSync(
+			this.path,
+			JSON.stringify({
+				url: this.url,
+				name: this.name,
+			}),
+			{ encoding: 'utf-8' }
+		);
 	}
 
-	removeFromStorage(){
+	removeFromStorage() {
 		if (!fs.existsSync('servers')) {
 			fs.mkdirSync('servers');
 		}

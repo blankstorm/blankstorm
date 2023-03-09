@@ -19,7 +19,7 @@ export class Client extends Player {
 		writeFileSync('./blacklist.json', JSON.stringify(blacklist));
 	}
 
-	serialize(){
+	serialize() {
 		return Object.assign(super.serialize(), { node_type: 'player' });
 	}
 
