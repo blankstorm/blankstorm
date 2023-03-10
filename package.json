@@ -9,7 +9,7 @@
 		"format:fix": "npx prettier --write src/**/*.{html,js}",
 		"format": "npm run format:check && npm run format:fix",
 		"lint": "npx eslint src/**/*.js",
-		"lint:ci": "npx eslint -f node_modules/eslint-formatter-azure-devops/index.js src/**/*.js",
+		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
 		"lint:check-ci": "npm run lint:ci",
 		"test:client": "npx electron .",
 		"test:server": "node src/server/index.js",
