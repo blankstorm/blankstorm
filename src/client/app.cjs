@@ -47,7 +47,9 @@ function createWindow() {
 	}
 
 	win.webContents.on('before-input-event', _inputHandler);
-	win.webContents.devToolsWebContents.on('before-input-event', _inputHandler);
+	win.webContents.on('devtools-opened', () => {
+		win.webContents.devToolsWebContents.on('before-input-event', _inputHandler);
+	});
 }
 
 app.whenReady().then(() => {

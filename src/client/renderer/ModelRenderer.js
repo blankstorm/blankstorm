@@ -11,7 +11,7 @@ import '@babylonjs/loaders/glTF/index.js';
 import config from './config.js';
 import { probe } from './index.js';
 import Path from 'core/Path.js';
-import { settings } from 'client/index.js';
+import { settings } from '../index.js';
 import { random } from 'core/utils.js';
 
 /**
