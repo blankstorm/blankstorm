@@ -2,6 +2,27 @@ import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
 import 'jquery'; /* global $ */
 $.ajaxSetup({ timeout: 3000 });
+$.fn.cm = function (...content) {
+	content ||= [$('<p></p>')];
+	let menu = $('<div bg=light class=cm></div>');
+	for (let c of content) {
+		menu.append(c, $('<br>'));
+	}
+	menu.css({ position: 'fixed', width: 'fit-content', height: 'fit-content', 'max-width': '15%', padding: '1em', 'z-index': 9 });
+	this.on('contextmenu', e => {
+		e.preventDefault();
+		menu.css({ left: settings.get('font_size') + e.pageX, top: settings.get('font_size') + e.pageY });
+		this.parent().append(menu);
+		menu.css({
+			top:
+				settings.get('font_size') + e.pageY + parseFloat(getComputedStyle(menu[0]).height) < innerHeight
+					? settings.get('font_size') + e.pageY
+					: settings.get('font_size') + e.pageY - parseFloat(getComputedStyle(menu[0]).height),
+		});
+	});
+	return this;
+};
+
 
 import 'socket.io-client'; /* global io */
 
@@ -13,7 +34,6 @@ import { web, upload, minimize, alert, prompt } from './utils.js';
 import Waypoint from './waypoint.js';
 import Save from './Save.js';
 import Server from './Server.js';
-import './contextmenu.js';
 import { PlayableStore } from './playable.js';
 import * as renderer from './renderer/index.js';
 import fs from './fs.js';

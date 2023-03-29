@@ -2,3 +2,8 @@ node_modules
 assets
 blender
 dist
+
+#game files
+saves
+servers
+mods

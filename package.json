@@ -11,7 +11,7 @@
 		"lint": "npx eslint src/**/*.js",
 		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
 		"lint:check-ci": "npm run lint:ci",
-		"test:client": "npx electron .",
+		"test:client": "npx electron . --bs-debug",
 		"test:server": "node src/server/index.js",
 		"build:client:win": "npx electron-builder build -w --publish never",
 		"build:client:mac": "npx electron-builder build -m --publish never",

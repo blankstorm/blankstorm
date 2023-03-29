@@ -24,7 +24,6 @@ export default class Server extends Playable {
 		if (result.result) {
 			if (server instanceof Server) {
 				server.saveToStorage();
-				fs.serverStore.put(result.name, result.url);
 				server.name = result.name;
 				if (server.url != result.url) {
 					server.removeFromStorage();

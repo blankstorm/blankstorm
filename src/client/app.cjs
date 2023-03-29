@@ -1,5 +1,6 @@
 /* eslint-env node */
-const { app, nativeTheme, BrowserWindow } = require('electron');
+const { app, shell, nativeTheme, BrowserWindow } = require('electron');
+const path = require('path')
 const { parseArgs } = require('node:util');
 
 const _args = parseArgs({
@@ -20,6 +21,10 @@ function createWindow() {
 		height: 600,
 		center: true,
 		darkTheme: true,
+		webPreferences: {
+			preload: path.join(__dirname, 'preload.cjs'),
+			nodeIntegration: true
+		},
 	});
 
 	nativeTheme.themeSource = 'dark';
@@ -29,11 +34,11 @@ function createWindow() {
 
 	win.webContents.on('new-window', function (e, url) {
 		e.preventDefault();
-		require('electron').shell.openExternal(url);
+		shell.openExternal(url);
 	});
 
 	const _inputHandler = (ev, input) => {
-		switch(input.key){
+		switch (input.key) {
 			case 'F12':
 				if (options['bs-debug']) {
 					win.webContents.toggleDevTools();
@@ -43,8 +48,7 @@ function createWindow() {
 				win.setFullScreenable(true);
 				break;
 		}
-		
-	}
+	};
 
 	win.webContents.on('before-input-event', _inputHandler);
 	win.webContents.on('devtools-opened', () => {
