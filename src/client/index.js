@@ -23,7 +23,6 @@ $.fn.cm = function (...content) {
 	return this;
 };
 
-
 import 'socket.io-client'; /* global io */
 
 import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, requestUserInfo } from 'core';
