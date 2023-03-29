@@ -1,26 +1,17 @@
 import 'browserfs'; /* global BrowserFS */
 
-const inBrowser = eval?.('!!window');
-try {
-	if (inBrowser) {
-		await new Promise(resolve =>
-			BrowserFS.configure(
-				{
-					fs: 'AsyncMirror',
-					options: {
-						sync: {
-							fs: 'InMemory',
-						},
-						async: {
-							fs: 'IndexedDB',
-						},
-					},
-				},
-				resolve
-			)
-		);
-	}
-} catch (err) {
-	console.error('Failed to initalize FS: ' + err);
+const inBrowser = typeof require != 'function';
+if (inBrowser) {
+	await BrowserFS.configureAsync({
+		fs: 'AsyncMirror',
+		options: {
+			sync: {
+				fs: 'InMemory',
+			},
+			async: {
+				fs: 'IndexedDB',
+			},
+		},
+	});
 }
-export default inBrowser ? BrowserFS.BFSRequire('fs') : import('fs');
+export default inBrowser ? BrowserFS.BFSRequire('fs') : require('fs'); // eslint-disable-line
