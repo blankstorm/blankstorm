@@ -32,8 +32,8 @@ export default class Hardpoint extends Node {
 			type: this.hardpointType,
 			info: {
 				scale: this.info?.scale,
-				position: this.info?.position.asArray().map(num => +num.toFixed(3)),
-				rotation: this.info?.rotation.asArray().map(num => +num.toFixed(3)),
+				position: this.info?.position ? this.info?.position.asArray().map(num => +num.toFixed(3)) : [0, 0, 0],
+				rotation: this.info?.rotation ? this.info?.rotation.asArray().map(num => +num.toFixed(3)) : [0, 0, 0],
 			},
 			reload: this.reload,
 		});
