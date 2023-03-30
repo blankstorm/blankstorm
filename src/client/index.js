@@ -11,14 +11,10 @@ $.fn.cm = function (...content) {
 	menu.css({ position: 'fixed', width: 'fit-content', height: 'fit-content', 'max-width': '15%', padding: '1em', 'z-index': 9 });
 	this.on('contextmenu', e => {
 		e.preventDefault();
-		menu.css({ left: settings.get('font_size') + e.pageX, top: settings.get('font_size') + e.pageY });
+		menu.css({ left: e.pageX, top: e.pageY });
 		this.parent().append(menu);
-		menu.css({
-			top:
-				settings.get('font_size') + e.pageY + parseFloat(getComputedStyle(menu[0]).height) < innerHeight
-					? settings.get('font_size') + e.pageY
-					: settings.get('font_size') + e.pageY - parseFloat(getComputedStyle(menu[0]).height),
-		});
+		const height = parseFloat(getComputedStyle(menu[0]).height);
+		menu.css('top', e.pageY + height < innerHeight ? e.pageY : e.pageY - height);
 	});
 	return this;
 };
