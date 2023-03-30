@@ -30,7 +30,11 @@ export default class Hardpoint extends Node {
 	serialize() {
 		return Object.assign(super.serialize(), {
 			type: this.hardpointType,
-			info: this.info,
+			info: {
+				scale: this.info?.scale,
+				position: this.info?.position.asArray().map(num => +num.toFixed(3)),
+				rotation: this.info?.rotation.asArray().map(num => +num.toFixed(3)),
+			},
 			reload: this.reload,
 		});
 	}
