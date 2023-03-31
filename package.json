@@ -1,6 +1,6 @@
 {
 	"name": "blankstorm-client",
-	"version": "0.0.0-alpha-1.4.0",
+	"version": "0.0.0-alpha-1.4.1",
 	"description": "Blankstorm",
 	"main": "src/client/app.cjs",
 	"type": "module",
@@ -17,7 +17,7 @@
 		"build:client:mac": "npx electron-builder build -m --publish never",
 		"build:client:linux": "npx electron-builder build -l --publish never",
 		"build:client:all": "npx electron-builder build -mlw --publish never",
-		"build:client": "npx electron-builder build --publish never",
+		"build:client": "npx electron-builder build --publish never && node scripts/build_client.js",
 		"build:server": "node scripts/build_server.js && pkg -o dist/server/blankstorm-server -t latest-win,latest-linux,latest-macos dist/tmp/server.js",
 		"build": "npm run build:client && npm run build:server",
 		"deploy:client": "node scripts/deploy_client.js"
@@ -71,7 +71,7 @@
 	"devDependencies": {
 		"electron": "^22.2.0",
 		"electron-builder": "^23.6.0",
-		"esbuild": "^0.17.11",
+		"esbuild": "^0.17.14",
 		"eslint": "^8.24.0",
 		"eslint-formatter-azure-devops": "^0.2.0",
 		"mime-types": "^2.1.35",
