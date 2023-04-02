@@ -18,7 +18,7 @@
 		"build:client:linux": "npx electron-builder build -l --publish never",
 		"build:client:all": "npx electron-builder build -mlw --publish never",
 		"build:client": "npx electron-builder build --publish never && node scripts/build_client.js",
-		"build:server": "node scripts/build_server.js && pkg -o dist/server/blankstorm-server -t latest-win,latest-linux,latest-macos dist/tmp/server.js",
+		"build:server": "node scripts/build_server.js && pkg -o dist/server -t latest-win,latest-linux,latest-macos dist/tmp/server.js",
 		"build": "npm run build:client && npm run build:server",
 		"deploy:client": "node scripts/deploy_client.js"
 	},
