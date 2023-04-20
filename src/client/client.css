@@ -167,6 +167,11 @@ div.error {
 	text-align: center;
 	padding: 1em;
 }
+svg.top-right {
+	position: absolute;
+	right: 1em;
+	top: 1em;
+}
 tool-tip {
 	display: none;
 	width: fit-content;
