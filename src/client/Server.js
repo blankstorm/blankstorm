@@ -2,7 +2,7 @@ import 'jquery'; /* global $ */
 import 'socket.io-client'; /* global io */
 
 import { modal, alert, confirm } from './utils.js';
-import { isJSON } from 'core';
+import { isJSON } from '../core/index.js';
 import { Playable } from './playable.js';
 import { servers, cookie, canvas, chat, player, setPaused, setCurrent } from './index.js';
 import { update as updateUI } from './ui.js';

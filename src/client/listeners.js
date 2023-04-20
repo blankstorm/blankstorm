@@ -1,6 +1,6 @@
 import * as renderer from './renderer/index.js';
 import { sounds, playsound } from './audio.js';
-import Ship from 'core/entities/Ship.js';
+import Ship from '../core/entities/Ship.js';
 import { settings } from './index.js';
 
 export const core = new Map([

@@ -9,7 +9,7 @@ import { ProceduralTexture } from '@babylonjs/core/Materials/Textures/Procedural
 import { Texture } from '@babylonjs/core/Materials/Textures/texture.js';
 
 import config from '../config.js';
-import { random } from 'core/utils.js';
+import { random } from '../../../core/utils.js';
 
 export class PlanetRendererMaterial extends ShaderMaterial {
 	constructor(options, scene) {

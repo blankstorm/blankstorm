@@ -4,7 +4,7 @@ import { Node } from '@babylonjs/core/node.js';
 
 import 'jquery'; /* global $ */
 
-import { isHex, random } from 'core/utils.js';
+import { isHex, random } from '../core/utils.js';
 import { modal } from './utils.js';
 import { locales } from './index.js';
 import { scene } from './renderer/index.js';

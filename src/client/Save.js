@@ -3,7 +3,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 
 import 'jquery'; /* global $ */
 
-import { version, versions, random, generate, Ship, Player, Planet, Level } from 'core';
+import { version, versions, random, generate, Ship, Player, Planet, Level } from '../core/index.js';
 import { modal, download, confirm, alert } from './utils.js';
 import Waypoint from './waypoint.js';
 import { Playable } from './playable.js';

@@ -1,6 +1,6 @@
 import HardpointRenderer from './HardpointRenderer.js';
 import ModelRenderer from '../ModelRenderer.js';
-import Ship from 'core/entities/Ship.js';
+import Ship from '../../../core/entities/Ship.js';
 
 export default class ShipRenderer extends ModelRenderer {
 	hardpoints = new Map();

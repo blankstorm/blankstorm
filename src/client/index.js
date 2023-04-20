@@ -21,7 +21,7 @@ $.fn.cm = function (...content) {
 
 import 'socket.io-client'; /* global io */
 
-import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, requestUserInfo } from 'core';
+import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, requestUserInfo } from '../core/index.js';
 
 import { SettingsStore } from './settings.js';
 import LocaleStore from './locales.js';
@@ -905,7 +905,7 @@ const loop = () => {
 if (config.debug_mode) {
 	$('#loading_cover p').text('Debug: Assigning variables...');
 	const BABYLON = await import('@babylonjs/core/index.js');
-	const core = await import('core');
+	const core = await import('../core/index.js');
 
 	Object.assign(window, {
 		core,

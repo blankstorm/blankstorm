@@ -1,5 +1,5 @@
-import { isJSON } from 'core/utils.js';
-import { version } from 'core/meta.js';
+import { isJSON } from '../core/utils.js';
+import { version } from '../core/meta.js';
 import { settings } from './index.js';
 
 import 'jquery'; /* global $ */

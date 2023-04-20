@@ -1,7 +1,7 @@
 import 'jquery'; /* global $ */
 import Level from '../core/Level.js';
 import { locales, saves, servers, settings, mp, screenshots, current } from './index.js';
-import { versions, CelestialBody, Items, Tech, Ship, Player } from 'core';
+import { versions, CelestialBody, Items, Tech, Ship, Player } from '../core/index.js';
 import { minimize, confirm } from './utils.js';
 
 import { player } from './index.js'; //Temporary

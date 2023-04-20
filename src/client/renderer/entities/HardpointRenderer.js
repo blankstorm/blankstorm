@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Animation } from '@babylonjs/core/Animations/animation.js';
 
-import { random, wait } from 'core/utils.js';
+import { random, wait } from '../../../core/utils.js';
 import ModelRenderer from '../ModelRenderer.js';
 
 export default class HardpointRenderer extends ModelRenderer {
