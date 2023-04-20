@@ -24,13 +24,14 @@ export default class LoginUI extends HTMLDialogElement {
 			try {
 				const res = await login(data.get('email'), data.get('password'));
 				document.cookie = `token=${res.result.token}`;
+				$(this).find('.error').hide();
 				this.close();
 			} catch (e) {
-				const error = $(this).find('.error');
-				error.text(e.message).show();
+				$(this).find('.error').text(e.message).show();
 			}
 		});
 		$(this).find('svg').click(() => {
+			$(this).find('.error').hide();
 			this.close();
 		});
 	}
