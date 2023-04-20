@@ -111,71 +111,70 @@ export const wait = time => new Promise(resolve => setTimeout(resolve, time));
 export class JSONFileMap /* implements Map */ {
 	#path;
 	#fs;
-	constructor(path, fs){
+	constructor(path, fs) {
 		this.#path = path;
 		this.#fs = fs;
 	}
 
-	#read(){
+	#read() {
 		const content = this.#fs.readFileSync(this.#path, 'utf8');
 		return new Map(Object.entries(JSON.parse(content)));
 	}
 
-	#write(map){
+	#write(map) {
 		const content = JSON.stringify(Object.fromEntries(map));
 		this.#fs.writeFileSync(this.#path, content);
 	}
 
-	clear(){
+	clear() {
 		this.#fs.writeFileSync(this.#path, '{}');
 	}
 
-	delete(key){
+	delete(key) {
 		const map = this.#read();
 		map.delete(key);
 		this.#write(map);
 	}
 
-	get(key){
+	get(key) {
 		const map = this.#read();
 		return map.get(key);
 	}
 
-	has(key){
+	has(key) {
 		const map = this.#read();
 		return map.has(key);
 	}
 
-	set(key, value){
+	set(key, value) {
 		const map = this.#read();
 		map.set(key, value);
 		this.#write(map);
 	}
 
-	get size(){
+	get size() {
 		return this.#read().size;
 	}
 
-	[Symbol.iterator](){
+	[Symbol.iterator]() {
 		return this.#read[Symbol.iterator];
 	}
 
-	get keys(){
+	get keys() {
 		return this.#read.keys;
 	}
 
-	get values(){
+	get values() {
 		return this.#read.values;
 	}
 
-	get entries(){
+	get entries() {
 		return this.#read.entries;
 	}
 
-	get forEach(){
+	get forEach() {
 		return this.#read.forEach;
 	}
-
 }
 
 /**
@@ -184,76 +183,74 @@ export class JSONFileMap /* implements Map */ {
 export class FolderMap /* implements Map */ {
 	#path;
 	#fs;
-	constructor(path, fs){
+	constructor(path, fs) {
 		this.#path = path;
 		this.#fs = fs;
 	}
 
-	#readNames(){
+	#readNames() {
 		return this.#fs.readdirSync(this.#path);
 	}
 
-	#join(path){
+	#join(path) {
 		return `${this.#path}/${path}`;
 	}
 
-	#getMap(){
+	#getMap() {
 		const map = new Map();
-		for(let name of this.#readNames()){
+		for (let name of this.#readNames()) {
 			const content = this.#fs.readFileSync(this.#join(name), 'utf8');
 			map.set(name, content);
 		}
-
 	}
 
-	clear(){
-		for(let name of this.#readNames()){
+	clear() {
+		for (let name of this.#readNames()) {
 			this.#fs.rmSync(this.#join(name));
 		}
 	}
 
-	delete(key){
-		if(key in this.#readNames()){
+	delete(key) {
+		if (key in this.#readNames()) {
 			this.#fs.rmSync(this.#join(key));
 		}
 	}
 
-	get(key){
-		if(this.has(key)){
+	get(key) {
+		if (this.has(key)) {
 			return this.#fs.readFileSync(this.#join(key), 'utf8');
 		}
 	}
 
-	has(key){
+	has(key) {
 		return key in this.#readNames();
 	}
 
-	set(key, value){
+	set(key, value) {
 		this.#fs.writeFileSync(this.#join(key), value);
 	}
 
-	get size(){
+	get size() {
 		return this.#readNames().length;
 	}
 
-	get [Symbol.iterator](){
+	get [Symbol.iterator]() {
 		return this.#getMap()[Symbol.iterator];
 	}
 
-	get keys(){
+	get keys() {
 		return this.#getMap().keys;
 	}
 
-	get values(){
+	get values() {
 		return this.#getMap().values;
 	}
 
-	get entries(){
+	get entries() {
 		return this.#getMap().entries;
 	}
 
-	get forEach(){
+	get forEach() {
 		return this.#getMap().forEach;
 	}
-
 }

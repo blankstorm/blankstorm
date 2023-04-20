@@ -16,24 +16,28 @@ export default class LoginDialog extends HTMLDialogElement {
 			<br>
 			<button class="cancel">Cancel</button><button class="login">Login</button>
 		`);
-		$(this).find('.cancel').click(e => {
-			e.preventDefault();
-			$(this).find('.error').hide();
-			this.close();
-		});
-		$(this).find('button.login').click(async e => {
-			e.preventDefault();
-			try {
-				const email = $(this).find('input.email').val();
-				const password = $(this).find('input.password').val();
-				const res = await login(email, password);
-				document.cookie = `token=${res.result.token}`;
-				$(this).find('.error').hide().text('');
+		$(this)
+			.find('.cancel')
+			.click(e => {
+				e.preventDefault();
+				$(this).find('.error').hide();
 				this.close();
-			} catch (e) {
-				$(this).find('.error').text(e.message).show();
-			}
-		});
+			});
+		$(this)
+			.find('button.login')
+			.click(async e => {
+				e.preventDefault();
+				try {
+					const email = $(this).find('input.email').val();
+					const password = $(this).find('input.password').val();
+					const res = await login(email, password);
+					document.cookie = `token=${res.result.token}`;
+					$(this).find('.error').hide().text('');
+					this.close();
+				} catch (e) {
+					$(this).find('.error').text(e.message).show();
+				}
+			});
 	}
 }
 
