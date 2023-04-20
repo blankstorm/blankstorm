@@ -33,6 +33,7 @@ import { PlayableStore } from './playable.js';
 import * as renderer from './renderer/index.js';
 import fs from './fs.js';
 import * as ui from './ui.js';
+import * as UI from './ui/index.js';
 import { sounds, playsound } from './audio.js';
 
 //Set the title
@@ -921,6 +922,7 @@ if (config.debug_mode) {
 		fs,
 		config,
 		ui,
+		UI,
 		changeUI,
 		BABYLON,
 		getCurrent() {

@@ -158,10 +158,11 @@ progress::-webkit-progress-value {
 	background-color: var(--text-color);
 	border-radius: var(--bg-radius);
 }
-.error {
+div.error {
 	display: inline-block;
-	background-color: #a44;
+	background-color: #a44a;
 	border-radius: 1em;
+	box-shadow: none;
 	width: fit-content;
 	text-align: center;
 	padding: 1em;
