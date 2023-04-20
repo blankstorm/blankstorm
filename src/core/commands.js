@@ -79,7 +79,7 @@ export const execCommandString = (string, executor, ignoreOp) => {
 			continue;
 		}
 
-		if (executor.oplvl < command.oplvl) {
+		if (executor?.oplvl < command.oplvl && !ignoreOp) {
 			return 'You do not have permission to execute that command';
 		}
 

@@ -82,7 +82,7 @@ commands.set(
 );
 commands.set(
 	'stop',
-	new Command(function (...message) {
+	new Command(function () {
 		for (let client of clients.values()) {
 			client.kick('Server shutting down');
 		}
@@ -91,11 +91,11 @@ commands.set(
 );
 commands.set(
 	'restart',
-	new Command(function (...message) {
+	new Command(function () {
 		for (let client of clients.values()) {
 			client.kick('Server restarting');
 		}
-		setTimeout(e => {
+		setTimeout(() => {
 			process.on('exit', () => {
 				spawn(process.argv.shift(), process.argv, {
 					cwd: process.cwd(),
@@ -236,7 +236,7 @@ io.on('connection', socket => {
 		'playerlist',
 		[...clients.values()].slice(0, 25).map(client => client.name)
 	);
-	socket.onAny(eventName => {
+	socket.onAny(() => {
 		client.sentPackets++;
 	});
 	socket.on('disconnect', reason => {
@@ -261,7 +261,7 @@ io.on('connection', socket => {
 	});
 });
 
-setInterval(e => {
+setInterval(() => {
 	clients.forEach(client => {
 		if (client.sentPackets > 50) {
 			client.kick('Sending to many packets');
