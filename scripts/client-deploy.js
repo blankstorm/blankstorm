@@ -2,7 +2,6 @@ import { build } from 'esbuild';
 import * as fs from 'fs';
 import { parseArgs } from 'util';
 import path from 'path';
-import ignorePlugin from 'esbuild-plugin-ignore';
 
 const { values, positionals } = parseArgs({
 	options: {
