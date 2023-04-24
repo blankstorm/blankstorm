@@ -20,7 +20,7 @@ const input = 'src/client';
 console.log('Building...');
 await build({
 	entryPoints: [path.join(input, 'index.js')],
-	outfile: path.join(options.output, 'client.js'),
+	outfile: path.join(options.output, 'index.js'),
 	bundle: true,
 	minify: true,
 	format: 'esm',
