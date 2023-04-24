@@ -1,87 +1,35 @@
+import { build } from 'esbuild';
 import * as fs from 'fs';
+import { parseArgs } from 'util';
 import path from 'path';
-import mime from 'mime-types';
-import { parseArgs } from 'node:util';
-const fsOptions = { recursive: true, force: true };
+import ignorePlugin from 'esbuild-plugin-ignore';
 
 const { values, positionals } = parseArgs({
 	options: {
 		verbose: { type: 'boolean', short: 'v', default: false },
-		inDir: { type: 'string', short: 'i', default: 'src' },
-		outDir: { type: 'string', short: 'o', default: 'dist/web' },
+		output: { type: 'string', short: 'o', default: 'dist/web' },
 	},
 });
 
 const options = {
 	verbose: false,
-	inDir: 'src',
-	outDir: 'dist/web',
-	...values
-}
-
-const outputLib = 'libraries',
-	outputLibPath = options.outDir + '/' + outputLib;
-
-const verboseLog = (...data) => {
-	if (options.verbose) {
-		console.log(...data);
-	}
+	output: 'dist/web',
+	...values,
 };
 
-if (fs.existsSync(options.outDir)) {
-	verboseLog('Removing old deployment...');
-	fs.rmSync(options.outDir, fsOptions);
+const input = 'src/client';
+console.log('Building...');
+await build({
+	entryPoints: [path.join(input, 'index.js')],
+	outfile: path.join(options.output, 'client.js'),
+	bundle: true,
+	minify: true,
+	format: 'esm',
+	external: ['fs' ]
+});
+
+console.log('Copying assets...');
+for (let file of ['index.html', 'client.css', 'images', 'locales', 'models', 'music', 'sfx', 'shaders']) {
+	if(options.verbose) console.log(`Copying ${path.join(input, file)}`);
+	fs.cpSync(path.join(input, file), path.join(options.output, file), { recursive: true });
 }
-
-console.log('Copying...');
-fs.cpSync(options.inDir, options.outDir, fsOptions);
-
-console.log('Updating dependencies...');
-if (!fs.existsSync(outputLibPath)) {
-	fs.mkdirSync(outputLibPath);
-}
-
-const pathToPOSIX = path => path.replace(/[a-zA-Z]:/, '').replace(/\\/g, '/');
-
-const updateFile = (rawInput, rawOutput) => {
-	const input = pathToPOSIX(rawInput),
-		output = pathToPOSIX(rawOutput),
-		type = mime.lookup(input);
-	verboseLog(`Updating file: ${input} (output: ${output})`);
-	if (['text/html', 'application/html'].includes(type)) {
-		console.log(`Processing ${input}`);
-		const content = fs.readFileSync(input, { encoding: 'utf8' }).replaceAll(/[.\/]+node_modules\/([@._\w-]+)/gi, (match, depName) => {
-			const oldPath = path.posix.resolve(path.posix.dirname(input), match),
-				newPath = path.posix.resolve(path.posix.join(outputLibPath), depName);
-			let newRelativePath = path.posix.relative(path.posix.dirname(output), newPath);
-			if (!newRelativePath.startsWith('.')) {
-				newRelativePath = './' + newRelativePath;
-			}
-			console.log(`Found dependency: ${depName} (in ${input})`);
-			fs.cpSync(oldPath, newPath, fsOptions);
-			return newRelativePath;
-		});
-		fs.writeFileSync(output, content);
-	}
-};
-
-const updateDir = (rawInputDir, rawOutputDir) => {
-	const inputDir = pathToPOSIX(rawInputDir),
-		outputDir = pathToPOSIX(rawOutputDir);
-	verboseLog(`Updating directory: ${inputDir} (output: ${outputDir})`);
-	for (let fName of fs.readdirSync(inputDir)) {
-		const input = path.posix.join(inputDir, fName),
-			output = path.posix.join(outputDir, fName);
-		const stats = fs.statSync(input);
-		if (stats.isDirectory()) {
-			updateDir(input, output);
-		} else {
-			updateFile(input, output);
-		}
-	}
-};
-updateDir(options.inDir, options.outDir);
-
-console.log('Cleaning up...');
-
-console.log('Done!');
