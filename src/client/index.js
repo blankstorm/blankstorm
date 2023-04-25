@@ -127,16 +127,6 @@ export const settings = new SettingsStore({
 			value: 1,
 		},
 		{
-			id: 'gui_scale',
-			section: 'general',
-			type: 'range',
-			label: val => `GUI Scale (${['auto', 'small', 'normal', 'large'][val]})`,
-			min: 0,
-			max: 3,
-			step: 1,
-			value: 2,
-		},
-		{
 			id: 'locale',
 			section: 'general',
 			type: 'select',

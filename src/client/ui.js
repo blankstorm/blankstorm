@@ -187,35 +187,33 @@ export function update(scene = current) {
 		}
 
 		$('[plot]').each((i, e) => {
-			let scale =
-				settings.get('gui_scale') == 0
-					? innerHeight <= 475
-						? 0.5
-						: innerHeight <= 650
-						? 0.75
-						: innerHeight <= 800
-						? 1
-						: 1.25
-					: Object.assign([1, 0.75, 1, 1.25][settings.get('gui_scale')], { is_from_array: true });
-
 			let plot = $(e)
 				.attr('plot')
-				.replaceAll(/[\d.]+(px|em)/g, str => parseFloat(str) * scale + str.slice(-2))
+				.replaceAll(/[\d.]+(px|em)/g, str => parseFloat(str) + str.slice(-2))
 				.split(',');
-			plot[0][0] == 'c' && !plot[0].startsWith('calc')
-				? $(e).css('left', `${plot[0].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[2]}/2))${plot[0].slice(1) ? ` + ${plot[0].slice(1)})` : ''}`)
-				: plot[0][0] == 'r'
-				? $(e).css('right', plot[0].slice(1))
-				: plot[0][0] == 'l'
-				? $(e).css('left', plot[0].slice(1))
-				: $(e).css('left', plot[0]);
-			plot[1][0] == 'c' && !plot[1].startsWith('calc')
-				? $(e).css('top', `${plot[1].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[3]}/2))${plot[1].slice(1) ? ` + ${plot[1].slice(1)})` : ''}`)
-				: plot[1][0] == 'b'
-				? $(e).css('bottom', plot[1].slice(1))
-				: plot[1][0] == 't'
-				? $(e).css('top', plot[1].slice(1))
-				: $(e).css('top', plot[1]);
+
+			if (plot[0][0] === 'c' && !plot[0].startsWith('calc')) {
+				const left = `${plot[0].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[2]}/2))${plot[0].slice(1) ? ` + ${plot[0].slice(1)})` : ''}`;
+				$(e).css('left', left);
+			} else if (plot[0][0] === 'r') {
+				$(e).css('right', plot[0].slice(1));
+			} else if (plot[0][0] === 'l') {
+				$(e).css('left', plot[0].slice(1));
+			} else {
+				$(e).css('left', plot[0]);
+			}
+
+			if (plot[1][0] === 'c' && !plot[1].startsWith('calc')) {
+				const top = `${plot[1].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[3]}/2))${plot[1].slice(1) ? ` + ${plot[1].slice(1)})` : ''}`;
+				$(e).css('top', top);
+			} else if (plot[1][0] === 'b') {
+				$(e).css('bottom', plot[1].slice(1));
+			} else if (plot[1][0] === 't') {
+				$(e).css('top', plot[1].slice(1));
+			} else {
+				$(e).css('top', plot[1]);
+			}
+
 			$(e).css({
 				width: plot[2],
 				height: plot[3],
