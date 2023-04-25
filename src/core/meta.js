@@ -4,7 +4,7 @@ export const config = {
 	planet_max_distance: 5000,
 };
 
-export const version = 'alpha_1.4.1';
+export const version = 'alpha_1.4.2';
 export const versions = new Map([
 	['infdev_1', { text: 'Infdev 1', group: 'infdev' }],
 	['infdev_2', { text: 'Infdev 2', group: 'infdev' }],
@@ -26,6 +26,7 @@ export const versions = new Map([
 	['alpha_1.3.1', { text: 'Alpha 1.3.1', group: 'alpha' }],
 	['alpha_1.4.0', { text: 'Alpha 1.4.0', group: 'alpha' }],
 	['alpha_1.4.1', { text: 'Alpha 1.4.1', group: 'alpha' }],
+	['alpha_1.4.2', { text: 'Alpha 1.4.2', group: 'alpha' }],
 ]);
 
 if (config.load_remote_manifest) {
