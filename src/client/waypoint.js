@@ -1,8 +1,7 @@
 import { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '@babylonjs/core/Maths/math.color.js';
 import { Node } from '@babylonjs/core/node.js';
-
-import 'jquery'; /* global $ */
+import $ from 'jquery';
 
 import { isHex, random } from '../core/utils.js';
 import { modal } from './utils.js';

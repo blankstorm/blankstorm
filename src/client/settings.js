@@ -1,4 +1,4 @@
-import 'jquery'; /* global $*/
+import $ from 'jquery';
 
 class SettingsError extends Error {
 	constructor(message, settingsEntry) {

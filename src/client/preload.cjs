@@ -1,4 +1,4 @@
 /* eslint-env node */
 const { contextBridge } = require('electron');
 
-contextBridge.exposeInMainWorld('require', require);
+contextBridge.exposeInMainWorld('__fs', require('fs'));

@@ -1,4 +1,4 @@
-import 'jquery'; /* global $ */
+import $ from 'jquery';
 
 export const web = url => `https://blankstorm.drvortex.dev/` + url,
 	upload = (type, multiple = false) =>

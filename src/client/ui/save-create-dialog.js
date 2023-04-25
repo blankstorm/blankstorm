@@ -1,4 +1,4 @@
-import 'jquery'; /* global $ */
+import $ from 'jquery';
 
 export default class SaveCreateDialog extends HTMLDialogElement {
 	constructor() {

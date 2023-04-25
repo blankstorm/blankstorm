@@ -1,5 +1,5 @@
 import { login } from '../../core/api.js';
-import 'jquery'; /* global $ */
+import $ from 'jquery';
 
 export default class LoginDialog extends HTMLDialogElement {
 	constructor() {

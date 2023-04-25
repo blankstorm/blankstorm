@@ -23,12 +23,12 @@ await build({
 	outfile: path.join(options.output, 'index.js'),
 	bundle: true,
 	minify: true,
+	sourcemap: true,
 	format: 'esm',
-	external: ['fs' ]
 });
 
 console.log('Copying assets...');
 for (let file of ['index.html', 'client.css', 'images', 'locales', 'models', 'music', 'sfx', 'shaders']) {
-	if(options.verbose) console.log(`Copying ${path.join(input, file)}`);
+	if (options.verbose) console.log(`Copying ${path.join(input, file)}`);
 	fs.cpSync(path.join(input, file), path.join(options.output, file), { recursive: true });
 }

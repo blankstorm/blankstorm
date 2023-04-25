@@ -1,8 +1,8 @@
-import 'browserfs'; /* global BrowserFS */
+import { configureAsync, BFSRequire } from 'browserfs';
 
-const inBrowser = typeof require != 'function';
+const inBrowser = typeof __fs == 'undefined';
 if (inBrowser) {
-	await BrowserFS.configureAsync({
+	await configureAsync({
 		fs: 'AsyncMirror',
 		options: {
 			sync: {
@@ -14,4 +14,4 @@ if (inBrowser) {
 		},
 	});
 }
-export default inBrowser ? BrowserFS.BFSRequire('fs') : require('fs'); // eslint-disable-line
+export default inBrowser ? BFSRequire('fs') : __fs; //eslint-disable-line no-undef

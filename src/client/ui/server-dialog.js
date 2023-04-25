@@ -1,4 +1,4 @@
-import 'jquery'; /* global $ */
+import $ from 'jquery';
 
 export default class ServerDialog extends HTMLDialogElement {
 	constructor() {

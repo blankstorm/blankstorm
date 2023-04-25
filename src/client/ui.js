@@ -1,4 +1,4 @@
-import 'jquery'; /* global $ */
+import $ from 'jquery';
 import Level from '../core/Level.js';
 import { locales, saves, servers, settings, mp, screenshots, current } from './index.js';
 import { versions, CelestialBody, Items, Tech, Ship, Player } from '../core/index.js';

@@ -1,5 +1,5 @@
-import 'jquery'; /* global $ */
-import 'socket.io-client'; /* global io */
+import $ from 'jquery';
+import { io } from 'socket.io-client';
 
 import { modal, alert, confirm } from './utils.js';
 import { isJSON } from '../core/index.js';

@@ -1,7 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Color3 } from '@babylonjs/core/Maths/math.color.js';
-
-import 'jquery'; /* global $ */
+import $ from 'jquery';
 
 import { version, versions, random, generate, Ship, Player, Planet, Level } from '../core/index.js';
 import { modal, download, confirm, alert } from './utils.js';

@@ -1,6 +1,6 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
-import 'jquery'; /* global $ */
+import $ from 'jquery';
 $.ajaxSetup({ timeout: 3000 });
 $.fn.cm = function (...content) {
 	content ||= [$('<p></p>')];
@@ -19,7 +19,7 @@ $.fn.cm = function (...content) {
 	return this;
 };
 
-import 'socket.io-client'; /* global io */
+import { io } from 'socket.io-client';
 
 import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, requestUserInfo } from '../core/index.js';
 
