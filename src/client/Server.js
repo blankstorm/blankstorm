@@ -182,7 +182,7 @@ export default class Server extends Playable {
 	}
 
 	get path() {
-		return `servers/${this.id.replace(/^((http|ws)s?)?/, '').replaceAll(/:\//g, '_')}.json`;
+		return `servers/${this.id.replace(/^(ws|http)s?/, '').replaceAll(/[:/]/g, '_')}.json`;
 	}
 
 	saveToStorage() {
