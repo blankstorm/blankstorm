@@ -206,13 +206,13 @@ export class FolderMap /* implements Map */ {
 
 	clear() {
 		for (let name of this.#readNames()) {
-			this.#fs.rmSync(this.#join(name));
+			this.#fs.unlinkSync(this.#join(name));
 		}
 	}
 
 	delete(key) {
 		if (key in this.#readNames()) {
-			this.#fs.rmSync(this.#join(key));
+			this.#fs.unlinkSync(this.#join(key));
 		}
 	}
 

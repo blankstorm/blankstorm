@@ -133,7 +133,7 @@ export default class Server extends Playable {
 				if (!fs.existsSync('servers')) {
 					fs.mkdirSync('servers');
 				}
-				fs.rmSync(this.path);
+				fs.unlinkSync(this.path);
 			});
 		});
 		this.gui.play.click(() => this.connect());
@@ -205,6 +205,6 @@ export default class Server extends Playable {
 			fs.mkdirSync('servers');
 		}
 
-		fs.rmSync(this.path);
+		fs.unlinkSync(this.path);
 	}
 }

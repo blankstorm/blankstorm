@@ -46,7 +46,7 @@ export default class Save extends Playable {
 			let remove = async () => {
 				gui.remove();
 				if (fs.existsSync(save.path)) {
-					fs.rmSync(save.path);
+					fs.unlinkSync(save.path);
 				}
 				save.delete();
 			};
