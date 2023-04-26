@@ -268,7 +268,7 @@ export const settings = new SettingsStore({
 });
 
 for (let section of settings.sections.values()) {
-	section.ui.attr({
+	$(section).attr({
 		bg: 'none',
 		'overflow-scroll': 'y',
 		'no-box-shadow': '',

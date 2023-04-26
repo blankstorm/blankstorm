@@ -114,9 +114,13 @@ export class JSONFileMap /* implements Map */ {
 	constructor(path, fs) {
 		this.#path = path;
 		this.#fs = fs;
+
+		if(!fs.existsSync(path)){
+			fs.writeFileSync(path, '{}');
+		}
 	}
 
-	#read() {
+	getMap() {
 		const content = this.#fs.readFileSync(this.#path, 'utf8');
 		return new Map(Object.entries(JSON.parse(content)));
 	}
@@ -131,49 +135,47 @@ export class JSONFileMap /* implements Map */ {
 	}
 
 	delete(key) {
-		const map = this.#read();
+		const map = this.getMap();
 		map.delete(key);
 		this.#write(map);
 	}
 
 	get(key) {
-		const map = this.#read();
-		return map.get(key);
+		return this.getMap().get(key);
 	}
 
 	has(key) {
-		const map = this.#read();
-		return map.has(key);
+		return this.getMap().has(key);
 	}
 
 	set(key, value) {
-		const map = this.#read();
+		const map = this.getMap();
 		map.set(key, value);
 		this.#write(map);
 	}
 
 	get size() {
-		return this.#read().size;
+		return this.getMap().size;
 	}
 
 	[Symbol.iterator]() {
-		return this.#read[Symbol.iterator];
+		return this.getMap[Symbol.iterator];
 	}
 
 	get keys() {
-		return this.#read.keys;
+		return this.getMap.keys;
 	}
 
 	get values() {
-		return this.#read.values;
+		return this.getMap.values;
 	}
 
 	get entries() {
-		return this.#read.entries;
+		return this.getMap.entries;
 	}
 
 	get forEach() {
-		return this.#read.forEach;
+		return this.getMap.forEach;
 	}
 }
 
