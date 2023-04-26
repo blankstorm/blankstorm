@@ -123,7 +123,6 @@ export let config = {
 		max_clients: 10,
 		message: '',
 		log_verbose: false,
-		allow_from_all: true,
 		debug: {
 			public_uptime: false,
 			public_log: true,
@@ -177,7 +176,7 @@ const server = createServer((req, res) => {
 const io = new SocketIOServer(server, {
 	pingInterval: 1000,
 	pingTimeout: 10000,
-	cors: { origin: config.allow_from_all ? '*' : 'https://blankstorm.drvortex.dev' },
+	cors: '*',
 });
 
 if (levelData) {
