@@ -109,7 +109,7 @@ export default class Server extends Playable {
 			this.kickMessage = null;
 			$('#connect button').text('Back');
 			$('[ingame]').hide();
-			$(reason == 'io client disconnect' ? '#load' : '#connect').show();
+			$(reason == 'io client disconnect' ? '#server-list' : '#connect').show();
 		});
 		this.gui.delete = $(`<p style=position:absolute;left:15%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(this.gui);
 		this.gui.play = $(`<p style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(this.gui);
@@ -125,7 +125,7 @@ export default class Server extends Playable {
 				this.getStore().selected = this.url;
 			})
 			.dblclick(() => this.connect())
-			.prependTo('#load');
+			.prependTo('#server-list');
 		this.gui.delete.click(() => {
 			confirm().then(async () => {
 				this.gui.remove();
@@ -144,7 +144,7 @@ export default class Server extends Playable {
 		if (this?.socket?.connected) {
 			throw new ReferenceError(`Can't connect to server: already connected`);
 		}
-		$('#load').hide();
+		$('#server-list').hide();
 		$('#connect').show();
 		$('#connect p').text('Connecting...');
 		$('#connect button').text('Back');

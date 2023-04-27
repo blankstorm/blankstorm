@@ -41,7 +41,7 @@ export default class Save extends Playable {
 				gui.addClass('selected');
 			})
 			.dblclick(loadAndPlay);
-		if (!mp) gui.prependTo('#load');
+		gui.prependTo('#save-list');
 		gui.delete.click(async e => {
 			let remove = async () => {
 				gui.remove();
@@ -80,7 +80,7 @@ export default class Save extends Playable {
 		}
 		play() {
 			if (this.version == version) {
-				$('#load').hide();
+				$('#save-list').hide();
 				canvas.show();
 				canvas.focus();
 				$('#hud').show();
