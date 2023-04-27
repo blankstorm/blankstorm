@@ -37,9 +37,10 @@ export default class LocaleStore {
 		$('#esc button.resume').text(lang['menu.resume'] ?? 'Resume Game');
 		$('#esc button.save').text(lang['menu.save'] ?? 'Save Game');
 		$('#esc button.quit').text(lang['menu.quit'] ?? 'Main Menu');
-		$('#load button.upload span').text(lang['menu.upload'] ?? 'Upload');
-		$(':where(#load,#save,#settings) button.back span').text(lang['menu.back'] ?? 'Back');
-		$(':where(#load,#q) button.new span').text(lang['menu.new'] ?? 'New');
+		$('#save-list button.upload span').text(lang['menu.upload'] ?? 'Upload');
+		$('#server-list button.refresh span').text(lang['menu.refresh'] ?? 'Refresh');
+		$(':where(#save-list,#server-list,#save,#settings) button.back span').text(lang['menu.back'] ?? 'Back');
+		$(':where(#save-list,#server-list,#q) button.new span').text(lang['menu.new'] ?? 'New');
 		$('#save button.new span').text(lang['menu.start'] ?? 'Start');
 		$('#connect button.back span').text(lang['menu.cancel'] ?? 'Cancel');
 		$('#settings button.general span').text(lang['menu.settings.general'] ?? 'General');

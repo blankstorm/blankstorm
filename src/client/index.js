@@ -502,54 +502,46 @@ $('#loading_cover p').text('Registering event listeners...');
 export const eventLog = [];
 $('#main .sp').click(() => {
 	mp = false;
-	$('#load li').detach();
-	saves.forEach(save => save.gui.prependTo('#load'));
 	$('#main').hide();
-	$('#load button.upload use').attr('href', 'images/icons.svg#upload');
-	$('#load button.upload span').text(locales.text`menu.upload`);
-	$('#load').show();
+	$('#save-list').show();
 });
 $('#main .mp').click(() => {
 	mp = true;
 	$('#main').hide();
-	$('#load button.refresh use').attr('href', 'images/icons.svg#arrows-rotate');
-	$('#load button.refresh span').text(locales.text`menu.refresh`);
-	$('#load').show();
-	$('#load li').detach();
-	servers.forEach(server => {
-		server.gui.prependTo('#load');
+	$('#server-list').show();
+	for (let server of servers) {
 		server.ping();
-	});
+	}
 });
 $('#main .options').click(() => {
 	ui.setLast('#main');
 	$('#settings').show();
 	ui.update();
 });
-$('#load .back').click(() => {
-	$('#load').hide();
+$('.playable-list .back').click(() => {
+	$('.playable-list').hide();
 	$('#main').show();
 });
-$('#load .new').click(() => {
-	mp ? Server.Dialog() : $('#save')[0].showModal();
+$('#save-list .new').click(() => {
+	$('#save')[0].showModal();
 });
-$('#load button.upload.refresh').click(() => {
-	if (mp) {
-		servers.forEach(server => server.ping());
+$('#server-list .new').click(() => {
+	Server.Dialog();
+});
+$('#save-list button.upload').click(async () => {
+	const files = await upload('.json');
+	const text = await files[0].text();
+	if (isJSON(text)) {
+		new Save(JSON.parse(text));
 	} else {
-		upload('.json')
-			.then(file => file[0].text())
-			.then(text => {
-				if (isJSON(text)) {
-					new Save(JSON.parse(text));
-				} else {
-					alert(`Can't load save: not JSON.`);
-				}
-			});
+		alert(`Can't load save: not JSON.`);
 	}
 });
+$('#server-list button.refresh').click(() => {
+	servers.forEach(server => server.ping());
+});
 $('#connect button.back').click(() => {
-	$('#load').show();
+	$('#server-list').show();
 	$('#connect').hide();
 });
 $('#save button.back').click(() => {

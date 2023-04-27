@@ -103,8 +103,11 @@ export class SettingsItem extends HTMLDivElement {
 		}
 		$(this).after('<br><br>');
 
-		this.#ui_input.on('change', { item: this }, e => {
-			e.data.item.value = e.data.item.type == 'boolean' ? e.target.checked : e.target.value;
+
+		this.update(options);
+		this.#ui_input.on('change', e => {
+			this.value = this.type == 'boolean' ? e.target.checked : e.target.value;
+			this.#store.set(this.id, this.value);
 		});
 
 		if (options.value) {
@@ -347,7 +350,9 @@ export class SettingsStore extends JSONFileMap {
 	}
 
 	createItem(id, options = {}) {
-		return new SettingsItem(id, options, this);
+		const item = new SettingsItem(id, options, this);
+		this.items.set(item.id, item);
+		return item;
 	}
 
 	createSection(id, label, parent) {
