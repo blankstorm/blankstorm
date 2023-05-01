@@ -1,0 +1,149 @@
+/* Default styles to be used (does not include specific element styling) */
+:root {
+	--hue: 200;
+	--_bg-color: var(--hue), 50%, 25%;
+	--text-color: hsl(var(--hue), 100%, 90%, 0.8);
+	--text-shadow: 0 0 7px hsl(var(--hue), 100%, 50%);
+	--font-family: sans-serif;
+	--font-size: 15px;
+	--bg-color: hsl(var(--_bg-color));
+	--button-color: hsl(var(--hue), 100%, 70%, 0.5);
+	--bg-gradient-dark: hsl(var(--hue), 50%, 0%);
+	--bg-gradient-light: hsl(var(--hue), 70%, 70%, 0.5);
+	--bg-color-alt: #252525;
+	--bg-shadow: 0 0 6px hsl(var(--hue), 100%, 80%);
+	--hover-shadow: 0 0 8px hsl(var(--hue), 100%, 90%);
+	--bg-radius: 4px;
+}
+* {
+	scrollbar-color: var(--text-color);
+	scrollbar-width: thin;
+	accent-color: var(--text-color);
+	color-scheme: light dark;
+	color: var(--text-color);
+	font-family: sans-serif;
+	font-size: var(--font-size);
+}
+body {
+	background-color: var(--bg-color-alt);
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	text-shadow: var(--text-shadow);
+}
+code {
+	font-family: monospace;
+	background-color: #222;
+	border: 1px solid #080808;
+	border-radius: 25%;
+}
+select {
+	background-color: var(--bg-color-alt);
+}
+table,
+tr,
+td {
+	border: 1px solid white;
+	border-collapse: collapse;
+}
+table {
+	background: var(--bg-color-alt);
+	display: inline-block;
+	border-radius: var(--bg-radius);
+	position: relative;
+	width: fit-content;
+	margin: 24px;
+}
+td {
+	padding: 3px;
+}
+button {
+	background: radial-gradient(ellipse at center, var(--bg-gradient-dark) 0, var(--button-color) 150%);
+	box-shadow: var(--bg-shadow);
+	border-radius: var(--bg-radius);
+	cursor: pointer;
+	border: 0;
+	padding: 5px 15px;
+}
+button:hover {
+	background: radial-gradient(ellipse at center, var(--bg-gradient-dark) 0, var(--button-color) 100%);
+	box-shadow: var(--hover-shadow);
+}
+input,
+textarea {
+	display: inline-block;
+	background: linear-gradient(to top, var(--bg-gradient-light) 0, var(--bg-gradient-dark) 20%, var(--bg-gradient-dark) 60%, var(--bg-gradient-light) 100%);
+	box-shadow: var(--bg-shadow);
+	border-radius: var(--bg-radius);
+	margin-top: 10px;
+	position: relative;
+}
+dfn {
+	font-style: normal;
+	border-bottom: 1px hsla(200, 100%, 90%, 0.8) dotted;
+}
+input:hover {
+	cursor: text;
+}
+input[type='checkbox']:hover,
+[clickable] {
+	cursor: pointer;
+}
+dialog {
+	border: none;
+}
+input[type='range'] {
+	appearance: none;
+	overflow: hidden;
+	height: 10px;
+	background: var(--bg-color);
+}
+::-webkit-slider-runnable-track {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 25px;
+	border-radius: var(--bg-radius);
+	background: var(--bg-color);
+	outline: none;
+}
+::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 25px;
+	height: 25px;
+	border-radius: 25%;
+	cursor: pointer;
+	background: var(--text-color);
+}
+::-webkit-scrollbar {
+	background-color: #0000;
+	width: 5px;
+}
+::-webkit-scrollbar-track {
+	background-color: #0000;
+}
+::-webkit-scrollbar-thumb {
+	background-color: var(--text-color);
+	border-radius: 2.5px;
+}
+progress {
+	background-color: var(--button-color);
+	border-radius: var(--bg-radius);
+}
+progress::-webkit-progress-bar {
+	background-color: #0000;
+	border-radius: var(--bg-radius);
+}
+progress::-moz-progress-bar {
+	background-color: var(--text-color);
+	border-radius: var(--bg-radius);
+}
+progress::-webkit-progress-value {
+	background-color: var(--text-color);
+	border-radius: var(--bg-radius);
+}

@@ -1,11 +1,12 @@
-import { build } from 'esbuild';
-import * as fs from 'fs';
+import { build, context } from 'esbuild';
 import { parseArgs } from 'util';
-import path from 'path';
+import { readdirSync } from 'fs';
+import { join } from 'path';
 
 const { values, positionals } = parseArgs({
 	options: {
 		verbose: { type: 'boolean', short: 'v', default: false },
+		watch: { type: 'boolean', short: 'w', default: false },
 		output: { type: 'string', short: 'o', default: 'dist/web' },
 	},
 });
@@ -13,21 +14,31 @@ const { values, positionals } = parseArgs({
 const options = {
 	verbose: false,
 	output: 'dist/web',
+	watch: false,
 	...values,
 }, input = 'src/client';
 
-console.log('Building...');
-await build({
-	entryPoints: [path.join(input, 'index.js')],
-	outfile: path.join(options.output, 'index.js'),
+function fromDir(dir){
+	return readdirSync(join(input, dir)).map(p => join(dir, p))
+}
+
+const config = {
+	entryPoints: [ 'index.js', 'index.html', ...fromDir('styles'), ].map(p => join(input, p)),
+	assetNames: '[dir]/[name]',
+	outdir: options.output,
 	bundle: true,
 	minify: true,
 	sourcemap: true,
 	format: 'esm',
-});
+	loader: Object.fromEntries(['.html', '.png', '.svg', '.fx', '.jpg', '.glb', '.mp3'].map(e => [e, 'copy'])),
+}
 
-console.log('Copying assets...');
-for (let file of ['index.html', 'client.css', 'images', 'locales', 'models', 'music', 'sfx', 'shaders']) {
-	if (options.verbose) console.log(`Copying ${path.join(input, file)}`);
-	fs.cpSync(path.join(input, file), path.join(options.output, file), { recursive: true });
+if(options.watch){
+	console.log('Watching...');
+	const ctx = await context(config);
+	await ctx.watch();
+} else {
+	console.log('Building...');
+	await build(config);
+	console.log('Built!');
 }

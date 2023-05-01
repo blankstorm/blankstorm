@@ -257,7 +257,7 @@ export class SettingsSection extends HTMLFormElement {
 		super();
 		this.#id = id;
 
-		$(this).append('<h2 class=settings-name></h2>');
+		$(this).append('<h2 class=settings-name></h2>').addClass('settings-section');
 		this.#label = label;
 
 		if (parent) {

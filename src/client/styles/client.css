@@ -1,0 +1,121 @@
+/* Styles for specific elements and such */
+:root {
+	--settings-nav-button-width: 135px;
+}
+#loading_cover svg path {
+	transform-origin: center;
+	animation: 1s linear infinite rotate;
+}
+div.error {
+	display: inline-block;
+	background-color: #a44a;
+	border-radius: 1em;
+	box-shadow: none;
+	width: fit-content;
+	text-align: center;
+	padding: 1em;
+}
+svg.top-right {
+	position: absolute;
+	right: 1em;
+	top: 1em;
+}
+svg {
+	width: 1em;
+	height: 1em;
+	fill: var(--text-color);
+	transform-origin: center;
+}
+:where(div, dialog, ol, ul, nav, form, li, tool-tip):not([bg='none'], [bg='alt']) {
+	background-color: var(--bg-color);
+	border-radius: var(--bg-radius);
+	box-shadow: var(--bg-shadow);
+	color: var(--text-color);
+}
+body > :where(div, ol, ul, nav, form):not([bg='none'], [bg='alt']),
+li[bg] {
+	list-style: none;
+	margin: 1% 10% 1% 5%;
+}
+#settings form {
+	align-items: center;
+}
+.setting-container {
+	width: 100%;
+	margin-top: 1em;
+}
+.setting-label {
+	text-align: right;
+	position: absolute;
+	right: 50%;
+	margin: 0.5em;
+}
+.setting-input {
+	position: absolute;
+	left: 50%;
+	margin: 0.5em;
+}
+.selected {
+	border: 1px solid var(--text-color);
+}
+
+.add-or-upgrade-icon {
+	text-align: center;
+	position: absolute;
+	width: 1.5em;
+	height: 1.5em;
+	right: 25%;
+}
+.locked-icon {
+	text-align: center;
+	position: absolute;
+	width: 1.5em;
+	height: 1.5em;
+	left: 25%;
+}
+#chat li {
+	background: none;
+	list-style: none;
+}
+:where(#q, #e) > div:not(.nav) {
+	grid-template-columns: 1fr;
+	grid-auto-rows: 3em;
+	grid-auto-flow: row;
+	text-align: center;
+	position: absolute;
+	top: 15%;
+	left: 2.5%;
+	width: 90%;
+	height: 80%;
+	margin-top: 10px;
+}
+ul.screenshots img {
+	border: 1px solid var(--text-color);
+	border-radius: 5px;
+	margin: 10px;
+}
+#debug p {
+	position: fixed;
+}
+#debug span {
+	background-color: #2225;
+}
+.settings-section {
+	position: absolute;
+	left: 25%;
+	width: 70%;
+	top: 5%;
+	height: 90%;
+}
+#settings-nav {
+	position: absolute;
+	inset: 1em;
+	width: calc(var(--settings-nav-button-width) + 2em);
+	box-sizing: border-box;
+	padding: 1em;
+}
+#settings-nav button {
+	width: var(--settings-nav-button-width);
+	height: 35px;
+
+}

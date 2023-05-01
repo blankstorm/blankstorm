@@ -20,7 +20,7 @@
 		"build:client": "electron-builder build --publish never && node scripts/client-postbuild.js",
 		"build:server": "node scripts/server-prebuild.js && pkg -o dist/server -t latest-win,latest-linux,latest-macos dist/tmp/server.js && node scripts/server-postbuild.js",
 		"build": "npm run build:client && npm run build:server",
-		"watch:client": "node scripts/client-watch.js",
+		"watch:client": "node scripts/client-deploy.js --watch",
 		"deploy:client": "node scripts/client-deploy.js"
 	},
 	"build": {

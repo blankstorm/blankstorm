@@ -6,7 +6,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="description" content="Blankstorm is a free, online Sandbox/RTS game - no installation required. Command your own fleet and explore the galaxy!" />
 		<link rel=icon href=images/icon.png type=image/png>
-		<link rel="stylesheet" href="client.css" type="text/css" />
+		<link rel="stylesheet" href="styles/styles.css" type="text/css" />
+		<link rel="stylesheet" href="styles/utils.css" type="text/css" />
+		<link rel="stylesheet" href="styles/client.css" type="text/css" />
 	</head>
 	<body oncontextmenu="e=>false" bg="star">
 		<div id="loading_cover" cover bg="alt" style="z-index: 100; display: flex; justify-content: center">
@@ -222,41 +224,34 @@
 			</div>
 		</div>
 		<div id="settings" bg="trans" hide content>
-			<button plot="50px,50px,135px,35px,a" class="general" setting-section="general">
-				<svg><use href=images/icons.svg#gear /></svg>
-				<span></span>
-			</button>
-			<button plot="50px,100px,135px,35px,a" class="keybinds" setting-section="keybinds">
-				<svg><use href=images/icons.svg#keyboard /></svg>
-				<span></span>
-			</button>
-			<button plot="50px,150px,135px,35px,a" class="mod" hide>
-				<svg><use href=images/icons.svg#puzzle-piece /></svg>
-				<span>Mods</span>
-			</button>
-			<button plot="50px,150px,135px,35px,a" class="debug" setting-section="debug">
-				<svg><use href=images/icons.svg#bug /></svg>
-				<span></span>
-			</button>
-			<button plot="50px,calc(100% - 85px),135px,35px,a" class="back">
-				<svg><use href=images/icons.svg#arrow-left /></svg>
-				<span></span>
-			</button>
+			<div id="#settings-nav">
+				<button class="general" setting-section="general">
+					<svg><use href=images/icons.svg#gear /></svg>
+					<span></span>
+				</button>
+				<button class="keybinds" setting-section="keybinds">
+					<svg><use href=images/icons.svg#keyboard /></svg>
+					<span></span>
+				</button>
+				<button class="mod" hide>
+					<svg><use href=images/icons.svg#puzzle-piece /></svg>
+					<span>Mods</span>
+				</button>
+				<button class="debug" setting-section="debug">
+					<svg><use href=images/icons.svg#bug /></svg>
+					<span></span>
+				</button>
+				<button class="back">
+					<svg><use href=images/icons.svg#arrow-left /></svg>
+					<span></span>
+				</button>
+			</div>
+			
 			<div class="general" setting-section="general" no-box-shadow bg="none" overflow-scroll="y"></div>
 			<div class="keybinds" setting-section="keybinds" no-box-shadow bg="none" overflow-scroll="y" hide></div>
 			<div class="debug" setting-section="debug" no-box-shadow bg="none" overflow-scroll="y" hide></div>
 			<ul class="mod" no-box-shadow bg="none" overflow-scroll="y" hide lsn></ul>
 		</div>
 	</body>
-	<script type="importmap">
-		{
-			"imports": {
-				"@babylonjs/": "../../node_modules/@babylonjs/",
-				"jquery": "../../node_modules/jquery/dist/jquery.js",
-				"socket.io-client": "../../node_modules/socket.io-client/dist/socket.io.min.js",
-				"browserfs": "../../node_modules/browserfs/dist/browserfs.min.mjs"
-			}
-		}
-	</script>
 	<script type="module" src="index.js"></script>
 </html>
