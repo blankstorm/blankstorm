@@ -21,7 +21,7 @@ $.fn.cm = function (...content) {
 
 import { io } from 'socket.io-client';
 
-import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, requestUserInfo } from '../core/index.js';
+import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level } from '../core/index.js';
 
 import { SettingsStore } from './settings.js';
 import LocaleStore from './locales.js';
@@ -35,6 +35,7 @@ import fs from './fs.js';
 import * as ui from './ui.js';
 import * as UI from './ui/index.js';
 import { sounds, playsound } from './audio.js';
+import * as api from '../core/api.js';
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
@@ -416,17 +417,17 @@ onresize = () => {
 	renderer.engine.resize();
 	console.warn('Do not paste any code someone gave you, as they may be trying to steal your information');
 };
-if (!mpEnabled) {
-	$('#main .mp').hide();
-	$('#main .options').attr('plot', 'c,360px,350px,50px');
-	$('#main button.exit').attr('plot', 'c,460px,350px,50px');
-}
 
+$('#loading_cover p').text('Logging you in...');
 if (cookie.token && navigator.onLine) {
-	const info = await requestUserInfo('token', cookie.token);
-	player.id = info.id;
-	player.username = info.username;
-	player.authData = info;
+	try {
+		const info = await api.requestUserInfo('token', cookie.token);
+		player.id = info.id;
+		player.username = info.username;
+		player.authData = info;
+	} catch (e) {
+		chat('Couldn\'t log you in.');
+	}
 } else if (localStorage.auth) {
 	if (isJSON(localStorage.auth) && JSON.parse(localStorage.auth)) {
 		let data = JSON.parse(localStorage.auth);
@@ -437,7 +438,6 @@ if (cookie.token && navigator.onLine) {
 	}
 } else {
 	mpEnabled = false;
-	chat("You're not logged in, and will not be able to play multiplayer.");
 }
 
 oncontextmenu = () => {
@@ -506,11 +506,15 @@ $('#main .sp').click(() => {
 	$('#save-list').show();
 });
 $('#main .mp').click(() => {
-	mp = true;
-	$('#main').hide();
-	$('#server-list').show();
-	for (let server of servers) {
-		server.ping();
+	if (mpEnabled) {
+		mp = true;
+		$('#main').hide();
+		$('#server-list').show();
+		for (let server of servers) {
+			server.ping();
+		}
+	} else {
+		$('#login')[0].showModal();
 	}
 });
 $('#main .options').click(() => {
@@ -589,6 +593,28 @@ $('#esc .quit').click(() => {
 		$('#main').show();
 	}
 });
+$('#login')
+	.find('.cancel')
+	.click(e => {
+		e.preventDefault();
+		$('#login').find('.error').hide();
+		$('#login')[0].close();
+	});
+$('#login')
+	.find('button.login')
+	.click(async e => {
+		e.preventDefault();
+		try {
+			const email = $('#login').find('input.email').val();
+			const password = $('#login').find('input.password').val();
+			const res = await api.login(email, password).catch(e => { throw e });
+			document.cookie = `token=${res.result.token}`;
+			$('#login').find('.error').hide().text('');
+			$('#login')[0].close();
+		} catch (e) {
+			$('#login').find('.error').text(e.message).show();
+		}
+	});
 $('.nav button.inv').click(() => {
 	$('#q>:not(.nav)').hide();
 	$('div.item-bar').show();

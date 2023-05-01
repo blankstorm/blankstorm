@@ -92,6 +92,18 @@
 				<span></span>
 			</button>
 		</ul>
+		<dialog id="login">
+			<svg clickable class="top-right cancel"><use href="images/icons.svg#xmark" /></svg>
+			<h3>Login</h3>
+			<div style="display: none;" class="error"></div>
+			<br>
+			<input class="email" autocomplete="email" placeholder="Email">
+			<br>
+			<input class="password" autocomplete="current-password" placeholder="Password" type="password">
+			<br>
+			<br>
+			<button class="cancel">Cancel</button><button class="login">Login</button>
+		</dialog>
 		<dialog id="save" overflow-scroll="y" plot="0,0,400px,300px">
 			<input placeholder="save name" class="name" plot="c,50px,250px,2em,a" />
 			<button class="back" plot="c-75px,b62.5px,150px,36.6px,a">
