@@ -28,6 +28,7 @@ const config = {
 	outdir: options.output,
 	bundle: true,
 	minify: true,
+	keepNames: true,
 	sourcemap: true,
 	format: 'esm',
 	loader: Object.fromEntries(['.html', '.png', '.svg', '.fx', '.jpg', '.glb', '.mp3'].map(e => [e, 'copy'])),

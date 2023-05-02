@@ -106,6 +106,10 @@
 			<br>
 			<button class="cancel">Cancel</button><button class="login">Login</button>
 		</dialog>
+		<dialog id="logged-in">
+			<p></p>
+			<button>Ok</button>
+		</dialog>
 		<dialog id="save" overflow-scroll="y" plot="0,0,400px,300px">
 			<input placeholder="save name" class="name" plot="c,50px,250px,2em,a" />
 			<button class="back" plot="c-75px,b62.5px,150px,36.6px,a">
@@ -224,7 +228,7 @@
 			</div>
 		</div>
 		<div id="settings" bg="trans" hide content>
-			<div id="#settings-nav">
+			<div id="settings-nav" bg="none">
 				<button class="general" setting-section="general">
 					<svg><use href=images/icons.svg#gear /></svg>
 					<span></span>

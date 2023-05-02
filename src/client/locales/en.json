@@ -14,6 +14,7 @@
 		"menu.quit": "Main Menu",
 		"menu.start": "Start",
 		"menu.cancel": "Cancel",
+		"menu.logged_in.message": "The game must reload for the login to take effect",
 		"menu.settings_section.general": "General",
 		"menu.settings_section.debug": "Debug",
 		"menu.settings_section.keybinds": "Keybinds",

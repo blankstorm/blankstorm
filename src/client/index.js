@@ -367,6 +367,7 @@ const cli = { line: 0, currentInput: '', i: $('#cli').val(), prev: [] };
 
 export const chat = (...msg) => {
 	for (let m of msg) {
+		console.log(`[chat] ${m}`);
 		$(`<li bg=none></li>`)
 			.text(m)
 			.appendTo('#chat')
@@ -381,13 +382,15 @@ export const player = {
 	parseAuthData(text) {
 		player.authData = text;
 		if (isJSON(text)) {
-			let info = JSON.parse(text);
-			localStorage.auth = text;
-			Object.assign(player, info);
+			let data = JSON.parse(text);
+			if (!data.error) {
+				chat(`Authenication failed: ${data.result} `);
+			} else {
+				localStorage.auth = JSON.stringify(data.result);
+				Object.assign(player, data.result);
+			}
 		} else if (text == undefined) {
-			chat('Failed to connect to account servers.');
-		} else if (text == 'ERROR 404') {
-			chat('Invalid token, please log in again and reload the game to play multiplayer.');
+			chat('Failed to connect to account servers or API is no longer compatible.');
 		}
 	},
 	updateFleet: () => {
@@ -418,15 +421,15 @@ onresize = () => {
 	console.warn('Do not paste any code someone gave you, as they may be trying to steal your information');
 };
 
-$('#loading_cover p').text('Logging you in...');
+$('#loading_cover p').text('Authenticating...');
 if (cookie.token && navigator.onLine) {
 	try {
-		const info = await api.requestUserInfo('token', cookie.token);
-		player.id = info.id;
-		player.username = info.username;
-		player.authData = info;
+		const { result } = await api.requestUserInfo('token', cookie.token);
+		player.id = result.id;
+		player.username = result.username;
+		player.authData = result;
 	} catch (e) {
-		chat('Couldn\'t log you in.');
+		chat("Couldn't log you in.");
 	}
 } else if (localStorage.auth) {
 	if (isJSON(localStorage.auth) && JSON.parse(localStorage.auth)) {
@@ -607,14 +610,19 @@ $('#login')
 		try {
 			const email = $('#login').find('input.email').val();
 			const password = $('#login').find('input.password').val();
-			const res = await api.login(email, password).catch(e => { throw e });
+			const res = await api.login(email, password);
 			document.cookie = `token=${res.result.token}`;
 			$('#login').find('.error').hide().text('');
 			$('#login')[0].close();
+			$('#logged-in p').text(`Welcome, ${res.result.username}! ` + locales.text`menu.logged_in.message`);
+			$('#logged-in')[0].showModal();
 		} catch (e) {
 			$('#login').find('.error').text(e.message).show();
 		}
 	});
+$('#logged-in button').on('click', () => {
+	location.reload();
+});
 $('.nav button.inv').click(() => {
 	$('#q>:not(.nav)').hide();
 	$('div.item-bar').show();
@@ -647,10 +655,10 @@ $('.nav button.trade').click(() => {
 $('button.map.new').click(() => {
 	Waypoint.dialog(current);
 });
-$('#settings>button:not(.back)').click(e => {
+$('#settings-nav button:not(.back)').click(e => {
 	const target = $(e.target),
 		button = target.is('button') ? target : target.parent('button');
-	$('#settings>div')
+	$('#settings>div:not(#settings-nav)')
 		.hide()
 		.filter(`[setting-section=${button.attr('setting-section')}]`)
 		.show();

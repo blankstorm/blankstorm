@@ -46,10 +46,10 @@
 	position: absolute;
 	inset: 10% 10% 10% 10%;
 }
-[bg='transparent'] {
+[bg='trans'] {
 	--bg-color-seethru: hsl(var(--_bg-color), 0.33);
 	background: linear-gradient(to right, var(--bg-color) 0%, var(--bg-color-seethru) 10%, var(--bg-color-seethru) 50%, var(--bg-color-seethru) 90%, var(--bg-color) 100%),
-		linear-gradient(to bottom, var(--bg-color) 0%, var(--bg-color-seethru) 20%, var(--bg-color-seethru) 50%, var(--bg-color-seethru) 80%, var(--bg-color) 100%);
+		linear-gradient(to bottom, var(--bg-color) 0%, var(--bg-color-seethru) 20%, var(--bg-color-seethru) 50%, var(--bg-color-seethru) 80%, var(--bg-color) 100%) !important;
 }
 [bg='star'] {
 	background-image: url('../images/menu.png');

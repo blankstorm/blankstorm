@@ -20,7 +20,7 @@ export default class Player extends Entity {
 			if (shipData instanceof Ship) {
 				this.fleet.push(shipData);
 			} else {
-				Ship.FromData({ ...shipData, owner: this.id, parent: this.id }, level);
+				Ship.FromData({ ...level.getNodeByID(shipData), owner: this.id, parent: this.id }, level);
 			}
 		}
 	}

@@ -30,31 +30,13 @@ svg {
 	background-color: var(--bg-color);
 	border-radius: var(--bg-radius);
 	box-shadow: var(--bg-shadow);
-	color: var(--text-color);
 }
 body > :where(div, ol, ul, nav, form):not([bg='none'], [bg='alt']),
 li[bg] {
 	list-style: none;
 	margin: 1% 10% 1% 5%;
 }
-#settings form {
-	align-items: center;
-}
-.setting-container {
-	width: 100%;
-	margin-top: 1em;
-}
-.setting-label {
-	text-align: right;
-	position: absolute;
-	right: 50%;
-	margin: 0.5em;
-}
-.setting-input {
-	position: absolute;
-	left: 50%;
-	margin: 0.5em;
-}
+
 .selected {
 	border: 1px solid var(--text-color);
 }
@@ -100,12 +82,26 @@ ul.screenshots img {
 #debug span {
 	background-color: #2225;
 }
+
+div[settings-section] {
+	width: 100%;
+	margin-top: 1em;
+}
+.setting-label {
+	text-align: right;
+	position: absolute;
+	right: 50%;
+	margin: 0.5em;
+}
+.setting-input {
+	position: absolute;
+	left: 50%;
+	margin: 0.5em;
+}
 .settings-section {
 	position: absolute;
+	inset: 5%;
 	left: 25%;
-	width: 70%;
-	top: 5%;
-	height: 90%;
 }
 #settings-nav {
 	position: absolute;
@@ -117,5 +113,5 @@ ul.screenshots img {
 #settings-nav button {
 	width: var(--settings-nav-button-width);
 	height: 35px;
-
+	margin-bottom: 1em;
 }
