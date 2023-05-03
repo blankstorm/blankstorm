@@ -35,14 +35,14 @@ export default class Save extends Playable {
 		};
 
 		gui.attr('clickable', '')
-			.click(() => {
+			.on('click', () => {
 				$('.selected').removeClass('selected');
 				save.getStore().selected = save.data.id;
 				gui.addClass('selected');
 			})
 			.dblclick(loadAndPlay);
 		gui.prependTo('#save-list');
-		gui.delete.click(async e => {
+		gui.delete.on('click', async e => {
 			let remove = async () => {
 				gui.remove();
 				if (fs.existsSync(save.path)) {
@@ -52,9 +52,9 @@ export default class Save extends Playable {
 			};
 			e.shiftKey ? remove() : confirm().then(remove);
 		});
-		gui.download.click(() => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
+		gui.download.on('click', () => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
 		gui.play.click(loadAndPlay);
-		gui.edit.click(async () => {
+		gui.edit.on('click', async () => {
 			const result = await modal([{ name: 'name', placeholder: 'New name', value: save.data.name }], { Cancel: false, Save: true });
 			if (result.result) {
 				save.data.name = result.name;

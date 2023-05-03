@@ -1,7 +1,7 @@
 import { build, context } from 'esbuild';
 import { parseArgs } from 'util';
-import { readdirSync } from 'fs';
-import { join } from 'path';
+import { readdirSync, statSync } from 'fs';
+import { join, posix } from 'path';
 
 const { values, positionals } = parseArgs({
 	options: {
@@ -12,18 +12,33 @@ const { values, positionals } = parseArgs({
 });
 
 const options = {
-	verbose: false,
-	output: 'dist/web',
-	watch: false,
-	...values,
-}, input = 'src/client';
+		verbose: false,
+		output: 'dist/web',
+		watch: false,
+		...values,
+	},
+	input = 'src/client';
 
-function fromDir(dir){
-	return readdirSync(join(input, dir)).map(p => join(dir, p))
+function fromPath(path) {
+	if (!statSync(path).isDirectory()) {
+		return [path];
+	}
+	const files = [];
+	for (let file of readdirSync(path)) {
+		const fpath = join(path, file);
+		if (statSync(fpath).isDirectory()) {
+			files.push(...fromPath(fpath));
+		} else {
+			files.push(fpath);
+		}
+	}
+
+	return files;
 }
 
+const entryPoints = ['index.js', 'index.html', 'images', 'locales', 'models', 'music', 'sfx', 'styles'].flatMap(p => fromPath(join(input, p)));
 const config = {
-	entryPoints: [ 'index.js', 'index.html', ...fromDir('styles'), ].map(p => join(input, p)),
+	entryPoints,
 	assetNames: '[dir]/[name]',
 	outdir: options.output,
 	bundle: true,
@@ -31,10 +46,10 @@ const config = {
 	keepNames: true,
 	sourcemap: true,
 	format: 'esm',
-	loader: Object.fromEntries(['.html', '.png', '.svg', '.fx', '.jpg', '.glb', '.mp3'].map(e => [e, 'copy'])),
-}
+	loader: Object.fromEntries(['.html', '.png', '.svg', '.fx', '.jpg', '.glb', '.mp3', '.gltf', '.json'].map(e => [e, 'copy'])),
+};
 
-if(options.watch){
+if (options.watch) {
 	console.log('Watching...');
 	const ctx = await context(config);
 	await ctx.watch();

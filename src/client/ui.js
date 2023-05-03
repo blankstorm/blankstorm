@@ -15,7 +15,7 @@ export function init() {
 						<span style=text-align:right;>${locales.text(`item.${id}.name`)}${item.rare ? ` (rare)` : ``}: </span>
 						<span class=count style=text-align:left;></span>
 					</div>`)
-			.click(() => {
+			.on('click', () => {
 				if (item.recipe && player.data().hasItems(item.recipe)) {
 					player.data().removeItems(item.recipe);
 					player.data().items[id]++;
@@ -32,7 +32,7 @@ export function init() {
 						<span class="upgrade add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
 					</div>`)
 			.find('.upgrade')
-			.click(() => {
+			.on('click', () => {
 				if (
 					player.data().hasItems(Tech.priceOf(id, player.data().tech[id])) &&
 					player.data().tech[id] < t.max &&
@@ -56,7 +56,7 @@ export function init() {
 						<span class="add add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
 					</div>`)
 			.find('.add')
-			.click(() => {
+			.on('click', () => {
 				if (player.data().hasItems(ship.recipe)) {
 					player.data().removeItems(ship.recipe);
 					const ship = new Ship(null, player.data().level, { type, power: player.data().power });
@@ -153,10 +153,10 @@ export function update(scene = current) {
 			$(`<img src=${s} width=256></img>`)
 				.appendTo('#q div.screenshots')
 				.cm(
-					$('<button><svg><use href=images/icons.svg#download /></svg> Download</button>').click(() => {
+					$('<button><svg><use href=images/icons.svg#download /></svg> Download</button>').on('click', () => {
 						$('<a download=screenshot.png></a>').attr('href', s)[0].click();
 					}),
-					$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').click(() => {
+					$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').on('click', () => {
 						confirm().then(() => {
 							screenshots.splice(screenshots.indexOf(s), 1);
 							update();

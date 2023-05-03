@@ -503,12 +503,12 @@ commands.set(
 $('#loading_cover p').text('Registering event listeners...');
 //Event Listeners (UI transitions, creating saves, etc.)
 export const eventLog = [];
-$('#main .sp').click(() => {
+$('#main .sp').on('click', () => {
 	mp = false;
 	$('#main').hide();
 	$('#save-list').show();
 });
-$('#main .mp').click(() => {
+$('#main .mp').on('click', () => {
 	if (mpEnabled) {
 		mp = true;
 		$('#main').hide();
@@ -520,22 +520,22 @@ $('#main .mp').click(() => {
 		$('#login')[0].showModal();
 	}
 });
-$('#main .options').click(() => {
+$('#main .options').on('click', () => {
 	ui.setLast('#main');
 	$('#settings').show();
 	ui.update();
 });
-$('.playable-list .back').click(() => {
+$('.playable-list .back').on('click', () => {
 	$('.playable-list').hide();
 	$('#main').show();
 });
-$('#save-list .new').click(() => {
+$('#save-list .new').on('click', () => {
 	$('#save')[0].showModal();
 });
-$('#server-list .new').click(() => {
+$('#server-list .new').on('click', () => {
 	Server.Dialog();
 });
-$('#save-list button.upload').click(async () => {
+$('#save-list button.upload').on('click', async () => {
 	const files = await upload('.json');
 	const text = await files[0].text();
 	if (isJSON(text)) {
@@ -544,17 +544,17 @@ $('#save-list button.upload').click(async () => {
 		alert(`Can't load save: not JSON.`);
 	}
 });
-$('#server-list button.refresh').click(() => {
+$('#server-list button.refresh').on('click', () => {
 	servers.forEach(server => server.ping());
 });
-$('#connect button.back').click(() => {
+$('#connect button.back').on('click', () => {
 	$('#server-list').show();
 	$('#connect').hide();
 });
-$('#save button.back').click(() => {
+$('#save button.back').on('click', () => {
 	$('#save')[0].close();
 });
-$('#save .new').click(async () => {
+$('#save .new').on('click', async () => {
 	$('#save')[0].close();
 	const name = $('#save .name').val();
 	const level = await Save.Live.CreateDefault(name, player.id, player.username);
@@ -562,12 +562,12 @@ $('#save .new').click(async () => {
 	level.play();
 	if (!settings.get('disable_saves')) save.saveToStorage();
 });
-$('#esc .resume').click(() => {
+$('#esc .resume').on('click', () => {
 	$('#esc').hide();
 	canvas.focus();
 	isPaused = false;
 });
-$('#esc .save').click(() => {
+$('#esc .save').on('click', () => {
 	if (!(current instanceof Save.Live)) {
 		throw 'Save Error: you must have a valid save selected.';
 	}
@@ -581,12 +581,12 @@ $('#esc .save').click(() => {
 	}
 	$('#esc .save').text('Save Game');
 });
-$('#esc .options').click(() => {
+$('#esc .options').on('click', () => {
 	ui.setLast('#esc');
 	$('#esc').hide();
 	$('#settings').show();
 });
-$('#esc .quit').click(() => {
+$('#esc .quit').on('click', () => {
 	isPaused = true;
 	$('[ingame]').hide();
 	if (mp) {
@@ -598,14 +598,14 @@ $('#esc .quit').click(() => {
 });
 $('#login')
 	.find('.cancel')
-	.click(e => {
+	.on('click', e => {
 		e.preventDefault();
 		$('#login').find('.error').hide();
 		$('#login')[0].close();
 	});
 $('#login')
 	.find('button.login')
-	.click(async e => {
+	.on('click', async e => {
 		e.preventDefault();
 		try {
 			const email = $('#login').find('input.email').val();
@@ -623,39 +623,39 @@ $('#login')
 $('#logged-in button').on('click', () => {
 	location.reload();
 });
-$('.nav button.inv').click(() => {
+$('.nav button.inv').on('click', () => {
 	$('#q>:not(.nav)').hide();
 	$('div.item-bar').show();
 	$('div.inv').css('display', 'grid');
 });
-$('.nav button.map').click(() => {
+$('.nav button.map').on('click', () => {
 	$('#q>:not(.nav)').hide();
 	$('.map').css('display', 'grid');
 });
-$('.nav button.screenshots').click(() => {
+$('.nav button.screenshots').on('click', () => {
 	$('#q>:not(.nav)').hide();
 	$('div.screenshots').css('display', 'grid');
 });
-$('.nav button.warp').click(() => {
+$('.nav button.warp').on('click', () => {
 	$('#q>:not(.nav)').hide();
 	$('div.warp').show();
 });
-$('.nav button.yrd').click(() => {
+$('.nav button.yrd').on('click', () => {
 	$('#e>:not(.nav)').hide();
 	$('div.yrd').css('display', 'grid');
 });
-$('.nav button.lab').click(() => {
+$('.nav button.lab').on('click', () => {
 	$('#e>:not(.nav)').hide();
 	$('div.lab').css('display', 'grid');
 });
-$('.nav button.trade').click(() => {
+$('.nav button.trade').on('click', () => {
 	$('#e>:not(.nav)').hide();
 	$('div.trade').css('display', 'grid');
 });
-$('button.map.new').click(() => {
+$('button.map.new').on('click', () => {
 	Waypoint.dialog(current);
 });
-$('#settings-nav button:not(.back)').click(e => {
+$('#settings-nav button:not(.back)').on('click', e => {
 	const target = $(e.target),
 		button = target.is('button') ? target : target.parent('button');
 	$('#settings>div:not(#settings-nav)')
@@ -663,13 +663,13 @@ $('#settings-nav button:not(.back)').click(e => {
 		.filter(`[setting-section=${button.attr('setting-section')}]`)
 		.show();
 });
-$('#settings button.mod').click(() => {
+$('#settings button.mod').on('click', () => {
 	$('#settings ul.mod')
 		.show()
 		.empty()
 		.append(
 			$('<h2 style=text-align:center>Mods</h2>'),
-			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=images/icons.svg#trash /></svg>&nbsp;Reset</button>').click(async () => {
+			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=images/icons.svg#trash /></svg>&nbsp;Reset</button>').on('click', async () => {
 				if (!fs.existsSync('mods')) {
 					fs.mkdirSync('mods');
 				}
@@ -678,19 +678,19 @@ $('#settings button.mod').click(() => {
 				}
 				alert('Requires reload');
 			}),
-			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locales.text`menu.upload`}</button>`).click(() => {
+			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locales.text`menu.upload`}</button>`).on('click', () => {
 				//upload('.js').then(files => [...files].forEach(file => file.text().then(mod => loadMod(mod))));
 				alert('Mods are not supported.');
 			})
 		);
 	ui.update();
 });
-$('#settings button.back').click(() => {
+$('#settings button.back').on('click', () => {
 	$('#settings').hide();
 	$(ui.getLast()).show();
 	ui.update();
 });
-$('#q div.warp button.warp').click(() => {
+$('#q div.warp button.warp').on('click', () => {
 	let destination = new Vector3(+$('input.warp.x').val(), 0, +$('input.warp.y').val());
 	player.data().fleet.forEach(ship => {
 		let offset = random.cords(player.data().power, true);
@@ -841,7 +841,7 @@ $('#e')
 			changeUI('#e');
 		}
 	})
-	.click(() => ui.update());
+	.on('click', () => ui.update());
 $('canvas.game,#esc,#hud').on('keydown', e => {
 	if (e.key == 'Escape') {
 		changeUI('#esc', true);

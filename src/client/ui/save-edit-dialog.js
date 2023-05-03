@@ -24,14 +24,14 @@ export default class SaveEditDialog extends HTMLDialogElement {
 		`);
 		$(this)
 			.find('.cancel')
-			.click(e => {
+			.on('click', e => {
 				e.preventDefault();
 				$(this).find('.error').hide();
 				this.close();
 			});
 		$(this)
 			.find('button.save')
-			.click(e => {
+			.on('click', e => {
 				e.preventDefault();
 
 				$(this).find('.error').hide();

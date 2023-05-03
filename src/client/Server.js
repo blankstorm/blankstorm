@@ -119,14 +119,14 @@ export default class Server extends Playable {
 		$('<p> </p>').appendTo(this.gui);
 		this.gui
 			.attr('clickable', true)
-			.click(() => {
+			.on('click', () => {
 				$('.selected').removeClass('selected');
 				this.gui.addClass('selected');
 				this.getStore().selected = this.url;
 			})
-			.dblclick(() => this.connect())
+			.on('dblclick', () => this.connect())
 			.prependTo('#server-list');
-		this.gui.delete.click(() => {
+		this.gui.delete.on('click', () => {
 			confirm().then(async () => {
 				this.gui.remove();
 				this.getStore().delete(this.url);
@@ -136,8 +136,8 @@ export default class Server extends Playable {
 				fs.unlinkSync(this.path);
 			});
 		});
-		this.gui.play.click(() => this.connect());
-		this.gui.edit.click(() => Server.Dialog(this));
+		this.gui.play.on('click', () => this.connect());
+		this.gui.edit.on('click', () => Server.Dialog(this));
 		this.getStore().set(this.url, this);
 	}
 	connect() {

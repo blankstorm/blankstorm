@@ -59,14 +59,14 @@ export default class Waypoint extends Node {
 			.filter('span')
 			.eq(0)
 			.attr('clickable', '')
-			.click(() => {
+			.on('click', () => {
 				Waypoint.dialog(this);
 			}),
 			ui
 				.filter('span')
 				.eq(1)
 				.attr('clickable', '')
-				.click(() => {
+				.on('click', () => {
 					confirm().then(() => {
 						this.marker.remove();
 						this.getScene().waypoints.splice(this.getScene().waypoints.indexOf(this), 1);
