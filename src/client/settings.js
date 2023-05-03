@@ -103,7 +103,6 @@ export class SettingsItem extends HTMLDivElement {
 		}
 		$(this).after('<br><br>');
 
-
 		this.update(options);
 		this.#ui_input.on('change', e => {
 			this.value = this.type == 'boolean' ? e.target.checked : e.target.value;
@@ -284,7 +283,7 @@ export class SettingsSection extends HTMLFormElement {
 	}
 
 	set label(value) {
-		this.#label = value
+		this.#label = value;
 		$(this).find('h2.settings-name').text(`Settings - ${value}`);
 	}
 

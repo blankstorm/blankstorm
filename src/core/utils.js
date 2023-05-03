@@ -115,7 +115,7 @@ export class JSONFileMap /* implements Map */ {
 		this.#path = path;
 		this.#fs = fs;
 
-		if(!fs.existsSync(path)){
+		if (!fs.existsSync(path)) {
 			fs.writeFileSync(path, '{}');
 		}
 	}
