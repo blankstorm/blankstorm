@@ -6,6 +6,6 @@ Blankstorm is a free, online Sandbox/RTS game - no installation required. Comman
 
 This is the development repository for the game.
 
-[Changelog](https://b.drvortex.dev/versions)
+[Changelog](https://bs.drvortex.dev/versions)
 
-The terms of service are available [here](https://b.drvortex.dev/tos)
+The terms of service are available [here](https://bs.drvortex.dev/tos)
