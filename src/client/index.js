@@ -19,23 +19,20 @@ $.fn.cm = function (...content) {
 	return this;
 };
 
-import { io } from 'socket.io-client';
-
-import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level } from '../core/index.js';
+import { version, versions, isJSON, config, Command, commands, execCommandString, random, Ship, Level, isHex } from '../core/index.js';
 
 import { SettingsStore } from './settings.js';
 import LocaleStore from './locales.js';
-import { web, upload, minimize, alert, prompt } from './utils.js';
+import { web, upload, minimize, alert } from './utils.js';
 import Waypoint from './waypoint.js';
-import Save from './Save.js';
-import Server from './Server.js';
-import { PlayableStore } from './playable.js';
+import { SaveMap, Save, LiveSave } from './Save.js';
+import { ServerMap, Server } from './Server.js';
 import * as renderer from './renderer/index.js';
 import fs from './fs.js';
 import * as ui from './ui.js';
-import * as UI from './ui/index.js';
 import { sounds, playsound } from './audio.js';
 import * as api from '../core/api.js';
+import { Color3 } from '@babylonjs/core/index.js';
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
@@ -251,7 +248,7 @@ export const settings = new SettingsStore({
 			label: 'Save Game',
 			value: { key: 's', ctrl: true },
 			onTrigger: () => {
-				if (!(current instanceof Save.Live)) {
+				if (!(current instanceof LiveSave)) {
 					throw 'Save Error: you must have a valid save selected.';
 				}
 				$('#esc .save').text('Saving...');
@@ -276,9 +273,6 @@ for (let section of settings.sections.values()) {
 	});
 }
 
-export const saves = new PlayableStore(),
-	servers = new PlayableStore();
-
 export const cookie = {};
 document.cookie.split('; ').forEach(e => {
 	cookie[e.split('=')[0]] = e.split('=')[1];
@@ -298,8 +292,8 @@ try {
 }
 
 export let isPaused = true,
-	mp = false,
-	mpEnabled = true,
+	_mp = false,
+	mpEnabled = false,
 	hitboxes = false;
 
 export const canvas = $('canvas.game'),
@@ -345,7 +339,7 @@ const toggleChat = command => {
 	}
 };
 const runCommand = command => {
-	if (mp) {
+	if (_mp) {
 		servers.get(servers.selected).socket.emit('command', command);
 	} else {
 		return execCommandString(command, player.data(), true);
@@ -371,7 +365,7 @@ export const chat = (...msg) => {
 		$(`<li bg=none></li>`)
 			.text(m)
 			.appendTo('#chat')
-			.fadeOut(1000 * settings.get('chat'));
+			.fadeOut(1000 * settings.get('chat_timeout'));
 		$(`<li bg=none></li>`).text(m).appendTo('#chat_history');
 	}
 };
@@ -408,7 +402,7 @@ export const player = {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
-	data: id => (mp ? servers.get(servers.selected)?.level : current)?.entities?.get(id ?? player.id) ?? {},
+	data: id => (_mp ? servers.get(servers.selected)?.level : current)?.entities?.get(id ?? player.id) ?? {},
 	levelOf: xp => Math.sqrt(xp / 10),
 	xpOf: level => 10 * level ** 2,
 	get isInBattle() {
@@ -424,25 +418,23 @@ onresize = () => {
 $('#loading_cover p').text('Authenticating...');
 if (cookie.token && navigator.onLine) {
 	try {
-		const { result } = await api.requestUserInfo('token', cookie.token);
-		player.id = result.id;
-		player.username = result.username;
-		player.authData = result;
+		let res;
+		try {
+			res = await api.requestUserInfo('token', cookie.token);
+		} catch (e) {
+			throw 'Fetch failed';
+		}
+		if (res.error) {
+			throw `Couldn't log you in (${res.result})`;
+		}
+		player.id = res.result.id;
+		player.username = res.result.username;
+		player.authData = res.result;
+		mpEnabled = true;
 	} catch (e) {
-		chat("Couldn't log you in.");
+		chat(e);
 	}
-} else if (localStorage.auth) {
-	if (isJSON(localStorage.auth) && JSON.parse(localStorage.auth)) {
-		let data = JSON.parse(localStorage.auth);
-		player.authData = data;
-		Object.assign(player, data);
-	} else {
-		chat('Error: Invalid auth data.');
-	}
-} else {
-	mpEnabled = false;
 }
-
 oncontextmenu = () => {
 	$('.cm').not(':last').remove();
 };
@@ -461,25 +453,10 @@ $('#loading_cover p').text('Loading saves...');
 if (!fs.existsSync('saves')) {
 	fs.mkdirSync('saves');
 }
-
-for (let name of fs.readdirSync('saves')) {
-	const content = fs.readFileSync('saves/' + name, { encoding: 'utf-8' });
-	if (isJSON(content)) {
-		new Save(JSON.parse(content));
-	}
-}
+export const saves = new SaveMap('saves');
 
 $('#loading_cover p').text('Loading servers...');
-if (!fs.existsSync('servers')) {
-	fs.mkdirSync('servers');
-}
-
-for (let name of fs.readdirSync('servers')) {
-	const content = fs.readFileSync('servers/' + name, { encoding: 'utf-8' });
-	if (isJSON(content)) {
-		new Server(JSON.parse(content));
-	}
-}
+export const servers = new ServerMap('servers.json');
 
 commands.set(
 	'playsound',
@@ -500,20 +477,56 @@ commands.set(
 	}, 0)
 );
 
+export const eventLog = [];
+if (config.debug_mode) {
+	$('#loading_cover p').text('Debug: Assigning variables...');
+	const BABYLON = await import('@babylonjs/core/index.js'),
+		core = await import('../core/index.js'),
+		{ default: io } = await import('socket.io-client'),
+		UI = await import('./ui/index.js');
+
+	Object.assign(window, {
+		core,
+		cookie,
+		eventLog,
+		settings,
+		locales,
+		$,
+		io,
+		renderer,
+		player,
+		saves,
+		servers,
+		fs,
+		config,
+		ui,
+		UI,
+		_mp,
+		changeUI,
+		BABYLON,
+		Save,
+		LiveSave,
+		Server,
+		getCurrent() {
+			return current;
+		},
+	});
+}
+
 $('#loading_cover p').text('Registering event listeners...');
 //Event Listeners (UI transitions, creating saves, etc.)
-export const eventLog = [];
+
 $('#main .sp').on('click', () => {
-	mp = false;
+	_mp = false;
 	$('#main').hide();
 	$('#save-list').show();
 });
 $('#main .mp').on('click', () => {
 	if (mpEnabled) {
-		mp = true;
+		_mp = true;
 		$('#main').hide();
 		$('#server-list').show();
-		for (let server of servers) {
+		for (let server of servers.values()) {
 			server.ping();
 		}
 	} else {
@@ -530,10 +543,40 @@ $('.playable-list .back').on('click', () => {
 	$('#main').show();
 });
 $('#save-list .new').on('click', () => {
-	$('#save')[0].showModal();
+	$('#save-new')[0].showModal();
 });
 $('#server-list .new').on('click', () => {
-	Server.Dialog();
+	$('#server-dialog').find('.name').val('');
+	$('#server-dialog').find('.url').val('');
+	$('#server-dialog')[0].showModal();
+});
+$('#server-dialog .save').on('click', () => {
+	const name = $('#server-dialog .name').val(),
+		url = $('#server-dialog .url').val(),
+		id = Server.GetID(url);
+	const server = servers.has(id) ? servers.get(id) : new Server(url, name, servers);
+	if (servers.has(id)) {
+		server.name = name;
+		server.url = url;
+	}
+	ui.update();
+	$('#server-dialog')[0].close();
+});
+$('#server-dialog .cancel').on('click', () => {
+	$('#server-dialog')[0].close();
+});
+$('#save-edit .save').on('click', () => {
+	const id = $('#save-edit .id').val(),
+		name = $('#save-edit .name').val();
+	const save = saves.get(id);
+	if (saves.has(id)) {
+		save.name = name;
+	}
+	ui.update();
+	$('#save-edit')[0].close();
+});
+$('#save-edit .cancel').on('click', () => {
+	$('#save-edit')[0].close();
 });
 $('#save-list button.upload').on('click', async () => {
 	const files = await upload('.json');
@@ -551,16 +594,15 @@ $('#connect button.back').on('click', () => {
 	$('#server-list').show();
 	$('#connect').hide();
 });
-$('#save button.back').on('click', () => {
-	$('#save')[0].close();
+$('#save-new button.back').on('click', () => {
+	$('#save-new')[0].close();
 });
-$('#save .new').on('click', async () => {
-	$('#save')[0].close();
-	const name = $('#save .name').val();
-	const level = await Save.Live.CreateDefault(name, player.id, player.username);
-	let save = new Save(level.serialize());
-	level.play();
-	if (!settings.get('disable_saves')) save.saveToStorage();
+$('#save-new .new').on('click', async () => {
+	$('#save-new')[0].close();
+	const name = $('#save-new .name').val();
+	const live = await LiveSave.CreateDefault(name, player.id, player.username);
+	new Save(live.serialize(), saves);
+	live.play(saves);
 });
 $('#esc .resume').on('click', () => {
 	$('#esc').hide();
@@ -568,16 +610,18 @@ $('#esc .resume').on('click', () => {
 	isPaused = false;
 });
 $('#esc .save').on('click', () => {
-	if (!(current instanceof Save.Live)) {
+	if (!(current instanceof LiveSave)) {
 		throw 'Save Error: you must have a valid save selected.';
 	}
 	$('#esc .save').text('Saving...');
-	saves.get(current.id).data = current.serialize();
 	try {
-		saves.get(current.id).saveToStorage();
+		const save = saves.get(current.id);
+		save.data = current.serialize();
+		saves.set(current.id, save);
 		chat('Game saved.');
 	} catch (err) {
-		chat('Failed to save game: ' + err);
+		chat('Failed to save game.');
+		throw err;
 	}
 	$('#esc .save').text('Save Game');
 });
@@ -589,7 +633,7 @@ $('#esc .options').on('click', () => {
 $('#esc .quit').on('click', () => {
 	isPaused = true;
 	$('[ingame]').hide();
-	if (mp) {
+	if (_mp) {
 		servers.get(servers.selected).disconnect();
 	} else {
 		saves.selected = null;
@@ -614,15 +658,12 @@ $('#login')
 			document.cookie = `token=${res.result.token}`;
 			$('#login').find('.error').hide().text('');
 			$('#login')[0].close();
-			$('#logged-in p').text(`Welcome, ${res.result.username}! ` + locales.text`menu.logged_in.message`);
-			$('#logged-in')[0].showModal();
+			await alert(`Welcome, ${res.result.username}! ` + locales.text`menu.logged_in.message`);
+			location.reload();
 		} catch (e) {
 			$('#login').find('.error').text(e.message).show();
 		}
 	});
-$('#logged-in button').on('click', () => {
-	location.reload();
-});
 $('.nav button.inv').on('click', () => {
 	$('#q>:not(.nav)').hide();
 	$('div.item-bar').show();
@@ -695,7 +736,7 @@ $('#q div.warp button.warp').on('click', () => {
 	player.data().fleet.forEach(ship => {
 		let offset = random.cords(player.data().power, true);
 		ship.jump(destination.add(offset));
-		console.log(ship.id + ' Jumped');
+		chat(ship.name + ' Jumped');
 	});
 	$('#q').toggle();
 });
@@ -715,6 +756,34 @@ $('#settings div.general select[name=locale]').change(e => {
 		alert('That locale is not loaded.');
 		console.warn(`Failed to load locale ${lang}`);
 	}
+});
+$('#waypoint-dialog .save').on('click', () => {
+	const wpd = $('#waypoint-dialog')[0];
+	const data = new FormData($('#waypoint-dialog form')[0]);
+	if (!isHex(data.get('color').slice(1))) {
+		alert(locales.text`error.waypoint.color`);
+	} else if (Math.abs(data.get('x')) > 99999 || Math.abs(data.get('y')) > 99999 || Math.abs(data.get('z')) > 99999) {
+		alert(locales.text`error.waypoint.range`);
+	} else if (wpd._waypoint instanceof Waypoint) {
+		Object.assign(wpd._waypoint, {
+			name: data.get('name'),
+			color: Color3.FromHexString(data.get('color')),
+			position: new Vector3(data.get('x'), data.get('y'), data.get('z')),
+		});
+	} else {
+		new Waypoint(
+			{
+				name: data.get('name'),
+				color: Color3.FromHexString(data.get('color')),
+				position: new Vector3(data.get('x'), data.get('y'), data.get('z')),
+			},
+			saves.current
+		);
+		$('#waypoint-dialog')[0].close();
+	}
+});
+$('#waypoint-dialog .cancel').on('click', () => {
+	$('#waypoint-dialog')[0].close();
 });
 $('html')
 	.keydown(e => {
@@ -768,8 +837,9 @@ $('#cli').keydown(e => {
 			if (/[^\s/]/.test($('#cli').val())) {
 				if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#cli').val());
 				if ($('#cli').val()[0] == '/') chat(runCommand($('#cli').val().slice(1)));
-				else mp ? servers.get(servers.selected).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val());
+				else _mp ? servers.get(servers.selected).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val());
 				$('#cli').val('');
+				toggleChat();
 				cli.line = 0;
 			}
 			break;
@@ -783,13 +853,13 @@ canvas.on('click', e => {
 		renderer.getCamera().attachControl(canvas, true);
 	}
 
-	if (current instanceof Save.Live) {
+	if (current instanceof LiveSave) {
 		renderer.handleCanvasClick(e, renderer.scene.getNodeById(player.id));
 	}
 	ui.update();
 });
 canvas.on('contextmenu', e => {
-	if (current instanceof Save.Live) {
+	if (current instanceof LiveSave) {
 		const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
 		for (let { entityRenderer, point } of data) {
 			const entity = current.getNodeByID(entityRenderer.id);
@@ -812,7 +882,7 @@ canvas.on('keydown', e => {
 			break;
 		case 'Tab':
 			e.preventDefault();
-			if (mp) $('#tablist').show();
+			if (_mp) $('#tablist').show();
 			break;
 	}
 });
@@ -825,7 +895,7 @@ canvas.on('keyup', e => {
 	switch (e.key) {
 		case 'Tab':
 			e.preventDefault();
-			if (mp) $('#tablist').hide();
+			if (_mp) $('#tablist').hide();
 			break;
 	}
 });
@@ -853,99 +923,62 @@ $('button').on('click', () => {
 	playsound(sounds.get('ui'), settings.get('sfx'));
 });
 setInterval(() => {
-	if (current instanceof Save.Live && !isPaused) {
+	if (current instanceof LiveSave && !isPaused) {
 		current.tick();
 	}
 }, 1000 / Level.tickRate);
 
 const loop = () => {
 	if (current instanceof Level && !isPaused) {
-		try {
-			const camera = renderer.getCamera();
-			camera.angularSensibilityX = camera.angularSensibilityY = 2000 / settings.get('sensitivity');
-			current.waypoints.forEach(waypoint => {
-				let pos = waypoint.screenPos;
-				waypoint.marker
-					.css({
-						position: 'fixed',
-						left: Math.min(Math.max(pos.x, 0), innerWidth - settings.get('font_size')) + 'px',
-						top: Math.min(Math.max(pos.y, 0), innerHeight - settings.get('font_size')) + 'px',
-						fill: waypoint.color.toHexString(),
-					})
-					.filter('p')
-					.text(
-						Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.marker.eq(0).is(':hover') || waypoint.marker.eq(1).is(':hover')
-							? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km`
-							: ''
-					);
-				waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
-			});
-			$('#hud p.level').text(Math.floor(player.levelOf(player.data().xp)));
-			$('#hud svg.xp rect').attr('width', (player.levelOf(player.data().xp) % 1) * 100 + '%');
-			$('#debug .left').html(`
-						<span>${version} ${mods.length ? `[${mods.join(', ')}]` : `(vanilla)`}</span><br>
-						<span>${renderer.engine.getFps().toFixed()} FPS | ${current.tps.toFixed()} TPS</span><br>
-						<span>${current.id} (${current.date.toLocaleString()})</span><br><br>
-						<span>
-							P: (${camera.target
-								.asArray()
-								.map(e => e.toFixed(1))
-								.join(', ')}) 
-							V: (${camera.velocity
-								.asArray()
-								.map(e => e.toFixed(1))
-								.join(', ')}}) 
-							R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
-						</span><br>
-						`);
-			$('#debug .right').html(`
-						<span>Babylon v${renderer.engine.constructor.Version} | jQuery v${$.fn.jquery}</span><br>
-						<span>${renderer.engine._glRenderer}</span><br>
-						<span>${
-							performance.memory
-								? `${(performance.memory.usedJSHeapSize / 1000000).toFixed()}MB/${(performance.memory.jsHeapSizeLimit / 1000000).toFixed()}MB (${(
-										performance.memory.totalJSHeapSize / 1000000
-								  ).toFixed()}MB Allocated)`
-								: 'Memory usage unknown'
-						}</span><br>
-						<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
-					`);
+		const camera = renderer.getCamera();
+		camera.angularSensibilityX = camera.angularSensibilityY = 2000 / settings.get('sensitivity');
+		current.waypoints.forEach(waypoint => {
+			let pos = waypoint.screenPos;
+			waypoint.marker
+				.css({
+					position: 'fixed',
+					left: Math.min(Math.max(pos.x, 0), innerWidth - settings.get('font_size')) + 'px',
+					top: Math.min(Math.max(pos.y, 0), innerHeight - settings.get('font_size')) + 'px',
+					fill: waypoint.color.toHexString(),
+				})
+				.filter('p')
+				.text(
+					Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.marker.eq(0).is(':hover') || waypoint.marker.eq(1).is(':hover')
+						? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km`
+						: ''
+				);
+			waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
+		});
+		$('#hud p.level').text(Math.floor(player.levelOf(player.data().xp)));
+		$('#hud svg.xp rect').attr('width', (player.levelOf(player.data().xp) % 1) * 100 + '%');
+		$('#debug .left').html(`
+			<span>${version} ${mods.length ? `[${mods.join(', ')}]` : `(vanilla)`}</span><br>
+			<span>${renderer.engine.getFps().toFixed()} FPS | ${current.tps.toFixed()} TPS</span><br>
+			<span>${current.id} (${current.date.toLocaleString()})</span><br><br>
+			<span>
+				P: (${camera.target
+					.asArray()
+					.map(e => e.toFixed(1))
+					.join(', ')}) 
+				V: (${camera.velocity
+					.asArray()
+					.map(e => e.toFixed(1))
+					.join(', ')}}) 
+				R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
+			</span><br>
+		`);
+		const { usedJSHeapSize: used = 0, jsHeapSizeLimit: limit = 0, totalJSHeapSize: total = 0 } = performance?.memory || {};
+		$('#debug .right').html(`
+			<span>Babylon v${renderer.engine.constructor.Version} | jQuery v${$.fn.jquery}</span><br>
+			<span>${renderer.engine._glRenderer}</span><br>
+			<span>${`${(used / 1000000).toFixed()}MB/${(limit / 1000000).toFixed()}MB (${(total / 1000000).toFixed()}MB Allocated)`}</span><br>
+			<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
+		`);
 
-			renderer.render();
-		} catch (err) {
-			console.error(`loop() failed: ${err.stack ?? err}`);
-		}
+		renderer.render();
 	}
 };
 
-if (config.debug_mode) {
-	$('#loading_cover p').text('Debug: Assigning variables...');
-	const BABYLON = await import('@babylonjs/core/index.js');
-	const core = await import('../core/index.js');
-
-	Object.assign(window, {
-		core,
-		cookie,
-		eventLog,
-		settings,
-		locales,
-		$,
-		io,
-		renderer,
-		player,
-		saves,
-		servers,
-		fs,
-		config,
-		ui,
-		UI,
-		changeUI,
-		BABYLON,
-		getCurrent() {
-			return current;
-		},
-	});
-}
 ui.update();
 $('#loading_cover p').text('Done!');
 $('#loading_cover').fadeOut(1000);

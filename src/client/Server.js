@@ -1,64 +1,65 @@
 import $ from 'jquery';
 import { io } from 'socket.io-client';
 
-import { modal, alert, confirm } from './utils.js';
-import { isJSON } from '../core/index.js';
-import { Playable } from './playable.js';
-import { servers, cookie, canvas, chat, player, setPaused, setCurrent } from './index.js';
-import { update as updateUI } from './ui.js';
+import { cookie, chat, setPaused, setCurrent } from './index.js';
 import * as listeners from './listeners.js';
 import * as renderer from './renderer/index.js';
 import { LevelEvent } from '../core/events.js';
 import Level from '../core/Level.js';
 import fs from './fs.js';
+import { JSONFileMap } from '../core/utils.js';
+import ServerListItem from './ui/server-list-item.js';
+import { config, versions } from '../core/meta.js';
 
-export default class Server extends Playable {
-	static async Dialog(server) {
-		const result = await modal(
-			[
-				{ name: 'name', placeholder: 'Display name', value: server instanceof Server ? server.name : null },
-				{ name: 'url', placeholder: 'Server URL or IP Address', value: server instanceof Server ? server.url : null },
-			],
-			{ Cancel: false, Save: true }
-		);
-		if (result.result) {
-			if (server instanceof Server) {
-				server.saveToStorage();
-				server.name = result.name;
-				if (server.url != result.url) {
-					server.removeFromStorage();
-					server.url = result.url;
-				}
-			} else {
-				if (servers.has(result.url)) {
-					alert('A server with that URL already exists.');
-				} else {
-					new Server(result.url, result.name, player.data());
-				}
+export class ServerMap extends JSONFileMap {
+	_live = new Map();
+	constructor(path) {
+		super(path, fs);
+
+		for (const [id, data] of super._getMap()) {
+			if (!this._live.has(id)) {
+				Server.FromJSON(data, this);
 			}
-			updateUI();
 		}
 	}
-	level = new Level('server_level', true);
-	constructor(url, name) {
-		super(url, servers);
 
-		Object.assign(this, {
-			url,
-			name,
-			kickMessage: null,
-			socket: null,
-			gui: $(`<li ofn bg style=align-items:center;height:3em></li>`),
-		});
+	_getMap() {
+		return this._live;
+	}
+
+	get(id) {
+		return this._live.get(id);
+	}
+
+	set(id, server) {
+		super.set(id, server.toJSON());
+		this._live.set(id, server);
+	}
+
+	delete(id) {
+		this._live.delete(id);
+		super.delete(id);
+	}
+}
+
+export class Server {
+	level = new Level('server_level', true);
+	kickMessage = null;
+	socket = null;
+
+	constructor(url, name, store) {
+		this._url = url;
+		this._name = name;
+		this.gui = $(new ServerListItem(this));
+		this.store = store;
 		this.level.waypoints = [];
-		this.saveToStorage();
-		this.socket = io(this.url, { reconnection: false, autoConnect: false, auth: { token: cookie.token, session: cookie.session } });
+
+		this.socket = io(this.url.href, { reconnection: false, autoConnect: false, auth: { token: cookie.token, session: cookie.session } });
 		this.socket.on('connect', () => {
 			$('#connect').hide();
-			canvas.show();
-			canvas.focus();
+			$('canvas.game').show().focus();
 			$('#hud').show();
-			$('#tablist p.info').html(`${this.url}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
+			$('#tablist p.info').html(`${this.url.hostname}<br>${this.pingData.version.text}<br>${this.pingData.message}<br>`);
 			renderer.clear();
 			renderer.engine.resize();
 			setPaused(false);
@@ -86,11 +87,11 @@ export default class Server extends Playable {
 				setCurrent(this.level);
 				this.level.sampleTick();
 			}
-			if (!listeners.core.has(type)) {
+			if (!listeners.core[type]) {
 				console.warn(new Error(`Recieved invalid packet type "${type}"`));
 			} else {
 				const evt = new LevelEvent(type, emitter, data);
-				listeners.core.get(type)(evt);
+				listeners.core[type](evt);
 			}
 		});
 		this.socket.on('disconnect', reason => {
@@ -111,35 +112,32 @@ export default class Server extends Playable {
 			$('[ingame]').hide();
 			$(reason == 'io client disconnect' ? '#server-list' : '#connect').show();
 		});
-		this.gui.delete = $(`<p style=position:absolute;left:15%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(this.gui);
-		this.gui.play = $(`<p style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(this.gui);
-		this.gui.edit = $(`<p style=position:absolute;left:25%><svg><use href=images/icons.svg#pencil /></svg></p>`).appendTo(this.gui);
-		this.gui.name = $(`<p style=position:absolute;left:30%>${this.name}</p>`).appendTo(this.gui);
-		this.gui.info = $(`<p style=position:absolute;left:75%><tool-tip></tool-tip></p>`).appendTo(this.gui);
-		$('<p> </p>').appendTo(this.gui);
-		this.gui
-			.attr('clickable', true)
-			.on('click', () => {
-				$('.selected').removeClass('selected');
-				this.gui.addClass('selected');
-				this.getStore().selected = this.url;
-			})
-			.on('dblclick', () => this.connect())
-			.prependTo('#server-list');
-		this.gui.delete.on('click', () => {
-			confirm().then(async () => {
-				this.gui.remove();
-				this.getStore().delete(this.url);
-				if (!fs.existsSync('servers')) {
-					fs.mkdirSync('servers');
-				}
-				fs.unlinkSync(this.path);
-			});
-		});
-		this.gui.play.on('click', () => this.connect());
-		this.gui.edit.on('click', () => Server.Dialog(this));
-		this.getStore().set(this.url, this);
+		this.store.set(this.id, this);
 	}
+
+	get id() {
+		return Server.GetID(this._url);
+	}
+
+	get name() {
+		return this._name;
+	}
+
+	set name(val) {
+		this.gui.find('.name').text(val);
+		this._name = val;
+		this.store.set(this.id, this);
+	}
+
+	get url() {
+		return Server.ParseURL(this._url);
+	}
+
+	set url(val) {
+		this._url = val instanceof URL ? val.href : val;
+		this.store.set(this.id, this);
+	}
+
 	connect() {
 		if (this?.socket?.connected) {
 			throw new ReferenceError(`Can't connect to server: already connected`);
@@ -157,54 +155,56 @@ export default class Server extends Playable {
 		this.getStore().selected = null;
 		[...this.getStore().values()].forEach(server => server.ping());
 	}
-	ping() {
-		this.gui.info.html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').css('animation', '2s linear infinite rotate');
+
+	async ping() {
+		const info = this.gui.find('.info');
+		info.find('span').html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').css('animation', '2s linear infinite rotate');
 		let beforeTime = performance.now();
-		let url = /.+:(\d){1,5}/.test(this.url) ? this.url : this.url + ':1123';
-		$.get(`${/http(s?):\/\//.test(url) ? url : 'https://' + url}/ping`)
-			.done(data => {
-				if (isJSON(data)) {
-					this.pingData = JSON.parse(data);
-					this.gui.info
-						.text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${this.pingData.current_clients}/${this.pingData.max_clients}`)
-						.find('tool-tip')
-						.html(`${this.url}<br><br>${this.pingData.version.text}<br><br>${this.pingData.message}`);
-				} else {
-					this.gui.info.html('<svg><use href=images/icons.svg#xmark /></svg>').find('tool-tip').html('Invalid response');
-				}
-			})
-			.fail(() => {
-				this.gui.info.html('<svg><use href=images/icons.svg#xmark /></svg>').find('tool-tip').html(`Can't connect to server`);
-			})
-			.always(() => {
-				this.gui.info.css('animation', 'unset');
-			});
-	}
-
-	get path() {
-		return `servers/${this.id.replace(/^(ws|http)s?:\/\//, '').replaceAll(/[:/]/g, '_')}.json`;
-	}
-
-	saveToStorage() {
-		if (!fs.existsSync('servers')) {
-			fs.mkdirSync('servers');
+		try {
+			const res = await fetch(`${this.url.origin}/ping`);
+			try {
+				this.pingData = await res.json();
+				info.find('span').text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${this.pingData.current_clients}/${this.pingData.max_clients}`);
+				info.find('tool-tip').html(`${this.url.hostname}<br><br>${versions.get(this.pingData.version).text || this.pingData.version}<br><br>${this.pingData.message}`);
+			} catch (e) {
+				info.find('span').html('<svg><use href=images/icons.svg#xmark /></svg>');
+				info.find('tool-tip').html('Invalid response');
+			}
+		} catch (e) {
+			info.find('span').html('<svg><use href=images/icons.svg#xmark /></svg>');
+			info.find('tool-tip').html(`Can't connect to server`);
+		} finally {
+			info.find('span').css('animation', 'unset');
 		}
-
-		fs.writeFileSync(
-			this.path,
-			JSON.stringify({
-				url: this.url,
-				name: this.name,
-			}),
-			{ encoding: 'utf-8' }
-		);
 	}
 
-	removeFromStorage() {
-		if (!fs.existsSync('servers')) {
-			fs.mkdirSync('servers');
-		}
+	toJSON() {
+		return {
+			id: Server.GetID(this.url),
+			url: this._url,
+			name: this.name,
+		};
+	}
 
-		fs.unlinkSync(this.path);
+	static ParseURL(url) {
+		if (url instanceof URL) {
+			return url;
+		}
+		if (!/^(http|ws)s?:\/\//.test(url)) {
+			url = location.protocol + '//' + url;
+		}
+		if (!/^(http|ws)s?:\/\/[\w.]+:\d+/.test(url)) {
+			url += ':' + config.default_port;
+		}
+		return new URL(url);
+	}
+
+	static GetID(rawUrl) {
+		const url = this.ParseURL(rawUrl);
+		return `${url.protocol.slice(0, -1)}_${url.hostname}_${url.port}`;
+	}
+
+	static FromJSON(data, store) {
+		return new Server(data.url, data.name, store);
 	}
 }

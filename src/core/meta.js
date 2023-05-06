@@ -1,7 +1,9 @@
 export const config = {
 	load_remote_manifest: false,
 	debug_mode: true,
+	overwrite_invalid_json: true,
 	planet_max_distance: 5000,
+	default_port: 1123,
 };
 
 export const version = 'alpha_1.4.2';

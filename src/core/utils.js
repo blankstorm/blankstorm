@@ -2,6 +2,7 @@ import Items from './items.js';
 
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import ships from './entities/ships.js';
+import { config } from './meta.js';
 
 export const filterObject = (object, ...keys) => Object.fromEntries(Object.entries(object).filter(([key]) => keys.includes(key)));
 export const greek = [
@@ -109,10 +110,10 @@ export const wait = time => new Promise(resolve => setTimeout(resolve, time));
  * A Map overlaying a JSON file
  */
 export class JSONFileMap /* implements Map */ {
-	#path;
+	path;
 	#fs;
 	constructor(path, fs) {
-		this.#path = path;
+		this.path = path;
 		this.#fs = fs;
 
 		if (!fs.existsSync(path)) {
@@ -120,62 +121,78 @@ export class JSONFileMap /* implements Map */ {
 		}
 	}
 
-	getMap() {
-		const content = this.#fs.readFileSync(this.#path, 'utf8');
+	_getMap() {
+		const content = this.#fs.readFileSync(this.path, 'utf8');
+		if (!isJSON(content)) {
+			if (!config.overwrite_invalid_json) {
+				throw new SyntaxError(`Invalid JSON file: ${this.path}`);
+			}
+			console.warn(`Invalid JSON file: ${this.path} (overwriting)`);
+			this.clear();
+			return new Map();
+		}
 		return new Map(Object.entries(JSON.parse(content)));
 	}
 
-	#write(map) {
+	_write(map) {
+		if (!this.#fs.existsSync(this.path)) {
+			this.#fs.writeFileSync(this.path, '{}');
+		}
 		const content = JSON.stringify(Object.fromEntries(map));
-		this.#fs.writeFileSync(this.#path, content);
+		this.#fs.writeFileSync(this.path, content);
 	}
 
 	clear() {
-		this.#fs.writeFileSync(this.#path, '{}');
+		this.#fs.writeFileSync(this.path, '{}');
 	}
 
 	delete(key) {
-		const map = this.getMap();
+		const map = this._getMap();
 		map.delete(key);
-		this.#write(map);
+		this._write(map);
 	}
 
 	get(key) {
-		return this.getMap().get(key);
+		return this._getMap().get(key);
 	}
 
 	has(key) {
-		return this.getMap().has(key);
+		return this._getMap().has(key);
 	}
 
 	set(key, value) {
-		const map = this.getMap();
+		const map = this._getMap();
 		map.set(key, value);
-		this.#write(map);
+		this._write(map);
 	}
 
 	get size() {
-		return this.getMap().size;
+		return this._getMap().size;
 	}
 
-	[Symbol.iterator]() {
-		return this.getMap[Symbol.iterator];
+	get [Symbol.iterator]() {
+		const map = this._getMap();
+		return map[Symbol.iterator].bind(map);
 	}
 
 	get keys() {
-		return this.getMap.keys;
+		const map = this._getMap();
+		return map.keys.bind(map);
 	}
 
 	get values() {
-		return this.getMap.values;
+		const map = this._getMap();
+		return map.values.bind(map);
 	}
 
 	get entries() {
-		return this.getMap.entries;
+		const map = this._getMap();
+		return map.entries.bind(map);
 	}
 
 	get forEach() {
-		return this.getMap.forEach;
+		const map = this._getMap();
+		return map.forEach.bind(map);
 	}
 }
 
@@ -183,76 +200,87 @@ export class JSONFileMap /* implements Map */ {
  * A Map overlaying a folder
  */
 export class FolderMap /* implements Map */ {
-	#path;
-	#fs;
-	constructor(path, fs) {
-		this.#path = path;
-		this.#fs = fs;
+	_path;
+	_fs;
+	_suffix;
+	constructor(path, fs, suffix = '') {
+		this._path = path;
+		this._fs = fs;
+		this._suffix = suffix;
 	}
 
-	#readNames() {
-		return this.#fs.readdirSync(this.#path);
+	_readNames() {
+		return this._fs
+			.readdirSync(this._path)
+			.filter(p => p.endsWith(this._suffix))
+			.map(p => p.slice(0, -this._suffix.length));
 	}
 
-	#join(path) {
-		return `${this.#path}/${path}`;
+	_join(path) {
+		return `${this._path}/${path}${this._suffix}`;
 	}
 
-	#getMap() {
-		const map = new Map();
-		for (let name of this.#readNames()) {
-			const content = this.#fs.readFileSync(this.#join(name), 'utf8');
-			map.set(name, content);
+	_getMap() {
+		const entries = [];
+		for (let name of this._readNames()) {
+			const content = this._fs.readFileSync(this._join(name), 'utf8');
+			entries.push([name, content]);
 		}
+		return new Map(entries);
 	}
 
 	clear() {
-		for (let name of this.#readNames()) {
-			this.#fs.unlinkSync(this.#join(name));
+		for (let name of this._readNames()) {
+			this._fs.unlinkSync(this._join(name));
 		}
 	}
 
 	delete(key) {
-		if (key in this.#readNames()) {
-			this.#fs.unlinkSync(this.#join(key));
+		if (this.has(key)) {
+			this._fs.unlinkSync(this._join(key));
 		}
 	}
 
 	get(key) {
 		if (this.has(key)) {
-			return this.#fs.readFileSync(this.#join(key), 'utf8');
+			return this._fs.readFileSync(this._join(key), 'utf8');
 		}
 	}
 
 	has(key) {
-		return key in this.#readNames();
+		return this._readNames().includes(key);
 	}
 
 	set(key, value) {
-		this.#fs.writeFileSync(this.#join(key), value);
+		this._fs.writeFileSync(this._join(key), value);
 	}
 
 	get size() {
-		return this.#readNames().length;
+		return this._readNames().length;
 	}
 
 	get [Symbol.iterator]() {
-		return this.#getMap()[Symbol.iterator];
+		const map = this._getMap();
+		return map[Symbol.iterator].bind(map);
 	}
 
 	get keys() {
-		return this.#getMap().keys;
+		const map = this._getMap();
+		return map.keys.bind(map);
 	}
 
 	get values() {
-		return this.#getMap().values;
+		const map = this._getMap();
+		return map.values.bind(map);
 	}
 
 	get entries() {
-		return this.#getMap().entries;
+		const map = this._getMap();
+		return map.entries.bind(map);
 	}
 
 	get forEach() {
-		return this.#getMap().forEach;
+		const map = this._getMap();
+		return map.forEach.bind(map);
 	}
 }

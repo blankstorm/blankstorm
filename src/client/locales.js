@@ -35,13 +35,15 @@ export default class LocaleStore {
 		$('#main button.options,#esc button.options').text(lang['menu.options'] ?? 'Options');
 		$('#main button.exit').text(lang['menu.exit'] ?? 'Exit');
 		$('#esc button.resume').text(lang['menu.resume'] ?? 'Resume Game');
-		$('#esc button.save').text(lang['menu.save'] ?? 'Save Game');
+		$('#esc button.save').text(lang['menu.save_game'] ?? 'Save Game');
 		$('#esc button.quit').text(lang['menu.quit'] ?? 'Main Menu');
 		$('#save-list button.upload span').text(lang['menu.upload'] ?? 'Upload');
 		$('#server-list button.refresh span').text(lang['menu.refresh'] ?? 'Refresh');
-		$(':where(#save-list,#server-list,#save,#settings) button.back span').text(lang['menu.back'] ?? 'Back');
+		$(':where(#save-list,#server-list,#save-new,#settings) button.back span').text(lang['menu.back'] ?? 'Back');
 		$(':where(#save-list,#server-list,#q) button.new span').text(lang['menu.new'] ?? 'New');
-		$('#save button.new span').text(lang['menu.start'] ?? 'Start');
+		$('#save-new button.new span').text(lang['menu.start'] ?? 'Start');
+		$(':where(#confirm,#login,#save-edit,#server-dialog) .cancel').text(lang['menu.cancel'] ?? 'Cancel');
+		$(':where(#save-edit,#server-dialog) .save').text(lang['menu.save'] ?? 'Save');
 		$('#connect button.back span').text(lang['menu.cancel'] ?? 'Cancel');
 		$('#settings button.general span').text(lang['menu.settings.general'] ?? 'General');
 		$('#settings button.keybinds span').text(lang['menu.settings.keybinds'] ?? 'Keybinds');

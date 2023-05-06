@@ -99,29 +99,19 @@
 			<h3>Login</h3>
 			<div style="display: none" class="error"></div>
 			<br />
-			<input class="email" autocomplete="email" placeholder="Email" />
+			<!-- form is so Chrome shuts up about "Password field is not contained in a form" -->
+			<form bg="none">
+				<input class="email" autocomplete="email" placeholder="Email" />
+				<br />
+				<input class="password" autocomplete="current-password" placeholder="Password" type="password" />
+			</form>
 			<br />
-			<input class="password" autocomplete="current-password" placeholder="Password" type="password" />
 			<br />
-			<br />
-			<button class="cancel">Cancel</button><button class="login">Login</button>
+			<button class="cancel"></button><button class="login">Login</button>
 		</dialog>
-		<dialog id="logged-in">
-			<p></p>
-			<button>Ok</button>
-		</dialog>
-		<dialog id="save" overflow-scroll="y" plot="0,0,400px,300px">
-			<input placeholder="save name" class="name" plot="c,50px,250px,2em,a" />
-			<button class="back" plot="c-75px,b62.5px,150px,36.6px,a">
-				<svg><use href=images/icons.svg#arrow-left /></svg>
-				<span></span>
-			</button>
-			<button class="new" plot="c+75px,b62.5px,150px,36.6px,a">
-				<svg><use href=images/icons.svg#plus /></svg>
-				<span></span>
-			</button>
-			<form name="worldgen" bg="none" plot="c,calc(2em + 75px),80%,100px,a">
-				<input
+		<dialog id="save-new" style="width: 400px; height: 200px">
+			<input placeholder="Save name" class="name" plot="c,3em,250px,2em,a" />
+			<!-- <input
 					type="range"
 					name="difficulty"
 					label="Difficulty"
@@ -130,7 +120,42 @@
 					max="2"
 					step="0.5"
 					value="1"
-				/><br /><br />
+				/>
+			-->
+			<button class="back" plot="c-75px,b62.5px,150px,36.6px,a">
+				<svg><use href=images/icons.svg#arrow-left /></svg>
+				<span></span>
+			</button>
+			<button class="new" plot="c+75px,b62.5px,150px,36.6px,a">
+				<svg><use href=images/icons.svg#plus /></svg>
+				<span></span>
+			</button>
+		</dialog>
+		<dialog id="save-edit" style="width: 400px; height: 200px">
+			<input type="hidden" class="id" />
+			<input placeholder="Save Name" class="name" plot="c,3em,250px,2em,a" />
+			<button class="cancel" plot="c-75px,b62.5px,150px,36.6px,a">
+				<svg><use href=images/icons.svg#arrow-left /></svg>
+				<span></span>
+			</button>
+			<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
+		</dialog>
+		<dialog id="server-dialog" style="width: 400px; height: 250px">
+			<input placeholder="Display name" class="name" plot="c,3em,250px,2em,a" /><br />
+			<input placeholder="Address" class="url" plot="c,8em,250px,2em,a" /><br />
+			<button class="cancel" plot="c-75px,b62.5px,150px,36.6px,a">
+				<svg><use href=images/icons.svg#arrow-left /></svg>
+				<span></span>
+			</button>
+			<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
+		</dialog>
+		<dialog id="waypoint-dialog">
+			<form>
+				<input type="text" name="name" placeholder="Name" /><br />
+				<input type="number" name="z" placeholder="X" />
+				<input type="number" name="y" placeholder="Y" />
+				<input type="number" name="z" placeholder="Z" /><br />
+				<input type="color" name="color" placeholder="Color" /><br />
 			</form>
 		</dialog>
 		<div id="connect" bg="trans" hide content>
@@ -143,9 +168,14 @@
 			<p class="info"></p>
 			<p class="players"></p>
 		</div>
-		<dialog id="modal" plot="0,0,350px,8em">
-			<p class="info" plot="c,c-2em,300px,1em,a" style="text-align: center"></p>
-			<form method="dialog"></form>
+		<dialog id="confirm">
+			<p class="message"></p>
+			<button class="cancel"></button>
+			<button class="ok">Ok</button>
+		</dialog>
+		<dialog id="alert">
+			<p class="message"></p>
+			<button class="ok">Ok</button>
 		</dialog>
 		<div id="e" ingame bg="trans" content hide game-ui style="z-index: 5" tabindex="-1">
 			<div class="nav" bg="none" plot="5%,25px,90%,45px,a">

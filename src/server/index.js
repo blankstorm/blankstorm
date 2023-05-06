@@ -4,7 +4,7 @@ import { createServer } from 'http';
 import { spawn } from 'child_process';
 import { Server as SocketIOServer } from 'socket.io';
 
-import { version } from '../core/meta.js';
+import { version, config as coreConfig } from '../core/meta.js';
 import { Command, commands, execCommandString } from '../core/commands.js';
 import { requestUserInfo } from '../core/api.js';
 import Level from '../core/Level.js';
@@ -269,4 +269,4 @@ setInterval(() => {
 	});
 }, 1000);
 
-server.listen(config.port ?? 1123, () => log.addMessage('server started'));
+server.listen(config.port ?? coreConfig.default_port, () => log.addMessage('server started'));

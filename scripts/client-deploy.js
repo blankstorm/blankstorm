@@ -47,6 +47,11 @@ const config = {
 	sourcemap: true,
 	format: 'esm',
 	loader: Object.fromEntries(['.html', '.png', '.svg', '.fx', '.jpg', '.glb', '.mp3', '.gltf', '.json'].map(e => [e, 'copy'])),
+	plugins: [ { name: 'counter', setup(build) {
+		let count = 0;
+		build.onStart(() => console.log(`---- Building #${++count} --`));
+		build.onEnd(() => console.log(`---- Built #${count} -----`));
+	} } ]
 };
 
 if (options.watch) {

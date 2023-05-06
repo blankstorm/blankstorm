@@ -323,7 +323,7 @@ export class SettingsStore extends JSONFileMap {
 			}
 		}
 
-		const settings = this.getMap();
+		const settings = this._getMap();
 		for (let item of items) {
 			if (item instanceof SettingsItem) {
 				this.items.set(item.id, item);
