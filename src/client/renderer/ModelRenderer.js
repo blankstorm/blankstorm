@@ -73,18 +73,18 @@ export default class ModelRenderer extends TransformNode {
 			this.#pathGizmo.color = Color3.Green();
 		}
 
-		let animation = new Animation('pathFollow', 'position', 60 * this._generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
-			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this._generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+		let animation = new Animation('pathFollow', 'position', 60 * this.generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
+			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this.generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-		animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this._generic.speed, value: node.position.subtract(this.parent.absolutePosition) })));
+		animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.position.subtract(this.parent.absolutePosition) })));
 		rotateAnimation.setKeys(
 			path.path.flatMap((node, i) => {
 				if (i != 0) {
 					let value = Vector3.PitchYawRollToMoveBetweenPoints(path.path[i - 1].position, node.position);
 					value.x -= Math.PI / 2;
 					return [
-						{ frame: i * 60 * this._generic.agility - 30, value },
-						{ frame: i * 60 * this._generic.agility - 10, value },
+						{ frame: i * 60 * this.generic.agility - 30, value },
+						{ frame: i * 60 * this.generic.agility - 10, value },
 					];
 				} else {
 					return [{ frame: 0, value: this.rotation }];
@@ -109,7 +109,7 @@ export default class ModelRenderer extends TransformNode {
 		return this.#instance;
 	}
 
-	isInstanciated() {
+	get isInstanciated() {
 		return this.#createdInstance;
 	}
 

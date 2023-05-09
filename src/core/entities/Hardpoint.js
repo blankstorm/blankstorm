@@ -7,17 +7,19 @@ import Player from './Player.js';
 import { LevelEvent } from '../events.js';
 
 export default class Hardpoint extends Node {
-	_generic = {};
 	info = {};
 	constructor(id, level, { type, reload }) {
 		level;
 		super(id, level);
 
-		this.hardpointType = type;
-		this._generic = Hardpoint.generic.get(type);
-		this.reload = reload ?? this._generic.reload;
+		this.type = type;
+		this.reload = reload ?? this.generic.reload;
 
 		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
+	}
+
+	get generic(){
+		return Hardpoint.generic.get(this.type);
 	}
 
 	remove() {
@@ -29,7 +31,7 @@ export default class Hardpoint extends Node {
 
 	serialize() {
 		return Object.assign(super.serialize(), {
-			type: this.hardpointType,
+			type: this.type,
 			info: {
 				scale: this.info?.scale,
 				position: this.info?.position ? this.info?.position.asArray().map(num => +num.toFixed(3)) : [0, 0, 0],
@@ -43,29 +45,29 @@ export default class Hardpoint extends Node {
 	 * @todo implement projectile logic on the core
 	 */
 	async fire(target) {
-		let evt = new LevelEvent('projectile.fire', this.serialize(), { target: target.serialize(), projectile: this._generic.projectile });
+		let evt = new LevelEvent('projectile.fire', this.serialize(), { target: target.serialize(), projectile: this.generic.projectile });
 		this.level.dispatchEvent(evt);
-		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this._generic.projectile.speed;
-		this.reload = this._generic.reload;
+		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
+		this.reload = this.generic.reload;
 		await wait(time);
 		const targetShip = target instanceof Ship ? target : target.owner;
-		targetShip.hp -= this._generic.damage * (Math.random() < this._generic.critChance ? this._generic.critFactor : 1);
+		targetShip.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
 		if (targetShip.hp <= 0) {
 			const evt = new LevelEvent('entity.death', targetShip.serialize());
 			this.level.dispatchEvent(evt);
 			const owner = this.owner.owner;
 			switch (owner.constructor.name) {
 				case 'Player':
-					owner.addItems(targetShip._generic.recipe);
-					if (Math.floor(Player.xpToLevel(owner.xp + targetShip._generic.xp)) > Math.floor(Player.xpToLevel(owner.xp))) {
+					owner.addItems(targetShip.generic.recipe);
+					if (Math.floor(Player.xpToLevel(owner.xp + targetShip.generic.xp)) > Math.floor(Player.xpToLevel(owner.xp))) {
 						const evt = new LevelEvent('player.levelup', owner.serialize());
 						this.level.dispatchEvent(evt);
 						owner.xpPoints++;
 					}
-					owner.xp += targetShip._generic.xp;
+					owner.xp += targetShip.generic.xp;
 					break;
 				case 'CelestialBody':
-					owner.rewards.addItems(targetShip._generic.recipe);
+					owner.rewards.addItems(targetShip.generic.recipe);
 					break;
 				default:
 			}

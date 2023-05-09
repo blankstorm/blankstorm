@@ -19,7 +19,7 @@ export default class HardpointRenderer extends ModelRenderer {
 			this._projectile = HardpointRenderer.projectiles.get(type);
 		}
 		await super.update({ name, position, rotation, type, parent });
-		if (typeof info?.scale == 'number') {
+		if (this.isInstanciated && typeof info?.scale == 'number') {
 			this.instance.scalingDeterminant = info.scale;
 		}
 	}

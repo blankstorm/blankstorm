@@ -2,16 +2,17 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import CelestialBody from './CelestialBody.js';
 
 export default class StationComponent extends CelestialBody {
-	_generic = {};
 	#station;
 	connections = [];
 	constructor(id, level, { type, station }) {
 		super(id, level, { radius: 1 });
 
-		this._generic = StationComponent.generic.get(type);
-
 		this.type = type;
 		this.#station = station;
+	}
+
+	get generic() {
+		return StationComponent.generic.get(this.type);
 	}
 
 	get station() {
@@ -27,8 +28,8 @@ export default class StationComponent extends CelestialBody {
 	}
 
 	addConnection(component, connecter, componentConnecter) {
-		let connection1 = this._generic.connecters.at(connecter),
-			connection2 = component._generic.connecters.at(componentConnecter);
+		let connection1 = this.generic.connecters.at(connecter),
+			connection2 = component.generic.connecters.at(componentConnecter);
 		if (!connection1) {
 			throw new ReferenceError(`Connecter "${connecter}" does not exist`);
 		}

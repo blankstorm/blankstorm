@@ -8,6 +8,10 @@ export default class ShipRenderer extends ModelRenderer {
 		super(id, scene);
 	}
 
+	get generic() {
+		return Ship.generic.get(this.type);
+	}
+
 	async update({ name, position, rotation, hardpoints = [], type, parent } = {}) {
 		await super.update({ name, position, rotation, type, parent });
 		for (let hardpointData of [...hardpoints]) {
@@ -19,7 +23,6 @@ export default class ShipRenderer extends ModelRenderer {
 				this.hardpoints.set(hardpoint.id, hardpoint);
 			}
 		}
-		this._generic = Ship.generic.get(type);
 	}
 
 	static async FromData(data, scene) {

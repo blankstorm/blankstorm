@@ -5,7 +5,6 @@ import Node from '../Node.js';
 import { LevelEvent } from '../events.js';
 
 export default class Entity extends Node {
-	_generic = { speed: 1 };
 
 	selected = false;
 	isTargetable = false;
@@ -14,6 +13,10 @@ export default class Entity extends Node {
 		super(id, level);
 
 		level.entities.set(this.id, this);
+	}
+
+	get generic() {
+		return { speed: 1, _isDefault: true }
 	}
 
 	remove() {

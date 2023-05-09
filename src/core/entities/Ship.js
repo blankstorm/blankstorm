@@ -8,6 +8,10 @@ import generic from './ships.js';
 
 export default class Ship extends Entity {
 	hardpoints = [];
+	type;
+	storage;
+	reload;
+	jumpCooldown;
 
 	isTargetable = true;
 
@@ -18,17 +22,13 @@ export default class Ship extends Entity {
 		let distance = Math.log(random.int(0, power || 1) ** 3 + 1); //IMPORTANT TODO: Move to ship creation
 		this.position.addInPlace(random.cords(distance, true));
 
-		this._generic = Ship.generic.get(type);
+		this.type = type;
+		this.storage = storage instanceof Storage ? storage : new Storage(this.generic.storage);
+		this.hp = hp ?? this.generic.hp;
+		this.reload = reload ?? this.generic.reload;
+		this.jumpCooldown = jumpCooldown ?? this.generic.jumpCooldown;
 
-		Object.assign(this, {
-			type: type,
-			storage: storage instanceof Storage ? storage : new Storage(this._generic.storage),
-			hp: hp ?? this._generic.hp,
-			reload: reload ?? this._generic.reload,
-			jumpCooldown: jumpCooldown ?? this._generic.jumpCooldown,
-		});
-
-		this._generic.hardpoints.forEach((generic, i) => {
+		this.generic.hardpoints.forEach((generic, i) => {
 			if (!Hardpoint.generic.has(generic.type)) {
 				console.warn(`Hardpoint type ${generic.type} doesn't exist, skipping`);
 				return;
@@ -41,6 +41,10 @@ export default class Ship extends Entity {
 		});
 	}
 
+	get generic() {
+		return Ship.generic.get(this.type);
+	}
+
 	remove() {
 		super.remove();
 		this.owner.fleet.splice(this.owner.fleet.indexOf(this), 1);
@@ -49,10 +53,10 @@ export default class Ship extends Entity {
 	jump(location) {
 		if (!(location instanceof Vector3)) throw new TypeError('Location is not a Vector3');
 		if (this.jumpCooldown > 0) return 'Hyperspace still on cooldown';
-		if (Vector3.Distance(this.position, location) > this._generic.jumpRange) return 'Target location out of range';
+		if (Vector3.Distance(this.position, location) > this.generic.jumpRange) return 'Target location out of range';
 
 		this.position = location.clone();
-		this.jumpCooldown = this._generic.jumpCooldown;
+		this.jumpCooldown = this.generic.jumpCooldown;
 	}
 
 	serialize() {

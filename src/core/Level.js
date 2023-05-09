@@ -131,7 +131,7 @@ export default class Level extends EventTarget {
 
 					const targets = [...this.entities.values()].filter(e => {
 						const distance = Vector3.Distance(e.absolutePosition, entity.absolutePosition);
-						return e.isTargetable && e.owner != entity.owner && distance < hardpoint._generic.range;
+						return e.isTargetable && e.owner != entity.owner && distance < hardpoint.generic.range;
 					}, null);
 					const target = targets.reduce((previous, current) => {
 						let previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), entity.absolutePosition);
@@ -142,7 +142,7 @@ export default class Level extends EventTarget {
 					if (target) {
 						const targetPoints = [...target.hardpoints, target].filter(targetHardpoint => {
 							const distance = Vector3.Distance(targetHardpoint.absolutePosition, hardpoint.absolutePosition);
-							return distance < hardpoint._generic.range;
+							return distance < hardpoint.generic.range;
 						});
 						const targetPoint = targetPoints.reduce((current, newPoint) => {
 							if (!current || !newPoint) {
@@ -154,7 +154,7 @@ export default class Level extends EventTarget {
 						}, target);
 
 						if (hardpoint.reload <= 0) {
-							hardpoint.reload = hardpoint._generic.reload;
+							hardpoint.reload = hardpoint.generic.reload;
 							hardpoint.fire(targetPoint);
 						}
 					}

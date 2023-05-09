@@ -12,7 +12,7 @@ export default class CelestialBody extends Node {
 	fleetPosition;
 
 	get power() {
-		return this.fleet.reduce((total, ship) => total + ship._generic.power, 0) ?? 0;
+		return this.fleet.reduce((total, ship) => total + ship.generic.power, 0) ?? 0;
 	}
 
 	constructor(id, level, { radius, rewards, fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true), fleet = [] }) {

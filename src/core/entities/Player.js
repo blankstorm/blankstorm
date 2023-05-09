@@ -10,7 +10,7 @@ export default class Player extends Entity {
 	xpPoints = 0;
 	speed = 1;
 	get power() {
-		return this.fleet.reduce((a, ship) => a + (ship._generic.power || 0), 0);
+		return this.fleet.reduce((a, ship) => a + (ship.generic.power || 0), 0);
 	}
 
 	constructor(id, level, { fleet }) {

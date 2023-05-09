@@ -31,7 +31,7 @@ export default class Node {
 	serialize() {
 		return {
 			id: this.id,
-			name: this.name,
+			name: this.name ?? '',
 			owner: this.owner?.id,
 			parent: this.parent?.id,
 			node_type: this.constructor.name.toLowerCase(),
@@ -48,6 +48,7 @@ export default class Node {
 		node.velocity = Vector3.FromArray(data.velocity || [0, 0, 0]);
 		node.parent = level.getNodeByID(data.parent);
 		node.owner = level.getNodeByID(data.owner);
+		node.name = data.name;
 		return node;
 	}
 }
