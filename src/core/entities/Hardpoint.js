@@ -18,7 +18,7 @@ export default class Hardpoint extends Node {
 		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
 	}
 
-	get generic(){
+	get generic() {
 		return Hardpoint.generic.get(this.type);
 	}
 
