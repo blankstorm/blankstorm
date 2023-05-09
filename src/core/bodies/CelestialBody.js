@@ -46,12 +46,11 @@ export default class CelestialBody extends Node {
 		});
 	}
 
-	static FromData(data, level, constructorOptions) {
+	static FromData(data, level) {
 		return super.FromData(data, level, {
 			radius: data.radius,
 			rewards: data.rewards,
 			fleetPosition: Vector3.FromArray(data.fleetPosition || [0, 0, 0]),
-			...constructorOptions,
 		});
 	}
 }

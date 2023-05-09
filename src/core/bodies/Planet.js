@@ -12,7 +12,7 @@ export default class Planet extends CelestialBody {
 	}
 
 	static FromData(data, level) {
-		const planet = super.FromData(data, level, data);
+		const planet = super.FromData(data, level);
 		planet.biome = data.biome;
 		return planet;
 	}

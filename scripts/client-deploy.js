@@ -36,7 +36,7 @@ function fromPath(path) {
 	return files;
 }
 
-const entryPoints = ['index.js', 'index.html', 'images', 'locales', 'models', 'music', 'sfx', 'styles'].flatMap(p => fromPath(join(input, p)));
+const entryPoints = ['index.js', 'index.html', 'images', 'locales', 'models', 'music', 'sfx', 'shaders', 'styles'].flatMap(p => fromPath(join(input, p)));
 const config = {
 	entryPoints,
 	assetNames: '[dir]/[name]',

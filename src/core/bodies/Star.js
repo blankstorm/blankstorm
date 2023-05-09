@@ -14,8 +14,8 @@ export default class Star extends CelestialBody {
 		});
 	}
 
-	static FromData(data, level, constructorOptions) {
-		const star = super.FromData(data, level, constructorOptions);
+	static FromData(data, level) {
+		const star = super.FromData(data, level);
 		star.color = Color3.FromArray(data.color) || Color3.Random();
 		return star;
 	}
