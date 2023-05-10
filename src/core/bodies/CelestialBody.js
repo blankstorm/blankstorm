@@ -39,7 +39,7 @@ export default class CelestialBody extends Node {
 
 	serialize() {
 		return Object.assign(super.serialize(), {
-			fleetPosition: this.fleetPosition.asArray().map(e => +e.toFixed(3)),
+			fleetPosition: this.fleetPosition.asArray(),
 			fleet: this.fleet.map(ship => ship.id),
 			rewards: this.rewards.serialize().items,
 			radius: this.radius,

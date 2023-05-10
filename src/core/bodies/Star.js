@@ -9,7 +9,7 @@ export default class Star extends CelestialBody {
 
 	serialize() {
 		return Object.assign(super.serialize(), {
-			color: this.color.asArray().map(e => +e.toFixed(3)),
+			color: this.color.asArray(),
 		});
 	}
 

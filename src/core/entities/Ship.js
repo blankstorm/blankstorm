@@ -63,7 +63,7 @@ export default class Ship extends Entity {
 		return Object.assign(super.serialize(), {
 			type: this.type,
 			hp: +this.hp.toFixed(3),
-			jumpCooldown: +this.jumpCooldown.toFixed(3),
+			jumpCooldown: +this.jumpCooldown.toFixed(),
 			storage: this.storage.serialize().items,
 			hardpoints: this.hardpoints.map(hp => hp.serialize()),
 		});

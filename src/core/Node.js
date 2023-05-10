@@ -35,9 +35,9 @@ export default class Node {
 			owner: this.owner?.id,
 			parent: this.parent?.id,
 			node_type: this.constructor.name.toLowerCase(),
-			position: this.position.asArray().map(num => +num.toFixed(3)),
-			rotation: this.rotation.asArray().map(num => +num.toFixed(3)),
-			velocity: this.velocity.asArray().map(num => +num.toFixed(3)),
+			position: this.position.asArray(),
+			rotation: this.rotation.asArray(),
+			velocity: this.velocity.asArray(),
 		};
 	}
 

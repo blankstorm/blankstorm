@@ -33,9 +33,9 @@ export default class Hardpoint extends Node {
 		return Object.assign(super.serialize(), {
 			type: this.type,
 			info: {
-				scale: this.info?.scale,
-				position: this.info?.position ? this.info?.position.asArray().map(num => +num.toFixed(3)) : [0, 0, 0],
-				rotation: this.info?.rotation ? this.info?.rotation.asArray().map(num => +num.toFixed(3)) : [0, 0, 0],
+				scale: this.info?.scale || 1,
+				position: this.info?.position?.asArray() || [0, 0, 0],
+				rotation: this.info?.rotation?.asArray() || [0, 0, 0],
 			},
 			reload: this.reload,
 		});

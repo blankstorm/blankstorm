@@ -247,23 +247,27 @@ export const settings = new SettingsStore({
 			type: 'keybind',
 			label: 'Save Game',
 			value: { key: 's', ctrl: true },
-			onTrigger: () => {
-				if (!(current instanceof LiveSave)) {
-					throw 'Save Error: you must have a valid save selected.';
-				}
-				$('#esc .save').text('Saving...');
-				saves.get(current.id).data = current.serialize();
-				try {
-					saves.get(current.id).saveToStorage();
-					chat('Game saved.');
-				} catch (err) {
-					chat('Failed to save game: ' + err);
-				}
-				$('#esc .save').text('Save Game');
-			},
+			onTrigger: updateSave,
 		},
 	],
 });
+
+const updateSave = () => {
+	if (!(current instanceof LiveSave)) {
+		throw 'Save Error: you must have a valid save selected.';
+	}
+	$('#esc .save').text('Saving...');
+	try {
+		const save = saves.get(current.id);
+		save.data = current.serialize();
+		saves.set(current.id, save);
+		chat('Game saved.');
+	} catch (err) {
+		chat('Failed to save game.');
+		throw err;
+	}
+	$('#esc .save').text('Save Game');
+};
 
 for (let section of settings.sections.values()) {
 	$(section).attr({
@@ -609,22 +613,7 @@ $('#esc .resume').on('click', () => {
 	canvas.focus();
 	isPaused = false;
 });
-$('#esc .save').on('click', () => {
-	if (!(current instanceof LiveSave)) {
-		throw 'Save Error: you must have a valid save selected.';
-	}
-	$('#esc .save').text('Saving...');
-	try {
-		const save = saves.get(current.id);
-		save.data = current.serialize();
-		saves.set(current.id, save);
-		chat('Game saved.');
-	} catch (err) {
-		chat('Failed to save game.');
-		throw err;
-	}
-	$('#esc .save').text('Save Game');
-});
+$('#esc .save').on('click', updateSave);
 $('#esc .options').on('click', () => {
 	ui.setLast('#esc');
 	$('#esc').hide();

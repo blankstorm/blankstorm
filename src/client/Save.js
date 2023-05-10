@@ -57,8 +57,9 @@ export class SaveMap extends FolderMap {
 }
 
 export class Save {
+	#data;
 	constructor(data, store) {
-		this.data = data;
+		this.#data = data;
 		this.store = store;
 		this.gui = $(new SaveListItem(this));
 		if (store) {
@@ -68,6 +69,16 @@ export class Save {
 
 	get id() {
 		return this.data?.id;
+	}
+
+	get data() {
+		return this.#data;
+	}
+
+	set data(data) {
+		const date = new Date(data.date);
+		this.gui.find('.date').text(date.toLocaleString());
+		this.#data = data;
 	}
 
 	load() {

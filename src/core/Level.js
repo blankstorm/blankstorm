@@ -166,7 +166,7 @@ export default class Level extends EventTarget {
 
 	serialize() {
 		let data = {
-			date: this.date.toJSON(),
+			date: new Date().toJSON(),
 			bodies: [],
 			entities: [],
 			difficulty: this.difficulty,
