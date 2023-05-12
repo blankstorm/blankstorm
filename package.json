@@ -13,37 +13,11 @@
 		"lint:check-ci": "npm run lint:ci",
 		"test:client": "electron . --bs-debug",
 		"test:server": "node src/server/index.js",
-		"build:client:win": "node scripts/client-prebuild.js && electron-builder build -w --publish never && node scripts/client-postbuild.js",
-		"build:client:mac": "node scripts/client-prebuild.js && electron-builder build -m --publish never && node scripts/client-postbuild.js",
-		"build:client:linux": "node scripts/client-prebuild.js && electron-builder build -l --publish never && node scripts/client-postbuild.js",
-		"build:client:all": "node scripts/client-prebuild.js && electron-builder build -mlw --publish never && node scripts/client-postbuild.js",
-		"build:client": "node scripts/client-prebuild.js && electron-builder build --publish never && node scripts/client-postbuild.js",
-		"build:server": "node scripts/server-prebuild.js && pkg -o dist/server -t latest-win,latest-linux,latest-macos dist/tmp/server.js && node scripts/server-postbuild.js",
+		"build:client": "node scripts/client-build.js",
+		"build:server": "node scripts/server-build.js",
 		"build": "npm run build:client && npm run build:server",
 		"watch:client": "node scripts/client-deploy.js --watch",
 		"deploy:client": "node scripts/client-deploy.js"
-	},
-	"build": {
-		"extends": null,
-		"appId": "dev.drvortex.blankstorm",
-		"productName": "Blankstorm Client",
-		"copyright": "Copyright © 2022 ${author}",
-		"icon": "./icon.png",
-		"nsis": {
-			"oneClick": false,
-			"allowToChangeInstallationDirectory": true,
-			"removeDefaultUninstallWelcomePage": true,
-			"deleteAppDataOnUninstall": true
-		},
-		"win": {
-			"executableName": "blankstorm-client"
-		},
-		"linux": {
-			"category": "Game"
-		},
-		"mac": {
-			"category": "public.app-category.games"
-		}
 	},
 	"repository": {
 		"type": "git",
