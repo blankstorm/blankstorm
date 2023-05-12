@@ -53,11 +53,16 @@ if (options.watch) {
 	console.log('Watching...');
 	const ctx = await context({
 		...config,
-		plugins: [ { name: 'counter', setup(build) {
-			let count = 0;
-			build.onStart(() => console.log(`---- Building #${++count} --`));
-			build.onEnd(() => console.log(`---- Built #${count} -----`));
-		}}],
+		plugins: [
+			{
+				name: 'counter',
+				setup(build) {
+					let count = 0;
+					build.onStart(() => console.log(`---- Building #${++count} --`));
+					build.onEnd(() => console.log(`---- Built #${count} -----`));
+				},
+			},
+		],
 	});
 	await ctx.watch();
 } else {
