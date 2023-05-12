@@ -46,12 +46,9 @@ await build({
 	config: {
 		extends: null,
 		extraMetadata: {
-			main: 'dist/tmp/client/app.cjs'
+			main: 'dist/tmp/client/app.cjs',
 		},
-		files: [
-			"dist/tmp/client/**/*",
-			"package.json"
-		],
+		files: ['dist/tmp/client/**/*', 'package.json'],
 		appId: 'dev.drvortex.blankstorm',
 		productName: 'Blankstorm Client',
 		copyright: 'Copyright © 2022 ${author}',
