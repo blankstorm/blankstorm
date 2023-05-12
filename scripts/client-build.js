@@ -45,6 +45,13 @@ await build({
 	projectDir: path.resolve(fileURLToPath(import.meta.url), '..', '..'),
 	config: {
 		extends: null,
+		extraMetadata: {
+			main: 'dist/tmp/client/app.cjs'
+		},
+		files: [
+			"dist/tmp/client/**/*",
+			"package.json"
+		],
 		appId: 'dev.drvortex.blankstorm',
 		productName: 'Blankstorm Client',
 		copyright: 'Copyright © 2022 ${author}',
@@ -72,8 +79,6 @@ const renames = [
 	[`Blankstorm Client Setup ${pkg.version}.exe.blockmap`, `client-win-${version}.exe.blockmap`],
 	[`Blankstorm Client-${pkg.version}.AppImage`, `client-macos-${version}.AppImage`],
 	[`blankstorm-client_${pkg.version}_amd64.snap`, `client-linux-${version}.snap`],
-	[`win-unpacked`, `client-win-${version}`],
-	[`linux-unpacked`, `client-linux-${version}`],
 ];
 
 const deletes = ['builder-debug.yml', 'builder-effective-config.yaml', 'latest.yml', '.icon-ico'];

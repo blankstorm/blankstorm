@@ -11,12 +11,11 @@
 		"lint": "eslint src/**/*.js",
 		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
 		"lint:check-ci": "npm run lint:ci",
-		"test:client": "electron . --bs-debug",
+		"test:client": "npm run deploy:client && electron dist/tmp/client --bs-debug",
 		"test:server": "node src/server/index.js",
 		"build:client": "node scripts/client-build.js",
 		"build:server": "node scripts/server-build.js",
 		"build": "npm run build:client && npm run build:server",
-		"watch:client": "node scripts/client-deploy.js --watch",
 		"deploy:client": "node scripts/client-deploy.js"
 	},
 	"repository": {

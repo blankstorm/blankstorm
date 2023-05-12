@@ -30,7 +30,7 @@ function createWindow() {
 	nativeTheme.themeSource = 'dark';
 
 	win.removeMenu(true);
-	win.loadFile('src/client/index.html');
+	win.loadFile(path.join(__dirname, 'index.html'));
 
 	win.webContents.on('new-window', function (e, url) {
 		e.preventDefault();
