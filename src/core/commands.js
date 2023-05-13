@@ -29,22 +29,22 @@ export const commands = new Map(
 		help: new Command(() => {
 			return 'See https://bs.drvortex.dev/docs/commands for command documentation';
 		}, 0),
-		kill: new Command(function (selector) {
-			let entities = this.executor.level.getNodesBySelector(selector);
+		kill: new Command(({ executor }, selector) => {
+			let entities = executor.level.getNodesBySelector(selector);
 			entities.forEach(e => e.remove());
 			return `killed ${entities.length} entities`;
 		}, 3),
-		spawn: new Command(function (type, selector, extra) {
-			const parent = this.executor.level.getNodeBySelector(selector);
-			const spawned = new Ship(null, this.executor.level, { type, power: this.executor.power });
+		spawn: new Command(({ executor }, type, selector, extra) => {
+			const parent = executor.level.getNodeBySelector(selector);
+			const spawned = new Ship(null, executor.level, { type, power: executor.power });
 			spawned.parent = spawned.owner = parent;
 			if (isJSON(extra)) {
 				spawned.update(JSON.parse(extra));
 			}
 			return `Spawned ${spawned.constructor.name} with id #${spawned.id}`;
 		}, 3),
-		'data get': new Command(function (selector, path = '') {
-			let node = this.executor.level.getNodeBySelector(selector);
+		'data get': new Command(({ executor }, selector, path = '') => {
+			let node = executor.level.getNodeBySelector(selector);
 			let data = node.getByString(path),
 				output = data;
 			if (typeof data == 'object' || typeof data == 'function') {
@@ -55,15 +55,15 @@ export const commands = new Map(
 			}
 			return `Data of entity #${node.id}: ${output}`;
 		}, 3),
-		'data set': new Command(function (selector, path, value) {
-			let node = this.executor.level.getNodeBySelector(selector);
+		'data set': new Command(({ executor }, selector, path, value) => {
+			let node = executor.level.getNodeBySelector(selector);
 			node.setByString(path, eval?.(value));
 		}, 3),
 		/**
 		 * @todo implement executor position as default
 		 */
-		tp: new Command(function (selector, x, y, z) {
-			let nodes = this.executor.level.getNodesBySelector(selector),
+		tp: new Command(({ executor }, selector, x, y, z) => {
+			let nodes = executor.level.getNodesBySelector(selector),
 				location = new Vector3(+x || 0, +y || 0, +z || 0);
 			nodes.forEach(entity => {
 				entity.position = location;
@@ -73,13 +73,13 @@ export const commands = new Map(
 	})
 );
 
-export const execCommandString = (string, executor, ignoreOp) => {
+export const execCommandString = (string, data, ignoreOp) => {
 	for (let [name, command] of commands) {
 		if (!string.startsWith(name)) {
 			continue;
 		}
 
-		if (executor?.oplvl < command.oplvl && !ignoreOp) {
+		if (data.executor?.oplvl < command.oplvl && !ignoreOp) {
 			return 'You do not have permission to execute that command';
 		}
 
@@ -88,6 +88,6 @@ export const execCommandString = (string, executor, ignoreOp) => {
 			.split(/\s/)
 			.filter(a => a);
 
-		return command.exec(args, executor);
+		return command.exec(args, data);
 	}
 };

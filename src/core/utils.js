@@ -106,6 +106,14 @@ export const generate = {
 };
 export const wait = time => new Promise(resolve => setTimeout(resolve, time));
 
+export function xpToLevel(xp) {
+	return Math.sqrt(xp / 10);
+}
+
+export function levelToXp(level) {
+	return 10 * level ** 2;
+}
+
 /**
  * A Map overlaying a JSON file
  */

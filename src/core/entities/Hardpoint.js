@@ -1,9 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 
-import { wait } from '../utils.js';
+import { wait, xpToLevel } from '../utils.js';
 import Node from '../Node.js';
-import Ship from './Ship.js';
-import Player from './Player.js';
 import { LevelEvent } from '../events.js';
 
 export default class Hardpoint extends Node {
@@ -45,12 +43,21 @@ export default class Hardpoint extends Node {
 	 * @todo implement projectile logic on the core
 	 */
 	async fire(target) {
+
+		// this is so we don't have a circular dependency by importing Ship
+		const targetConstructors = [];
+		let targetConstructor = target;
+		while(targetConstructor) {
+			targetConstructor = Object.getPrototypeOf(targetConstructor);
+			targetConstructors.push(targetConstructor.name);
+		}
+
 		let evt = new LevelEvent('projectile.fire', this.serialize(), { target: target.serialize(), projectile: this.generic.projectile });
 		this.level.dispatchEvent(evt);
 		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
 		this.reload = this.generic.reload;
 		await wait(time);
-		const targetShip = target instanceof Ship ? target : target.owner;
+		const targetShip = targetConstructors.includes('Ship') ? target : target.owner;
 		targetShip.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
 		if (targetShip.hp <= 0) {
 			const evt = new LevelEvent('entity.death', targetShip.serialize());
@@ -59,7 +66,7 @@ export default class Hardpoint extends Node {
 			switch (owner.constructor.name) {
 				case 'Player':
 					owner.addItems(targetShip.generic.recipe);
-					if (Math.floor(Player.xpToLevel(owner.xp + targetShip.generic.xp)) > Math.floor(Player.xpToLevel(owner.xp))) {
+					if (Math.floor(xpToLevel(owner.xp + targetShip.generic.xp)) > Math.floor(xpToLevel(owner.xp))) {
 						const evt = new LevelEvent('player.levelup', owner.serialize());
 						this.level.dispatchEvent(evt);
 						owner.xpPoints++;

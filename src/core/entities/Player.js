@@ -114,14 +114,6 @@ export default class Player extends Entity {
 		});
 	}
 
-	static xpToLevel(xp) {
-		return Math.sqrt(xp / 10);
-	}
-
-	static levelToXp(level) {
-		return 10 * level ** 2;
-	}
-
 	static FromData(data, level) {
 		return super.FromData(data, level, data);
 	}

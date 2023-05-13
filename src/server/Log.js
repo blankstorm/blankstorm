@@ -1,6 +1,7 @@
+import EventEmitter from 'node:events';
+
 /**
- * @if move to typescript
- * @todo change to enum
+ * @todo change to enum if moved to TypeScript
  */
 export const LogLevel = {
 	LOG: 0,
@@ -37,10 +38,13 @@ export class LogEntry {
 	}
 }
 
-export class Log {
+export class Log extends EventEmitter {
 	#entries = [];
 
-	constructor() {}
+	constructor({ doNotOutput = false } = {}) {
+		super();
+		this.doNotOutput = doNotOutput;
+	}
 
 	get entries() {
 		return this.#entries.slice(0);
@@ -49,13 +53,14 @@ export class Log {
 	addMessage(message, level, doNotOutput) {
 		const entry = new LogEntry(message, level);
 		this.#entries.push(entry);
+		this.emit('log');
 
-		if (!doNotOutput) {
-			console.log(entry.toString());
+		if ((!doNotOutput && doNotOutput !== false) || !this.doNotOutput) {
+			console.log(entry.toString(this.prefix));
 		}
 	}
 
 	toString() {
-		return this.entries.map(entry => entry.toString()).join('\n');
+		return this.entries.map(entry => entry.toString(this.prefix)).join('\n');
 	}
 }

@@ -12,11 +12,12 @@
 		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
 		"lint:check-ci": "npm run lint:ci",
 		"test:client": "npm run deploy:client && electron dist/tmp/client --bs-debug",
-		"test:server": "node src/server/index.js",
+		"test:server": "node src/server/cli.js",
 		"build:client": "node scripts/client-build.js",
 		"build:server": "node scripts/server-build.js",
 		"build": "npm run build:client && npm run build:server",
-		"deploy:client": "node scripts/client-deploy.js"
+		"deploy:client": "node scripts/client-deploy.js",
+		"stats:word-count": "wc -lw src/**/*.html src/**/*.js src/**/*.cjs src/**/**/*.fx src/**/**/*.svg src/**/**/*.json src/**/**/*.css"
 	},
 	"repository": {
 		"type": "git",
