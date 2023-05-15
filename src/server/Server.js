@@ -108,7 +108,6 @@ export default class Server extends EventEmitter {
 		}, 1000);
 
 		this.io.attach(this.httpServer);
-
 	}
 
 	listen(...args) {
@@ -122,7 +121,7 @@ export default class Server extends EventEmitter {
 		this.emit('save');
 	}
 
-	stop(withError = false){
+	stop(withError = false) {
 		this.isStopping = true;
 		this.log.addMessage('Stopping...', withError ? LogLevel.ERROR : LogLevel.LOG);
 		for (let client of this.clients.values()) {
@@ -134,7 +133,7 @@ export default class Server extends EventEmitter {
 		this.emit('stop');
 	}
 
-	restart(withError = false, restartProcess = false){
+	restart(withError = false, restartProcess = false) {
 		this.isStopping = true;
 		this.log.addMessage('Restarting...', withError ? LogLevel.ERROR : LogLevel.LOG);
 		for (let client of this.clients.values()) {
@@ -143,7 +142,7 @@ export default class Server extends EventEmitter {
 		this.io.close();
 		this.httpServer.close();
 		this.log.addMessage('Restarted', withError ? LogLevel.ERROR : LogLevel.LOG);
-		this.emit('restart', restartProcess);		
+		this.emit('restart', restartProcess);
 	}
 
 	addClient(client) {
@@ -177,8 +176,7 @@ export default class Server extends EventEmitter {
 	}
 
 	async checkClientAuth(socket) {
-
-		if(this.isStopping){
+		if (this.isStopping) {
 			throw 'Server is stopping or restarting';
 		}
 
@@ -186,12 +184,12 @@ export default class Server extends EventEmitter {
 		try {
 			data = await requestUserInfo('token', socket.handshake.auth.token);
 		} catch (err) {
-			if(!data){
+			if (!data) {
 				// the fetch failed (instead of the request being invalid)
 				this.log.addMessage('Client auth API request failed: ' + err.stack, LogLevel.WARN);
 				throw 'Auth request failed';
 			}
-			
+
 			throw 'Invalid token';
 		}
 

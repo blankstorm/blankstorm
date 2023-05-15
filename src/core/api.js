@@ -5,7 +5,7 @@ export async function login(email, password) {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ action: 'login', email, password }),
-		rejectUnauthorized: false
+		rejectUnauthorized: false,
 	});
 	return await res.json();
 }

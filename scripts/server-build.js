@@ -18,9 +18,9 @@ await build({
 await pkg([outfile, '--output', 'dist/server', '--target', 'latest-win,latest-linux,latest-macos']);
 
 const renames = new Map([
-	[`server-win.exe`, `server-win-${version}.exe`],
-	[`server-macos`, `server-macos-${version}`],
-	[`server-linux`, `server-linux-${version}`],
+	[`server-win.exe`, `blankstorm-server-${version}.exe`],
+	[`server-macos`, `blankstorm-server-${version}-macos`],
+	[`server-linux`, `blankstorm-server-${version}-linux`],
 ]);
 
 for (let [oldName, newName] of renames) {

@@ -43,11 +43,10 @@ export default class Hardpoint extends Node {
 	 * @todo implement projectile logic on the core
 	 */
 	async fire(target) {
-
 		// this is so we don't have a circular dependency by importing Ship
 		const targetConstructors = [];
 		let targetConstructor = target;
-		while(targetConstructor) {
+		while (targetConstructor) {
 			targetConstructor = Object.getPrototypeOf(targetConstructor);
 			targetConstructors.push(targetConstructor.name);
 		}

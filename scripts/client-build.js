@@ -72,10 +72,10 @@ await build({
 });
 
 const renames = [
-	[`Blankstorm Client Setup ${pkg.version}.exe`, `client-win-${version}.exe`],
-	[`Blankstorm Client Setup ${pkg.version}.exe.blockmap`, `client-win-${version}.exe.blockmap`],
-	[`Blankstorm Client-${pkg.version}.AppImage`, `client-macos-${version}.AppImage`],
-	[`blankstorm-client_${pkg.version}_amd64.snap`, `client-linux-${version}.snap`],
+	[`Blankstorm Client Setup ${pkg.version}.exe`, `blankstorm-client-${version}.exe`],
+	[`Blankstorm Client Setup ${pkg.version}.exe.blockmap`, `blankstorm-client-${version}.exe.blockmap`],
+	[`Blankstorm Client-${pkg.version}.AppImage`, `blankstorm-client-${version}.AppImage`],
+	[`blankstorm-client_${pkg.version}_amd64.snap`, `blankstorm-client-${version}.snap`],
 ];
 
 const deletes = ['builder-debug.yml', 'builder-effective-config.yaml', 'latest.yml', '.icon-ico'];

@@ -50,7 +50,7 @@ server.on('save', () => {
 });
 server.on('stop', () => {
 	process.exit();
-})
+});
 server.on('restart', () => {
 	setTimeout(() => {
 		process.on('exit', () => {
@@ -64,11 +64,11 @@ server.on('restart', () => {
 	process.exit();
 });
 server.listen(options.config.port || coreConfig.default_port, () => log.addMessage('server started'));
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', err => {
 	log.addMessage('Fatal error: ' + err.stack, LogLevel.ERROR);
 	server.stop(LogLevel.ERROR);
 });
-process.on('warning', (warning) => {
+process.on('warning', warning => {
 	log.addMessage(warning.name, LogLevel.WARN);
 });
 process.once('SIGINT', () => server.stop()).once('SIGTERM', () => server.stop());
