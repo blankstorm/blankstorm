@@ -1,6 +1,6 @@
 /* eslint-env node */
 const { app, shell, nativeTheme, BrowserWindow } = require('electron');
-const path = require('path')
+const path = require('path');
 const { parseArgs } = require('node:util');
 
 const _args = parseArgs({
@@ -23,7 +23,7 @@ function createWindow() {
 		darkTheme: true,
 		webPreferences: {
 			preload: path.join(__dirname, 'preload.cjs'),
-			nodeIntegration: true
+			nodeIntegration: true,
 		},
 	});
 

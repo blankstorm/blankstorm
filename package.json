@@ -5,19 +5,19 @@
 	"main": "src/client/app.cjs",
 	"type": "module",
 	"scripts": {
-		"format:check": "prettier --check {src,scripts}/**/*.{html,js}",
-		"format:fix": "prettier --write {src,scripts}/**/*.{html,js}",
+		"format:check": "prettier --check {src,scripts}/**/*.{html,ts,cjs}",
+		"format:fix": "prettier --write {src,scripts}/**/*.{html,ts,cjs}",
 		"format": "npm run format:check && npm run format:fix",
-		"lint": "eslint src/**/*.js",
+		"lint": "eslint src/**/*.ts",
 		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
 		"lint:check-ci": "npm run lint:ci",
 		"test:client": "npm run deploy:client && electron dist/tmp/client --bs-debug",
-		"test:server": "node src/server/cli.js",
+		"test:server": "node src/server/cli.ts",
 		"build:client": "node scripts/client-build.js",
 		"build:server": "node scripts/server-build.js",
 		"build": "npm run build:client && npm run build:server",
 		"deploy:client": "node scripts/client-deploy.js",
-		"stats:word-count": "wc -lw src/**/*.html src/**/*.js src/**/*.cjs src/**/**/*.fx src/**/**/*.svg src/**/**/*.json src/**/**/*.css"
+		"stats:word-count": "wc -lw src/**/*.html src/**/*.ts src/**/*.cjs src/**/**/*.fx src/**/**/*.svg src/**/**/*.json src/**/**/*.css"
 	},
 	"repository": {
 		"type": "git",
@@ -42,9 +42,13 @@
 		"browserfs": "^2.0.0",
 		"jquery": "^3.6.2",
 		"socket.io": "^4.6.1",
-		"socket.io-client": "4.x.x"
+		"socket.io-client": "^4.6.1"
 	},
 	"devDependencies": {
+		"@types/jquery": "^3.5.16",
+		"@types/node": "^20.2.1",
+		"@typescript-eslint/eslint-plugin": "^5.59.6",
+		"@typescript-eslint/parser": "^5.59.6",
 		"electron": "^22.2.0",
 		"electron-builder": "^23.6.0",
 		"esbuild": "^0.17.14",
@@ -52,6 +56,7 @@
 		"eslint-formatter-azure-devops": "^0.2.0",
 		"mime-types": "^2.1.35",
 		"pkg": "^5.8.1",
-		"prettier": "^2.7.1"
+		"prettier": "^2.7.1",
+		"typescript": "^5.0.4"
 	}
 }
