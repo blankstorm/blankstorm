@@ -1,5 +1,5 @@
 import { items as Items } from '../generic/items';
-import type { ItemCollection, ItemID,  } from '../generic/items';
+import type { ItemCollection, ItemID } from '../generic/items';
 import { research as Tech } from '../generic/research';
 import type { ResearchCollection } from '../generic/research';
 import { Entity } from './Entity';
@@ -47,7 +47,7 @@ export class Player extends Entity {
 	}
 
 	set items(value: ItemCollection) {
-		for(const ship of this.fleet){
+		for (const ship of this.fleet) {
 			ship.storage.empty(Object.keys(value) as ItemID[]);
 		}
 		this.addItems(value);

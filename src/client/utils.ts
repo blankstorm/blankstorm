@@ -1,6 +1,6 @@
 import $ from 'jquery';
 
-	export const upload = (type, multiple = false) =>
+export const upload = (type, multiple = false) =>
 		new Promise(res =>
 			$<HTMLInputElement>(`<input type=file ${type ? `accept='${type}'` : ''} ${multiple ? 'multiple' : ''}>`)
 				.on('change', e => res(Array.from(e.target.files)[0]))

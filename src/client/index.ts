@@ -23,9 +23,7 @@ import type { ShipType } from '../core/generic/ships';
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
-$('#main .version a')
-	.text(versions.get(version).text)
-	.attr('href', `${GAME_URL}/versions#${version}`);
+$('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
 
 $('#loading_cover p').text('Loading...');
 export let current: LiveSave;
@@ -782,8 +780,8 @@ $('html')
 	.on('mousemove', e => {
 		$('tool-tip').each((i, tooltip) => {
 			const computedStyle = getComputedStyle(tooltip);
-			const left = settings.get('font_size') as number + e.clientX,
-				top = settings.get('font_size') as number + e.clientY;
+			const left = (settings.get('font_size') as number) + e.clientX,
+				top = (settings.get('font_size') as number) + e.clientY;
 			$(tooltip).css({
 				left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
 				top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height)),
