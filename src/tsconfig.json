@@ -5,6 +5,16 @@
 		"target": "ESNext",
 		"moduleResolution": "bundler",
 		"noEmit": true,
-		"outDir": "dist/tmp/ts"
-	}
+		"outDir": "dist/tmp/ts",
+		"typeRoots": [
+            "node_modules/@types"
+        ],
+	},
+	"files": [
+		"index.ts"
+	],
+	"include": [
+		"src/**/*.ts",
+		"node_modules/**/*"
+	]
 }

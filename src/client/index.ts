@@ -1,25 +1,28 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
-
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Engine } from '@babylonjs/core/Engines/engine';
 import $ from 'jquery';
 $.ajaxSetup({ timeout: 3000 });
-import { contextMenu } from './ui/contextmenu';
 
-import { version, versions, isJSON, config, commands, execCommandString, random, Ship, Level, isHex, xpToLevel, GAME_URL } from '../core/index';
-import type { Player } from '../core/index';
-
-import { SettingsStore } from './settings';
+import { GAME_URL, config, version, versions } from '../core/meta';
+import { isHex, isJSON, random, xpToLevel } from '../core/utils';
+import { commands, execCommandString } from '../core/commands';
+import * as api from '../core/api';
+import { Ship } from '../core/entities/Ship';
+import type { Player } from '../core/entities/Player';
+import type { Entity } from '../core/entities/Entity';
+import type { ShipType } from '../core/generic/ships';
+import { Level } from '../core/Level';
+import { Keybind, SettingsMap } from './settings';
 import LocaleStore from './locales';
 import { upload, minimize, alert, cookies } from './utils';
 import { Waypoint } from './waypoint';
 import { SaveMap, Save, LiveSave } from './Save';
 import { ServerMap, Server } from './Server';
-import * as renderer from '../renderer/index';
 import fs from './fs';
 import * as ui from './ui';
 import { sounds, playsound } from './audio';
-import * as api from '../core/api';
-import { Color3 } from '@babylonjs/core/index';
-import type { ShipType } from '../core/generic/ships';
+import * as renderer from '../renderer/index';
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
@@ -46,7 +49,7 @@ const updateSave = () => {
 	}
 	$('#esc .save').text('Save Game');
 };
-export const settings = new SettingsStore('settings', {
+export const settings = new SettingsMap('settings', {
 	sections: [
 		{
 			id: 'general',
@@ -156,7 +159,7 @@ export const settings = new SettingsStore('settings', {
 			label: 'Forward',
 			value: { key: 'w' },
 			onTrigger: () => {
-				renderer.getCamera().addVelocity(Vector3.Forward(), true);
+				renderer.getCamera().addVelocity(Vector3.Forward());
 			},
 		},
 		{
@@ -166,7 +169,7 @@ export const settings = new SettingsStore('settings', {
 			label: 'Strafe Left',
 			value: { key: 'a' },
 			onTrigger: () => {
-				renderer.getCamera().addVelocity(Vector3.Left(), true);
+				renderer.getCamera().addVelocity(Vector3.Left());
 			},
 		},
 		{
@@ -176,7 +179,7 @@ export const settings = new SettingsStore('settings', {
 			label: 'Strafe Right',
 			value: { key: 'd' },
 			onTrigger: () => {
-				renderer.getCamera().addVelocity(Vector3.Right(), true);
+				renderer.getCamera().addVelocity(Vector3.Right());
 			},
 		},
 		{
@@ -186,7 +189,7 @@ export const settings = new SettingsStore('settings', {
 			label: 'Backward',
 			value: { key: 's' },
 			onTrigger: () => {
-				renderer.getCamera().addVelocity(Vector3.Backward(), true);
+				renderer.getCamera().addVelocity(Vector3.Backward());
 			},
 		},
 		{
@@ -312,7 +315,7 @@ const strobe = rate => {
 const toggleChat = (command?: boolean) => {
 	$('#chat,#chat_history').toggle();
 	if ($('#cli').toggle().is(':visible')) {
-		renderer.getCamera().detachControl(canvas, true);
+		renderer.getCamera().detachControl();
 		$('#cli').focus();
 		if (command) {
 			$('#cli').val('/');
@@ -336,8 +339,8 @@ const changeUI = (selector: string, hideAll?: boolean) => {
 		canvas.focus();
 		$('[game-ui]').hide();
 	} else if (!$('[game-ui]').is(':visible')) {
-		renderer.getCamera().detachControl(canvas, true);
-		$(selector).show().focus();
+		renderer.getCamera().detachControl();
+		$(selector).show().trigger('focus');
 	}
 };
 const cli = { line: 0, currentInput: '', i: $('#cli').val(), prev: [], counter: 0 };
@@ -348,7 +351,7 @@ export const chat = (...msg: string[]) => {
 		$(`<li bg=none></li>`)
 			.text(m)
 			.appendTo('#chat')
-			.fadeOut(1000 * settings.get('chat_timeout'));
+			.fadeOut(1000 * +settings.get('chat_timeout'));
 		$(`<li bg=none></li>`).text(m).appendTo('#chat_history');
 	}
 };
@@ -832,7 +835,7 @@ canvas.on('contextmenu', e => {
 	if (current instanceof LiveSave) {
 		const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
 		for (const { entityRenderer, point } of data) {
-			const entity = current.getNodeByID(entityRenderer.id);
+			const entity = current.getNodeByID(entityRenderer.id) as Entity;
 			entity.moveTo(point, false);
 		}
 	}
@@ -857,8 +860,9 @@ canvas.on('keydown', e => {
 	}
 });
 $('canvas.game,[ingame-ui],#hud,#tablist').on('keydown', e => {
-	for (const bind of [...settings.items.values()].filter(item => item.type == 'keybind')) {
-		if (e.key == bind.value.key && (!bind.value.alt || e.altKey) && (!bind.value.ctrl || e.ctrlKey)) bind.onTrigger(e);
+	for (const setting of [...settings.items.values()].filter(item => item.type == 'keybind')) {
+		const bind = setting.value as Keybind;
+		if (e.key == bind.key && (!bind.alt || e.altKey) && (!bind.ctrl || e.ctrlKey)) setting.onTrigger(e);
 	}
 });
 canvas.on('keyup', e => {
@@ -890,7 +894,7 @@ $('canvas.game,#esc,#hud').on('keydown', e => {
 	ui.update();
 });
 $('button').on('click', () => {
-	playsound(sounds.get('ui'), settings.get('sfx'));
+	playsound(sounds.get('ui'), +settings.get('sfx'));
 });
 setInterval(() => {
 	if (current instanceof LiveSave && !isPaused) {
@@ -901,14 +905,14 @@ setInterval(() => {
 const loop = () => {
 	if (current instanceof Level && !isPaused) {
 		const camera = renderer.getCamera();
-		camera.angularSensibilityX = camera.angularSensibilityY = 2000 / settings.get('sensitivity');
+		camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
 		current.waypoints.forEach(waypoint => {
 			const pos = waypoint.screenPos;
 			waypoint.marker
 				.css({
 					position: 'fixed',
-					left: Math.min(Math.max(pos.x, 0), innerWidth - settings.get('font_size')) + 'px',
-					top: Math.min(Math.max(pos.y, 0), innerHeight - settings.get('font_size')) + 'px',
+					left: Math.min(Math.max(pos.x, 0), innerWidth - +settings.get('font_size')) + 'px',
+					top: Math.min(Math.max(pos.y, 0), innerHeight - +settings.get('font_size')) + 'px',
 					fill: waypoint.color.toHexString(),
 				})
 				.filter('p')
@@ -937,12 +941,17 @@ const loop = () => {
 				R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
 			</span><br>
 		`);
-		const { usedJSHeapSize: used = 0, jsHeapSizeLimit: limit = 0, totalJSHeapSize: total = 0 } = performance?.memory || {};
+		interface _Performance extends Performance {
+			memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number; totalJSHeapSize: number };
+		}
+		const { usedJSHeapSize: used = 0, jsHeapSizeLimit: limit = 0, totalJSHeapSize: total = 0 } = (globalThis.performance as _Performance)?.memory || {},
+			glInfo = renderer.engine.getGlInfo();
 		$('#debug .right').html(`
-			<span>Babylon v${renderer.engine.constructor.Version} | jQuery v${$.fn.jquery}</span><br>
-			<span>${renderer.engine._glRenderer}</span><br>
+			<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
+			<span>${glInfo.version}</span><br>
+			<span>${glInfo.renderer}</span><br>
 			<span>${`${(used / 1000000).toFixed()}MB/${(limit / 1000000).toFixed()}MB (${(total / 1000000).toFixed()}MB Allocated)`}</span><br>
-			<span>${navigator.hardwareConcurrency ?? 0} CPU Threads</span><br><br>
+			<span>${navigator.hardwareConcurrency || 'Unknown'} CPU Threads</span><br><br>
 		`);
 
 		renderer.render();

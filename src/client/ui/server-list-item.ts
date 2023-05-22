@@ -29,7 +29,6 @@ export default class ServerListItem extends HTMLLIElement {
 			.find('.delete')
 			.on('click', async e => {
 				if (e.shiftKey || (await confirm('Are you sure?'))) {
-					$(this).remove();
 					server.remove();
 				}
 			});

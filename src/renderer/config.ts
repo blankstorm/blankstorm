@@ -14,4 +14,6 @@ export default {
 		intensity: 1,
 		range: 10000,
 	},
+	planet_material_map_size: 1024,
+	planet_material_max_resolution: 1024,
 };

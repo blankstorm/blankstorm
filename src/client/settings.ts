@@ -17,10 +17,10 @@ export interface Keybind {
 	key: string;
 }
 
-export const SettingTypes = ['boolean', 'checkbox', 'string', 'range', 'number', 'hidden', 'date', 'color', 'select', 'keybind'];
+export const SettingTypes = ['boolean', 'string', 'range', 'number', 'hidden', 'color', 'select', 'keybind'];
 export type SettingType = typeof SettingTypes[number];
 
-export type SettingValue = boolean | string | number | bigint | Date | Color3 | Keybind;
+export type SettingValue = boolean | string | string[] | number | Keybind;
 
 export type SettingLabel<T = any> = string | ((value?: T) => string);
 
@@ -34,7 +34,7 @@ export interface SettingsItemOptions {
 		label: string;
 	}[];
 	value: any;
-	onTrigger(evt: Event): unknown;
+	onTrigger(evt: Event | JQuery.KeyDownEvent): unknown;
 	min: number;
 	max: number;
 	step: number;
@@ -46,7 +46,7 @@ export class SettingsItem extends HTMLDivElement {
 	label: SettingLabel;
 
 	#section: SettingsSection;
-	#store: SettingsStore;
+	#store: SettingsMap;
 
 	#ui_label = $('<label class=setting-label></label>');
 	#ui_input: JQuery<HTMLInputElement>;
@@ -60,14 +60,13 @@ export class SettingsItem extends HTMLDivElement {
 	};
 
 	//Used by keybind
-	#onTrigger: (evt: Event) => unknown;
+	#onTrigger: (evt: Event | JQuery.KeyDownEvent) => unknown;
 	constructor(id: string, options: Partial<SettingsItemOptions>, store) {
 		super();
 		$(this).attr('bg', 'none');
 		options ||= {};
 		this.#id = id;
 		this.label = options.label;
-		this.#type = options.type;
 		this.#store = store;
 
 		if (options.section instanceof SettingsSection) {
@@ -79,11 +78,12 @@ export class SettingsItem extends HTMLDivElement {
 			throw new SettingsError(`Settings section "${options.section}" does not exist`);
 		}
 
-		switch (this.#type) {
-			case 'boolean':
+		switch (options.type) {
 			case 'checkbox':
+			case 'boolean':
 				this.#ui_input = $('<input></input>');
 				this.#ui_input.attr('type', 'checkbox');
+				options.type = 'boolean';
 				break;
 			case 'string':
 				this.#ui_input = $('<input></input>');
@@ -92,10 +92,10 @@ export class SettingsItem extends HTMLDivElement {
 			case 'range':
 			case 'number':
 			case 'hidden':
-			case 'date':
 			case 'color':
 				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', this.#type);
+				this.#ui_input.attr('type', options.type);
+				options.type = options.type == 'color' ? 'color' : 'number';
 				break;
 			case 'select':
 				this.#ui_input = $('<select></select>');
@@ -122,8 +122,10 @@ export class SettingsItem extends HTMLDivElement {
 					});
 				break;
 			default:
-				throw new SettingsError(`Invalid type: ${this.#type}`, this);
+				throw new SettingsError(`Invalid type: ${options.type}`, this);
 		}
+
+		this.#type = options.type;
 
 		this.#ui_input.attr('name', id);
 		this.#ui_input.addClass('setting-input');
@@ -149,26 +151,11 @@ export class SettingsItem extends HTMLDivElement {
 		return this.#id;
 	}
 
-	get value() {
-		switch (this.#type) {
-			case 'boolean':
-			case 'checkbox':
-				return this.#ui_input.is(':checked');
-			case 'range':
-			case 'number':
-				return +this.#ui_input.val();
-			case 'date':
-				return new Date(this.#ui_input.val() as string);
-			case 'color':
-				return this.#ui_input.val(); //TODO: Replace with Babylon Color3?
-			case 'keybind':
-				return this.#value;
-			default:
-				return this.#ui_input.val();
-		}
+	get value(): SettingValue {
+		return this.#type == 'keybind' ? this.#value : this.#type == 'boolean' ? this.#ui_input.is(':checked') : this.#ui_input.val();
 	}
 
-	set value(val) {
+	set value(val: SettingValue) {
 		switch (this.#type) {
 			case 'keybind':
 				this.#value = val as Keybind;
@@ -248,7 +235,7 @@ export class SettingsItem extends HTMLDivElement {
 	}
 
 	//for keybinds
-	onTrigger(evt: Event) {
+	onTrigger(evt?: Event | JQuery.KeyDownEvent) {
 		if (this.#type != 'keybind') {
 			throw new SettingsError('Attempted to call onTrigger for a non-keybind', this);
 		}
@@ -285,10 +272,10 @@ export interface SettingsSectionOptions {
 
 export class SettingsSection extends HTMLFormElement {
 	#parent: JQuery;
-	#store: SettingsStore;
+	#store: SettingsMap;
 	#label: SettingLabel;
 
-	constructor(public readonly id: string, label: SettingLabel, parent: JQuery, store: SettingsStore) {
+	constructor(public readonly id: string, label: SettingLabel, parent: JQuery, store: SettingsMap) {
 		super();
 
 		$(this).append('<h2 class=settings-name></h2>').addClass('settings-section');
@@ -337,8 +324,7 @@ export class SettingsSection extends HTMLFormElement {
 }
 customElements.define('settings-section', SettingsSection, { extends: 'form' });
 
-export class SettingsStore {
-	private _map: JSONFileMap;
+export class SettingsMap extends JSONFileMap {
 	sections: Map<string, SettingsSection> = new Map();
 	items: Map<string, SettingsItem> = new Map();
 
@@ -352,7 +338,7 @@ export class SettingsStore {
 			items: (SettingsItem | Partial<SettingsItemOptions>)[];
 		}
 	) {
-		this._map = new JSONFileMap(id + '.json', fs);
+		super(id + '.json', fs);
 
 		for (const section of sections) {
 			if (section instanceof SettingsSection) {
@@ -362,32 +348,14 @@ export class SettingsStore {
 			}
 		}
 
-		const settings = this._map._map;
-		for (const item of items) {
-			if (item instanceof SettingsItem) {
-				this.items.set(item.id, item);
-				this.set(item.id, settings.has(item.id) ? settings.get(item.id) : (item.value as any));
-			} else {
-				this.set(item.id, settings.has(item.id) ? settings.get(item.id) : item.value, item);
-			}
-		}
-	}
-
-	get(key: string): SettingValue {
-		return this._map.get(key) as SettingValue;
-	}
-
-	set(key: string, value: SettingValue, options?: object) {
-		this._map.set(key, value as JSONValue);
-
-		//update item
-		if (!this.items.has(key)) {
-			const opts = { type: SettingTypes.includes(typeof value) ? typeof value : 'string', ...options, value };
-			const item = this.createItem(key, opts);
-			item.value = value as any;
-		} else {
-			const item = this.items.get(key);
-			item.update(options);
+		const settings = this._map;
+		for (const _item of items) {
+			const item =
+				_item instanceof SettingsItem
+					? _item
+					: new SettingsItem(_item.id, { type: SettingTypes.includes(typeof _item.value) ? typeof _item.value : 'string', ..._item }, this);
+			this.items.set(item.id, item);
+			this.set(item.id, settings.has(item.id) ? settings.get(item.id) : _item.value);
 		}
 	}
 

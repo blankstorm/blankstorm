@@ -66,8 +66,11 @@ export default class LocaleStore {
 		$('#e div.nav button.lab span').text(lang['menu.lab'] ?? 'Laboratory');
 	}
 
-	text(key: string): string {
-		return this.#store.get(this.#store.has(settings.get('locale')) ? settings.get('locale') : 'en')?.text?.[key] || 'Unknown';
+	text(key: string | TemplateStringsArray): string {
+		return (
+			this.#store.get(this.#store.has(settings.get('locale') as string) ? (settings.get('locale') as string) : 'en')?.text?.[typeof key == 'string' ? key : key[0]] ||
+			'Unknown'
+		);
 	}
 
 	has(id: string): boolean {

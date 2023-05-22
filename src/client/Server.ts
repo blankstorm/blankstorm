@@ -165,6 +165,7 @@ export class Server {
 		$('#connect button').text('Back');
 		this.socket.connect();
 	}
+
 	disconnect() {
 		if (this.socket.connected) {
 			this.socket.disconnect();
@@ -203,6 +204,10 @@ export class Server {
 			url: this._url,
 			name: this.name,
 		};
+	}
+
+	remove() {
+		this.gui.remove();
 	}
 
 	static ParseURL(url: string | URL): URL {

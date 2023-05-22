@@ -19,7 +19,7 @@ export const core = {
 	},
 	'entity.death': async evt => {
 		if (evt.emitter instanceof Ship) {
-			playsound(sounds.get('destroy_ship'), settings.get('sfx'));
+			playsound(sounds.get('destroy_ship'), settings.get('sfx') as number);
 		}
 	},
 };

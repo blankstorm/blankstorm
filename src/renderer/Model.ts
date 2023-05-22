@@ -10,21 +10,32 @@ import '@babylonjs/loaders/glTF/index';
 
 import config from './config';
 import { probe } from './index';
-import Path from '../../core/Path';
-import { settings } from '../index';
-import { random } from '../../core/utils';
+import Path from '../core/Path';
+import { settings } from '../client';
+import { random } from '../core/utils';
+import type { SerializedNode } from '../core/Node';
+import type { Scene } from '@babylonjs/core/scene';
+import type { AssetContainer } from '@babylonjs/core/assetContainer';
+import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
  */
-export default class ModelRenderer extends TransformNode {
-	#instance;
+export class ModelRenderer extends TransformNode {
+	#instance: TransformNode;
 	#selected = false;
 	#currentPath;
 	#createdInstance = false;
-	#pathGizmo;
+	#pathGizmo?: LinesMesh;
+	rendererType: RendererType;
 
-	constructor(id, scene) {
+	get generic(): { speed: number; agility: number } | undefined {
+		console.warn(`Accessed generic of a ModelRenderer that was not a ShipRenderer`);
+		return { speed: 0, agility: 0 };
+	}
+
+	constructor(id: string, scene: Scene) {
 		super(id, scene);
 	}
 
@@ -36,9 +47,9 @@ export default class ModelRenderer extends TransformNode {
 		if (!this.isInstanciated) {
 			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
 		}
-		this.getChildMeshes().forEach(mesh => {
-			hl.addMesh(mesh, Color3.Green());
-		});
+		for (const mesh of this.getChildMeshes()) {
+			hl.addMesh(mesh as Mesh, Color3.Green());
+		}
 		this.#selected = true;
 	}
 
@@ -46,9 +57,9 @@ export default class ModelRenderer extends TransformNode {
 		if (!this.isInstanciated) {
 			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
 		}
-		this.getChildMeshes().forEach(mesh => {
-			hl.removeMesh(mesh);
-		});
+		for (const mesh of this.getChildMeshes()) {
+			hl.removeMesh(mesh as Mesh);
+		}
 		this.#selected = false;
 	}
 
@@ -76,7 +87,7 @@ export default class ModelRenderer extends TransformNode {
 		const animation = new Animation('pathFollow', 'position', 60 * this.generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
 			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this.generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-		animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.position.subtract(this.parent.absolutePosition) })));
+		animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.position.subtract((this.parent as TransformNode).absolutePosition) })));
 		rotateAnimation.setKeys(
 			path.path.flatMap((node, i) => {
 				if (i != 0) {
@@ -130,15 +141,16 @@ export default class ModelRenderer extends TransformNode {
 		return this.#instance;
 	}
 
-	async update({ name, position, rotation, type, parent } = {}) {
+	async update({ name, position, rotation, parent, node_type, type }: SerializedNode & { type?: string }, rendererType?: RendererType) {
 		this.name = name;
 		if (!this.#currentPath) {
 			this.position = Vector3.FromArray(position);
 			this.rotation = Vector3.FromArray(rotation);
 		}
-		if (this.type != type) {
-			this.type = type;
-			await this.createInstance(type);
+		const _type = rendererType || type || node_type;
+		if (this.rendererType != _type) {
+			this.rendererType = _type;
+			await this.createInstance(_type);
 		}
 		const _parent = this.getScene().getNodeById(parent);
 		if (_parent != this.parent) {
@@ -146,7 +158,7 @@ export default class ModelRenderer extends TransformNode {
 		}
 	}
 
-	static async FromData(data, scene) {
+	static async FromData(data: SerializedNode, scene: Scene) {
 		const model = new this(data.id, scene);
 		model.update(data);
 		return model;
@@ -169,9 +181,9 @@ export default class ModelRenderer extends TransformNode {
 		})
 	);
 
-	static genericMeshes = new Map();
+	static genericMeshes: Map<string, AssetContainer> = new Map();
 
-	static async InitModel(id, scene) {
+	static async InitModel(id: string, scene: Scene) {
 		if (!this.modelPaths.has(id)) {
 			throw new ReferenceError(`Model "${id}" does not exist`);
 		}
@@ -191,3 +203,5 @@ export default class ModelRenderer extends TransformNode {
 		ModelRenderer.genericMeshes.set(id, container);
 	}
 }
+
+export type RendererType = Parameters<typeof ModelRenderer.genericMeshes.get>[0];

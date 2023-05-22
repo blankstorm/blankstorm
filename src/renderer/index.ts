@@ -9,33 +9,38 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture';
 import { Engine } from '@babylonjs/core/Engines/engine';
 
-import Path from '../../core/Path';
+import Path from '../core/Path';
 
 import config from './config';
-import PlayerRenderer from './entities/PlayerRenderer';
-import { default as PlanetRenderer, PlanetRendererMaterial } from './bodies/PlanetRenderer';
-import StarRenderer from './bodies/StarRenderer';
-import ModelRenderer from './ModelRenderer';
-import ShipRenderer from './entities/ShipRenderer';
-import EntityRenderer from './entities/EntityRenderer';
-import Camera from './Camera';
+import { PlayerRenderer } from './entities/Player';
+import { default as PlanetRenderer, PlanetRendererMaterial } from './bodies/Planet';
+import { StarRenderer } from './bodies/Star';
+import { ModelRenderer } from './Model';
+import { ShipRenderer } from './entities/Ship';
+import { EntityRenderer } from './entities/Entity';
+import { Camera } from './Camera';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import type { Hardpoint } from '../core/entities/Hardpoint';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { FireProjectileOptions, HardpointRenderer } from './entities/Hardpoint';
+import { SerializedLevel } from '../core/Level';
 
-let skybox,
-	xzPlane,
-	camera,
-	cache = { entities: [], bodies: [] },
+let skybox: Mesh,
+	xzPlane: Mesh,
+	camera: Camera,
+	cache: SerializedLevel,
 	hitboxes = false,
-	gl;
-export let engine, scene, hl, probe;
+	gl: GlowLayer;
+export let engine: Engine, scene: Scene, hl: HighlightLayer, probe: ReflectionProbe;
 
-export function setHitboxes(value) {
+export function setHitboxes(value: boolean) {
 	hitboxes = !!value;
 }
 
 const bodies = new Map(),
 	entities = new Map();
 
-export async function init(canvas, messageHandler: (msg: string) => unknown = () => {}) {
+export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: string) => unknown = () => {}) {
 	await messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 	engine.resize();
@@ -51,24 +56,21 @@ export async function init(canvas, messageHandler: (msg: string) => unknown = ()
 		for (const body of bodies.values()) {
 			if (body instanceof PlanetRenderer && body.material instanceof PlanetRendererMaterial) {
 				body.rotation.y += 0.0001 * ratio * body.material.rotationFactor;
-				body.material.setMatrix('rotation', Matrix.RotationY(body.matrixAngle));
-				body.matrixAngle -= 0.0004 * ratio;
-				body.material.setVector3(
-					'options',
-					new Vector3(body.material.generationOptions.clouds, body.material.generationOptions.groundAlbedo, body.material.generationOptions.cloudAlbedo)
-				);
+				body.material.setMatrix('rotation', Matrix.RotationY(body.material.matrixAngle));
+				body.material.matrixAngle -= 0.0004 * ratio;
+				const options = body.material.generationOptions;
+				body.material.setVector3('options', new Vector3(+options.clouds, options.groundAlbedo, options.cloudAlbedo));
 			}
 		}
 	});
 
 	await messageHandler('skybox');
 	skybox = MeshBuilder.CreateBox('skybox', { size: config.skybox_size }, scene);
-	skybox.material = Object.assign(new StandardMaterial('skybox.mat', scene), {
-		backFaceCulling: false,
-		disableLighting: true,
-		reflectionTexture: CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), scene),
-	});
-	skybox.material.reflectionTexture.coordinatesMode = 5;
+	const skyboxMaterial = new StandardMaterial('skybox.mat', scene);
+	skyboxMaterial.backFaceCulling = false;
+	skyboxMaterial.disableLighting = true;
+	skyboxMaterial.reflectionTexture = CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), scene);
+	skyboxMaterial.reflectionTexture.coordinatesMode = 5;
 	skybox.infiniteDistance = true;
 	skybox.isPickable = false;
 
@@ -135,7 +137,7 @@ export async function clear() {
 		entities.delete(id);
 	}
 
-	cache = { entities: [], bodies: [] };
+	cache = null;
 }
 
 export async function load(levelData) {
@@ -252,9 +254,9 @@ export function handleCanvasClick(ev, owner) {
 		}
 	}
 	const pickInfo = scene.pick(ev.clientX, ev.clientY, mesh => {
-		let node = mesh;
+		let node: TransformNode = mesh;
 		while (node.parent) {
-			node = node.parent;
+			node = node.parent as TransformNode;
 			if (node instanceof ShipRenderer) {
 				return true;
 			}
@@ -262,9 +264,9 @@ export function handleCanvasClick(ev, owner) {
 		return false;
 	});
 	if (pickInfo.pickedMesh) {
-		let node = pickInfo.pickedMesh;
+		let node: TransformNode = pickInfo.pickedMesh;
 		while (node.parent && !(node instanceof ShipRenderer)) {
-			node = node.parent;
+			node = node.parent as TransformNode;
 		}
 		if (node instanceof ShipRenderer && node.parent == owner) {
 			if (node.selected) {
@@ -299,14 +301,11 @@ export async function startFollowingPath(entity, path) {
 	await renderer.followPath(Path.FromData(path));
 }
 
-export function fireProjectile(hardpoint, target, options) {
-	const hardpointRenderer = scene.getTransformNodeByID(hardpoint.id),
-		targetRenderer = scene.getTransformNodeByID(target.id);
-	let materials = [];
-	if (hardpointRenderer.parent?.parent?.customHardpointProjectileMaterials) {
-		materials = hardpointRenderer.parent.parent.customHardpointProjectileMaterials;
-	}
-	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials });
+export function fireProjectile(hardpoint: Hardpoint, target: TransformNode, options: FireProjectileOptions) {
+	const hardpointRenderer = scene.getTransformNodeById(hardpoint.id) as HardpointRenderer,
+		parent = hardpointRenderer?.parent?.parent as PlayerRenderer | PlanetRenderer,
+		targetRenderer = scene.getTransformNodeById(target.id);
+	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials: parent.customHardpointProjectileMaterials });
 }
 
 export async function serialize() {

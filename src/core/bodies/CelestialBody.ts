@@ -20,6 +20,7 @@ export class CelestialBody extends Node {
 	rewards: Storage;
 	radius = 0;
 	fleetPosition: Vector3;
+	option?: JQuery<HTMLElement>;
 
 	get power(): number {
 		return this.fleet.reduce((total, ship) => total + ship.generic.power, 0) ?? 0;

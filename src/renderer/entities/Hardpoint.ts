@@ -1,0 +1,96 @@
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Animation } from '@babylonjs/core/Animations/animation';
+import type { Scene } from '@babylonjs/core/scene';
+
+import { random, wait } from '../../core/utils';
+import { ModelRenderer } from '../Model';
+import type { SerializedHardpoint } from '../../core';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { Material } from '@babylonjs/core/Materials/material';
+
+export interface CustomHardpointProjectileMaterial {
+	applies_to: string[];
+	material: Material;
+}
+
+export interface FireProjectileOptions {
+	materials: { applies_to: string[]; material: Material }[];
+	speed: number;
+	id: string;
+}
+
+export interface HardpointProjectileHandlerOptions extends FireProjectileOptions {
+	material?: Material;
+}
+
+export type HardpointProjectileHandler = (target: TransformNode, options: HardpointProjectileHandlerOptions) => Promise<unknown>;
+
+export class HardpointRenderer extends ModelRenderer {
+	projectiles = [];
+	_projectile: HardpointProjectileHandler;
+	constructor(id: string, scene: Scene) {
+		super(id, scene);
+	}
+
+	fireProjectile(target: TransformNode, rawOptions: FireProjectileOptions) {
+		const options: HardpointProjectileHandlerOptions = rawOptions;
+		options.material = rawOptions.materials.find(({ applies_to = [], material }) => {
+			if (applies_to.includes(this.rendererType) && material) {
+				return material;
+			}
+		}, this)?.material;
+		this._projectile.call(this, target, options);
+	}
+
+	async update(data: SerializedHardpoint) {
+		if (this.rendererType != data.type) {
+			this._projectile = HardpointRenderer.projectiles.get(data.type);
+		}
+		await super.update(data, data.type);
+		if (this.isInstanciated && typeof data.info?.scale == 'number') {
+			this.instance.scalingDeterminant = data.info.scale;
+		}
+	}
+
+	static async FromData(data: SerializedHardpoint, scene: Scene) {
+		const hardpoint = new this(data.id, scene);
+		await hardpoint.update(data);
+		return hardpoint;
+	}
+
+	static projectiles: Map<string, HardpointProjectileHandler> = new Map(
+		Object.entries({
+			async laser(target, { material, speed, id: modelID }) {
+				await wait(random.int(4, 40));
+				const laser = new ModelRenderer(random.hex(32), this.getScene());
+				await laser.createInstance(modelID);
+				const bounding = this.getHierarchyBoundingVectors(),
+					targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),
+					startPos = this.getAbsolutePosition(),
+					endPos = target.getAbsolutePosition().add(random.cords(targetOffset)),
+					frameFactor = Vector3.Distance(startPos, endPos) / speed;
+				this.projectiles.push(laser);
+				for (const child of laser.getChildMeshes()) {
+					child.material = material;
+				}
+				laser.scaling = this.scaling;
+				laser.position = startPos;
+				this.lookAt(endPos);
+				laser.lookAt(endPos);
+				const animation = new Animation('projectileAnimation', 'position', 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+				animation.setKeys([
+					{ frame: 0, value: startPos },
+					{ frame: 60 * frameFactor, value: endPos },
+				]);
+				laser.animations.push(animation);
+				const result = this.getScene().beginAnimation(laser, 0, 60 * frameFactor);
+				result.disposeOnEnd = true;
+				result.onAnimationEnd = () => {
+					this.projectiles.splice(this.projectiles.indexOf(laser), 1);
+					laser.dispose();
+					//update level (core-side)
+				};
+			},
+		})
+	);
+}

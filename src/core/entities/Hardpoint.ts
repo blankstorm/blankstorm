@@ -10,15 +10,16 @@ import type { Ship } from './Ship';
 import type { Level } from '../Level';
 import type { Player } from './Player';
 import type { CelestialBody } from '../bodies/CelestialBody';
+import type { HardpointInfo } from '../generic/ships';
 
 export interface SerializedHardpoint extends SerializedNode {
-	info: object;
+	info: HardpointInfo;
 	type: HardpointType;
 	reload: number;
 }
 
 export class Hardpoint extends Node {
-	info: any;
+	info: HardpointInfo;
 	type: HardpointType;
 	reload: number;
 	declare owner: Ship;
@@ -58,7 +59,7 @@ export class Hardpoint extends Node {
 	/**
 	 * @todo implement projectile logic on the core
 	 */
-	async fire(target) {
+	async fire(target: Ship | Hardpoint) {
 		// this is so we don't have a circular dependency by importing Ship
 		const targetConstructors = [];
 		let targetConstructor = target;
@@ -72,7 +73,7 @@ export class Hardpoint extends Node {
 		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
 		this.reload = this.generic.reload;
 		await wait(time);
-		const targetShip = targetConstructors.includes('Ship') ? target : target.owner;
+		const targetShip = (targetConstructors.includes('Ship') ? target : target.owner) as Ship;
 		targetShip.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
 		if (targetShip.hp <= 0) {
 			const evt = new LevelEvent('entity.death', targetShip.serialize());

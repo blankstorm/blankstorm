@@ -2,6 +2,13 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { ItemCollection } from './items';
 import { ResearchCollection } from './research';
 
+export interface HardpointInfo {
+	type: string;
+	position: Vector3;
+	rotation?: Vector3;
+	scale: number;
+}
+
 export interface GenericShip {
 	hp: number;
 	speed: number;
@@ -15,11 +22,7 @@ export interface GenericShip {
 	storage: number;
 	recipe: Partial<ItemCollection>;
 	requires: Partial<ResearchCollection>;
-	hardpoints: {
-		type: string;
-		position: Vector3;
-		scale: number;
-	}[];
+	hardpoints: HardpointInfo[];
 }
 
 const genericShips = {

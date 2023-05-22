@@ -13,7 +13,7 @@ import { SerializedLevel } from '../core/Level';
 import { alert } from './utils';
 import { Waypoint } from './waypoint';
 import { setPaused, eventLog, setCurrent } from './index';
-import PlanetRenderer from '../renderer/bodies/PlanetRenderer';
+import PlanetRenderer from '../renderer/bodies/Planet';
 import * as listeners from './listeners';
 import * as renderer from '../renderer/index';
 import fs from './fs';

@@ -7,14 +7,36 @@ import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { ProceduralTexture } from '@babylonjs/core/Materials/Textures/Procedurals/proceduralTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+import type { Scene } from '@babylonjs/core/scene';
 
 import config from '../config';
-import { random } from '../../../core/utils';
+import { random } from '../../core/utils';
+import type { SerializedPlanet } from '../../core';
+import type { HardpointProjectileHandlerOptions } from '../entities/Hardpoint';
+
+export interface GenericPlanetRendererMaterial {
+	clouds: boolean;
+	upperColor: Color3;
+	lowerColor: Color3;
+	haloColor: Color3;
+	seed: number;
+	cloudSeed: number;
+	lowerClamp: Vector2;
+	groundAlbedo: number;
+	cloudAlbedo: number;
+	directNoise: boolean;
+	lowerClip: Vector2;
+	range: Vector2;
+	icon: string;
+}
 
 export class PlanetRendererMaterial extends ShaderMaterial {
-	constructor(options, scene) {
-		options.mapSize = 1024;
-		options.maxResolution = [64, 256, 1024][config.render_quality];
+	generationOptions: GenericPlanetRendererMaterial;
+	rotationFactor = Math.random();
+	matrixAngle = 0;
+	noiseTexture: ProceduralTexture;
+	cloudTexture: ProceduralTexture;
+	constructor(options: GenericPlanetRendererMaterial, scene: Scene) {
 		const id = random.hex(8);
 		super('PlanetMaterial.' + id, scene, './shaders/planet', {
 			attributes: ['position', 'normal', 'uv'],
@@ -25,8 +47,6 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 			this.setVector3('cameraPosition', scene.activeCamera.position);
 		});
 		this.generationOptions = options;
-		this.rotationFactor = Math.random();
-		this.matrixAngle = 0;
 
 		this.setVector3('cameraPosition', scene.activeCamera?.position || Vector3.Zero());
 		this.setVector3('lightPosition', Vector3.Zero());
@@ -45,14 +65,14 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		this.setColor3('haloColor', options.haloColor);
 	}
 
-	generateTexture(id, path, options, level) {
-		const sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, level, false, Texture.NEAREST_SAMPLINGMODE);
+	generateTexture(id: string, path: string, options, scene: Scene) {
+		const sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
-		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, options.mapSize, path, level, null, true, true);
+		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, config.planet_material_map_size, path, scene, null, true, true);
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
-		texture.setFloat('mapSize', options.mapSize);
-		texture.setFloat('maxResolution', options.maxResolution);
+		texture.setFloat('mapSize', config.planet_material_map_size);
+		texture.setFloat('maxResolution', config.planet_material_max_resolution);
 		texture.setFloat('seed', options.seed);
 		texture.setVector2('lowerClamp', options.lowerClamp);
 		texture.setTexture('randomSampler', sampler);
@@ -77,17 +97,18 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 export default class PlanetRenderer extends Mesh {
 	biome = '';
 	radius = 0;
-	constructor(id, scene) {
+	customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
+	constructor(id: string, scene: Scene) {
 		super(id, scene);
 		this.customHardpointProjectileMaterials = [
 			{
 				applies_to: ['laser'],
-				material: Object.assign(new StandardMaterial('player-laser-projectile-material', scene), { emissiveColor: Color3.Red() }),
+				material: Object.assign(new StandardMaterial('player-laser-projectile-material'), { emissiveColor: Color3.Red() }),
 			},
 		];
 	}
 
-	async update({ name, radius, biome, position, rotation, parent } = {}) {
+	async update({ name, radius, biome, position, rotation, parent }: SerializedPlanet) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
@@ -109,13 +130,13 @@ export default class PlanetRenderer extends Mesh {
 		}
 	}
 
-	static async FromData(data, scene) {
+	static async FromData(data: SerializedPlanet, scene: Scene) {
 		const planet = new this(data.id, scene);
 		await planet.update(data);
 		return planet;
 	}
 
-	static biomes = new Map([
+	static biomes: Map<string, GenericPlanetRendererMaterial> = new Map([
 		[
 			'earthlike',
 			{
