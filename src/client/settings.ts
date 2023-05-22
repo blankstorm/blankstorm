@@ -151,7 +151,16 @@ export class SettingsItem extends HTMLDivElement {
 	}
 
 	get value(): SettingValue {
-		return this.#type == 'keybind' ? this.#value : this.#type == 'boolean' ? this.#ui_input.is(':checked') : this.#ui_input.val();
+		switch (this.#type) {
+			case 'keybind':
+				return this.#value;
+			case 'boolean':
+				return this.#ui_input.is(':checked');
+			case 'number':
+				return +this.#ui_input.val();
+			default:
+				return this.#ui_input.val();
+		}
 	}
 
 	set value(val: SettingValue) {
@@ -161,11 +170,9 @@ export class SettingsItem extends HTMLDivElement {
 				this.#ui_input.text((this.#value.ctrl ? 'Ctrl + ' : '') + (this.#value.alt ? 'Alt + ' : '') + this.#value.key);
 				break;
 			case 'boolean':
-			case 'checkbox':
 				this.#ui_input[0].checked = val as boolean;
 				break;
 			case 'number':
-			case 'range':
 				this.#ui_input.val(+val);
 				break;
 			default:
@@ -347,14 +354,15 @@ export class SettingsMap extends JSONFileMap {
 			}
 		}
 
-		const settings = this._map;
 		for (const _item of items) {
 			const item =
 				_item instanceof SettingsItem
 					? _item
 					: new SettingsItem(_item.id, { type: SettingTypes.includes(typeof _item.value) ? typeof _item.value : 'string', ..._item }, this);
 			this.items.set(item.id, item);
-			this.set(item.id, settings.has(item.id) ? settings.get(item.id) : _item.value);
+			const value = this.has(item.id) ? this.get(item.id) : _item.value;
+			item.value = value;
+			this.set(item.id, value);
 		}
 	}
 
