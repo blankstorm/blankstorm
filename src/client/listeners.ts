@@ -10,7 +10,9 @@ export const core = {
 	'level.tick': async evt => {
 		renderer.update(evt.emitter);
 	},
-	'player.levelup': async () => {},
+	'player.levelup': async () => {
+		console.debug('Triggered player.levelup (unimplemented)');
+	},
 	'player.death': async () => {
 		renderer.getCamera().reset();
 	},

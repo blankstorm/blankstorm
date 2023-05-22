@@ -9,10 +9,10 @@ export interface ServerCommandExecutionContext extends CommandExecutionContext {
 }
 
 export interface ServerCommand extends Command {
-	exec({ server, executor }: { server: Server; executor: Client }, ...args: any[]): string | void;
+	exec({ server, executor }: { server: Server; executor: Client }, ...args): string | void;
 }
 
-export const commands: Map<string, ServerCommand> = new Map([..._commands.entries()]);
+export const commands: Map<string, Partial<ServerCommand>> = new Map([..._commands.entries()]);
 commands.set('kick', {
 	exec({ server, executor }, player, ...reason: string[]) {
 		const client = server.clients.getByName(player);
