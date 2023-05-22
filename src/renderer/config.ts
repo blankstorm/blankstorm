@@ -1,5 +1,4 @@
 export default {
-	render_quality: 0,
 	mesh_segments: 32,
 	skybox_size: 10000,
 	plane_size: 5000,
@@ -16,4 +15,5 @@ export default {
 	},
 	planet_material_map_size: 1024,
 	planet_material_max_resolution: 1024,
+	realtime_filtering_quality: 32
 };

@@ -1,7 +1,6 @@
 import $ from 'jquery';
-import { JSONFileMap, JSONValue } from '../core/utils';
+import { JSONFileMap } from '../core/utils';
 import fs from './fs';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
 
 export class SettingsError extends Error {
 	target: SettingsItem;
@@ -17,12 +16,12 @@ export interface Keybind {
 	key: string;
 }
 
-export const SettingTypes = ['boolean', 'string', 'range', 'number', 'hidden', 'color', 'select', 'keybind'];
+export const SettingTypes = ['boolean', 'checkbox', 'string', 'range', 'number', 'hidden', 'color', 'select', 'keybind'];
 export type SettingType = typeof SettingTypes[number];
 
 export type SettingValue = boolean | string | string[] | number | Keybind;
 
-export type SettingLabel<T = any> = string | ((value?: T) => string);
+export type SettingLabel<T = SettingValue> = string | ((value?: T) => string);
 
 export interface SettingsItemOptions {
 	id: string;
@@ -33,7 +32,7 @@ export interface SettingsItemOptions {
 		name: string;
 		label: string;
 	}[];
-	value: any;
+	value;
 	onTrigger(evt: Event | JQuery.KeyDownEvent): unknown;
 	min: number;
 	max: number;

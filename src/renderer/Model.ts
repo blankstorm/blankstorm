@@ -192,7 +192,7 @@ export class ModelRenderer extends TransformNode {
 			rotationQuaternion: null,
 			material: Object.assign(container.materials[0], {
 				realTimeFiltering: true,
-				realTimeFilteringQuality: [2, 8, 32][+config.render_quality],
+				realTimeFilteringQuality: config.realtime_filtering_quality,
 				reflectionTexture: probe.cubeTexture,
 			}),
 			position: Vector3.Zero(),
