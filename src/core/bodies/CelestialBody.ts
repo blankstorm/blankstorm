@@ -65,17 +65,3 @@ export class CelestialBody extends Node {
 		}) as CelestialBody;
 	}
 }
-
-/* For TypeScript in the future?
-import type { ID } from '../utils';
-import type { ItemCollection } from '../items';
-
-export interface CelestialBodyOptions {
-	id?: ID;
-	radius?: number;
-	fleet?: Ship[];
-	biome?: string;
-	owner?: Player | CelestialBody;
-	rewards?: ItemCollection;
-}
-*/

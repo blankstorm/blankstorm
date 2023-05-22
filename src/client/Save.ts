@@ -13,9 +13,9 @@ import { SerializedLevel } from '../core/Level';
 import { alert } from './utils';
 import { Waypoint } from './waypoint';
 import { setPaused, eventLog, setCurrent } from './index';
-import PlanetRenderer from './renderer/bodies/PlanetRenderer';
+import PlanetRenderer from '../renderer/bodies/PlanetRenderer';
 import * as listeners from './listeners';
-import * as renderer from './renderer/index';
+import * as renderer from '../renderer/index';
 import fs from './fs';
 import SaveListItem from './ui/save-list-item';
 import type { ShipType } from '../core/generic/ships';
@@ -83,7 +83,7 @@ export class Save {
 
 	set data(data) {
 		const date = new Date(data.date);
-		$(this.gui).find('.date').text(date.toLocaleString());
+		this.gui.find('.date').text(date.toLocaleString());
 		this.#data = data;
 	}
 
@@ -105,7 +105,7 @@ export class Save {
 
 	remove() {
 		if (this.store) this.store.delete(this.data.id);
-		$(this.gui).remove();
+		this.gui.remove();
 	}
 }
 

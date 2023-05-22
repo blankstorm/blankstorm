@@ -1,4 +1,4 @@
-import { items } from './generic/items';
+import { ItemID, items } from './generic/items';
 import type { ItemCollection, SerializedItemCollection } from './generic/items';
 
 export class Storage extends Map {
@@ -19,7 +19,7 @@ export class Storage extends Map {
 		return [...this.entries()].reduce((total, [name, amount]) => total + amount * items[name].weight, 0);
 	}
 
-	empty(filter) {
+	empty(filter: ItemID | ItemID[]) {
 		for (const name of this.keys()) {
 			if ((filter instanceof Array ? filter.includes(name) : filter == name) || !filter) this.set(name, 0);
 		}
@@ -29,17 +29,17 @@ export class Storage extends Map {
 		return { items: Object.fromEntries([...this]), max: this.#max };
 	}
 
-	add(item, amount) {
+	add(item: ItemID, amount: number) {
 		this.set(item, this.get(item) + amount);
 	}
 
-	addItems(items) {
+	addItems(items: Partial<ItemCollection>) {
 		for (const [id, amount] of Object.entries(items)) {
-			this.add(id, amount);
+			this.add(id as ItemID, amount);
 		}
 	}
 
-	remove(item, amount) {
+	remove(item: ItemID, amount: number) {
 		this.set(item, this.get(item) - amount);
 	}
 

@@ -1,4 +1,4 @@
-import * as renderer from './renderer/index';
+import * as renderer from '../renderer/index';
 import { sounds, playsound } from './audio';
 import { Ship } from '../core/entities/Ship';
 import { settings } from './index';

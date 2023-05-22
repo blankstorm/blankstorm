@@ -4,16 +4,16 @@ import $ from 'jquery';
 $.ajaxSetup({ timeout: 3000 });
 import { contextMenu } from './ui/contextmenu';
 
-import { version, versions, isJSON, config, commands, execCommandString, random, Ship, Level, isHex, xpToLevel } from '../core/index';
+import { version, versions, isJSON, config, commands, execCommandString, random, Ship, Level, isHex, xpToLevel, GAME_URL } from '../core/index';
 import type { Player } from '../core/index';
 
 import { SettingsStore } from './settings';
 import LocaleStore from './locales';
-import { web, upload, minimize, alert, cookies } from './utils';
+import { upload, minimize, alert, cookies } from './utils';
 import { Waypoint } from './waypoint';
 import { SaveMap, Save, LiveSave } from './Save';
 import { ServerMap, Server } from './Server';
-import * as renderer from './renderer/index';
+import * as renderer from '../renderer/index';
 import fs from './fs';
 import * as ui from './ui';
 import { sounds, playsound } from './audio';
@@ -25,7 +25,7 @@ import type { ShipType } from '../core/generic/ships';
 document.title = 'Blankstorm ' + versions.get(version).text;
 $('#main .version a')
 	.text(versions.get(version).text)
-	.attr('href', web('versions#' + version));
+	.attr('href', `${GAME_URL}/versions#${version}`);
 
 $('#loading_cover p').text('Loading...');
 export let current: LiveSave;
@@ -772,7 +772,7 @@ $('html')
 		switch (e.key) {
 			case 'F8':
 				e.preventDefault();
-				open(web`bugs/new`, 'target=_blank');
+				open(`${GAME_URL}/bugs/new`, 'target=_blank');
 				break;
 			case 'b':
 				if (e.ctrlKey) strobe(100);
@@ -782,8 +782,8 @@ $('html')
 	.on('mousemove', e => {
 		$('tool-tip').each((i, tooltip) => {
 			const computedStyle = getComputedStyle(tooltip);
-			const left = settings.get('font_size') + e.clientX,
-				top = settings.get('font_size') + e.clientY;
+			const left = settings.get('font_size') as number + e.clientX,
+				top = settings.get('font_size') as number + e.clientY;
 			$(tooltip).css({
 				left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
 				top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height)),

@@ -3,6 +3,8 @@
 		"lib": [ "ESNext", "DOM" ],
 		"module": "ESNext",
 		"target": "ESNext",
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"outDir": "dist/tmp/ts"
 	}
 }

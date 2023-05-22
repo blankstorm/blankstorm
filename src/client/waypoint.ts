@@ -5,13 +5,13 @@ import { Node } from '@babylonjs/core/node';
 import $ from 'jquery';
 
 import { random } from '../core/utils';
-import { scene } from './renderer/index';
+import { scene } from '../renderer/index';
 import WaypointListItem from './ui/waypoint';
 import type { LiveSave } from './Save';
 
 export class Waypoint extends Node {
-	gui: $;
-	marker: $;
+	gui: JQuery;
+	marker: JQuery;
 	position: Vector3;
 	color: Color3;
 	icon: string;
@@ -68,7 +68,7 @@ export class Waypoint extends Node {
 	}
 
 	static dialog(wp) {
-		const wpd = $('#waypoint-dialog')[0];
+		const wpd = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
 		wpd._waypoint = wp;
 		wpd.showModal();
 	}

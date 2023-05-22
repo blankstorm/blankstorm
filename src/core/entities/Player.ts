@@ -1,4 +1,5 @@
-import { ItemCollection, items as Items } from '../generic/items';
+import { items as Items } from '../generic/items';
+import type { ItemCollection, ItemID,  } from '../generic/items';
 import { research as Tech } from '../generic/research';
 import type { ResearchCollection } from '../generic/research';
 import { Entity } from './Entity';
@@ -46,9 +47,9 @@ export class Player extends Entity {
 	}
 
 	set items(value: ItemCollection) {
-		this.fleet.forEach(ship => {
-			ship.storage.empty(Object.keys(value));
-		});
+		for(const ship of this.fleet){
+			ship.storage.empty(Object.keys(value) as ItemID[]);
+		}
 		this.addItems(value);
 	}
 
@@ -71,7 +72,7 @@ export class Player extends Entity {
 				for (const [name, amount] of Object.entries(items)) {
 					if (Items[name]) {
 						const stored = Math.min(space, amount);
-						ship.storage.add(name, stored);
+						ship.storage.add(name as ItemID, stored);
 						items[name] -= stored;
 						space -= stored;
 					} else {
@@ -87,7 +88,7 @@ export class Player extends Entity {
 		for (const ship of this.fleet) {
 			for (const [item, amount] of Object.entries(items)) {
 				const stored = Math.min(ship.storage.get(item), amount);
-				ship.storage.remove(item, stored);
+				ship.storage.remove(item as ItemID, stored);
 				items[item] -= stored;
 			}
 		}

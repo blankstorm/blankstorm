@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import { chat, setPaused, setCurrent } from './index';
 import { cookies } from './utils';
 import * as listeners from './listeners';
-import * as renderer from './renderer/index';
+import * as renderer from '../renderer/index';
 import { LevelEvent } from '../core/events';
 import { Level } from '../core/Level';
 import fs from './fs';
@@ -141,7 +141,7 @@ export class Server {
 	}
 
 	set name(val) {
-		$(this.gui).find('.name').text(val);
+		this.gui.find('.name').text(val);
 		this._name = val;
 		this.store.set(this.id, this);
 	}
@@ -176,7 +176,7 @@ export class Server {
 	}
 
 	async ping() {
-		const info = $(this.gui).find('.info');
+		const info = this.gui.find('.info');
 		info.find('span').html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').css('animation', '2s linear infinite rotate');
 		const beforeTime = performance.now();
 		try {
