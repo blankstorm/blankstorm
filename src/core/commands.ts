@@ -13,7 +13,7 @@ export interface Command {
 	oplvl: number;
 }
 
-export const commands: Map<string, Command> = new Map(
+export const commands: Map<string, Partial<Command>> = new Map(
 	Object.entries({
 		help: {
 			exec() {
@@ -42,9 +42,8 @@ export const commands: Map<string, Command> = new Map(
 			oplvl: 3,
 		},
 		'data get': {
-			exec({ executor }, selector, path = '') {
-				return 'This command is not implemented';
-				/*const node = executor.level.getNodeBySelector(selector);
+			/*exec({ executor }, selector, path = '') {
+				const node = executor.level.getNodeBySelector(selector);
 				const data = node.getByString(path),
 					output = data;
 				if (typeof data == 'object' || typeof data == 'function') {
@@ -53,16 +52,16 @@ export const commands: Map<string, Command> = new Map(
 						output[p] = data[p];
 					}
 				}
-				return `Data of entity #${node.id}: ${output}`;*/
-			},
+				return `Data of entity #${node.id}: ${output}`;
+			},*/
 			oplvl: 3,
 		},
 		'data set': {
-			exec({ executor }, selector, path, value) {
+			/*exec({ executor }, selector, path, value) {
 				return 'This command is not implemented';
-				/*let node = executor.level.getNodeBySelector(selector);
-				node.setByString(path, eval?.(value));*/
-			},
+				let node = executor.level.getNodeBySelector(selector);
+				node.setByString(path, eval?.(value));
+			},*/
 			oplvl: 3,
 		},
 		/**
@@ -88,7 +87,7 @@ export const execCommandString = (string: string, context: CommandExecutionConte
 			continue;
 		}
 
-		if (context.executor?.oplvl < command.oplvl && !ignoreOp) {
+		if (context.executor?.oplvl < (command.oplvl || 0) && !ignoreOp) {
 			return 'You do not have permission to execute that command';
 		}
 
@@ -97,6 +96,12 @@ export const execCommandString = (string: string, context: CommandExecutionConte
 			.split(/\s/)
 			.filter(a => a);
 
+		if (typeof command.exec != 'function') {
+			return 'Command is not implemented';
+		}
+
 		return command.exec(context, ...args);
 	}
+
+	return 'Command does not exist';
 };

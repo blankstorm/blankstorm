@@ -1,7 +1,6 @@
 import $ from 'jquery';
 import { confirm, download } from '../utils';
 import { versions } from '../../core/meta';
-import type { Save } from '../Save';
 
 export default class SaveListItem extends HTMLLIElement {
 	constructor(save) {
