@@ -15,5 +15,5 @@ export default {
 	},
 	planet_material_map_size: 1024,
 	planet_material_max_resolution: 1024,
-	realtime_filtering_quality: 32
+	realtime_filtering_quality: 32,
 };
