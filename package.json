@@ -38,8 +38,8 @@
 		"node": ">=18.0.0"
 	},
 	"dependencies": {
-		"@babylonjs/core": "5.27.x",
-		"@babylonjs/loaders": "5.27.x",
+		"@babylonjs/core": "^6.4.1",
+		"@babylonjs/loaders": "^6.4.1",
 		"browserfs": "^2.0.0",
 		"jquery": "^3.6.2",
 		"socket.io": "^4.6.1",

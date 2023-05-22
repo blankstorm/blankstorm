@@ -131,7 +131,7 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError(`Model "${modelID}" does not exist`);
 		}
 
-		this.#instance = ModelRenderer.genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0];
+		this.#instance = ModelRenderer.genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0] as TransformNode;
 		this.#instance.id = this.id + ':instance';
 		this.#instance.parent = this;
 		this.#instance.rotation.y += Math.PI;
