@@ -1,14 +1,14 @@
 import { build } from 'esbuild';
 import * as fs from 'fs';
-import path from 'path';
+import * as path from 'path';
 import { exec as pkg } from 'pkg';
-import { version as rawVersion } from '../src/core/meta.js';
+import { version as rawVersion } from '../src/core/meta';
 
-const version = rawVersion.replaceAll('_', '-');
+const version = (rawVersion as string).replaceAll('_', '-');
 const outfile = 'dist/tmp/server.js';
 
 await build({
-	entryPoints: ['src/server/index.js'],
+	entryPoints: ['src/server/index.ts'],
 	bundle: true,
 	outfile,
 	platform: 'node',

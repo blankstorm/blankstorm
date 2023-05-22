@@ -1,8 +1,8 @@
 import { build as esbuild } from 'esbuild';
 import * as fs from 'fs';
-import path from 'path';
+import * as path from 'path';
 import pkg from '../package.json' assert { type: 'json' };
-import { version as rawVersion } from '../src/core/meta.js';
+import { version as rawVersion } from '../src/core/meta';
 import { build } from 'electron-builder';
 import { fileURLToPath } from 'url';
 
@@ -24,7 +24,7 @@ function fromPath(p) {
 	return files;
 }
 
-const entryPoints = ['index.js', 'app.cjs', 'preload.cjs', 'index.html', 'images', 'locales', 'models', 'music', 'sfx', 'shaders', 'styles'].flatMap(p =>
+const entryPoints = ['index.ts', 'app.cjs', 'preload.cjs', 'index.html', 'images', 'locales', 'models', 'music', 'sfx', 'shaders', 'styles'].flatMap(p =>
 	fromPath(path.join('src/client', p))
 );
 

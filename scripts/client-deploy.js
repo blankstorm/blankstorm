@@ -1,7 +1,7 @@
 import { build, context } from 'esbuild';
 import { parseArgs } from 'util';
 import { readdirSync, statSync } from 'fs';
-import { join, posix } from 'path';
+import { join } from 'path';
 
 const { values, positionals } = parseArgs({
 	options: {
@@ -36,7 +36,7 @@ function fromPath(path) {
 	return files;
 }
 
-const entryPoints = ['index.js', 'index.html', 'images', 'locales', 'models', 'music', 'sfx', 'shaders', 'styles'].flatMap(p => fromPath(join(input, p)));
+const entryPoints = ['index.ts', 'index.html', 'images', 'locales', 'models', 'music', 'sfx', 'shaders', 'styles'].flatMap(p => fromPath(join(input, p)));
 const config = {
 	entryPoints,
 	assetNames: '[dir]/[name]',

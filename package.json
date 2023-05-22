@@ -14,8 +14,8 @@
 		"lint:ts": "tsc --project src/tsconfig.json",
 		"test:client": "npm run deploy:client && electron dist/tmp/client --bs-debug",
 		"test:server": "node src/server/cli.ts",
-		"build:client": "node scripts/client-build.js",
-		"build:server": "node scripts/server-build.js",
+		"build:client": "ts-node scripts/client-build.ts",
+		"build:server": "ts-node scripts/server-build.ts",
 		"build": "npm run build:client && npm run build:server",
 		"deploy:client": "node scripts/client-deploy.js",
 		"stats:word-count": "wc -lw src/**/*.html src/**/*.ts src/**/*.cjs src/**/**/*.fx src/**/**/*.svg src/**/**/*.json src/**/**/*.css"
@@ -58,6 +58,7 @@
 		"mime-types": "^2.1.35",
 		"pkg": "^5.8.1",
 		"prettier": "^2.7.1",
+		"ts-node": "^10.9.1",
 		"typescript": "^5.0.4"
 	}
 }
