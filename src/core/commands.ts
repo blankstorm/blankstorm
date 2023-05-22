@@ -9,7 +9,7 @@ export interface CommandExecutionContext {
 }
 
 export interface Command {
-	exec(context: CommandExecutionContext, ...args: any[]): string | void;
+	exec(context: CommandExecutionContext, ...args): string | void;
 	oplvl: number;
 }
 
