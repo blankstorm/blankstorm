@@ -11,7 +11,7 @@
 		"lint": "eslint src/**/*.ts",
 		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
 		"lint:check-ci": "npm run lint:ci",
-		"lint:ts": "tsc --project src/tsconfig.json",
+		"lint:ts": "tsc --project tsconfig.json",
 		"test:client": "npm run deploy:client && electron dist/tmp/client --bs-debug",
 		"test:server": "node src/server/cli.ts",
 		"build:client": "ts-node scripts/client-build.ts",
