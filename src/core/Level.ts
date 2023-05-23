@@ -1,4 +1,4 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 
@@ -208,8 +208,11 @@ export class Level extends EventTarget {
 		return data;
 	}
 
-	async generateRegion(x: number, y: number, size: number) {
+	async generateRegion(regionPosition: Vector2) {
 		await this.ready();
+		const name = Level.system.names[random.int(0, Level.system.names.length - 1)],
+			systemPosition = random.cords(config.region_size / 2, true).addInPlaceFromFloats(regionPosition.x, 0, regionPosition.y);
+		await Level.generateSystem(name, systemPosition, this);
 	}
 
 	static get TickRate() {
@@ -306,7 +309,6 @@ export class Level extends EventTarget {
 			'Skorda',
 			'Alli',
 			'Resurs',
-			'Home',
 		],
 		size: 5000,
 		maxPlanets: 9,
@@ -336,7 +338,7 @@ export class Level extends EventTarget {
 			});
 
 			planet.name = random.int(0, 999) == 0 ? 'Jude' : planetName;
-			planet.position = random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true);
+			planet.position = random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true).add(position);
 			planet.biome = ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)];
 
 			planets[i] = planet;

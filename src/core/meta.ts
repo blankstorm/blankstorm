@@ -7,6 +7,7 @@ export const config = {
 	overwrite_invalid_json: true,
 	planet_max_distance: 5000,
 	default_port: 1123,
+	region_size: 1e5,
 };
 
 const _versionGroups = ['infdev', 'alpha'] as const,
