@@ -1,7 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { ItemCollection, Producible, computeProductionDifficulty } from './items';
 import type { ResearchCollection } from './research';
-import type { GenericHardpoint } from './hardpoints';
 import { genericHardpoints } from './hardpoints';
 
 export interface HardpointInfo {

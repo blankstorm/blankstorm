@@ -42,7 +42,7 @@ export class Level extends EventTarget {
 	nodes = new Map();
 	bodies = new Map();
 	entities = new Map();
-	#initPromise = new Promise(() => {});
+	#initPromise: Promise<Level>;
 	#performanceMonitor = new PerformanceMonitor(60);
 
 	constructor(name: string, doNotGenerate?: boolean) {
@@ -60,8 +60,9 @@ export class Level extends EventTarget {
 		return this.#performanceMonitor.averageFPS;
 	}
 
-	async init() {
-		return await Level.generateSystem('Crash Site', Vector3.Zero(), this);
+	async init(): Promise<Level> {
+		await Level.generateSystem('Crash Site', Vector3.Zero(), this);
+		return this;
 	}
 
 	async ready(): Promise<this> {
