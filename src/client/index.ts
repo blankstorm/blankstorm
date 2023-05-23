@@ -620,8 +620,8 @@ $('#login')
 	.on('click', async e => {
 		e.preventDefault();
 		try {
-			const email = $('#login').find('input.email').val();
-			const password = $('#login').find('input.password').val();
+			const email = $('#login').find('input.email').val() as string;
+			const password = $('#login').find('input.password').val() as string;
 			const res = await api.login(email, password);
 			document.cookie = `token=${res.result.token}`;
 			$('#login').find('.error').hide().text('');
