@@ -139,7 +139,7 @@ export class Server extends EventEmitter {
 
 		setInterval(() => {
 			this.level.tick();
-		}, 1000 / Level.tickRate);
+		}, 1000 / Level.TickRate);
 
 		setInterval(() => {
 			this.clients.forEach(client => {

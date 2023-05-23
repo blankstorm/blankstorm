@@ -61,11 +61,7 @@ export class Level extends EventTarget {
 	}
 
 	async init() {
-		return await Level.generate.system('Crash Site', Vector3.Zero(), this);
-	}
-
-	async generateRegion(x: number, y: number, size: number) {
-		await this.ready();
+		return await Level.generateSystem('Crash Site', Vector3.Zero(), this);
 	}
 
 	async ready(): Promise<this> {
@@ -211,7 +207,11 @@ export class Level extends EventTarget {
 		return data;
 	}
 
-	static get tickRate() {
+	async generateRegion(x: number, y: number, size: number) {
+		await this.ready();
+	}
+
+	static get TickRate() {
 		return 10;
 	}
 
@@ -311,37 +311,36 @@ export class Level extends EventTarget {
 		maxPlanets: 9,
 	};
 
-	static generate = {
-		system: async (name, position, level) => {
-			const star = new Star(null, level, { radius: random.int(300, 500) });
-			star.name = name;
-			star.position = position;
-			star.color = Color3.FromArray([
-				Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-				Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-				Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-			]);
-			const nameMode = random.bool,
-				planetNum = random.int(1, Level.system.maxPlanets),
-				names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
-				planets = [];
-			for (let i = 0; i < names.length; i++) {
-				const planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i],
-					radius = random.int(25, 50);
-				const planet = new Planet(null, level, {
-					radius,
-					fleet: Ship.GenerateFleetFromPower(level.difficulty * (i + 1)),
-					rewards: {},
-				});
+	static async generateSystem(name: string, position: Vector3, level: Level) {
+		const localDifficulty = Math.max(Math.log10(Vector3.Distance(Vector3.Zero(), position)) - 1, 0.25);
+		const star = new Star(null, level, { radius: random.int(300, 500) });
+		star.name = name;
+		star.position = position;
+		star.color = Color3.FromArray([
+			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+		]);
+		const nameMode = random.bool,
+			planetNum = random.int(1, Level.system.maxPlanets),
+			names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
+			planets = [];
+		for (let i = 0; i < names.length; i++) {
+			const planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i],
+				radius = random.int(25, 50);
+			const planet = new Planet(null, level, {
+				radius,
+				fleet: Ship.GenerateFleetFromPower(level.difficulty * localDifficulty * (i + 1)),
+				rewards: {},
+			});
 
-				planet.name = random.int(0, 999) == 0 ? 'Jude' : planetName;
-				planet.position = random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true);
-				planet.biome = ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)];
+			planet.name = random.int(0, 999) == 0 ? 'Jude' : planetName;
+			planet.position = random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true);
+			planet.biome = ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)];
 
-				planets[i] = planet;
-			}
-		},
-	};
+			planets[i] = planet;
+		}
+	}
 
 	static FromData(levelData: SerializedLevel, level?: Level): Level {
 		if (levelData.version != version) {

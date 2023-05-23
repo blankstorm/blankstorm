@@ -9,7 +9,7 @@ export interface SerializedStar extends SerializedCelestialBody {
 
 export class Star extends CelestialBody {
 	color: Color3;
-	constructor(id, level, options) {
+	constructor(id: string, level: Level, options) {
 		super(id, level, options);
 	}
 

@@ -890,7 +890,7 @@ setInterval(() => {
 	if (current instanceof LiveSave && !isPaused) {
 		current.tick();
 	}
-}, 1000 / Level.tickRate);
+}, 1000 / Level.TickRate);
 
 const loop = () => {
 	if (current instanceof Level && !isPaused) {

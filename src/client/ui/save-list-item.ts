@@ -1,9 +1,10 @@
 import $ from 'jquery';
 import { confirm, download } from '../utils';
 import { versions } from '../../core/meta';
+import type { Save } from '../Save';
 
 export default class SaveListItem extends HTMLLIElement {
-	constructor(save) {
+	constructor(save: Save) {
 		super();
 
 		const loadAndPlay = async () => {
@@ -40,7 +41,7 @@ export default class SaveListItem extends HTMLLIElement {
 		$(`<p class="edit" style="position:absolute;left:25%"><svg><use href=images/icons.svg#pencil /></svg></p>`)
 			.on('click', () => {
 				$('#save-edit').find('.id').val(save.id);
-				$('#save-edit').find('.name').val(save.name);
+				$('#save-edit').find('.name').val(save.data.name);
 				$<HTMLDialogElement>('#save-edit')[0].showModal();
 			})
 			.appendTo(this);

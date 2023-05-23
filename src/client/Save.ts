@@ -23,6 +23,7 @@ import type { ShipType } from '../core/generic/ships';
 export class SaveMap extends Map<string, Save> {
 	#map: FolderMap;
 	selected?: string;
+	current?: LiveSave;
 	constructor(path: string) {
 		super();
 		this.#map = new FolderMap(path, fs, '.json');
@@ -57,6 +58,20 @@ export class SaveMap extends Map<string, Save> {
 	set(key: string, save: Save): this {
 		this.#map.set(key, JSON.stringify(save.data));
 		return super.set(key, save);
+	}
+
+	has(key: string): boolean {
+		return this.#map.has(key);
+	}
+
+	clear(): void {
+		this.#map.clear();
+		return super.clear();
+	}
+
+	delete(key: string): boolean {
+		this.#map.delete(key);
+		return super.delete(key);
 	}
 }
 

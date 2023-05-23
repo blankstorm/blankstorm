@@ -35,7 +35,7 @@ export class Node {
 		if (constructorOptions) {
 			console.warn(`constructorOptions should not be passed to Node constructor`);
 		}
-		this.id = id;
+		this.id = id || random.hex(32);
 		this.level = level;
 		level.nodes.set(id, this);
 	}

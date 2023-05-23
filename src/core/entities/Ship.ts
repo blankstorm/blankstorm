@@ -102,7 +102,7 @@ export class Ship extends Entity {
 
 	static FromData(data: SerializedShip, level: Level): Ship {
 		const max = this.generic[data.type].storage;
-		const ship = super.FromData(data, level, {}) as Ship;
+		const ship = super.FromData(data, level, data) as Ship;
 		ship.hp = data.hp;
 		ship.jumpCooldown = data.jumpCooldown;
 		ship.storage = Storage.FromData({ ...data.storage, max });

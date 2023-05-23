@@ -25,10 +25,22 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { FireProjectileOptions, HardpointRenderer } from './entities/Hardpoint';
 import { SerializedLevel } from '../core/Level';
 
+function createEmptyCache(): SerializedLevel {
+	return {
+		id: null,
+		date: null,
+		difficulty: null,
+		version: null,
+		name: null,
+		bodies: [],
+		entities: [],
+	};
+}
+
 let skybox: Mesh,
 	xzPlane: Mesh,
 	camera: Camera,
-	cache: SerializedLevel,
+	cache: SerializedLevel = createEmptyCache(),
 	hitboxes = false,
 	gl: GlowLayer;
 export let engine: Engine, scene: Scene, hl: HighlightLayer, probe: ReflectionProbe;
@@ -71,6 +83,7 @@ export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: stri
 	skyboxMaterial.disableLighting = true;
 	skyboxMaterial.reflectionTexture = CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), scene);
 	skyboxMaterial.reflectionTexture.coordinatesMode = 5;
+	skybox.material = skyboxMaterial;
 	skybox.infiniteDistance = true;
 	skybox.isPickable = false;
 
@@ -137,7 +150,7 @@ export async function clear() {
 		entities.delete(id);
 	}
 
-	cache = null;
+	cache = createEmptyCache();
 }
 
 export async function load(levelData) {

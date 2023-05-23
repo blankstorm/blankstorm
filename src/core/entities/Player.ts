@@ -1,6 +1,6 @@
 import { items as Items } from '../generic/items';
 import type { ItemCollection, ItemID } from '../generic/items';
-import { research as Tech } from '../generic/research';
+import { research } from '../generic/research';
 import type { ResearchCollection } from '../generic/research';
 import { Entity } from './Entity';
 import type { SerializedEntity } from './Entity';
@@ -17,7 +17,7 @@ export interface SerializedPlayer extends SerializedEntity {
 }
 
 export class Player extends Entity {
-	research: ResearchCollection<number>;
+	research: ResearchCollection<number> = Object.fromEntries(Object.keys(research).map(k => [k, 0])) as ResearchCollection<number>;
 	fleet: Ship[] = [];
 	xp = 0;
 	xpPoints = 0;
@@ -28,7 +28,6 @@ export class Player extends Entity {
 
 	constructor(id: string, level: Level, { fleet }: { fleet: (SerializedShip | Ship | string)[] }) {
 		super(id, level);
-
 		for (const shipData of fleet) {
 			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? (level.getNodeByID(shipData) as Ship) : Ship.FromData(shipData, level);
 			ship.owner = ship.parent = this;
@@ -111,7 +110,7 @@ export class Player extends Entity {
 
 	reset() {
 		this.removeAllItems();
-		for (const type of Object.keys(Tech)) {
+		for (const type of Object.keys(research)) {
 			this.research[type] = 0;
 		}
 		for (const ship of this.fleet) {
