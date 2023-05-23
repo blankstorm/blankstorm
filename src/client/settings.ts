@@ -311,10 +311,6 @@ export class SettingsSection extends HTMLFormElement {
 		return this.#parent;
 	}
 
-	createItem(key: string, options: Partial<SettingsItemOptions> = {}) {
-		return this.#store.createItem(key, { ...options, section: this });
-	}
-
 	dispose(disposeItems?: boolean) {
 		if (disposeItems) {
 			for (const item of this.#store.items.values()) {
@@ -346,12 +342,9 @@ export class SettingsMap extends JSONFileMap {
 	) {
 		super(id + '.json', fs);
 
-		for (const section of sections) {
-			if (section instanceof SettingsSection) {
-				this.sections.set(section.id, section);
-			} else {
-				this.createSection(section.id, section.label, section.parent);
-			}
+		for (const _section of sections) {
+			const section = _section instanceof SettingsSection ? _section : new SettingsSection(_section.id, _section.label, _section.parent, this);
+			this.sections.set(section.id, section);
 		}
 
 		for (const _item of items) {
@@ -364,15 +357,5 @@ export class SettingsMap extends JSONFileMap {
 			item.value = value;
 			this.set(item.id, value);
 		}
-	}
-
-	createItem(id: string, options: Partial<SettingsItemOptions> = {}): SettingsItem {
-		const item = new SettingsItem(id, options, this);
-		this.items.set(item.id, item);
-		return item;
-	}
-
-	createSection(id: string, label: SettingLabel, parent: JQuery): SettingsSection {
-		return new SettingsSection(id, label, parent, this);
 	}
 }
