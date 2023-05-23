@@ -6,9 +6,9 @@ export interface Item {
 }
 
 const items = {
-	metal: { rare: false, value: 1, weight: 1 },
-	minerals: { rare: false, value: 2, weight: 0.5 },
-	fuel: { rare: false, value: 4, weight: 1 },
+	titanium: { rare: false, value: 1, weight: 1 },
+	quartz: { rare: false, value: 2, weight: 0.5 },
+	hydrogen: { rare: false, value: 4, weight: 1 },
 	ancient_tech: { rare: true, value: 1000, weight: 1 },
 	code_snippets: { rare: true, value: 1000, weight: 1 },
 };
