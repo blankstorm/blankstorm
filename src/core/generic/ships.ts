@@ -1,6 +1,8 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { ItemCollection } from './items';
-import { ResearchCollection } from './research';
+import { ItemCollection, Producible, computeProductionDifficulty } from './items';
+import type { ResearchCollection } from './research';
+import type { GenericHardpoint } from './hardpoints';
+import { genericHardpoints } from './hardpoints';
 
 export interface HardpointInfo {
 	type: string;
@@ -9,7 +11,7 @@ export interface HardpointInfo {
 	scale: number;
 }
 
-export interface GenericShip {
+export interface GenericShip extends Producible {
 	hp: number;
 	speed: number;
 	agility: number;
@@ -221,3 +223,27 @@ export type GenericShipCollection<T = number> = { [key in ShipType]: T };
 
 const _ships: GenericShipCollection<GenericShip> = genericShips;
 export { _ships as genericShips };
+
+export interface ShipRatings {
+	combat: number;
+	movement: number;
+	support: number;
+	production: number;
+}
+
+export function computeRatings(ship: GenericShip): ShipRatings {
+	let combat = Math.log10(ship.hp);
+	for (const info of ship.hardpoints) {
+		const hardpoint = genericHardpoints[info.type];
+		const hardpointpRating = hardpoint.damage / hardpoint.reload + hardpoint.critChance * hardpoint.critFactor;
+		combat += hardpointpRating;
+	}
+
+	const movement = ship.speed + ship.agility + Math.log10(ship.jumpRange) / Math.log10(ship.jumpCooldown);
+
+	const support = Math.log10(ship.storage);
+
+	const production = computeProductionDifficulty(ship);
+
+	return { combat, movement, support, production };
+}
