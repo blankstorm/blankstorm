@@ -17,7 +17,7 @@ import PlanetRenderer from '../renderer/bodies/Planet';
 import * as listeners from './listeners';
 import * as renderer from '../renderer/index';
 import fs from './fs';
-import SaveListItem from './ui/save-list-item';
+import SaveListItem from './ui/save';
 import type { ShipType } from '../core/generic/ships';
 
 export class SaveMap extends Map<string, Save> {

@@ -33,6 +33,7 @@ const _versionGroups = ['infdev', 'alpha'] as const,
 		'alpha_1.4.0': { text: 'Alpha 1.4.0', group: 'alpha' },
 		'alpha_1.4.1': { text: 'Alpha 1.4.1', group: 'alpha' },
 		'alpha_1.4.2': { text: 'Alpha 1.4.2', group: 'alpha' },
+		'alpha_1.4.3': { text: 'Alpha 1.4.3', group: 'alpha' },
 	};
 
 export type VersionID = keyof typeof _versions;
@@ -42,7 +43,7 @@ export interface Version {
 	group: typeof _versionGroups[number];
 }
 
-export const version: VersionID = 'alpha_1.4.2';
+export const version: VersionID = 'alpha_1.4.3';
 export const versions = new Map(Object.entries(_versions)) as Map<VersionID, Version>;
 
 if (config.load_remote_manifest) {
