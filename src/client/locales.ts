@@ -10,7 +10,7 @@ export interface Locale {
 	text: { [key: string]: string };
 }
 
-export default class LocaleStore {
+export class LocaleStore {
 	#store: Map<string, Locale> = new Map();
 	#currentLang = 'en';
 

@@ -14,7 +14,7 @@ import type { Entity } from '../core/entities/Entity';
 import type { ShipType } from '../core/generic/ships';
 import { Level } from '../core/Level';
 import { Keybind, SettingsMap } from './settings';
-import LocaleStore from './locales';
+import { LocaleStore } from './locales';
 import { upload, minimize, alert, cookies } from './utils';
 import { Waypoint } from './waypoint';
 import { SaveMap, Save, LiveSave } from './Save';

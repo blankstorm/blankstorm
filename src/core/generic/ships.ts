@@ -1,12 +1,18 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { ItemCollection, Producible, computeProductionDifficulty } from './items';
-import type { ResearchCollection } from './research';
+import { Producible, computeProductionDifficulty } from './items';
 import { genericHardpoints } from './hardpoints';
 
 export interface HardpointInfo {
 	type: string;
 	position: Vector3;
 	rotation?: Vector3;
+	scale: number;
+}
+
+export interface SerializedHardpointInfo {
+	type: string;
+	position: number[];
+	rotation?: number[];
 	scale: number;
 }
 
@@ -21,13 +27,12 @@ export interface GenericShip extends Producible {
 	camRadius: number;
 	xp: number;
 	storage: number;
-	recipe: Partial<ItemCollection>;
-	requires: Partial<ResearchCollection>;
 	hardpoints: HardpointInfo[];
 }
 
 const genericShips = {
 	wind: {
+		id: 'wind',
 		hp: 10,
 		speed: 2,
 		agility: 2,
@@ -44,6 +49,7 @@ const genericShips = {
 	},
 
 	mosquito: {
+		id: 'mosquito',
 		hp: 25,
 		speed: 1,
 		agility: 1.5,
@@ -62,6 +68,7 @@ const genericShips = {
 		],
 	},
 	cillus: {
+		id: 'cillus',
 		hp: 5,
 		speed: 1,
 		agility: 0.75,
@@ -77,6 +84,7 @@ const genericShips = {
 		hardpoints: [],
 	},
 	inca: {
+		id: 'inca',
 		hp: 50,
 		speed: 1,
 		agility: 1,
@@ -97,6 +105,7 @@ const genericShips = {
 		],
 	},
 	pilsung: {
+		id: 'pilsung',
 		hp: 100,
 		speed: 1,
 		agility: 1,
@@ -121,6 +130,7 @@ const genericShips = {
 		],
 	},
 	apis: {
+		id: 'apis',
 		hp: 50,
 		speed: 2 / 3,
 		agility: 0.5,
@@ -136,6 +146,7 @@ const genericShips = {
 		hardpoints: [],
 	},
 	hurricane: {
+		id: 'hurricane',
 		hp: 250,
 		speed: 2 / 3,
 		agility: 1,
@@ -166,6 +177,7 @@ const genericShips = {
 		],
 	},
 	horizon: {
+		id: 'horizon',
 		hp: 2000,
 		speed: 1 / 3,
 		agility: 1,

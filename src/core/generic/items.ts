@@ -2,6 +2,7 @@ import { research } from './research';
 import type { ResearchCollection } from './research';
 
 export interface Producible {
+	id: string;
 	recipe?: Partial<ItemCollection<number>>;
 	requires?: Partial<ResearchCollection<number>>;
 }
@@ -10,15 +11,14 @@ export interface Item extends Producible {
 	rare: boolean;
 	value: number;
 	weight: number;
-	recipe?: ItemCollection<number>;
 }
 
 const items = {
-	titanium: { rare: false, value: 1, weight: 1 },
-	quartz: { rare: false, value: 2, weight: 0.5 },
-	hydrogen: { rare: false, value: 4, weight: 1 },
-	ancient_tech: { rare: true, value: 1000, weight: 1 },
-	code_snippets: { rare: true, value: 1000, weight: 1 },
+	titanium: { id: 'titanium', rare: false, value: 1, weight: 1 },
+	quartz: { id: 'quartz', rare: false, value: 2, weight: 0.5 },
+	hydrogen: { id: 'hydrogen', rare: false, value: 4, weight: 1 },
+	ancient_tech: { id: 'ancient_tech', rare: true, value: 1000, weight: 1 },
+	code_snippets: { id: 'code_snippets', rare: true, value: 1000, weight: 1 },
 };
 
 export type ItemID = keyof typeof items;
