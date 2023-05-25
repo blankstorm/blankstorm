@@ -8,7 +8,7 @@ import type { SerializedHardpoint } from './Hardpoint';
 import { Storage } from '../Storage';
 import type { Level } from '../Level';
 import { genericShips } from '../generic/ships';
-import type { ShipType, GenericShip } from '../generic/ships';
+import type { ShipType, GenericShip, HardpointInfo } from '../generic/ships';
 import type { ItemCollection } from '../generic/items';
 import type { CelestialBody } from '../bodies/CelestialBody';
 import type { Player } from './Player';
@@ -33,11 +33,14 @@ export class Ship extends Entity {
 
 	declare owner?: CelestialBody | Player;
 
+	/**
+	 * @todo move distance related stuff to ship creation
+	 */
 	constructor(id: string, level: Level, { type, hardpoints = [], power }: { type: ShipType; hardpoints?: SerializedHardpoint[]; power?: number }) {
 		if (type && !Ship.generic[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
 		super(id, level);
 
-		const distance = Math.log(random.int(0, power || 1) ** 3 + 1); //IMPORTANT TODO: Move to ship creation
+		const distance = Math.log(random.int(0, power || 1) ** 3 + 1);
 		this.position.addInPlace(random.cords(distance, true));
 
 		this.type = type;
@@ -45,15 +48,16 @@ export class Ship extends Entity {
 		this.hp = this.generic.hp;
 		this.jumpCooldown = this.generic.jumpCooldown;
 
-		this.generic.hardpoints.forEach((generic: { type: HardpointType; position: Vector3; scale: number }, i: number) => {
-			if (!Hardpoint.generic[generic.type]) {
-				console.warn(`Hardpoint type ${generic.type} doesn't exist, skipping`);
+		this.generic.hardpoints.forEach((info: HardpointInfo, i: number) => {
+			if (!Hardpoint.generic[info.type]) {
+				console.warn(`Hardpoint type ${info.type} doesn't exist, skipping`);
 				return;
 			}
 
-			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint(null, level, generic);
+			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint(null, level);
+			hp.type = info.type as HardpointType;
 			hp.parent = hp.owner = this;
-			hp.info = generic;
+			hp.info = info;
 			this.hardpoints.push(hp);
 		});
 	}

@@ -8,7 +8,7 @@ import { contextMenu } from './ui/contextmenu';
 import { player } from './index'; //Temporary
 import type { ShipType } from '../core/generic/ships';
 
-const item_ui = {},
+export const item_ui = {},
 	tech_ui = {},
 	ship_ui = {};
 export function init() {

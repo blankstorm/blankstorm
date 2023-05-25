@@ -3,7 +3,6 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import Path from '../Path';
 import { Node } from '../Node';
 import type { SerializedNode } from '../Node';
-import { LevelEvent } from '../events';
 import type { Level } from '../Level';
 
 export interface SerializedEntity extends SerializedNode {
@@ -33,8 +32,7 @@ export class Entity extends Node {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
 		const path = Path.Find(this.absolutePosition, location.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.level);
 		if (path.path.length > 0) {
-			const evt = new LevelEvent('entity.follow_path.start', this.serialize(), { path: path.serialize() });
-			this.level.dispatchEvent(evt);
+			this.level.emitEvent('entity.follow_path.start', this.serialize(), { path: path.serialize() });
 			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);
 			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.path.at(-2).position, path.path.at(-1).position);
 			rotation.x -= Math.PI / 2;

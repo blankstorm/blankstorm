@@ -20,7 +20,6 @@ import { ShipRenderer } from './entities/Ship';
 import { EntityRenderer } from './entities/Entity';
 import { Camera } from './Camera';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-import type { Hardpoint } from '../core/entities/Hardpoint';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { FireProjectileOptions, HardpointRenderer } from './entities/Hardpoint';
 import { SerializedLevel } from '../core/Level';
@@ -309,13 +308,13 @@ export function handleCanvasRightClick(evt, owner) {
 	return returnData;
 }
 
-export async function startFollowingPath(entity, path) {
-	const renderer = entities.get(entity.id);
+export async function startFollowingPath(entityID: string, path: number[][]) {
+	const renderer = entities.get(entityID);
 	await renderer.followPath(Path.FromData(path));
 }
 
-export function fireProjectile(hardpoint: Hardpoint, target: TransformNode, options: FireProjectileOptions) {
-	const hardpointRenderer = scene.getTransformNodeById(hardpoint.id) as HardpointRenderer,
+export function fireProjectile(hardpointID: string, target: TransformNode, options: FireProjectileOptions) {
+	const hardpointRenderer = scene.getTransformNodeById(hardpointID) as HardpointRenderer,
 		parent = hardpointRenderer?.parent?.parent as PlayerRenderer | PlanetRenderer,
 		targetRenderer = scene.getTransformNodeById(target.id);
 	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials: parent.customHardpointProjectileMaterials });

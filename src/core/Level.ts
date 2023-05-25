@@ -19,9 +19,12 @@ import { Ship } from './entities/Ship';
 import type { SerializedShip } from './entities/Ship';
 import { Player } from './entities/Player';
 import type { SerializedPlayer } from './entities/Player';
-import type { Node } from './Node';
-
+import type { Node, SerializedNode } from './Node';
 import { LevelEvent } from './events';
+import type { Item } from './generic/items';
+import type { GenericShip, ShipType } from './generic/ships';
+import { isResearchLocked, priceOfResearch } from './generic/research';
+import type { Research, ResearchID } from './generic/research';
 
 export interface SerializedLevel {
 	date: string;
@@ -31,6 +34,12 @@ export interface SerializedLevel {
 	version: VersionID;
 	name: string;
 	id: string;
+}
+
+interface PlayerActionDataTypes {
+	create_item: Item;
+	create_ship: GenericShip;
+	do_research: Research;
 }
 
 export class Level extends EventTarget {
@@ -52,22 +61,60 @@ export class Level extends EventTarget {
 		this.#initPromise = doNotGenerate ? Promise.resolve(this) : this.init();
 	}
 
-	get selectedEntities() {
-		return [...this.entities.values()].filter(e => e.selected);
-	}
-
-	get tps() {
-		return this.#performanceMonitor.averageFPS;
-	}
-
 	async init(): Promise<Level> {
-		await Level.generateSystem('Crash Site', Vector3.Zero(), this);
+		await this.generateSystem('Crash Site', Vector3.Zero());
 		return this;
 	}
 
 	async ready(): Promise<this> {
 		await Promise.allSettled([this.#initPromise]);
 		return this;
+	}
+
+	tryPlayerAction(
+		id: string,
+		...args: {
+			[A in keyof PlayerActionDataTypes]: [action: A, data: PlayerActionDataTypes[A]];
+		}[keyof PlayerActionDataTypes] //see https://stackoverflow.com/a/76335220/21961918
+	): boolean {
+		const [action, data] = args;
+		const player = [...this.entities.values()].find(entity => entity instanceof Player && entity.id == id);
+
+		if (!player) {
+			return false;
+		}
+
+		switch (action) {
+			case 'create_item':
+				if (data.recipe && player.hasItems(data.recipe)) {
+					player.removeItems(data.recipe);
+					player.addItems({ [data.id]: player.items[data.id] + 1 });
+				}
+				break;
+			case 'create_ship':
+				if (player.hasItems(data.recipe)) {
+					player.removeItems(data.recipe);
+					const ship = new Ship(null, player.level, { type: data.id as ShipType, power: player.power });
+					ship.parent = ship.owner = player;
+					player.fleet.push(ship);
+				}
+				break;
+			case 'do_research':
+				const neededItems = priceOfResearch(data.id as ResearchID, player.research[data.id]);
+				if (player.hasItems(neededItems) && player.research[id] < data.max && !isResearchLocked(data.id as ResearchID, player) && player.xpPoints >= 1) {
+					player.removeItems(neededItems);
+					player.research[data.id]++;
+					player.xpPoints--;
+				}
+				break;
+			default: //action does not exist
+				return false;
+		}
+	}
+
+	//selectors
+	get selectedEntities() {
+		return [...this.entities.values()].filter(e => e.selected);
 	}
 
 	getNodeByID(nodeID: string): Node {
@@ -99,7 +146,7 @@ export class Level extends EventTarget {
 							return false;
 						}
 
-						if (proto.constructor.name.toLowerCase() == selector.substring(1)) {
+						if (new RegExp(proto.constructor.name, 'i').test(selector.substring(1))) {
 							return true;
 						}
 
@@ -119,14 +166,62 @@ export class Level extends EventTarget {
 		return this.getNodesBySelector(selector)[0];
 	}
 
+	// generation
+	async generateRegion(regionPosition: Vector2) {
+		await this.ready();
+		const name = Level.system.names[random.int(0, Level.system.names.length - 1)],
+			systemPosition = random.cords(config.region_size / 2, true).addInPlaceFromFloats(regionPosition.x, 0, regionPosition.y);
+		await this.generateSystem(name, systemPosition);
+	}
+
+	async generateSystem(name: string, position: Vector3) {
+		const localDifficulty = Math.max(Math.log10(Vector3.Distance(Vector3.Zero(), position)) - 1, 0.25);
+		const star = new Star(null, this, { radius: random.int(300, 500) });
+		star.name = name;
+		star.position = position;
+		star.color = Color3.FromArray([
+			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+		]);
+		const nameMode = random.bool,
+			planetNum = random.int(1, Level.system.maxPlanets),
+			names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
+			planets = [];
+		for (let i = 0; i < names.length; i++) {
+			const planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i],
+				radius = random.int(25, 50);
+			const planet = new Planet(null, this, {
+				radius,
+				fleet: Ship.GenerateFleetFromPower(this.difficulty * localDifficulty * (i + 1)),
+				rewards: {},
+			});
+
+			planet.name = random.int(0, 999) == 0 ? 'Jude' : planetName;
+			planet.position = random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true).add(position);
+			planet.biome = ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)];
+
+			planets[i] = planet;
+		}
+	}
+
+	//events and ticking
+	get tps() {
+		return this.#performanceMonitor.averageFPS;
+	}
+
+	emitEvent(type: string, emitter: SerializedLevel | SerializedNode, data?: { [key: string]: any; level?: Level }): boolean {
+		const event = new LevelEvent(type, emitter, data);
+		return super.dispatchEvent(event);
+	}
+
 	sampleTick() {
 		this.#performanceMonitor.sampleFrame();
 	}
 
 	tick() {
-		this.#performanceMonitor.sampleFrame();
-		const evt = new LevelEvent('level.tick', this.serialize());
-		this.dispatchEvent(evt);
+		this.sampleTick();
+		this.emitEvent('level.tick', this.serialize());
 		for (const entity of this.entities.values()) {
 			if (Math.abs(entity.rotation.y) > Math.PI) {
 				entity.rotation.y += Math.sign(entity.rotation.y) * 2 * Math.PI;
@@ -137,8 +232,7 @@ export class Level extends EventTarget {
 
 			if (entity.hp && entity.hp <= 0) {
 				entity.remove();
-				const evt = new LevelEvent('entity.death', entity.serialize());
-				this.dispatchEvent(evt);
+				this.emitEvent('entity.death', entity.serialize());
 				//Events: trigger event, for sounds
 			} else if (entity instanceof Ship) {
 				for (const hardpoint of entity.hardpoints) {
@@ -179,7 +273,7 @@ export class Level extends EventTarget {
 		}
 	}
 
-	serialize() {
+	serialize(): SerializedLevel {
 		const data = {
 			date: new Date().toJSON(),
 			bodies: [],
@@ -206,13 +300,6 @@ export class Level extends EventTarget {
 			}
 		}
 		return data;
-	}
-
-	async generateRegion(regionPosition: Vector2) {
-		await this.ready();
-		const name = Level.system.names[random.int(0, Level.system.names.length - 1)],
-			systemPosition = random.cords(config.region_size / 2, true).addInPlaceFromFloats(regionPosition.x, 0, regionPosition.y);
-		await Level.generateSystem(name, systemPosition, this);
 	}
 
 	static get TickRate() {
@@ -313,37 +400,6 @@ export class Level extends EventTarget {
 		size: 5000,
 		maxPlanets: 9,
 	};
-
-	static async generateSystem(name: string, position: Vector3, level: Level) {
-		const localDifficulty = Math.max(Math.log10(Vector3.Distance(Vector3.Zero(), position)) - 1, 0.25);
-		const star = new Star(null, level, { radius: random.int(300, 500) });
-		star.name = name;
-		star.position = position;
-		star.color = Color3.FromArray([
-			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-		]);
-		const nameMode = random.bool,
-			planetNum = random.int(1, Level.system.maxPlanets),
-			names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
-			planets = [];
-		for (let i = 0; i < names.length; i++) {
-			const planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i],
-				radius = random.int(25, 50);
-			const planet = new Planet(null, level, {
-				radius,
-				fleet: Ship.GenerateFleetFromPower(level.difficulty * localDifficulty * (i + 1)),
-				rewards: {},
-			});
-
-			planet.name = random.int(0, 999) == 0 ? 'Jude' : planetName;
-			planet.position = random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true).add(position);
-			planet.biome = ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)];
-
-			planets[i] = planet;
-		}
-	}
 
 	static FromData(levelData: SerializedLevel, level?: Level): Level {
 		if (levelData.version != version) {

@@ -61,11 +61,11 @@ export class Player extends Entity {
 	}
 
 	shipNum(type: ShipType) {
-		return this.fleet.reduce((total, ship) => (total + ship.type == type ? 1 : 0), 0);
+		return this.fleet.reduce((total, ship) => total + +(ship.type == type), 0);
 	}
 
 	addItems(items: Partial<ItemCollection>) {
-		this.fleet.forEach(ship => {
+		for (const ship of this.fleet) {
 			let space = ship.storage.max * (1 + this.research.storage / 20) - ship.storage.total;
 			if (space > 0) {
 				for (const [name, amount] of Object.entries(items)) {
@@ -79,7 +79,8 @@ export class Player extends Entity {
 					}
 				}
 			}
-		});
+		}
+		this.level.emitEvent('player.items.change', this.serialize(), this.items);
 	}
 
 	removeItems(items: Partial<ItemCollection>) {
@@ -91,6 +92,7 @@ export class Player extends Entity {
 				items[item] -= stored;
 			}
 		}
+		this.level.emitEvent('player.items.change', this.serialize(), this.items);
 	}
 
 	removeAllItems() {
@@ -116,6 +118,7 @@ export class Player extends Entity {
 		for (const ship of this.fleet) {
 			ship.remove();
 		}
+		this.level.emitEvent('player.reset', this.serialize());
 	}
 
 	serialize(): SerializedPlayer {
