@@ -22,7 +22,7 @@ export class Hardpoint extends Node {
 	type: HardpointType;
 	reload: number;
 	declare owner: Ship;
-	constructor(id: string, level: Level, { type, reload }: { type?: HardpointType, reload?: number } = {}) {
+	constructor(id: string, level: Level, { type, reload }: { type?: HardpointType; reload?: number } = {}) {
 		super(id, level);
 
 		this.type = type;
