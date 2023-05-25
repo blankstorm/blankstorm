@@ -3,7 +3,7 @@ import { sounds, playsound } from './audio';
 import { current, player, settings } from './index';
 import type { LevelEvent, ListenerCollection } from '../core/events';
 import { minimize } from './utils';
-import { item_ui } from './ui';
+import { item_ui } from './ui/ui';
 import type { ItemID } from '../core/generic/items';
 
 export const core: ListenerCollection<LevelEvent> = {

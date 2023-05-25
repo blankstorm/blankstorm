@@ -20,7 +20,7 @@ import { Waypoint } from './waypoint';
 import { SaveMap, Save, LiveSave } from './Save';
 import { ServerMap, Server } from './Server';
 import fs from './fs';
-import * as ui from './ui';
+import * as ui from './ui/ui';
 import { sounds, playsound } from './audio';
 import * as renderer from '../renderer/index';
 

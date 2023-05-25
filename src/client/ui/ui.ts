@@ -1,12 +1,12 @@
 import $ from 'jquery';
-import { Level } from '../core/Level';
-import { locales, settings, _mp, screenshots, current } from './index';
-import { CelestialBody, items, research, Ship, Player, isResearchLocked, priceOfResearch, ResearchID } from '../core/index';
-import { minimize, confirm } from './utils';
-import { contextMenu } from './ui/contextmenu';
+import { Level } from '../../core/Level';
+import { locales, settings, _mp, screenshots, current } from '../index';
+import { CelestialBody, items, research, Ship, Player, isResearchLocked, priceOfResearch, ResearchID } from '../../core/index';
+import { minimize, confirm } from '../utils';
+import { contextMenu } from './contextmenu';
 
-import { player } from './index'; //Temporary
-import type { ShipType } from '../core/generic/ships';
+import { player } from '../index'; //Temporary
+import type { ShipType } from '../../core/generic/ships';
 
 export const item_ui = {},
 	tech_ui = {},
