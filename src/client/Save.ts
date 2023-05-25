@@ -17,8 +17,9 @@ import PlanetRenderer from '../renderer/bodies/Planet';
 import * as listeners from './listeners';
 import * as renderer from '../renderer/index';
 import fs from './fs';
-import SaveListItem from './ui/save';
+import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
+import type { LevelEvent } from '../core/events';
 
 export class SaveMap extends Map<string, Save> {
 	#map: FolderMap;
@@ -131,7 +132,7 @@ export class LiveSave extends Level {
 		for (const [id, listener] of Object.entries(listeners.core)) {
 			this.addEventListener(
 				id,
-				evt => {
+				(evt: LevelEvent) => {
 					eventLog.push(evt);
 					listener(evt);
 				},

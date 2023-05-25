@@ -8,7 +8,7 @@ import { LevelEvent } from '../core/events';
 import { Level } from '../core/Level';
 import fs from './fs';
 import { JSONFileMap } from '../core/utils';
-import ServerListItem from './ui/server';
+import { ServerListItem } from './ui/server';
 import { config, versions } from '../core/meta';
 
 import type { Socket } from 'socket.io-client';

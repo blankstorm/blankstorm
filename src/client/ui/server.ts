@@ -2,7 +2,7 @@ import $ from 'jquery';
 import { confirm } from '../utils';
 import type { Server } from '../Server';
 
-export default class ServerListItem extends HTMLLIElement {
+export class ServerListItem extends HTMLLIElement {
 	constructor(server: Server) {
 		super();
 		$(this)

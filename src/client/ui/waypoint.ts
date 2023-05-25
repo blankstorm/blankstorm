@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import type { Waypoint } from '../waypoint';
 
-export default class WaypointListItem extends HTMLLIElement {
+export class WaypointListItem extends HTMLLIElement {
 	constructor(waypoint: Waypoint) {
 		super();
 		$(`

@@ -6,7 +6,7 @@ import $ from 'jquery';
 
 import { random } from '../core/utils';
 import { scene } from '../renderer/index';
-import WaypointListItem from './ui/waypoint';
+import { WaypointListItem } from './ui/waypoint';
 import type { LiveSave } from './Save';
 
 export class Waypoint extends Node {
