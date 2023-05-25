@@ -22,9 +22,10 @@ export class Hardpoint extends Node {
 	type: HardpointType;
 	reload: number;
 	declare owner: Ship;
-	constructor(id: string, level: Level, { reload }: { reload?: number } = {}) {
+	constructor(id: string, level: Level, { type, reload }: { type?: HardpointType, reload?: number } = {}) {
 		super(id, level);
 
+		this.type = type;
 		this.reload = reload ?? this.generic.reload;
 
 		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
@@ -97,7 +98,6 @@ export class Hardpoint extends Node {
 
 	static FromData(data: SerializedHardpoint, level: Level): Hardpoint {
 		const hardpoint = super.FromData(data, level, data) as Hardpoint;
-		hardpoint.type = data.type;
 		return hardpoint;
 	}
 
