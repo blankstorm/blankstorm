@@ -1,126 +1,75 @@
 import $ from 'jquery';
 import { Level } from '../../core/Level';
-import { locales, settings, _mp, screenshots, current } from '../index';
-import { CelestialBody, items, research, Ship, Player, isResearchLocked, priceOfResearch, ResearchID } from '../../core/index';
+import { settings, _mp, screenshots } from '../index';
+import { locales } from '../locales';
+import { CelestialBody, items, research, Ship, Player, isResearchLocked, priceOfResearch } from '../../core/index';
+import type { ResearchID } from '../../core/index';
+import { ItemUI } from './item';
 import { minimize, confirm } from '../utils';
 import { contextMenu } from './contextmenu';
-
-import { player } from '../index'; //Temporary
-import type { ShipType } from '../../core/generic/ships';
+import type { LiveSave } from '../Save';
+import { ResearchUI } from './research';
+import { ShipUI } from './ship';
 
 export const item_ui = {},
 	tech_ui = {},
 	ship_ui = {};
-export function init() {
+export function init(player: Player, level: LiveSave) {
 	for (const [id, item] of Object.entries(items)) {
-		item_ui[id] = $(`<div>
-						<span style=text-align:right;>${locales.text(`item.${id}.name`)}${item.rare ? ` (rare)` : ``}: </span>
-						<span class=count style=text-align:left;></span>
-					</div>`)
-			.on('click', () => {
-				if (item.recipe && player.data().hasItems(item.recipe)) {
-					player.data().removeItems(item.recipe);
-					player.data().items[id]++;
-				}
-			})
-			.removeAttr('clickable')
-			.attr('bg', 'none')
-			.appendTo('div.inv');
+		item_ui[id] = new ItemUI(item, player, level);
 	}
-	for (const [id, t] of Object.entries(research)) {
-		tech_ui[id] = $(`<div>
-						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-						<span class=name style=text-align:center;>${locales.text(`tech.${id}.name`)}</span>
-						<span class="upgrade add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-up /></svg></span>
-					</div>`)
-			.find('.upgrade')
-			.on('click', () => {
-				if (
-					player.data().hasItems(priceOfResearch(id as ResearchID, player.data().research[id])) &&
-					player.data().research[id] < t.max &&
-					!isResearchLocked(id as ResearchID, player.data()) &&
-					player.data().xpPoints >= 1
-				) {
-					player.data().removeItems(priceOfResearch(id as ResearchID, player.data().research[id]));
-					player.data().research[id]++;
-					player.data().xpPoints--;
-				}
-				update();
-			})
-			.parent()
-			.attr('bg', 'none')
-			.appendTo('div.lab');
+	for (const [id, _research] of Object.entries(research)) {
+		tech_ui[id] = new ResearchUI(_research, player, level);
 	}
 	for (const [type, genericShip] of Object.entries(Ship.generic)) {
-		ship_ui[type] = $(`<div>
-						<span class="locked locked-icon"><svg style=font-size:1.5em><use href=images/icons.svg#lock /></svg></span>
-						<span class=name style=text-align:center>${locales.text(`entity.${type}.name`)}</span>
-						<span class="add add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></span>
-					</div>`)
-			.find('.add')
-			.on('click', () => {
-				if (player.data().hasItems(genericShip.recipe)) {
-					player.data().removeItems(genericShip.recipe);
-					const ship = new Ship(null, player.data().level, { type: type as ShipType, power: player.data().power });
-					ship.parent = ship.owner = player.data();
-					player.data().fleet.push(ship);
-				}
-				update();
-			})
-			.parent()
-			.attr('bg', 'none')
-			.appendTo('div.yrd');
+		ship_ui[type] = new ShipUI(genericShip, player, level);
 	}
 }
-export function update(scene = current) {
-	if (current instanceof Level && player.data() instanceof Player) {
+export function update(player: Player, level: LiveSave) {
+	if (level instanceof Level && player instanceof Player) {
 		$('div.screenshots').empty();
 		$('div.map>:not(button)').detach();
-		$('svg.item-bar rect').attr('width', (player.data().totalItems / player.data().maxItems) * 100 || 0);
-		$('div.item-bar p.label').text(`${minimize(player.data().totalItems)} / ${minimize(player.data().maxItems)}`);
+		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
+		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
 
-		for (const [id, amount] of Object.entries(player.data().items)) {
+		for (const [id, amount] of Object.entries(player.items)) {
 			item_ui[id].find('.count').text(minimize(amount));
 		}
 
 		//update tech info
 		for (const [id, t] of Object.entries(research)) {
-			const materials = Object.entries(priceOfResearch(id as ResearchID, player.data().research[id])).reduce(
-				(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.data().items[id])}/${minimize(amount)}`,
+			const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
+				(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.items[id])}/${minimize(amount)}`,
 				''
 			);
 			const requires = Object.entries(t.requires).reduce(
 				(result, [id, amount]) =>
-					result + (amount > 0)
-						? `<br>${locales.text(`tech.${id}.name`)}: ${player.data().research[id]}/${amount}`
-						: `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
+					result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 				''
 			);
 			tech_ui[id]
 				.find('.upgrade tool-tip')
 				.html(
 					`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
-						player.data().research[id] >= t.max
+						player.research[id] >= t.max
 							? `<strong>Max Level</strong>`
-							: `${player.data().research[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.data().research[id] + 1}`
+							: `${player.research[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.research[id] + 1}`
 					}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
 						settings.get('tooltips') ? '<br>type: ' + id : ''
 					}`
 				);
-			tech_ui[id].find('.locked')[isResearchLocked(id as ResearchID, player.data()) ? 'show' : 'hide']();
+			tech_ui[id].find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
 		}
 
 		//update ship info
 		for (const [id, ship] of Object.entries(Ship.generic)) {
 			const materials = Object.entries(ship.recipe).reduce(
-				(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.data().items[id])}/${minimize(amount)}`,
+				(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.items[id])}/${minimize(amount)}`,
 				''
 			);
 			const requires = Object.entries(ship.requires).reduce(
 				(result, [id, tech]) =>
-					`${result}<br>${
-						tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.data().research[id]}/${tech}`
-					}`,
+					`${result}<br>${tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${tech}`}`,
 				''
 			);
 			ship_ui[id]
@@ -133,16 +82,16 @@ export function update(scene = current) {
 
 			let locked = false;
 			for (const t in ship.requires) {
-				if (isResearchLocked(t as ResearchID, player.data())) locked = true;
+				if (isResearchLocked(t as ResearchID, player)) locked = true;
 			}
 			ship_ui[id].find('.locked')[locked ? 'show' : 'hide']();
 		}
 
-		for (const waypoint of scene.waypoints) {
+		for (const waypoint of level.waypoints) {
 			waypoint.gui.appendTo('div.map');
 			waypoint.marker.show();
 		}
-		for (const [id, body] of scene.bodies) {
+		for (const [id, body] of level.bodies) {
 			if (body instanceof CelestialBody) {
 				$('select.move').append((body.option = $(`<option value=${id}>${body.name}</option>`)));
 			}
@@ -159,7 +108,7 @@ export function update(scene = current) {
 			$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').on('click', () => {
 				confirm('Are you sure?').then(() => {
 					screenshots.splice(screenshots.indexOf(s), 1);
-					update();
+					update(player, level);
 				});
 			})
 		);

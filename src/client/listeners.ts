@@ -33,15 +33,3 @@ export const core: ListenerCollection<LevelEvent> = {
 		}
 	},
 };
-
-export const ui: ListenerCollection<JQuery.Event & { data: any }> = {
-	item: async evt => {
-		current.tryPlayerAction(player.id, 'create_item', evt.data);
-	},
-	research: async evt => {
-		current.tryPlayerAction(player.id, 'do_research', evt.data);
-	},
-	ship: async evt => {
-		current.tryPlayerAction(player.id, 'create_ship', evt.data);
-	},
-};

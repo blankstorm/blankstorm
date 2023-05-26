@@ -16,6 +16,9 @@ export class LocaleStore {
 
 	constructor() {}
 
+	/**
+	 * @todo fix circular dependency
+	 */
 	async fetch(url: string) {
 		try {
 			const locale = isJSON(url) ? JSON.parse(url) : await $.ajax(url);
@@ -27,7 +30,7 @@ export class LocaleStore {
 			if (locale.version != version && ![...locale.versions].some(v => version.match(v))) throw 'Wrong game version';
 
 			this.#store.set(locale.language, locale);
-			settings.items.get('locale').addOption(locale.language, locale.name);
+			//settings.items.get('locale').addOption(locale.language, locale.name); -> circular dependency
 			return locale;
 		} catch (e) {
 			throw new Error(`Failed to load locale from ${url}: ${e}`);
@@ -85,3 +88,7 @@ export class LocaleStore {
 		return this.#currentLang;
 	}
 }
+
+export const locales = new LocaleStore();
+await locales.fetch('locales/en.json');
+locales.load('en');

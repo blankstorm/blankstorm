@@ -14,7 +14,7 @@ import type { Entity } from '../core/entities/Entity';
 import type { ShipType } from '../core/generic/ships';
 import { Level } from '../core/Level';
 import { Keybind, SettingsMap } from './settings';
-import { LocaleStore } from './locales';
+import { locales } from './locales';
 import { upload, minimize, alert, cookies } from './utils';
 import { Waypoint } from './waypoint';
 import { SaveMap, Save, LiveSave } from './Save';
@@ -232,7 +232,7 @@ export const settings = new SettingsMap('settings', {
 			value: { key: 'F2' },
 			onTrigger: () => {
 				screenshots.push(canvas[0].toDataURL('image/png'));
-				ui.update();
+				ui.update(player.data(), current);
 			},
 		},
 		{
@@ -426,10 +426,7 @@ onclick = () => {
 };
 
 $('#loading_cover p').text('Loading Locales...');
-export const locales = new LocaleStore();
-await locales.fetch('locales/en.json');
-locales.load('en');
-ui.init();
+ui.init(player.data(), current);
 
 //Load saves and servers into the game
 $('#loading_cover p').text('Loading saves...');
@@ -459,7 +456,6 @@ commands.set('reload', {
 	},
 	oplvl: 0,
 });
-
 export const eventLog = [];
 if (config.debug_mode) {
 	$('#loading_cover p').text('Debug: Assigning variables...');
@@ -519,7 +515,7 @@ $('#main .mp').on('click', () => {
 $('#main .options').on('click', () => {
 	ui.setLast('#main');
 	$('#settings').show();
-	ui.update();
+	ui.update(player.data(), current);
 });
 $('.playable-list .back').on('click', () => {
 	$('.playable-list').hide();
@@ -542,7 +538,7 @@ $('#server-dialog .save').on('click', () => {
 		server.name = name;
 		server._url = url;
 	}
-	ui.update();
+	ui.update(player.data(), current);
 	$<HTMLDialogElement>('#server-dialog')[0].close();
 });
 $('#server-dialog .cancel').on('click', () => {
@@ -555,7 +551,7 @@ $('#save-edit .save').on('click', () => {
 	if (saves.has(id)) {
 		save.data.name = name;
 	}
-	ui.update();
+	ui.update(player.data(), current);
 	$<HTMLDialogElement>('#save-edit')[0].close();
 });
 $('#save-edit .cancel').on('click', () => {
@@ -692,12 +688,12 @@ $('#settings button.mod').on('click', () => {
 				alert('Mods are not supported.');
 			})
 		);
-	ui.update();
+	ui.update(player.data(), current);
 });
 $('#settings button.back').on('click', () => {
 	$('#settings').hide();
 	$(ui.getLast()).show();
-	ui.update();
+	ui.update(player.data(), current);
 });
 $('#q div.warp button.warp').on('click', () => {
 	const destination = new Vector3(+$('input.warp.x').val(), 0, +$('input.warp.y').val());
@@ -715,7 +711,7 @@ $('#q div.warp button.warp').on('click', () => {
 		.attr('for', $(e).attr('ui-label'))
 		.insertBefore($(e));
 });*/
-$('#settings div.general input').on('change', () => ui.update());
+$('#settings div.general input').on('change', () => ui.update(player.data(), current));
 $<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
 	const lang = e.target.value;
 	if (locales.has(lang)) {
@@ -819,7 +815,7 @@ canvas.on('click', e => {
 	if (current instanceof LiveSave) {
 		renderer.handleCanvasClick(e, renderer.scene.getNodeById(player.id));
 	}
-	ui.update();
+	ui.update(player.data(), current);
 });
 canvas.on('contextmenu', e => {
 	if (current instanceof LiveSave) {
@@ -875,13 +871,13 @@ $('#e')
 			changeUI('#e');
 		}
 	})
-	.on('click', () => ui.update());
+	.on('click', () => ui.update(player.data(), current));
 $('canvas.game,#esc,#hud').on('keydown', e => {
 	if (e.key == 'Escape') {
 		changeUI('#esc', true);
 		isPaused = !isPaused;
 	}
-	ui.update();
+	ui.update(player.data(), current);
 });
 $('button').on('click', () => {
 	playsound(sounds.get('ui'), +settings.get('sfx'));
@@ -948,7 +944,7 @@ const loop = () => {
 	}
 };
 
-ui.update();
+ui.update(player.data(), current);
 $('#loading_cover p').text('Done!');
 $('#loading_cover').fadeOut(1000);
 console.log('Game loaded successful');
