@@ -13,8 +13,7 @@ import type { Player } from '../core/entities/Player';
 import type { Entity } from '../core/entities/Entity';
 import type { ShipType } from '../core/generic/ships';
 import { Level } from '../core/Level';
-import { Keybind, SettingsMap } from './settings';
-import { locales } from './locales';
+import type { Keybind } from './settings';
 import { upload, minimize, alert, cookies } from './utils';
 import { Waypoint } from './waypoint';
 import { SaveMap, Save, LiveSave } from './Save';
@@ -49,209 +48,57 @@ const updateSave = () => {
 	}
 	$('#esc .save').text('Save Game');
 };
-export const settings = new SettingsMap('settings', {
-	sections: [
-		{
-			id: 'general',
-			label: () => locales.text('menu.settings_section.general'),
-			parent: $('#settings div.general'),
-		},
-		{
-			id: 'keybinds',
-			label: () => locales.text('menu.settings_section.keybinds'),
-			parent: $('#settings div.keybinds'),
-		},
-		{
-			id: 'debug',
-			label: () => locales.text('menu.settings_section.debug'),
-			parent: $('#settings div.debug'),
-		},
-	],
-	items: [
-		{
-			id: 'font_size',
-			section: 'general',
-			type: 'range',
-			label: val => `Font Size (${val}px)`,
-			min: 10,
-			max: 20,
-			step: 1,
-			value: 13,
-		},
-		{
-			id: 'chat_timeout',
-			section: 'general',
-			type: 'range',
-			label: val => `Chat Timeout (${val} seconds)`,
-			min: 5,
-			max: 15,
-			step: 1,
-			value: 10,
-		},
-		{
-			id: 'sensitivity',
-			section: 'general',
-			type: 'range',
-			label: val => `Camera Sensitivity (${((val as number) * 100).toFixed()}%)`,
-			min: 0.1,
-			max: 2,
-			step: 0.05,
-			value: 1,
-		},
-		{
-			id: 'music',
-			section: 'general',
-			type: 'range',
-			label: val => `Music Volume (${((val as number) * 100).toFixed()}%)`,
-			min: 0,
-			max: 1,
-			step: 0.05,
-			value: 1,
-		},
-		{
-			id: 'sfx',
-			section: 'general',
-			type: 'range',
-			label: val => `Sound Effects Volume (${((val as number) * 100).toFixed()}%)`,
-			min: 0,
-			max: 1,
-			step: 0.05,
-			value: 1,
-		},
-		{
-			id: 'locale',
-			section: 'general',
-			type: 'select',
-			label: 'Language',
-		},
-		{
-			id: 'show_path_gizmos',
-			section: 'debug',
-			label: 'Show Path Gizmos',
-			value: false,
-		},
-		{
-			id: 'tooltips',
-			section: 'debug',
-			label: 'Show Advanced Tooltips',
-			value: false,
-		},
-		{
-			id: 'disable_saves',
-			section: 'debug',
-			label: 'Disable Saves',
-			value: false,
-		},
-		{
-			id: 'forward',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Forward',
-			value: { key: 'w' },
-			onTrigger: () => {
-				renderer.getCamera().addVelocity(Vector3.Forward());
-			},
-		},
-		{
-			id: 'left',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Strafe Left',
-			value: { key: 'a' },
-			onTrigger: () => {
-				renderer.getCamera().addVelocity(Vector3.Left());
-			},
-		},
-		{
-			id: 'right',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Strafe Right',
-			value: { key: 'd' },
-			onTrigger: () => {
-				renderer.getCamera().addVelocity(Vector3.Right());
-			},
-		},
-		{
-			id: 'back',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Backward',
-			value: { key: 's' },
-			onTrigger: () => {
-				renderer.getCamera().addVelocity(Vector3.Backward());
-			},
-		},
-		{
-			id: 'chat',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Chat',
-			value: { key: 't' },
-			onTrigger: e => {
-				e.preventDefault();
-				toggleChat();
-			},
-		},
-		{
-			id: 'command',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Command',
-			value: { key: '/' },
-			onTrigger: e => {
-				e.preventDefault();
-				toggleChat(true);
-			},
-		},
-		{
-			id: 'nav',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Inventory',
-			value: { key: 'Tab' },
-			onTrigger: () => {
-				changeUI('#q');
-			},
-		},
-		{
-			id: 'inv',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Shipyard/Lab',
-			value: { key: 'e' },
-			onTrigger: () => {
-				changeUI('#e');
-			},
-		},
-		{
-			id: 'screenshot',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Take Screenshot',
-			value: { key: 'F2' },
-			onTrigger: () => {
-				screenshots.push(canvas[0].toDataURL('image/png'));
-				ui.update(player.data(), current);
-			},
-		},
-		{
-			id: 'save',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Save Game',
-			value: { key: 's', ctrl: true },
-			onTrigger: updateSave,
-		},
-	],
-});
 
+$('#loading_cover p').text('Initializing settings...');
+import { settings } from './settings';
+settings.items.get('forward').addEventListener('trigger', () => {
+	renderer.getCamera().addVelocity(Vector3.Forward());
+});
+settings.items.get('left').addEventListener('trigger', () => {
+	renderer.getCamera().addVelocity(Vector3.Left());
+});
+settings.items.get('right').addEventListener('trigger', () => {
+	renderer.getCamera().addVelocity(Vector3.Right());
+});
+settings.items.get('back').addEventListener('trigger', () => {
+	renderer.getCamera().addVelocity(Vector3.Backward());
+});
+settings.items.get('chat').addEventListener('trigger', e => {
+	e.preventDefault();
+	toggleChat();
+});
+settings.items.get('command').addEventListener('trigger', e => {
+	e.preventDefault();
+	toggleChat(true);
+});
+settings.items.get('nav').addEventListener('trigger', () => {
+	changeUI('#q');
+});
+settings.items.get('inv').addEventListener('trigger', () => {
+	changeUI('#e');
+});
+settings.items.get('screenshot').addEventListener('trigger', () => {
+	screenshots.push(canvas[0].toDataURL('image/png'));
+	ui.update(player.data(), current);
+});
+settings.items.get('save').addEventListener('trigger', updateSave);
 for (const section of settings.sections.values()) {
 	$(section).attr({
 		bg: 'none',
 		'overflow-scroll': 'y',
 		'no-box-shadow': '',
 	});
+}
+
+$('#loading_cover p').text('Initializing locales...');
+import { locales } from './locales';
+import type { LocaleEvent } from './locales';
+locales.addEventListener('fetch', (e: LocaleEvent) => {
+	settings.items.get('locale').addOption(e.locale.language, e.locale.name);
+});
+await locales.init('locales/en.json');
+for(const [id, section] of settings.sections){
+	section.label = () => locales.text('menu.settings_section.' + id);
 }
 
 //load mods (if any)
@@ -848,7 +695,7 @@ canvas.on('keydown', e => {
 $('canvas.game,[ingame-ui],#hud,#tablist').on('keydown', e => {
 	for (const setting of [...settings.items.values()].filter(item => item.type == 'keybind')) {
 		const bind = setting.value as Keybind;
-		if (e.key == bind.key && (!bind.alt || e.altKey) && (!bind.ctrl || e.ctrlKey)) setting.onTrigger(e);
+		if (e.key == bind.key && (!bind.alt || e.altKey) && (!bind.ctrl || e.ctrlKey)) setting.emit('trigger');
 	}
 });
 canvas.on('keyup', e => {

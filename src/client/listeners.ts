@@ -1,6 +1,6 @@
 import * as renderer from '../renderer/index';
 import { sounds, playsound } from './audio';
-import { settings } from './index';
+import { settings } from './settings';
 import type { LevelEvent, ListenerCollection } from '../core/events';
 import { minimize } from './utils';
 import { item_ui } from './ui/ui';

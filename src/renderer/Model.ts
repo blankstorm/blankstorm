@@ -11,7 +11,7 @@ import '@babylonjs/loaders/glTF/index';
 import config from './config';
 import { probe } from './index';
 import Path from '../core/Path';
-import { settings } from '../client';
+import { settings } from '../client/settings';
 import { random } from '../core/utils';
 import type { SerializedNode } from '../core/Node';
 import type { Scene } from '@babylonjs/core/scene';

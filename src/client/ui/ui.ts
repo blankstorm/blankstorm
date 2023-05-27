@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import { Level } from '../../core/Level';
-import { settings, _mp, screenshots } from '../index';
+import { _mp, screenshots } from '../index';
+import { settings } from '../settings';
 import { locales } from '../locales';
 import { CelestialBody, items, research, Ship, Player, isResearchLocked, priceOfResearch } from '../../core/index';
 import type { ResearchID } from '../../core/index';
@@ -12,14 +13,14 @@ import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 
 export const item_ui = {},
-	tech_ui = {},
+	research_ui = {},
 	ship_ui = {};
 export function init(player: Player, level: LiveSave) {
 	for (const [id, item] of Object.entries(items)) {
 		item_ui[id] = new ItemUI(item, player, level);
 	}
 	for (const [id, _research] of Object.entries(research)) {
-		tech_ui[id] = new ResearchUI(_research, player, level);
+		research_ui[id] = new ResearchUI(_research, player, level);
 	}
 	for (const [type, genericShip] of Object.entries(Ship.generic)) {
 		ship_ui[type] = new ShipUI(genericShip, player, level);
@@ -33,7 +34,7 @@ export function update(player: Player, level: LiveSave) {
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
 
 		for (const [id, amount] of Object.entries(player.items)) {
-			item_ui[id].find('.count').text(minimize(amount));
+			$(item_ui[id]).find('.count').text(minimize(amount));
 		}
 
 		//update tech info
@@ -47,7 +48,7 @@ export function update(player: Player, level: LiveSave) {
 					result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 				''
 			);
-			tech_ui[id]
+			$(research_ui[id])
 				.find('.upgrade tool-tip')
 				.html(
 					`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
@@ -58,7 +59,7 @@ export function update(player: Player, level: LiveSave) {
 						settings.get('tooltips') ? '<br>type: ' + id : ''
 					}`
 				);
-			tech_ui[id].find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
+			$(research_ui[id]).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
 		}
 
 		//update ship info
@@ -72,7 +73,7 @@ export function update(player: Player, level: LiveSave) {
 					`${result}<br>${tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${tech}`}`,
 				''
 			);
-			ship_ui[id]
+			$(ship_ui[id])
 				.find('.add tool-tip')
 				.html(
 					`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
@@ -84,7 +85,7 @@ export function update(player: Player, level: LiveSave) {
 			for (const t in ship.requires) {
 				if (isResearchLocked(t as ResearchID, player)) locked = true;
 			}
-			ship_ui[id].find('.locked')[locked ? 'show' : 'hide']();
+			$(ship_ui[id]).find('.locked')[locked ? 'show' : 'hide']();
 		}
 
 		for (const waypoint of level.waypoints) {

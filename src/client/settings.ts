@@ -10,6 +10,12 @@ export class SettingsError extends Error {
 	}
 }
 
+export class SettingsEvent extends Event {
+	constructor(type: string, public item: SettingsItem) {
+		super(type);
+	}
+}
+
 export interface Keybind {
 	alt: boolean;
 	ctrl: boolean;
@@ -59,7 +65,6 @@ export class SettingsItem extends HTMLDivElement {
 	};
 
 	//Used by keybind
-	#onTrigger: (evt: Event | JQuery.KeyDownEvent) => unknown;
 	constructor(id: string, options: Partial<SettingsItemOptions>, store) {
 		super();
 		$(this).attr('bg', 'none');
@@ -105,7 +110,6 @@ export class SettingsItem extends HTMLDivElement {
 				break;
 			case 'keybind':
 				this.#ui_input = $('<button></button>');
-				this.#onTrigger = options.onTrigger;
 				this.#ui_input
 					.on('click', e => {
 						e.preventDefault();
@@ -186,6 +190,7 @@ export class SettingsItem extends HTMLDivElement {
 			label = this.label;
 		}
 		this.#ui_label.text(label);
+		this.emit('update');
 	}
 
 	get type() {
@@ -240,16 +245,11 @@ export class SettingsItem extends HTMLDivElement {
 		return false;
 	}
 
-	//for keybinds
-	onTrigger(evt?: Event | JQuery.KeyDownEvent) {
-		if (this.#type != 'keybind') {
-			throw new SettingsError('Attempted to call onTrigger for a non-keybind', this);
-		}
-
-		this.#onTrigger(evt);
+	emit(type: string): boolean {
+		return this.dispatchEvent(new SettingsEvent(type, this));
 	}
 
-	update(options) {
+	update(options: { min?: number, max?: number, step?: number }) {
 		if (isFinite(options?.min)) {
 			this.#ui_input.attr('min', +options.min);
 		}
@@ -359,3 +359,169 @@ export class SettingsMap extends JSONFileMap {
 		}
 	}
 }
+
+export const settings = new SettingsMap('settings', {
+	sections: [
+		{
+			id: 'general',
+			label: 'General',
+			parent: $('#settings div.general'),
+		},
+		{
+			id: 'keybinds',
+			label: 'Keybinds',
+			parent: $('#settings div.keybinds'),
+		},
+		{
+			id: 'debug',
+			label: 'Debug',
+			parent: $('#settings div.debug'),
+		},
+	],
+	items: [
+		{
+			id: 'font_size',
+			section: 'general',
+			type: 'range',
+			label: val => `Font Size (${val}px)`,
+			min: 10,
+			max: 20,
+			step: 1,
+			value: 13,
+		},
+		{
+			id: 'chat_timeout',
+			section: 'general',
+			type: 'range',
+			label: val => `Chat Timeout (${val} seconds)`,
+			min: 5,
+			max: 15,
+			step: 1,
+			value: 10,
+		},
+		{
+			id: 'sensitivity',
+			section: 'general',
+			type: 'range',
+			label: val => `Camera Sensitivity (${((val as number) * 100).toFixed()}%)`,
+			min: 0.1,
+			max: 2,
+			step: 0.05,
+			value: 1,
+		},
+		{
+			id: 'music',
+			section: 'general',
+			type: 'range',
+			label: val => `Music Volume (${((val as number) * 100).toFixed()}%)`,
+			min: 0,
+			max: 1,
+			step: 0.05,
+			value: 1,
+		},
+		{
+			id: 'sfx',
+			section: 'general',
+			type: 'range',
+			label: val => `Sound Effects Volume (${((val as number) * 100).toFixed()}%)`,
+			min: 0,
+			max: 1,
+			step: 0.05,
+			value: 1,
+		},
+		{
+			id: 'locale',
+			section: 'general',
+			type: 'select',
+			label: 'Language',
+		},
+		{
+			id: 'show_path_gizmos',
+			section: 'debug',
+			label: 'Show Path Gizmos',
+			value: false,
+		},
+		{
+			id: 'tooltips',
+			section: 'debug',
+			label: 'Show Advanced Tooltips',
+			value: false,
+		},
+		{
+			id: 'disable_saves',
+			section: 'debug',
+			label: 'Disable Saves',
+			value: false,
+		},
+		{
+			id: 'forward',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Forward',
+			value: { key: 'w' }
+		},
+		{
+			id: 'left',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Strafe Left',
+			value: { key: 'a' },
+		},
+		{
+			id: 'right',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Strafe Right',
+			value: { key: 'd' }
+		},
+		{
+			id: 'back',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Backward',
+			value: { key: 's' }
+		},
+		{
+			id: 'chat',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Chat',
+			value: { key: 't' },
+		},
+		{
+			id: 'command',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Command',
+			value: { key: '/' },
+		},
+		{
+			id: 'nav',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Inventory',
+			value: { key: 'Tab' },
+		},
+		{
+			id: 'inv',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Shipyard/Lab',
+			value: { key: 'e' },
+		},
+		{
+			id: 'screenshot',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Take Screenshot',
+			value: { key: 'F2' },
+		},
+		{
+			id: 'save',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Save Game',
+			value: { key: 's', ctrl: true }
+		},
+	],
+});

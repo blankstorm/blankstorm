@@ -54,8 +54,7 @@ export class Ship extends Entity {
 				return;
 			}
 
-			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint(null, level);
-			hp.type = info.type as HardpointType;
+			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint(null, level, { type: info.type as HardpointType });
 			hp.parent = hp.owner = this;
 			hp.info = info;
 			this.hardpoints.push(hp);
