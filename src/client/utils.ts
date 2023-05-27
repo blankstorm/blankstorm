@@ -98,6 +98,6 @@ export const cookies: Map<string, string> & { get _map(): Map<string, string> } 
 	},
 
 	get _map(): Map<string, string> {
-		return new Map(document.cookie.split(';').map((cookie: string) => cookie.split('=', 1)) as [string, string][]);
+		return new Map(document.cookie.split(';').map((cookie: string) => cookie.split('=', 2)) as [string, string][]);
 	},
 };
