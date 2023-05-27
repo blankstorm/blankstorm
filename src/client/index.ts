@@ -97,7 +97,7 @@ locales.addEventListener('fetch', (e: LocaleEvent) => {
 	settings.items.get('locale').addOption(e.locale.language, e.locale.name);
 });
 await locales.init('locales/en.json');
-for(const [id, section] of settings.sections){
+for (const [id, section] of settings.sections) {
 	section.label = () => locales.text('menu.settings_section.' + id);
 }
 

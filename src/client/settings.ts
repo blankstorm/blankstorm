@@ -249,7 +249,7 @@ export class SettingsItem extends HTMLDivElement {
 		return this.dispatchEvent(new SettingsEvent(type, this));
 	}
 
-	update(options: { min?: number, max?: number, step?: number }) {
+	update(options: { min?: number; max?: number; step?: number }) {
 		if (isFinite(options?.min)) {
 			this.#ui_input.attr('min', +options.min);
 		}
@@ -458,7 +458,7 @@ export const settings = new SettingsMap('settings', {
 			section: 'keybinds',
 			type: 'keybind',
 			label: 'Forward',
-			value: { key: 'w' }
+			value: { key: 'w' },
 		},
 		{
 			id: 'left',
@@ -472,14 +472,14 @@ export const settings = new SettingsMap('settings', {
 			section: 'keybinds',
 			type: 'keybind',
 			label: 'Strafe Right',
-			value: { key: 'd' }
+			value: { key: 'd' },
 		},
 		{
 			id: 'back',
 			section: 'keybinds',
 			type: 'keybind',
 			label: 'Backward',
-			value: { key: 's' }
+			value: { key: 's' },
 		},
 		{
 			id: 'chat',
@@ -521,7 +521,7 @@ export const settings = new SettingsMap('settings', {
 			section: 'keybinds',
 			type: 'keybind',
 			label: 'Save Game',
-			value: { key: 's', ctrl: true }
+			value: { key: 's', ctrl: true },
 		},
 	],
 });
