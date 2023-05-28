@@ -66,8 +66,8 @@ export class LocaleStore extends EventTarget {
 		$(':where(#save-list,#server-list,#q) button.new span').text(lang['menu.new'] ?? 'New');
 		$('#save-new button.new span').text(lang['menu.start'] ?? 'Start');
 		$(':where(#confirm,#login,#save-edit,#server-dialog) .cancel').text(lang['menu.cancel'] ?? 'Cancel');
-		$(':where(#save-edit,#server-dialog) .save').text(lang['menu.save'] ?? 'Save');
-		$('#connect button.back span').text(lang['menu.cancel'] ?? 'Cancel');
+		$(':where(#save-edit,#server-dialog,#waypoint-dialog) .save').text(lang['menu.save'] ?? 'Save');
+		$('#connect button.back span,#waypoint-dialog .cancel').text(lang['menu.cancel'] ?? 'Cancel');
 		$('#settings button.general span').text(lang['menu.settings.general'] ?? 'General');
 		$('#settings button.keybinds span').text(lang['menu.settings.keybinds'] ?? 'Keybinds');
 		$('#settings button.debug span').text(lang['menu.settings.debug'] ?? 'Debug');

@@ -1,6 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-import { wait, xpToLevel } from '../utils';
+import { resolveConstructors, wait, xpToLevel } from '../utils';
 import { Node } from '../Node';
 import type { SerializedNode } from '../Node';
 import { genericHardpoints } from '../generic/hardpoints';
@@ -60,28 +60,23 @@ export class Hardpoint extends Node {
 	 */
 	async fire(target: Ship | Hardpoint) {
 		// this is so we don't have a circular dependency by importing Ship
-		const targetConstructors = [];
-		let targetConstructor = target;
-		while (targetConstructor) {
-			targetConstructor = Object.getPrototypeOf(targetConstructor);
-			targetConstructors.push(targetConstructor.name);
-		}
+		const targetConstructors = resolveConstructors(target);
 
-		this.level.emitEvent('projectile.fire', this.serialize(), { target: target.serialize(), projectile: this.generic.projectile });
+		this.level.emit('projectile.fire', this.serialize(), { target: target.serialize(), projectile: this.generic.projectile });
 		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
 		this.reload = this.generic.reload;
 		await wait(time);
 		const targetShip = (targetConstructors.includes('Ship') ? target : target.owner) as Ship;
 		targetShip.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
 		if (targetShip.hp <= 0) {
-			this.level.emitEvent('entity.death', targetShip.serialize());
+			this.level.emit('entity.death', targetShip.serialize());
 			let owner;
 			switch (this.owner.owner.constructor.name) {
 				case 'Player':
 					owner = this.owner.owner as Player;
 					owner.addItems(targetShip.generic.recipe);
 					if (Math.floor(xpToLevel(owner.xp + targetShip.generic.xp)) > Math.floor(xpToLevel(owner.xp))) {
-						this.level.emitEvent('player.levelup', owner.serialize());
+						this.level.emit('player.levelup', owner.serialize());
 						owner.xpPoints++;
 					}
 					owner.xp += targetShip.generic.xp;

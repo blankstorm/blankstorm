@@ -149,6 +149,7 @@ export async function clear() {
 		entities.delete(id);
 	}
 
+	engine.resize();
 	cache = createEmptyCache();
 }
 

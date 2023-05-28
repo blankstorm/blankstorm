@@ -267,3 +267,14 @@ export class FolderMap /* implements Map */ {
 		return map.forEach.bind(map);
 	}
 }
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function resolveConstructors(object): string[] {
+	const constructors = [];
+	let prototype = object; // eslint-disable-line @typescript-eslint/ban-types
+	while (prototype && !['Function', 'Object'].includes(prototype.constructor.name)) {
+		prototype = Object.getPrototypeOf(prototype);
+		constructors.push(prototype.constructor.name);
+	}
+	return constructors;
+}

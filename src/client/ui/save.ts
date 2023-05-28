@@ -11,7 +11,6 @@ export class SaveListItem extends HTMLLIElement {
 			$('#loading_cover').show();
 			const live = save.load();
 			await live.ready();
-			save.store.current = live;
 			live.play(save.store);
 			$('#loading_cover').hide();
 		};
@@ -22,7 +21,7 @@ export class SaveListItem extends HTMLLIElement {
 			.attr('clickable', '')
 			.on('click', () => {
 				$('.selected').removeClass('selected');
-				save.store.selected = save.data.id;
+				save.store.selected = save.id;
 				$(this).addClass('selected');
 			})
 			.on('dblclick', loadAndPlay)

@@ -1,75 +1,109 @@
 import { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Node } from '@babylonjs/core/node';
+import { Node } from '../core/Node';
+import type { SerializedNode } from '../core/Node';
 import $ from 'jquery';
 
-import { random } from '../core/utils';
 import { scene } from '../renderer/index';
 import { WaypointListItem } from './ui/waypoint';
-import type { LiveSave } from './Save';
+import type { SerializedCelestialBody } from '../core/bodies/CelestialBody';
+import type { ClientLevel } from './ClientLevel';
+
+export interface SerializedWaypoint extends SerializedNode {
+	color: number[];
+	icon: string;
+	readonly: boolean;
+}
 
 export class Waypoint extends Node {
 	gui: JQuery;
-	marker: JQuery;
-	position: Vector3;
-	color: Color3;
-	icon: string;
-
-	#readonly: boolean;
-
-	get readonly(): boolean {
-		return this.#readonly;
-	}
+	marker: JQuery<SVGSVGElement>;
+	#color: Color3 = new Color3(Math.random(), Math.random(), Math.random());
+	#icon: string;
 
 	get screenPos() {
 		const viewport = new Viewport(0, 0, innerWidth, innerHeight);
-		return Vector3.Project(this.position, Matrix.Identity(), this.getScene().getTransformMatrix(), viewport);
+		return Vector3.Project(this.position, Matrix.Identity(), scene.getTransformMatrix(), viewport);
 	}
 
-	get row() {
-		return this.level.waypoints.indexOf(this) + 1;
-	}
+	declare level: ClientLevel;
 
-	constructor(
-		{
-			id = random.hex(32),
-			name = 'Waypoint',
-			position = Vector3.Zero(),
-			color = new Color3(Math.random(), Math.random(), Math.random()),
-			icon = 'location-dot',
-			readonly = false,
-		}: {
-			id?: string;
-			name?: string;
-			position?: Vector3;
-			color?: Color3;
-			icon?: string;
-			readonly?: boolean;
-		},
-		public level: LiveSave
-	) {
-		super(id, scene);
-		this.name = name;
-		this.position = position;
-		this.color = color;
-		this.icon = icon;
-		this.#readonly = readonly;
+	constructor(id: string, public readonly readonly = false, public readonly builtin = false, level: ClientLevel) {
+		super(id, level);
 		level.waypoints.push(this);
 		this.gui = $(new WaypointListItem(this));
-		this.marker = $(`<svg ingame><use href=images/icons.svg#${icon} /></svg><p ingame style=justify-self:center></p>`).addClass('marker').hide().appendTo('body');
+		this.marker = $<SVGSVGElement>(`<svg ingame><use href=images/icons.svg#location-dot /></svg><p ingame style=justify-self:center></p>`)
+			.addClass('marker')
+			.hide()
+			.appendTo('body');
 		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
+		level.addEventListener('active', () => {
+			this.updateVisibility();
+		});
+		this.updateVisibility();
+	}
+
+	get icon(): string {
+		return this.#icon;
+	}
+
+	set icon(icon: string) {
+		this.#icon = icon;
+		this.gui.find('.icon use').attr('href', 'images/icons.svg#' + icon);
+		this.marker.find('use').attr('href', 'images/icons.svg#' + icon);
+	}
+
+	get color(): Color3 {
+		return this.#color;
+	}
+
+	set color(color: Color3) {
+		this.#color = color;
+		this.gui.find('.icon svg').css('fill', color.toHexString());
+	}
+
+	override get name(): string {
+		return super.name;
+	}
+
+	override set name(name: string) {
+		super.name = name;
+		this.gui.find('.name').text(name);
+	}
+
+	updateVisibility(): void {
+		if (this.level.isActive) {
+			this.gui.detach();
+			this.marker.show();
+		} else {
+			this.gui.appendTo('div.map');
+			this.marker.hide();
+		}
+	}
+
+	serialize(): SerializedWaypoint {
+		return Object.assign(super.serialize(), {
+			icon: this.icon,
+			color: this.color.asArray(),
+			readonly: this.readonly,
+		});
 	}
 
 	remove() {
 		this.marker.remove();
 		$(this).remove();
-		this.level.waypoints.splice(this.row - 1, 1);
+		this.level.waypoints.splice(this.level.waypoints.indexOf(this) - 1, 1);
 	}
 
-	static dialog(wp) {
-		const wpd = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
-		wpd._waypoint = wp;
-		wpd.showModal();
+	static GetIconForCelestialBody(body: SerializedCelestialBody): string {
+		switch (body.node_type) {
+			case 'planet':
+				return 'earth-americas';
+			case 'star':
+				return 'sun-bright';
+			default:
+				return 'planet-ringed';
+		}
 	}
 }

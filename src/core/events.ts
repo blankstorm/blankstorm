@@ -6,9 +6,7 @@ export type Listener<Event> = (event: Event) => unknown;
 export type ListenerCollection<Event> = Record<string, Listener<Event>>;
 
 export class LevelEvent extends Event {
-	level?: Level;
-	constructor(type: string, public emitter: SerializedNode | SerializedLevel, public data?: { [key: string]: any; level?: Level }) {
+	constructor(type: string, public emitter: SerializedNode | SerializedLevel, public data?: { [key: string]: any }, public level?: Level) {
 		super(type);
-		this.level = data?.level;
 	}
 }

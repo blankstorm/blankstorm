@@ -1,5 +1,4 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-
 import { random } from './utils';
 import type { Level } from './Level';
 
@@ -18,7 +17,15 @@ export interface SerializedNode {
 
 export class Node {
 	id: string;
-	name = '';
+	private _name = '';
+
+	get name(): string {
+		return this._name;
+	}
+
+	set name(name: string) {
+		this._name = name;
+	}
 
 	level: Level;
 	parent?: Node;
@@ -38,6 +45,7 @@ export class Node {
 		this.id = id || random.hex(32);
 		this.level = level;
 		level.nodes.set(id, this);
+		setTimeout(() => level.emit('node.created', this.serialize()));
 	}
 
 	get absolutePosition() {
@@ -53,6 +61,7 @@ export class Node {
 	}
 
 	remove() {
+		this.level.emit('node.removed', this.serialize());
 		this.level.nodes.delete(this.id);
 	}
 

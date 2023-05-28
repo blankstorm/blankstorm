@@ -14,7 +14,7 @@ import { config, versions } from '../core/meta';
 import type { Socket } from 'socket.io-client';
 import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
-import type { Waypoint } from './waypoint';
+import { ClientLevel } from './ClientLevel';
 
 export class ServerMap extends Map<string, Server> {
 	private _map: JSONFileMap;
@@ -50,12 +50,8 @@ export type SerializedServer = JSONValue & {
 	name: string;
 };
 
-export class ServerLevel extends Level {
-	waypoints: Waypoint[];
-}
-
 export class Server {
-	level = new ServerLevel('server_level', true);
+	level = new ClientLevel('server_level');
 	kickMessage: string;
 	socket: Socket;
 	gui: JQuery<ServerListItem>;

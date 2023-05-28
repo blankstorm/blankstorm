@@ -27,7 +27,6 @@ export interface GenericPlanetRendererMaterial {
 	directNoise: boolean;
 	lowerClip: Vector2;
 	range: Vector2;
-	icon: string;
 }
 
 export class PlanetRendererMaterial extends ShaderMaterial {
@@ -152,7 +151,6 @@ export default class PlanetRenderer extends Mesh {
 				directNoise: false,
 				lowerClip: new Vector2(0, 0),
 				range: new Vector2(0.3, 0.35),
-				icon: 'earth-americas',
 			},
 		],
 		[
@@ -171,7 +169,6 @@ export default class PlanetRenderer extends Mesh {
 				directNoise: false,
 				lowerClip: new Vector2(0, 0),
 				range: new Vector2(0.3, 0.4),
-				icon: 'planet-ringed',
 			},
 		],
 		[
@@ -190,7 +187,6 @@ export default class PlanetRenderer extends Mesh {
 				directNoise: false,
 				lowerClip: new Vector2(0, 0),
 				range: new Vector2(0.2, 0.4),
-				icon: 'earth-americas',
 			},
 		],
 		[
@@ -209,7 +205,6 @@ export default class PlanetRenderer extends Mesh {
 				directNoise: false,
 				lowerClip: new Vector2(0, 0),
 				range: new Vector2(0.3, 0.4),
-				icon: 'planet-ringed',
 			},
 		],
 		[
@@ -228,7 +223,6 @@ export default class PlanetRenderer extends Mesh {
 				directNoise: false,
 				lowerClip: new Vector2(0, 0),
 				range: new Vector2(0.3, 0.4),
-				icon: 'planet-ringed',
 			},
 		],
 		[
@@ -247,7 +241,6 @@ export default class PlanetRenderer extends Mesh {
 				directNoise: false,
 				lowerClip: new Vector2(0, 0),
 				range: new Vector2(0.2, 0.3),
-				icon: 'earty-oceania',
 			},
 		],
 		[
@@ -265,7 +258,6 @@ export default class PlanetRenderer extends Mesh {
 				groundAlbedo: 0.7,
 				directNoise: true,
 				lowerClip: new Vector2(0.5, 0.9),
-				icon: 'planet-ringed',
 			},
 		],
 	]);

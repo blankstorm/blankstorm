@@ -89,8 +89,7 @@ export function update(player: Player, level: LiveSave) {
 		}
 
 		for (const waypoint of level.waypoints) {
-			waypoint.gui.appendTo('div.map');
-			waypoint.marker.show();
+			waypoint.updateVisibility();
 		}
 		for (const [id, body] of level.bodies) {
 			if (body instanceof CelestialBody) {

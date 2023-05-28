@@ -54,15 +54,14 @@ export class Level extends EventTarget {
 	#initPromise: Promise<Level>;
 	#performanceMonitor = new PerformanceMonitor(60);
 
-	constructor(name: string, doNotGenerate?: boolean) {
+	constructor(name: string) {
 		super();
 		this.name = name;
 
-		this.#initPromise = doNotGenerate ? Promise.resolve(this) : this.init();
+		this.#initPromise = this.init();
 	}
 
 	async init(): Promise<Level> {
-		await this.generateSystem('Crash Site', Vector3.Zero());
 		return this;
 	}
 
@@ -210,8 +209,8 @@ export class Level extends EventTarget {
 		return this.#performanceMonitor.averageFPS;
 	}
 
-	emitEvent(type: string, emitter: SerializedLevel | SerializedNode, data?: { [key: string]: any; level?: Level }): boolean {
-		const event = new LevelEvent(type, emitter, data);
+	emit(type: string, emitter: SerializedLevel | SerializedNode, data?: { [key: string]: any }): boolean {
+		const event = new LevelEvent(type, emitter, data, this);
 		return super.dispatchEvent(event);
 	}
 
@@ -221,7 +220,7 @@ export class Level extends EventTarget {
 
 	tick() {
 		this.sampleTick();
-		this.emitEvent('level.tick', this.serialize());
+		this.emit('level.tick', this.serialize());
 		for (const entity of this.entities.values()) {
 			if (Math.abs(entity.rotation.y) > Math.PI) {
 				entity.rotation.y += Math.sign(entity.rotation.y) * 2 * Math.PI;
@@ -232,7 +231,7 @@ export class Level extends EventTarget {
 
 			if (entity.hp && entity.hp <= 0) {
 				entity.remove();
-				this.emitEvent('entity.death', entity.serialize());
+				this.emit('entity.death', entity.serialize());
 				//Events: trigger event, for sounds
 			} else if (entity instanceof Ship) {
 				for (const hardpoint of entity.hardpoints) {
@@ -407,7 +406,7 @@ export class Level extends EventTarget {
 			throw new Error(`Can't load save from data: wrong version (${levelData.version})`);
 		}
 
-		level ??= new Level(levelData.name, true);
+		level ??= new Level(levelData.name);
 		level.id = levelData.id;
 		level.date = new Date(levelData.date);
 		level.version = levelData.version;

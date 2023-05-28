@@ -81,7 +81,10 @@ settings.items.get('screenshot').addEventListener('trigger', () => {
 	screenshots.push(canvas[0].toDataURL('image/png'));
 	ui.update(player.data(), current);
 });
-settings.items.get('save').addEventListener('trigger', updateSave);
+settings.items.get('save').addEventListener('trigger', e => {
+	e.preventDefault();
+	updateSave();
+});
 for (const section of settings.sections.values()) {
 	$(section).attr({
 		bg: 'none',
@@ -432,7 +435,7 @@ $('#save-new .new').on('click', async () => {
 });
 $('#esc .resume').on('click', () => {
 	$('#esc').hide();
-	canvas.focus();
+	canvas.trigger('focus');
 	isPaused = false;
 });
 $('#esc .save').on('click', updateSave);
@@ -482,7 +485,7 @@ $('.nav button.inv').on('click', () => {
 });
 $('.nav button.map').on('click', () => {
 	$('#q>:not(.nav)').hide();
-	$('.map').css('display', 'grid');
+	$('div.map').css('display', 'grid');
 });
 $('.nav button.screenshots').on('click', () => {
 	$('#q>:not(.nav)').hide();
@@ -505,7 +508,9 @@ $('.nav button.trade').on('click', () => {
 	$('div.trade').css('display', 'grid');
 });
 $('button.map.new').on('click', () => {
-	Waypoint.dialog(current);
+	const dialog = $<HTMLDialogElement>('#waypoint-dialog');
+	dialog.find('input').val('');
+	dialog[0].showModal();
 });
 $('#settings-nav button:not(.back)').on('click', e => {
 	const target = $(e.target),
@@ -551,13 +556,6 @@ $('#q div.warp button.warp').on('click', () => {
 	});
 	$('#q').toggle();
 });
-/*$('[label]').each((i, e) => {
-	let val = e.value;
-	$(e).attr('ui-label', random.hex(32));
-	$(`<label>${$(e).attr('label')} ${$(e).attr('display') && e.localName == 'input' ? eval(`\`(${$(e).attr('display')})\``) : ''} </label>`)
-		.attr('for', $(e).attr('ui-label'))
-		.insertBefore($(e));
-});*/
 $('#settings div.general input').on('change', () => ui.update(player.data(), current));
 $<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
 	const lang = e.target.value;
@@ -569,32 +567,21 @@ $<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e 
 	}
 });
 $('#waypoint-dialog .save').on('click', () => {
-	const wpd = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
-	const data = new FormData($<HTMLFormElement>('#waypoint-dialog form')[0]);
-	const x = +data.get('x'),
-		y = +data.get('x'),
-		z = +data.get('x'),
-		color = data.get('color') as string,
-		name = data.get('name') as string;
-	if (!isHex(data.get('color').slice(1))) {
+	const wpd = $<HTMLDialogElement & { _waypoint?: Waypoint }>('#waypoint-dialog');
+	const x = +wpd.find('[name=x]').val(),
+		y = +wpd.find('[name=y]').val(),
+		z = +wpd.find('[name=z]').val(),
+		color = wpd.find('[name=color]').val() as string,
+		name = wpd.find('[name=name]').val() as string;
+	if (!isHex(color.slice(1))) {
 		alert(locales.text`error.waypoint.color`);
 	} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 		alert(locales.text`error.waypoint.range`);
-	} else if (wpd._waypoint instanceof Waypoint) {
-		Object.assign(wpd._waypoint, {
-			name,
-			color: Color3.FromHexString(color),
-			position: new Vector3(x, y, z),
-		});
 	} else {
-		new Waypoint(
-			{
-				name,
-				color: Color3.FromHexString(color),
-				position: new Vector3(x, y, z),
-			},
-			current
-		);
+		const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, current);
+		waypoint.name = name;
+		waypoint.color = Color3.FromHexString(color);
+		waypoint.position = new Vector3(x, y, z);
 		$<HTMLDialogElement>('#waypoint-dialog')[0].close();
 	}
 });
@@ -739,7 +726,7 @@ const loop = () => {
 	if (current instanceof Level && !isPaused) {
 		const camera = renderer.getCamera();
 		camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
-		current.waypoints.forEach(waypoint => {
+		for (const waypoint of current.waypoints) {
 			const pos = waypoint.screenPos;
 			waypoint.marker
 				.css({
@@ -750,12 +737,14 @@ const loop = () => {
 				})
 				.filter('p')
 				.text(
-					Vector2.Distance(pos, new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.marker.eq(0).is(':hover') || waypoint.marker.eq(1).is(':hover')
+					Vector2.Distance(new Vector2(pos.x, pos.y), new Vector2(innerWidth / 2, innerHeight / 2)) < 60 ||
+						waypoint.marker.eq(0).is(':hover') ||
+						waypoint.marker.eq(1).is(':hover')
 						? `${waypoint.name} - ${minimize(Vector3.Distance(player.data().position, waypoint.position))} km`
 						: ''
 				);
 			waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
-		});
+		}
 		$('#hud p.level').text(Math.floor(xpToLevel(player.data().xp)));
 		$('#hud svg.xp rect').attr('width', (xpToLevel(player.data().xp) % 1) * 100 + '%');
 		$('#debug .left').html(`

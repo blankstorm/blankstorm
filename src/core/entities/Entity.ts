@@ -16,11 +16,12 @@ export class Entity extends Node {
 
 	constructor(id: string, level: Level) {
 		super(id, level);
-
 		level.entities.set(this.id, this);
+		setTimeout(() => level.emit('entity.created', this.serialize()));
 	}
 
 	remove() {
+		this.level.emit('entity.removed', this.serialize());
 		this.level.entities.delete(this.id);
 	}
 
@@ -32,7 +33,7 @@ export class Entity extends Node {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
 		const path = Path.Find(this.absolutePosition, location.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.level);
 		if (path.path.length > 0) {
-			this.level.emitEvent('entity.follow_path.start', this.serialize(), { path: path.serialize() });
+			this.level.emit('entity.follow_path.start', this.serialize(), { path: path.serialize() });
 			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);
 			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.path.at(-2).position, path.path.at(-1).position);
 			rotation.x -= Math.PI / 2;

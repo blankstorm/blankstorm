@@ -149,13 +149,13 @@
 			<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
 		</dialog>
 		<dialog id="waypoint-dialog">
-			<form>
-				<input type="text" name="name" placeholder="Name" /><br />
-				<input type="number" name="z" placeholder="X" />
-				<input type="number" name="y" placeholder="Y" />
-				<input type="number" name="z" placeholder="Z" /><br />
-				<input type="color" name="color" placeholder="Color" /><br />
-			</form>
+			<input type="text" name="name" placeholder="Name" /><br />
+			<input type="number" name="x" placeholder="X" style="width: 4em" />
+			<input type="number" name="y" placeholder="Y" style="width: 4em" />
+			<input type="number" name="z" placeholder="Z" style="width: 4em" /><br />
+			<input type="color" name="color" placeholder="Color" /><br />
+			<button class="cancel"></button>
+			<button class="save"></button>
 		</dialog>
 		<div id="connect" bg="trans" hide content>
 			<p plot="c,c-2em,75%,1em" style="text-align: center"></p>
@@ -221,7 +221,7 @@
 					<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
 				</svg>
 			</div>
-			<div class="map" overflow-scroll="y" bg="none" style="grid-template-columns: repeat(4, 1fr) 6fr; column-gap: 10px; display: none">
+			<div class="map" overflow-scroll="y" bg="none" style="grid-template-columns: 1fr; column-gap: 10px; display: none">
 				<button class="map new" plot="r25px,b25px,125px,36px,a">
 					<svg><use href=images/icons.svg#plus /></svg>
 					<span></span>

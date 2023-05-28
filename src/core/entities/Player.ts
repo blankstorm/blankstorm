@@ -33,6 +33,7 @@ export class Player extends Entity {
 			ship.owner = ship.parent = this;
 			this.fleet.push(ship);
 		}
+		setTimeout(() => level.emit('player.created', this.serialize()));
 	}
 
 	get items(): ItemCollection {
@@ -80,7 +81,7 @@ export class Player extends Entity {
 				}
 			}
 		}
-		this.level.emitEvent('player.items.change', this.serialize(), this.items);
+		this.level.emit('player.items.change', this.serialize(), this.items);
 	}
 
 	removeItems(items: Partial<ItemCollection>) {
@@ -92,7 +93,7 @@ export class Player extends Entity {
 				items[item] -= stored;
 			}
 		}
-		this.level.emitEvent('player.items.change', this.serialize(), this.items);
+		this.level.emit('player.items.change', this.serialize(), this.items);
 	}
 
 	removeAllItems() {
@@ -118,7 +119,12 @@ export class Player extends Entity {
 		for (const ship of this.fleet) {
 			ship.remove();
 		}
-		this.level.emitEvent('player.reset', this.serialize());
+		this.level.emit('player.reset', this.serialize());
+	}
+
+	remove() {
+		this.level.emit('player.removed', this.serialize());
+		super.remove();
 	}
 
 	serialize(): SerializedPlayer {
