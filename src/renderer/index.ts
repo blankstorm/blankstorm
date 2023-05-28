@@ -51,7 +51,12 @@ export function setHitboxes(value: boolean) {
 const bodies = new Map(),
 	entities = new Map();
 
-export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: string) => unknown = () => {}) {
+export async function init(
+	canvas: HTMLCanvasElement,
+	messageHandler: (msg: string) => unknown = (msg: string) => {
+		console.debug('init renderer: ' + msg);
+	}
+) {
 	await messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 	engine.resize();

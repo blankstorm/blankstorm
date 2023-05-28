@@ -3,6 +3,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Ship } from './entities/Ship';
 import { SHORT_URL } from './meta';
 import type { Player } from './entities/Player';
+import { isJSON } from './utils';
 
 export interface CommandExecutionContext {
 	executor: Player & { oplvl: number };
@@ -34,9 +35,9 @@ export const commands: Map<string, Partial<Command>> = new Map(
 				const parent = executor.level.getNodeBySelector(selector);
 				const spawned = new Ship(null, executor.level, { type, power: executor.power });
 				spawned.parent = spawned.owner = parent as Player;
-				/*if (isJSON(extra)) {
-					spawned.update(JSON.parse(extra));
-				}*/
+				if (isJSON(extra)) {
+					//spawned.update(JSON.parse(extra));
+				}
 				return `Spawned ${spawned.constructor.name} with id #${spawned.id}`;
 			},
 			oplvl: 3,

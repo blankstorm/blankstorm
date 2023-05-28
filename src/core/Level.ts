@@ -20,7 +20,7 @@ import type { SerializedShip } from './entities/Ship';
 import { Player } from './entities/Player';
 import type { SerializedPlayer } from './entities/Player';
 import type { Node, SerializedNode } from './Node';
-import { LevelEvent } from './events';
+import { LevelEvent, LevelEventData } from './events';
 import type { Item } from './generic/items';
 import type { GenericShip, ShipType } from './generic/ships';
 import { isResearchLocked, priceOfResearch } from './generic/research';
@@ -209,7 +209,7 @@ export class Level extends EventTarget {
 		return this.#performanceMonitor.averageFPS;
 	}
 
-	emit(type: string, emitter: SerializedLevel | SerializedNode, data?: { [key: string]: any }): boolean {
+	emit(type: string, emitter: SerializedLevel | SerializedNode, data?: LevelEventData): boolean {
 		const event = new LevelEvent(type, emitter, data, this);
 		return super.dispatchEvent(event);
 	}
