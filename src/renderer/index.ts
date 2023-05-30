@@ -165,7 +165,7 @@ export async function clear() {
 	cache = createEmptyCache();
 }
 
-export async function load(levelData: { entities: SerializedEntity[], bodies: SerializedCelestialBody[] }) {
+export async function load(levelData: { entities: SerializedEntity[]; bodies: SerializedCelestialBody[] }) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
