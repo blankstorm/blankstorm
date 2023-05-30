@@ -325,9 +325,3 @@ export function fireProjectile(hardpointID: string, target: TransformNode, optio
 		targetRenderer = scene.getTransformNodeById(target.id);
 	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials: parent.customHardpointProjectileMaterials });
 }
-
-export async function serialize() {
-	if (!scene) {
-		throw new ReferenceError('Renderer not initalized');
-	}
-}
