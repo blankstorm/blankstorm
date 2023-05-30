@@ -13,7 +13,7 @@ import Path from '../core/Path';
 
 import config from './config';
 import { PlayerRenderer } from './entities/Player';
-import { default as PlanetRenderer, PlanetRendererMaterial } from './bodies/Planet';
+import { PlanetRenderer, PlanetRendererMaterial } from './bodies/Planet';
 import { StarRenderer } from './bodies/Star';
 import { ModelRenderer } from './Model';
 import { ShipRenderer } from './entities/Ship';
@@ -22,7 +22,14 @@ import { Camera } from './Camera';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { FireProjectileOptions, HardpointRenderer } from './entities/Hardpoint';
-import { SerializedLevel } from '../core/Level';
+import type { SerializedLevel } from '../core/Level';
+import type { CelestialBodyRenderer } from './bodies/CelestialBody';
+import type { SerializedStar } from '../core/bodies/Star';
+import type { SerializedPlanet } from '../core/bodies/Planet';
+import type { SerializedPlayer } from '../core/entities/Player';
+import type { SerializedShip } from '../core/entities/Ship';
+import type { SerializedEntity } from '../core/entities/Entity';
+import type { SerializedCelestialBody } from '../core/bodies/CelestialBody';
 
 function createEmptyCache(): SerializedLevel {
 	return {
@@ -48,8 +55,8 @@ export function setHitboxes(value: boolean) {
 	hitboxes = !!value;
 }
 
-const bodies = new Map(),
-	entities = new Map();
+const bodies: Map<string, CelestialBodyRenderer> = new Map(),
+	entities: Map<string, EntityRenderer> = new Map();
 
 export async function init(
 	canvas: HTMLCanvasElement,
@@ -158,7 +165,7 @@ export async function clear() {
 	cache = createEmptyCache();
 }
 
-export async function load(levelData) {
+export async function load(levelData: { entities: SerializedEntity[], bodies: SerializedCelestialBody[] }) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
@@ -167,10 +174,10 @@ export async function load(levelData) {
 		let body;
 		switch (data.node_type) {
 			case 'star':
-				body = await StarRenderer.FromData(data, scene);
+				body = await StarRenderer.FromData(data as SerializedStar, scene);
 				break;
 			case 'planet':
-				body = await PlanetRenderer.FromData(data, scene);
+				body = await PlanetRenderer.FromData(data as SerializedPlanet, scene);
 				break;
 			default:
 				throw new ReferenceError(`rendering for CelestialBody type "${data.node_type}" is not supported`);
@@ -184,14 +191,14 @@ export async function load(levelData) {
 		switch (data.node_type) {
 			case 'player':
 			case 'client':
-				entity = await PlayerRenderer.FromData(data, scene);
+				entity = await PlayerRenderer.FromData(data as SerializedPlayer, scene);
 				/**
 				 * @todo change this
 				 */
 				camera.target = entity.position;
 				break;
 			case 'ship':
-				entity = await ShipRenderer.FromData(data, scene);
+				entity = await ShipRenderer.FromData(data as SerializedShip, scene);
 				break;
 			default:
 				throw new ReferenceError(`rendering for Entity type "${data.node_type}" is not supported`);
@@ -200,7 +207,7 @@ export async function load(levelData) {
 	}
 }
 
-export async function update(levelData) {
+export async function update(levelData: SerializedLevel) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}

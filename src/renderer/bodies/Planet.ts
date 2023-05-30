@@ -1,8 +1,6 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
-import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { ProceduralTexture } from '@babylonjs/core/Materials/Textures/Procedurals/proceduralTexture';
@@ -13,6 +11,7 @@ import config from '../config';
 import { random } from '../../core/utils';
 import type { SerializedPlanet } from '../../core';
 import type { HardpointProjectileHandlerOptions } from '../entities/Hardpoint';
+import { CelestialBodyRenderer } from './CelestialBody';
 
 export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
@@ -93,9 +92,8 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	}
 }
 
-export default class PlanetRenderer extends Mesh {
+export class PlanetRenderer extends CelestialBodyRenderer {
 	biome = '';
-	radius = 0;
 	customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
 	constructor(id: string, scene: Scene) {
 		super(id, scene);
@@ -107,25 +105,15 @@ export default class PlanetRenderer extends Mesh {
 		];
 	}
 
-	async update({ name, radius, biome, position, rotation, parent }: SerializedPlanet) {
-		this.name = name;
-		this.position = Vector3.FromArray(position);
-		this.rotation = Vector3.FromArray(rotation);
-		if (this.radius != radius) {
-			this.radius = radius;
-			CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
-		}
-		if (this.biome != biome) {
-			if (PlanetRenderer.biomes.has(biome)) {
-				this.biome = biome;
-				this.material = new PlanetRendererMaterial(PlanetRenderer.biomes.get(biome), this.getScene());
+	async update(data: SerializedPlanet) {
+		await super.update(data);
+		if (this.biome != data.biome) {
+			if (PlanetRenderer.biomes.has(data.biome)) {
+				this.biome = data.biome;
+				this.material = new PlanetRendererMaterial(PlanetRenderer.biomes.get(data.biome), this.getScene());
 			} else {
-				throw new ReferenceError(`Biome "${biome}" does not exist`);
+				throw new ReferenceError(`Biome "${data.biome}" does not exist`);
 			}
-		}
-		const _parent = this.getScene().getNodeById(parent);
-		if (_parent != this.parent) {
-			this.parent = _parent;
 		}
 	}
 

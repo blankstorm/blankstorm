@@ -1,17 +1,14 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
-import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { Scene } from '@babylonjs/core/scene';
 
 import config from '../config';
 import type { SerializedStar } from '../../core';
+import { CelestialBodyRenderer } from './CelestialBody';
 
-export class StarRenderer extends Mesh {
+export class StarRenderer extends CelestialBodyRenderer {
 	__material: StandardMaterial;
-	radius: number;
 	light: PointLight;
 	constructor(id: string, scene: Scene) {
 		super(id, scene);
@@ -27,19 +24,9 @@ export class StarRenderer extends Mesh {
 		*/
 	}
 
-	async update({ name, radius, color, position, rotation, parent }: SerializedStar) {
-		this.name = name;
-		if (this.radius != radius) {
-			this.radius = radius;
-			CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
-		}
-		this.__material.emissiveColor = Color3.FromArray(color);
-		this.position = Vector3.FromArray(position);
-		this.rotation = Vector3.FromArray(rotation);
-		const _parent = this.getScene().getNodeById(parent);
-		if (_parent != this.parent) {
-			this.parent = _parent;
-		}
+	async update(data: SerializedStar) {
+		await super.update(data);
+		this.__material.emissiveColor = Color3.FromArray(data.color);
 	}
 
 	static async FromData(data: SerializedStar, scene: Scene) {
