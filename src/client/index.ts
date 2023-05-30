@@ -468,11 +468,11 @@ $('#login')
 		try {
 			const email = $('#login').find('input.email').val() as string;
 			const password = $('#login').find('input.password').val() as string;
-			const res = await api.login(email, password);
-			document.cookie = `token=${res.result.token}`;
+			const result = await api.login(email, password);
+			document.cookie = `token=${result.token}`;
 			$('#login').find('.error').hide().text('');
 			$<HTMLDialogElement>('#login')[0].close();
-			await alert(`Welcome, ${res.result.username}! ` + locales.text`menu.logged_in.message`);
+			await alert(`Welcome, ${result.username}! ` + locales.text`menu.logged_in.message`);
 			location.reload();
 		} catch (e) {
 			$('#login').find('.error').text(e.message).show();
@@ -720,7 +720,7 @@ setInterval(() => {
 	if (current instanceof LiveSave && !isPaused) {
 		current.tick();
 	}
-}, 1000 / Level.TickRate);
+}, 1000 / config.tick_rate);
 
 const loop = () => {
 	if (current instanceof Level && !isPaused) {

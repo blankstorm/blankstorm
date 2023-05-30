@@ -8,6 +8,7 @@ export const config = {
 	planet_max_distance: 5000,
 	default_port: 1123,
 	region_size: 1e5,
+	tick_rate: 10,
 };
 
 const _versionGroups = ['infdev', 'alpha'] as const,

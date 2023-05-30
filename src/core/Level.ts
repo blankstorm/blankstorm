@@ -205,7 +205,7 @@ export class Level extends EventTarget {
 	}
 
 	//events and ticking
-	get tps() {
+	get tps(): number {
 		return this.#performanceMonitor.averageFPS;
 	}
 
@@ -299,10 +299,6 @@ export class Level extends EventTarget {
 			}
 		}
 		return data;
-	}
-
-	static get TickRate() {
-		return 10;
 	}
 
 	static upgrades = new Map([

@@ -16,8 +16,10 @@ export const options: ServerOptions = {
 		blacklist: true,
 		max_clients: 10,
 		message: '',
-		log_verbose: false,
 		debug_mode: false,
+		public_log: false,
+		public_uptime: false,
+		port: coreConfig.default_port,
 	},
 };
 
@@ -37,13 +39,13 @@ for (const [name, filePath] of Object.entries({
 }
 
 const server = new Server(options);
-server.on('update_whitelist', () => {
+server.on('whitelist.update', () => {
 	fs.writeFileSync('whitelist.json', JSON.stringify(server.whitelist));
 });
-server.on('update_blacklist', () => {
+server.on('blacklist.update', () => {
 	fs.writeFileSync('blacklist.json', JSON.stringify(server.blacklist));
 });
-server.on('update_ops', () => {
+server.on('ops.update', () => {
 	fs.writeFileSync('ops.json', JSON.stringify(server.ops));
 });
 server.on('save', () => {
@@ -64,7 +66,7 @@ server.on('restart', () => {
 	}, 1000);
 	process.exit();
 });
-server.listen(options.config.port || coreConfig.default_port, () => log.addMessage('server started'));
+server.listen(options.config.port || coreConfig.default_port).then(() => log.addMessage('server started'));
 process.on('uncaughtException', err => {
 	log.addMessage('Fatal error: ' + err.stack, LogLevel.ERROR);
 	server.stop(LogLevel.ERROR);

@@ -1,7 +1,7 @@
 import type { Server } from './Server';
 import { Player } from '../core/entities/Player';
 import type { SerializedPlayer } from '../core/entities/Player';
-import type { Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io';
 import type { Ship } from '../core/entities/Ship';
 
 export class Client extends Player {
@@ -42,7 +42,7 @@ export class Client extends Player {
 	}
 }
 
-export class ClientStore extends Map {
+export class ClientStore extends Map<string, Client> {
 	constructor() {
 		super();
 	}

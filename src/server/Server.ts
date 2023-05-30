@@ -1,8 +1,9 @@
 import { createServer } from 'node:http';
 import EventEmitter from 'node:events';
 import { Server as SocketIOServer } from 'socket.io';
+import type { Socket } from 'socket.io';
 
-import { version } from '../core/meta';
+import { version, config as coreConfig } from '../core/meta';
 import type { VersionID } from '../core/meta';
 import { execCommandString } from './commands';
 import { requestUserInfo } from '../core/api';
@@ -19,7 +20,7 @@ import type { ServerOptions as EngineIOOptions } from 'engine.io';
 export interface ServerPingInfo {
 	current_clients: number;
 	max_clients: number;
-	message: number;
+	message: string;
 	version: VersionID;
 	uptime?: number;
 }
@@ -29,9 +30,10 @@ export interface ServerConfig {
 	blacklist: boolean;
 	max_clients: number;
 	message: string;
-	log_verbose: boolean;
 	debug_mode: boolean;
-	port?: number;
+	port: number;
+	public_uptime: boolean;
+	public_log: boolean;
 }
 
 export interface OpsEntry {
@@ -47,6 +49,11 @@ export interface ServerOptions {
 	levelData?: SerializedLevel;
 }
 
+// see https://stackoverflow.com/a/71689964/17637456
+type _Wrap<T> = { [K in keyof T]-?: [T[K]] };
+type _Unwrap<T> = { [K in keyof T]: Extract<T[K], [unknown]>[0] };
+type InitialParameters<F extends (...args: unknown[]) => unknown> = _Wrap<Parameters<F>> extends [...infer InitPs, unknown] ? _Unwrap<InitPs> : never;
+
 export class Server extends EventEmitter {
 	whitelist: string[];
 	blacklist: string[];
@@ -59,21 +66,22 @@ export class Server extends EventEmitter {
 	level: Level;
 	httpServer: HTTPServer;
 
-	constructor({ config, levelData = null, whitelist = [], blacklist = [], ops = [] }) {
+	constructor({ config: serverConfig, levelData = null, whitelist = [], blacklist = [], ops = [] }: Partial<ServerOptions>) {
 		super();
+		this.config = serverConfig;
 
 		//capture events from list updates
 		const { proxy: whitelistProxy, emitter: whitelistEmitter } = captureArrayUpdates(whitelist);
 		this.whitelist = whitelistProxy;
-		whitelistEmitter.on('update', () => this.emit('update_whitelist'));
+		whitelistEmitter.on('update', () => this.emit('whitelist.update'));
 
 		const { proxy: blacklistProxy, emitter: blacklistEmitter } = captureArrayUpdates(blacklist);
 		this.blacklist = blacklistProxy;
-		blacklistEmitter.on('update', () => this.emit('update_backlist'));
+		blacklistEmitter.on('update', () => this.emit('backlist.update'));
 
 		const { proxy: opsProxy, emitter: opsEmitter } = captureArrayUpdates(ops);
 		this.ops = opsProxy;
-		opsEmitter.on('update', () => this.emit('update_ops'));
+		opsEmitter.on('update', () => this.emit('ops.update'));
 
 		this.httpServer = createServer((req, res) => {
 			res.setHeader('Access-Control-Allow-Origin', '*');
@@ -81,15 +89,15 @@ export class Server extends EventEmitter {
 				case '/ping':
 					const data: ServerPingInfo = {
 						current_clients: this.io.sockets.sockets.size,
-						max_clients: config.max_clients,
-						message: config.message,
+						max_clients: serverConfig.max_clients,
+						message: serverConfig.message,
 						version,
 					};
-					if (config.debug?.public_uptime) data.uptime = process.uptime();
+					if (serverConfig.public_uptime) data.uptime = process.uptime();
 					res.end(JSON.stringify(data));
 					break;
 				case '/log':
-					if (config.debug?.public_log) {
+					if (serverConfig.public_log) {
 						res.end(this.log.toString());
 					} else {
 						res.statusCode = 403;
@@ -139,7 +147,7 @@ export class Server extends EventEmitter {
 
 		setInterval(() => {
 			this.level.tick();
-		}, 1000 / Level.TickRate);
+		}, 1000 / coreConfig.tick_rate);
 
 		setInterval(() => {
 			this.clients.forEach(client => {
@@ -153,7 +161,7 @@ export class Server extends EventEmitter {
 		this.io.attach(this.httpServer);
 	}
 
-	listen(...args) {
+	listen(...args: InitialParameters<HTTPServer['listen']>): Promise<void> {
 		return new Promise<void>(resolve => {
 			this.httpServer.listen(...args, resolve);
 		});
@@ -218,7 +226,7 @@ export class Server extends EventEmitter {
 		});
 	}
 
-	async checkClientAuth(socket) {
+	async checkClientAuth(socket: Socket) {
 		if (this.isStopping) {
 			throw 'Server is stopping or restarting';
 		}
