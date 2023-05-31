@@ -9,6 +9,17 @@
 		"ecmaVersion": "latest",
 		"sourceType": "module"
 	},
+	"overrides": [
+		{
+			"files": [ "*.cjs" ],
+			"parserOptions": {
+				"sourceType": "script"
+			},
+			"rules": {
+				"@typescript-eslint/no-var-requires": "off"
+			}
+		}
+	],
 	"plugins": ["@typescript-eslint"],
 	"rules": {
 		"no-useless-escape": "warn",

@@ -5,8 +5,10 @@ dist
 
 #game files
 saves
-servers
+servers.json
+settings.json
 mods
 
 #temporary
 tmp
+temp
