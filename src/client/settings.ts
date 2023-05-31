@@ -284,7 +284,7 @@ export class SettingsSection extends HTMLFormElement {
 	constructor(public readonly id: string, label: SettingLabel, parent: JQuery, store: SettingsMap) {
 		super();
 
-		$(this).append('<h2 class=settings-name></h2>').addClass('settings-section');
+		$(this).append('<h2 class="settings-name"></h2>').addClass('settings-section');
 		this.#label = label;
 
 		if (parent) {

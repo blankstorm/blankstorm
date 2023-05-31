@@ -99,6 +99,7 @@ div[settings-section] {
 	margin: 0.5em;
 }
 .settings-section {
+	text-align: center;
 	position: absolute;
 	inset: 5%;
 	left: 25%;
