@@ -33,11 +33,6 @@ app.whenReady().then(() => {
 	window.removeMenu(true);
 	window.loadFile(path.join(__dirname, 'index.html'));
 
-	window.on('close', () => {
-		console.log('Closing... <app>');
-		setTimeout(() => app.quit(), 1000);
-	});
-
 	window.webContents.on('new-window', (e, url) => {
 		e.preventDefault();
 		shell.openExternal(url);
