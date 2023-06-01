@@ -174,7 +174,7 @@ export class Server {
 
 	async ping() {
 		const info = this.gui.find('.info');
-		info.find('span').html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').css('animation', '2s linear infinite rotate');
+		info.find('span').html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').find('svg').addClass('server-ping-rotate');
 		const beforeTime = performance.now();
 		try {
 			const res = await fetch(`${this.url.origin}/ping`);
@@ -190,7 +190,7 @@ export class Server {
 			info.find('span').html('<svg><use href=images/icons.svg#xmark /></svg>');
 			info.find('tool-tip').html(`Can't connect to server`);
 		} finally {
-			info.find('span').css('animation', 'unset');
+			info.find('span svg').removeClass('server-ping-rotate');
 		}
 	}
 

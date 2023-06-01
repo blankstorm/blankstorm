@@ -251,18 +251,18 @@ onresize = () => {
 $('#loading_cover p').text('Authenticating...');
 if (cookies.has('token') && navigator.onLine) {
 	try {
-		let res;
+		let result;
 		try {
-			res = await api.requestUserInfo('token', cookies.get('token'));
+			result = await api.requestUserInfo('token', cookies.get('token'));
 		} catch (e) {
 			throw 'Fetch failed';
 		}
-		if (res.error) {
-			throw `Couldn't log you in (${res.result})`;
+		if (result.error) {
+			throw `Couldn't log you in (${result})`;
 		}
-		player.id = res.result.id;
-		player.username = res.result.username;
-		player.authData = res.result;
+		player.id = result.id;
+		player.username = result.username;
+		player.authData = result;
 		mpEnabled = true;
 	} catch (e) {
 		chat(e);
@@ -322,6 +322,7 @@ if (config.debug_mode) {
 		locales,
 		$,
 		io,
+		api,
 		renderer,
 		player,
 		saves,

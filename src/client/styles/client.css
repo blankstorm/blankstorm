@@ -116,3 +116,7 @@ div[settings-section] {
 	height: 35px;
 	margin-bottom: 1em;
 }
+.server-ping-rotate {
+	transform-origin: center;
+	animation: 2s linear infinite rotate;
+}

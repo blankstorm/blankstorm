@@ -29,10 +29,7 @@ body {
 }
 h1,
 h2,
-h3,
-h4,
-h5,
-h6 {
+h3 {
 	text-shadow: var(--text-shadow);
 }
 code {
@@ -94,6 +91,10 @@ input[type='checkbox']:hover,
 	cursor: pointer;
 }
 dialog {
+	background-color: var(--bg-color);
+	border-radius: var(--bg-radius);
+	box-shadow: var(--bg-shadow);
+	text-align: center;
 	border: none;
 }
 input[type='range'] {
