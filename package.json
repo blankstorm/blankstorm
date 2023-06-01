@@ -11,12 +11,12 @@
 		"lint": "eslint src/**/*.{ts,cjs}",
 		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
 		"lint:ts": "tsc --project tsconfig.json",
-		"test:client": "npm run deploy:client && electron dist/tmp/client/app.cjs --bs-debug",
+		"test:client": "npm run deploy:client && electron dist/web/app.cjs --bs-debug",
 		"test:server": "node src/server/cli.ts",
-		"build:client": "ts-node scripts/client-build.ts",
+		"build:client": "ts-node scripts/client-build.ts --for-app",
 		"build:server": "ts-node scripts/server-build.ts",
 		"build": "npm run build:client && npm run build:server",
-		"deploy:client": "node scripts/client-deploy.js",
+		"deploy:client": "ts-node scripts/client-build.ts --output dist/web",
 		"stats:word-count": "wc -lw src/**/*.html src/**/*.ts src/**/*.cjs src/**/**/*.fx src/**/**/*.svg src/**/**/*.json src/**/**/*.css"
 	},
 	"repository": {

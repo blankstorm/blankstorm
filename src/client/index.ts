@@ -367,6 +367,9 @@ $('#main .options').on('click', () => {
 	$('#settings').show();
 	ui.update(player.data(), current);
 });
+$('#main .exit').on('click', () => {
+	close();
+});
 $('.playable-list .back').on('click', () => {
 	$('.playable-list').hide();
 	$('#main').show();
