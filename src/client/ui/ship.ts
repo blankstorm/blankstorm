@@ -16,10 +16,8 @@ export class ShipUI extends HTMLDivElement {
 			.find('.add')
 			.on('click', () => {
 				context.level.tryPlayerAction(context.playerID, 'create_ship', { ship });
-			})
-			.parent()
-			.attr('bg', 'none')
-			.appendTo('div.yrd');
+			});
+		$(this).appendTo('div.shipyard');
 	}
 }
 customElements.define('ui-ship', ShipUI, { extends: 'div' });

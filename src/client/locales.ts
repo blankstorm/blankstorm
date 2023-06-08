@@ -55,15 +55,15 @@ export class LocaleStore extends EventTarget {
 		this.#currentLang = id;
 		$('#main button.sp').text(lang['menu.singleplayer'] ?? 'Singleplayer');
 		$('#main button.mp').text(lang['menu.multiplayer'] ?? 'Multiplayer');
-		$('#main button.options,#esc button.options').text(lang['menu.options'] ?? 'Options');
+		$('#main button.options,#pause button.options').text(lang['menu.options'] ?? 'Options');
 		$('#main button.exit').text(lang['menu.exit'] ?? 'Exit');
-		$('#esc button.resume').text(lang['menu.resume'] ?? 'Resume Game');
-		$('#esc button.save').text(lang['menu.save_game'] ?? 'Save Game');
-		$('#esc button.quit').text(lang['menu.quit'] ?? 'Main Menu');
+		$('#pause button.resume').text(lang['menu.resume'] ?? 'Resume Game');
+		$('#pause button.save').text(lang['menu.save_game'] ?? 'Save Game');
+		$('#pause button.quit').text(lang['menu.quit'] ?? 'Main Menu');
 		$('#save-list button.upload span').text(lang['menu.upload'] ?? 'Upload');
 		$('#server-list button.refresh span').text(lang['menu.refresh'] ?? 'Refresh');
 		$(':where(#save-list,#server-list,#save-new,#settings) button.back span').text(lang['menu.back'] ?? 'Back');
-		$(':where(#save-list,#server-list,#q) button.new span').text(lang['menu.new'] ?? 'New');
+		$(':where(#save-list,#server-list,#ingame-temp-menu) button.new span').text(lang['menu.new'] ?? 'New');
 		$('#save-new button.new span').text(lang['menu.start'] ?? 'Start');
 		$(':where(#confirm,#login,#save-edit,#server-dialog) .cancel').text(lang['menu.cancel'] ?? 'Cancel');
 		$(':where(#save-edit,#server-dialog,#waypoint-dialog) .save').text(lang['menu.save'] ?? 'Save');
@@ -71,14 +71,12 @@ export class LocaleStore extends EventTarget {
 		$('#settings button.general span').text(lang['menu.settings.general'] ?? 'General');
 		$('#settings button.keybinds span').text(lang['menu.settings.keybinds'] ?? 'Keybinds');
 		$('#settings button.debug span').text(lang['menu.settings.debug'] ?? 'Debug');
-		$('#q div.warp button.warp').text(lang['menu.warp'] ?? 'Jump');
-		$('#q div.nav button.inv span').text(lang['menu.items'] ?? 'Inventory');
-		$('#q div.nav button.map span').text(lang['menu.map'] ?? 'Waypoints');
-		$('#q div.nav button.screenshots span').text(lang['menu.screenshots'] ?? 'Screenshots');
-		$('#q div.nav button.warp span').text(lang['menu.hyperspace'] ?? 'Hyperspace');
-		$('#e div.nav button.trade span').text(lang['menu.trade'] ?? 'Trade');
-		$('#e div.nav button.yrd span').text(lang['menu.shipyard'] ?? 'Shipyard');
-		$('#e div.nav button.lab span').text(lang['menu.lab'] ?? 'Laboratory');
+		$('#map button.waypoints span').text(lang['menu.waypoints'] ?? 'Waypoints');
+		$('#ingame-temp-menu div.nav button[section=inventory] span').text(lang['menu.items'] ?? 'Inventory');
+		$('#ingame-temp-menu div.nav button[section=screenshots] span').text(lang['menu.screenshots'] ?? 'Screenshots');
+		$('#ingame-temp-menu div.nav button[section=trade] span').text(lang['menu.trade'] ?? 'Trade');
+		$('#ingame-temp-menu div.nav button[section=shipyard] span').text(lang['menu.shipyard'] ?? 'Shipyard');
+		$('#ingame-temp-menu div.nav button[section=lab] span').text(lang['menu.lab'] ?? 'Laboratory');
 		this.emit('load', lang);
 	}
 

@@ -6,7 +6,7 @@ export class WaypointListItem extends HTMLLIElement {
 	constructor(waypoint: Waypoint) {
 		super();
 		$('<span class="edit" style=text-align:center;;grid-column:2;><svg><use href=images/icons.svg#pencil /></svg></span>')
-			.attr('clickable', '')
+			.addClass('clickable')
 			.on('click', () => {
 				const dialog = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
 				dialog._waypoint = waypoint;
@@ -14,7 +14,7 @@ export class WaypointListItem extends HTMLLIElement {
 			})
 			.appendTo(this);
 		$('<span class="trash" style=text-align:center;grid-column:3;><svg><use href=images/icons.svg#trash /></svg></span>')
-			.attr('clickable', '')
+			.addClass('clickable')
 			.on('click', async () => {
 				const yes = await confirm('Are you sure?');
 				if (yes) waypoint.remove();
@@ -26,7 +26,7 @@ export class WaypointListItem extends HTMLLIElement {
 		<span class="name" style=text-align:left;grid-column:5>${waypoint.name}</span>
 		`).appendTo(this);
 
-		$(this).attr('bg', 'none').css({
+		$(this).css({
 			display: 'grid',
 			'grid-template-columns': 'repeat(4, 1fr) 6fr',
 		});

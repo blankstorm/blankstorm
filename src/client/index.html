@@ -9,8 +9,9 @@
 		<link rel="stylesheet" href="styles/utils.css" type="text/css" />
 		<link rel="stylesheet" href="styles/client.css" type="text/css" />
 	</head>
-	<body oncontextmenu="e=>false" bg="star">
-		<div id="loading_cover" class="cover" bg="alt" style="z-index: 100; display: flex; justify-content: center">
+
+	<body oncontextmenu="e=>false" class="bg-star">
+		<div id="loading_cover" class="cover bg-alt" style="z-index: 100; display: flex; justify-content: center">
 			<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: calc(50% - 100px); width: 150px; height: 150px" viewBox="0 0 100 100">
 				<defs>
 					<linearGradient id="gradient">
@@ -26,37 +27,10 @@
 			</svg>
 			<p style="position: absolute; font-size: 25px; top: 50%">Loading</p>
 		</div>
-		<input ingame id="cli" style="position: fixed; left: 15px; bottom: 15px; width: 30%; height: 30px; padding: 0; margin: 0; z-index: 10" hide overflow-scroll="x" />
-		<ul
-			bg="none"
-			lsn
-			id="chat"
-			style="
-				position: fixed;
-				left: 15px;
-				bottom: 50px;
-				width: 30%;
-				height: fit-content;
-				max-height: 35%;
-				background: #2225;
-				padding: 0;
-				margin: 0;
-				z-index: 9;
-				overflow: none;
-			"
-			bw
-		></ul>
-		<ul
-			bg="none"
-			lsn
-			ingame
-			id="chat_history"
-			hide
-			style="position: fixed; left: 15px; bottom: 50px; width: 30%; height: fit-content; max-height: 35%; background: #2225; padding: 0; margin: 0; z-index: 9"
-			ofs="y"
-			bw
-		></ul>
-		<div id="main" class="cover" bg="none" center-flex>
+		<input id="chat-input" class="ingame" />
+		<ul id="chat" style="overflow: none"></ul>
+		<ul id="chat-history" class="ingame" style="overflow-y: scroll; display: none"></ul>
+		<div id="main" class="cover">
 			<img src=images/title.png alt="Title" plot=c,90px,475px,75px />
 			<button class="sp" plot="c,260px,350px,50px"></button>
 			<button class="mp" plot="c,360px,350px,50px"></button>
@@ -65,7 +39,7 @@
 			<p class="version" plot="r2em,b1em,fit-content,1em" style="text-align: right"><a target="_blank">Version</a></p>
 			<p class="copyright" plot="2em,b1em,fit-content,1em">&copy; 2022-2023 Dr. Vortex. All Rights Reserved.</p>
 		</div>
-		<ul id="save-list" class="playable-list content" hide lsn bg="trans" overflow-scroll="y" style="padding: 2.5%">
+		<ul id="save-list" class="playable-list content bg-transparent">
 			<button class="back" plot="25px,b25px,125px,36px,a">
 				<svg><use href=images/icons.svg#arrow-left /></svg>
 				<span></span>
@@ -79,7 +53,7 @@
 				<span></span>
 			</button>
 		</ul>
-		<ul id="server-list" class="playable-list content" hide lsn bg="trans" overflow-scroll="y" style="padding: 2.5%">
+		<ul id="server-list" class="playable-list content bg-transparent">
 			<button class="back" plot="25px,b25px,125px,36px,a">
 				<svg><use href=images/icons.svg#arrow-left /></svg>
 				<span></span>
@@ -93,13 +67,15 @@
 				<span></span>
 			</button>
 		</ul>
-		<dialog id="login">
-			<svg clickable class="top-right cancel"><use href="images/icons.svg#xmark" /></svg>
+		<dialog id="login" class="bg-normal">
+			<svg clickable class="top-right cancel">
+				<use href="images/icons.svg#xmark" />
+			</svg>
 			<h3>Login</h3>
 			<div style="display: none" class="error"></div>
 			<br />
 			<!-- form is so Chrome shuts up about "Password field is not contained in a form" -->
-			<form bg="none">
+			<form>
 				<input class="email" autocomplete="email" placeholder="Email" />
 				<br />
 				<input class="password" autocomplete="current-password" placeholder="Password" type="password" />
@@ -108,19 +84,8 @@
 			<br />
 			<button class="cancel"></button><button class="login">Login</button>
 		</dialog>
-		<dialog id="save-new" style="width: 400px; height: 200px">
+		<dialog id="save-new" class="bg-normal" style="width: 400px; height: 200px">
 			<input placeholder="Save name" class="name" plot="c,3em,250px,2em,a" />
-			<!-- <input
-					type="range"
-					name="difficulty"
-					label="Difficulty"
-					display='${{"0.5":"Easy","1":"Normal","1.5":"Hard","2":"<dfn style=\"font-style: normal;border-bottom:1px dotted var(--text-color)\" title=\"Disclaimer: Not yet limited to one life.\">Hardcore</dfn>"}[val]}'
-					min="0.5"
-					max="2"
-					step="0.5"
-					value="1"
-				/>
-			-->
 			<button class="back" plot="c-75px,b62.5px,150px,36.6px,a">
 				<svg><use href=images/icons.svg#arrow-left /></svg>
 				<span></span>
@@ -130,7 +95,7 @@
 				<span></span>
 			</button>
 		</dialog>
-		<dialog id="save-edit" style="width: 400px; height: 200px">
+		<dialog id="save-edit" class="bg-normal" style="width: 400px; height: 200px">
 			<input type="hidden" class="id" />
 			<input placeholder="Save Name" class="name" plot="c,3em,250px,2em,a" />
 			<button class="cancel" plot="c-75px,b62.5px,150px,36.6px,a">
@@ -139,7 +104,7 @@
 			</button>
 			<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
 		</dialog>
-		<dialog id="server-dialog" style="width: 400px; height: 250px">
+		<dialog id="server-dialog" class="bg-normal" style="width: 400px; height: 250px">
 			<input placeholder="Display name" class="name" plot="c,3em,250px,2em,a" /><br />
 			<input placeholder="Address" class="url" plot="c,8em,250px,2em,a" /><br />
 			<button class="cancel" plot="c-75px,b62.5px,150px,36.6px,a">
@@ -148,7 +113,7 @@
 			</button>
 			<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
 		</dialog>
-		<dialog id="waypoint-dialog">
+		<dialog id="waypoint-dialog" class="bg-normal">
 			<input type="text" name="name" placeholder="Name" /><br />
 			<input type="number" name="x" placeholder="X" style="width: 4em" />
 			<input type="number" name="y" placeholder="Y" style="width: 4em" />
@@ -157,107 +122,90 @@
 			<button class="cancel"></button>
 			<button class="save"></button>
 		</dialog>
-		<div id="connect" bg="trans" hide class="content">
+		<div id="connect" class="content bg-transparent" style="display: none">
 			<p plot="c,c-2em,75%,1em" style="text-align: center"></p>
 			<button plot="c,c+2em,100px,2em" class="back">
 				<span></span>
 			</button>
 		</div>
-		<div id="tablist" ingame bg="trans" hide plot="c,0,200px,fit-content" style="word-wrap: break-word; text-align: center">
+		<div id="tablist" class="bg-transparent ingame" plot="c,0,200px,fit-content" style="display: none; word-wrap: break-word; text-align: center">
 			<p class="info"></p>
 			<p class="players"></p>
 		</div>
-		<dialog id="confirm">
+		<dialog id="confirm" class="bg-normal">
 			<p class="message"></p>
 			<button class="cancel"></button>
 			<button class="ok">Ok</button>
 		</dialog>
-		<dialog id="alert">
+		<dialog id="alert" class="bg-normal">
 			<p class="message"></p>
 			<button class="ok">Ok</button>
 		</dialog>
-		<div id="e" ingame bg="trans" class="content" hide game-ui style="z-index: 5" tabindex="-1">
-			<div class="nav" bg="none" plot="5%,25px,90%,45px,a">
-				<button class="trade" plot="c-225px,5px,200px,35px,a">
+		<div id="ingame-temp-menu" class="bg-transparent content game-ui ingame" style="display: none; z-index: 5" tabindex="-1">
+			<div class="nav" plot="5%,25px,90%,45px,a">
+				<button section="inventory">
+					<svg><use href=images/icons.svg#box /></svg>
+					<span></span>
+				</button>
+				<button section="screenshots">
+					<svg><use href=images/icons.svg#image /></svg>
+					<span></span>
+				</button>
+				<button section="trade">
 					<svg><use href=images/icons.svg#money-check-dollar /></svg>
 					<span></span>
 				</button>
-				<button class="yrd" plot="c,5px,200px,35px,a">
+				<button section="shipyard">
 					<svg><use href=images/icons.svg#wrench /></svg>
 					<span></span>
 				</button>
-				<button class="lab" plot="c+225px,5px,200px,35px,a">
+				<button section="lab">
 					<svg><use href=images/icons.svg#flask /></svg>
 					<span></span>
 				</button>
 			</div>
-			<div class="trade" overflow-scroll="y" bg="none" style="display: none"></div>
-			<div class="yrd" overflow-scroll="y" bg="none" style="display: grid"></div>
-			<div class="lab" overflow-scroll="y" bg="none" style="display: none"></div>
-		</div>
-		<div id="q" ingame bg="trans" class="content" hide game-ui style="z-index: 5" tabindex="-1">
-			<div class="nav" bg="none" plot="5%,25px,90%,45px,a">
-				<button class="inv" plot="c-300px,5px,175px,35px,a">
-					<svg><use href=images/icons.svg#box /></svg>
-					<span></span>
-				</button>
-				<button class="map" plot="c-100px,5px,175px,35px,a">
-					<svg><use href=images/icons.svg#location-dot /></svg>
-					<span></span>
-				</button>
-				<button class="screenshots" plot="c+100px,5px,175px,35px,a">
-					<svg><use href=images/icons.svg#image /></svg>
-					<span></span>
-				</button>
-				<button class="warp" plot="c+300px,5px,175px,35px,a">
-					<svg><use href=images/icons.svg#rocket-launch /></svg>
-					<span></span>
-				</button>
-			</div>
-			<div class="inv" overflow-scroll="y" bg="none" style="display: grid"></div>
-			<div class="item-bar" plot="c,calc(3em + 45px),75%,1.5em,a" style="line-height: 0">
+			<div class="ingame-menu-grid inventory" style="display: grid"></div>
+			<div class="item-bar bg-normal" plot="c,calc(3em + 45px),75%,1.5em,a" style="line-height: 0">
 				<p class="label" plot="c,0,200px,1em,a"></p>
 				<svg class="item-bar" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1">
 					<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
 				</svg>
 			</div>
-			<div class="map" overflow-scroll="y" bg="none" style="grid-template-columns: 1fr; column-gap: 10px; display: none">
-				<button class="map new" plot="r25px,b25px,125px,36px,a">
-					<svg><use href=images/icons.svg#plus /></svg>
-					<span></span>
-				</button>
-			</div>
-			<div class="screenshots" bg="none" overflow-scroll="y" style="display: none; grid-auto-rows: 144px; grid-template-columns: repeat(auto-fill, 256px); gap: 1em"></div>
-			<div class="warp" overflow-scroll="y" bg="none" style="display: none">
-				<input label="Warp To: " class="warp x" maxlength="4" style="width: 50px" />
-				<input class="warp y" maxlength="4" style="width: 50px" />
-				<button style="margin: 1%" class="warp"></button>
-			</div>
+			<div class="ingame-menu-grid screenshots"></div>
+			<div class="ingame-menu-grid trade"></div>
+			<div class="ingame-menu-grid shipyard"></div>
+			<div class="ingame-menu-grid lab"></div>
 		</div>
-		<div id="markers" style="z-index: 2"></div>
-		<canvas ingame class="game cover" hide style="z-index: 0"></canvas>
-		<div ingame id="debug cover" bg="none" hide style="width: fit-content">
+		<div id="map" class="content bg-transparent game-ui ingame" style="display: none" tabindex="-1"></div>
+		<div id="waypoint-list" class="content bg-transparent">
+			<button class="map new" plot="r25px,b25px,125px,36px,a">
+				<svg><use href=images/icons.svg#plus /></svg>
+				<span></span>
+			</button>
+		</div>
+		<canvas class="game cover ingame" style="display: none; z-index: 0"></canvas>
+		<div id="debug cover ingame" style="display: none; width: fit-content">
 			<p style="left: 1%; top: 0" class="left"></p>
 			<p style="right: 1%; top: 0; text-align: right" class="right"></p>
 		</div>
-		<div id="hud" ingame hide bg="none">
+		<div id="hud" class="ingame" style="display: none">
 			<p class="level" plot="c,b1em,150px,1em" style="text-align: center; line-height: 3em"></p>
-			<div class="xp" plot="c,b1em,300px,1em" bg="none">
+			<div class="xp" plot="c,b1em,300px,1em">
 				<svg class="xp" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1" border>
 					<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
 				</svg>
 			</div>
 		</div>
-		<div id="esc" ingame hide class="cover" bg="none" tabindex="-1">
-			<div class="content" plot="c,c,250px,300px" style="z-index: 10">
-				<button plot="12.5px,62.5px,225px,50px,a" class="resume"></button>
-				<button plot="12.5px,125px,225px,50px,a" class="save"></button>
-				<button plot="12.5px,187.5px,225px,50px,a" class="options"></button>
-				<button plot="12.5px,250px,225px,50px,a" class="quit"></button>
+		<div id="pause" style="display: none" class="cover ingame center-flex" tabindex="-1">
+			<div class="bg-normal center-flex">
+				<button class="resume"></button>
+				<button class="save"></button>
+				<button class="options"></button>
+				<button class="quit"></button>
 			</div>
 		</div>
-		<div id="settings" bg="trans" hide class="content">
-			<div id="settings-nav" bg="none">
+		<div id="settings" class="content bg-transparent" style="display: none">
+			<div id="settings-nav">
 				<button class="general" setting-section="general">
 					<svg><use href=images/icons.svg#gear /></svg>
 					<span></span>
@@ -266,7 +214,7 @@
 					<svg><use href=images/icons.svg#keyboard /></svg>
 					<span></span>
 				</button>
-				<button class="mod" hide>
+				<button class="mod" style="display: none">
 					<svg><use href=images/icons.svg#puzzle-piece /></svg>
 					<span>Mods</span>
 				</button>
@@ -280,10 +228,10 @@
 				</button>
 			</div>
 
-			<div class="general" setting-section="general" no-box-shadow bg="none" overflow-scroll="y"></div>
-			<div class="keybinds" setting-section="keybinds" no-box-shadow bg="none" overflow-scroll="y" hide></div>
-			<div class="debug" setting-section="debug" no-box-shadow bg="none" overflow-scroll="y" hide></div>
-			<ul class="mod" no-box-shadow bg="none" overflow-scroll="y" hide lsn></ul>
+			<div class="general" setting-section="general"></div>
+			<div class="keybinds" setting-section="keybinds" style="display: none"></div>
+			<div class="debug" setting-section="debug" style="display: none"></div>
+			<div class="mod" style="display: none"></div>
 		</div>
 	</body>
 	<script type="module" src="index.js"></script>

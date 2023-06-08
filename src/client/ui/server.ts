@@ -11,8 +11,7 @@ export class ServerListItem extends HTMLLIElement {
 				'align-items': 'center',
 				height: '3em',
 			})
-			.attr('bg', '')
-			.attr('clickable', '')
+			.addClass('bg-normal clickable')
 			.on('click', () => {
 				$('.selected').removeClass('selected');
 				$(this).addClass('selected');

@@ -64,20 +64,22 @@ button {
 	border-radius: var(--bg-radius);
 	cursor: pointer;
 	border: 0;
-	padding: 5px 15px;
+	padding: 5px 1em;
 }
 button:hover {
 	background: radial-gradient(ellipse at center, var(--bg-gradient-dark) 0, var(--button-color) 100%);
 	box-shadow: var(--hover-shadow);
 }
-input,
+
+input {
+	box-shadow: var(--bg-shadow);
+	border-radius: var(--bg-radius);
+}
+
+input[type=text],
 textarea {
 	display: inline-block;
 	background: linear-gradient(to top, var(--bg-gradient-light) 0, var(--bg-gradient-dark) 20%, var(--bg-gradient-dark) 60%, var(--bg-gradient-light) 100%);
-	box-shadow: var(--bg-shadow);
-	border-radius: var(--bg-radius);
-	margin-top: 10px;
-	position: relative;
 }
 dfn {
 	font-style: normal;
@@ -86,7 +88,7 @@ dfn {
 input:hover {
 	cursor: text;
 }
-input[type='checkbox']:hover,
+input[type=checkbox]:hover,
 [clickable] {
 	cursor: pointer;
 }
@@ -97,7 +99,7 @@ dialog {
 	text-align: center;
 	border: none;
 }
-input[type='range'] {
+input[type=range] {
 	appearance: none;
 	overflow: hidden;
 	height: 10px;

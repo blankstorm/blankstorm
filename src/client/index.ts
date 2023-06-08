@@ -5,7 +5,7 @@ import $ from 'jquery';
 $.ajaxSetup({ timeout: 3000 });
 
 import { GAME_URL, config, version, versions } from '../core/meta';
-import { isHex, isJSON, random, xpToLevel } from '../core/utils';
+import { isHex, isJSON, xpToLevel } from '../core/utils';
 import { commands, execCommandString } from '../core/commands';
 import * as api from '../core/api';
 import type { Player } from '../core/entities/Player';
@@ -34,7 +34,7 @@ const updateSave = () => {
 	if (!(current instanceof LiveSave)) {
 		throw 'Save Error: you must have a valid save selected.';
 	}
-	$('#esc .save').text('Saving...');
+	$('#pause .save').text('Saving...');
 	try {
 		const save = saves.get(current.id);
 		save.data = current.serialize();
@@ -44,7 +44,7 @@ const updateSave = () => {
 		chat('Failed to save game.');
 		throw err;
 	}
-	$('#esc .save').text('Save Game');
+	$('#pause .save').text('Save Game');
 };
 
 $('#loading_cover p').text('Initializing settings...');
@@ -69,11 +69,14 @@ settings.items.get('command').addEventListener('trigger', e => {
 	e.preventDefault();
 	toggleChat(true);
 });
-settings.items.get('nav').addEventListener('trigger', () => {
-	changeUI('#q');
+settings.items.get('toggle_menu').addEventListener('trigger', () => {
+	// not implemented
 });
-settings.items.get('inv').addEventListener('trigger', () => {
-	changeUI('#e');
+settings.items.get('toggle_map').addEventListener('trigger', () => {
+	changeUI('#map');
+});
+settings.items.get('toggle_temp_menu').addEventListener('trigger', () => {
+	changeUI('#ingame-temp-menu');
 });
 settings.items.get('screenshot').addEventListener('trigger', () => {
 	screenshots.push(canvas[0].toDataURL('image/png'));
@@ -83,13 +86,6 @@ settings.items.get('save').addEventListener('trigger', e => {
 	e.preventDefault();
 	updateSave();
 });
-for (const section of settings.sections.values()) {
-	$(section).attr({
-		bg: 'none',
-		'overflow-scroll': 'y',
-		'no-box-shadow': '',
-	});
-}
 
 $('#loading_cover p').text('Initializing locales...');
 import { locales } from './locales';
@@ -151,15 +147,15 @@ const strobe = rate => {
 	}
 };
 const toggleChat = (command?: boolean) => {
-	$('#chat,#chat_history').toggle();
-	if ($('#cli').toggle().is(':visible')) {
+	$('#chat,#chat-history').toggle();
+	if ($('#chat-input').toggle().is(':visible')) {
 		renderer.getCamera().detachControl();
-		$('#cli').focus();
+		$('#chat-input').trigger('focus');
 		if (command) {
-			$('#cli').val('/');
+			$('#chat-input').val('/');
 		}
 	} else {
-		canvas.focus();
+		canvas.trigger('focus');
 	}
 };
 const runCommand = (command: string): string | void => {
@@ -171,17 +167,17 @@ const runCommand = (command: string): string | void => {
 };
 const changeUI = (selector: string, hideAll?: boolean) => {
 	if ($(selector).is(':visible')) {
-		canvas.focus();
+		canvas.trigger('focus');
 		$(selector).hide();
-	} else if ($('[game-ui]').not(selector).is(':visible') && hideAll) {
-		canvas.focus();
-		$('[game-ui]').hide();
-	} else if (!$('[game-ui]').is(':visible')) {
+	} else if ($('.game-ui').not(selector).is(':visible') && hideAll) {
+		canvas.trigger('focus');
+		$('.game-ui').hide();
+	} else if (!$('.game-ui').is(':visible')) {
 		renderer.getCamera().detachControl();
 		$(selector).show().trigger('focus');
 	}
 };
-const cli = { line: 0, currentInput: '', i: $('#cli').val(), prev: [], counter: 0 };
+const cli = { line: 0, currentInput: '', i: $('#chat-input').val(), prev: [], counter: 0 };
 
 export const chat = (...msg: string[]) => {
 	for (const m of msg) {
@@ -190,7 +186,7 @@ export const chat = (...msg: string[]) => {
 			.text(m)
 			.appendTo('#chat')
 			.fadeOut(1000 * +settings.get('chat_timeout'));
-		$(`<li bg=none></li>`).text(m).appendTo('#chat_history');
+		$(`<li bg=none></li>`).text(m).appendTo('#chat-history');
 	}
 };
 
@@ -410,20 +406,20 @@ $('#save-new .new').on('click', async () => {
 	new Save(live.serialize(), saves);
 	live.play(saves);
 });
-$('#esc .resume').on('click', () => {
-	$('#esc').hide();
+$('#pause .resume').on('click', () => {
+	$('#pause').hide();
 	canvas.trigger('focus');
 	isPaused = false;
 });
-$('#esc .save').on('click', updateSave);
-$('#esc .options').on('click', () => {
-	ui.setLast('#esc');
-	$('#esc').hide();
+$('#pause .save').on('click', updateSave);
+$('#pause .options').on('click', () => {
+	ui.setLast('#pause');
+	$('#pause').hide();
 	$('#settings').show();
 });
-$('#esc .quit').on('click', () => {
+$('#pause .quit').on('click', () => {
 	isPaused = true;
-	$('[ingame]').hide();
+	$('.ingame').hide();
 	if (_mp) {
 		servers.get(servers.selected).disconnect();
 	} else {
@@ -455,36 +451,16 @@ $('#login')
 			$('#login').find('.error').text(e.message).show();
 		}
 	});
-$('.nav button.inv').on('click', () => {
-	$('#q>:not(.nav)').hide();
-	$('div.item-bar').show();
-	$('div.inv').css('display', 'grid');
+$('#ingame-temp-menu div.nav button').on('click', e => {
+	const section = $(e.target).closest('button[section]').attr('section');
+	$(`#ingame-temp-menu > div:not(.nav)`).hide();
+	if (section == 'inventory') {
+		$('div.item-bar').show();
+	}
+	$('#ingame-temp-menu > div.' + section).css('display', 'grid');
 });
-$('.nav button.map').on('click', () => {
-	$('#q>:not(.nav)').hide();
-	$('div.map').css('display', 'grid');
-});
-$('.nav button.screenshots').on('click', () => {
-	$('#q>:not(.nav)').hide();
-	$('div.screenshots').css('display', 'grid');
-});
-$('.nav button.warp').on('click', () => {
-	$('#q>:not(.nav)').hide();
-	$('div.warp').show();
-});
-$('.nav button.yrd').on('click', () => {
-	$('#e>:not(.nav)').hide();
-	$('div.yrd').css('display', 'grid');
-});
-$('.nav button.lab').on('click', () => {
-	$('#e>:not(.nav)').hide();
-	$('div.lab').css('display', 'grid');
-});
-$('.nav button.trade').on('click', () => {
-	$('#e>:not(.nav)').hide();
-	$('div.trade').css('display', 'grid');
-});
-$('button.map.new').on('click', () => {
+
+$('#waypoint-list button.new').on('click', () => {
 	const dialog = $<HTMLDialogElement>('#waypoint-dialog');
 	dialog.find('input').val('');
 	dialog[0].showModal();
@@ -492,46 +468,16 @@ $('button.map.new').on('click', () => {
 $('#settings-nav button:not(.back)').on('click', e => {
 	const target = $(e.target),
 		button = target.is('button') ? target : target.parent('button');
-	$('#settings>div:not(#settings-nav)')
+	$('#settings > div:not(#settings-nav)')
 		.hide()
 		.filter(`[setting-section=${button.attr('setting-section')}]`)
 		.show();
 });
-$('#settings button.mod').on('click', () => {
-	$('#settings ul.mod')
-		.show()
-		.empty()
-		.append(
-			$('<h2 style=text-align:center>Mods</h2>'),
-			$('<button plot=r15px,b15px,100px,35px,a><svg><use href=images/icons.svg#trash /></svg>&nbsp;Reset</button>').on('click', async () => {
-				if (!fs.existsSync('mods')) {
-					fs.mkdirSync('mods');
-				}
-				for (const name of fs.readdirSync('mods')) {
-					fs.rmSync('mods/' + name);
-				}
-				alert('Requires reload');
-			}),
-			$(`<button plot=r130px,b15px,100px,35px,a><svg><use href=images/icons.svg#plus /></svg></i>&nbsp;${locales.text`menu.upload`}</button>`).on('click', () => {
-				//upload('.js').then(files => [...files].forEach(file => file.text().then(mod => loadMod(mod))));
-				alert('Mods are not supported.');
-			})
-		);
-	ui.update(player.data(), current);
-});
+
 $('#settings button.back').on('click', () => {
 	$('#settings').hide();
 	$(ui.getLast()).show();
 	ui.update(player.data(), current);
-});
-$('#q div.warp button.warp').on('click', () => {
-	const destination = new Vector3(+$('input.warp.x').val(), 0, +$('input.warp.y').val());
-	player.data().fleet.forEach(ship => {
-		const offset = random.cords(player.data().power, true);
-		ship.jump(destination.add(offset));
-		chat(ship.name + ' Jumped');
-	});
-	$('#q').toggle();
 });
 $('#settings div.general input').on('change', () => ui.update(player.data(), current));
 $<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
@@ -588,27 +534,27 @@ $('html')
 			});
 		});
 	});
-$('#cli').on('keydown', e => {
-	if (cli.line == 0) cli.currentInput = $('#cli').val() as string;
+$('#chat-input').on('keydown', e => {
+	if (cli.line == 0) cli.currentInput = $('#chat-input').val() as string;
 	switch (e.key) {
 		case 'Escape':
 			toggleChat();
 			break;
 		case 'ArrowUp':
-			if (cli.line > -cli.prev.length) $('#cli').val(cli.prev.at(--cli.line));
-			if (cli.line == -cli.prev.length) if (++cli.counter == 69) $('#cli').val('nice');
+			if (cli.line > -cli.prev.length) $('#chat-input').val(cli.prev.at(--cli.line));
+			if (cli.line == -cli.prev.length) if (++cli.counter == 69) $('#chat-input').val('nice');
 			break;
 		case 'ArrowDown':
 			cli.counter = 0;
-			if (cli.line < 0) ++cli.line == 0 ? $('#cli').val(cli.currentInput) : $('#cli').val(cli.prev.at(cli.line));
+			if (cli.line < 0) ++cli.line == 0 ? $('#chat-input').val(cli.currentInput) : $('#chat-input').val(cli.prev.at(cli.line));
 			break;
 		case 'Enter':
 			cli.counter = 0;
-			if (/[^\s/]/.test($('#cli').val() as string)) {
-				if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#cli').val());
-				if ($('#cli').val()[0] == '/') chat(runCommand(($('#cli').val() as string).slice(1)) as string);
-				else _mp ? servers.get(servers.selected).socket.emit('chat', $('#cli').val()) : player.chat($('#cli').val() as string);
-				$('#cli').val('');
+			if (/[^\s/]/.test($('#chat-input').val() as string)) {
+				if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#chat-input').val());
+				if ($('#chat-input').val()[0] == '/') chat(runCommand(($('#chat-input').val() as string).slice(1)) as string);
+				else _mp ? servers.get(servers.selected).socket.emit('chat', $('#chat-input').val()) : player.chat($('#chat-input').val() as string);
+				$('#chat-input').val('');
 				toggleChat();
 				cli.line = 0;
 			}
@@ -656,7 +602,7 @@ canvas.on('keydown', e => {
 			break;
 	}
 });
-$('canvas.game,[ingame-ui],#hud,#tablist').on('keydown', e => {
+$('canvas.game,.game-ui,#hud,#tablist').on('keydown', e => {
 	for (const setting of [...settings.items.values()].filter(item => item.type == 'keybind')) {
 		const bind = setting.value as Keybind;
 		if (e.key == bind.key && (!bind.alt || e.altKey) && (!bind.ctrl || e.ctrlKey)) setting.emit('trigger');
@@ -671,21 +617,16 @@ canvas.on('keyup', e => {
 	}
 });
 
-$('#q').on('keydown', e => {
-	if (e.key == settings.get('nav') || e.key == 'Escape') {
-		changeUI('#q');
-	}
-});
-$('#e')
+$('#ingame-temp-menu')
 	.on('keydown', e => {
-		if (e.key == settings.get('inv') || e.key == 'Escape') {
-			changeUI('#e');
+		if (e.key == settings.get('toggle_temp_menu') || e.key == 'Escape') {
+			changeUI('#ingame-temp-menu');
 		}
 	})
 	.on('click', () => ui.update(player.data(), current));
-$('canvas.game,#esc,#hud').on('keydown', e => {
+$('canvas.game,#pause,#hud').on('keydown', e => {
 	if (e.key == 'Escape') {
-		changeUI('#esc', true);
+		changeUI('#pause', true);
 		isPaused = !isPaused;
 	}
 	ui.update(player.data(), current);

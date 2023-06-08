@@ -16,10 +16,9 @@ export class ResearchUI extends HTMLDivElement {
 			.find('.upgrade')
 			.on('click', () => {
 				context.level.tryPlayerAction(context.playerID, 'do_research', research);
-			})
-			.parent()
-			.attr('bg', 'none')
-			.appendTo('div.lab');
+			});
+
+		$(this).appendTo('div.lab');
 	}
 }
 customElements.define('ui-research', ResearchUI, { extends: 'div' });

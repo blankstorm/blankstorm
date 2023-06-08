@@ -53,7 +53,7 @@ export class SettingsItem extends HTMLDivElement {
 	#section: SettingsSection;
 	#store: SettingsMap;
 
-	#ui_label = $('<label class=setting-label></label>');
+	#ui_label = $('<label></label>').addClass('settings-label').css('text-align', 'right').appendTo(this);
 	#ui_input: JQuery<HTMLInputElement>;
 
 	//Used by select
@@ -67,7 +67,6 @@ export class SettingsItem extends HTMLDivElement {
 	//Used by keybind
 	constructor(id: string, options: Partial<SettingsItemOptions>, store) {
 		super();
-		$(this).attr('bg', 'none');
 		options ||= {};
 		this.#id = id;
 		this.label = options.label;
@@ -130,14 +129,12 @@ export class SettingsItem extends HTMLDivElement {
 
 		this.#type = options.type;
 
-		this.#ui_input.attr('name', id);
-		this.#ui_input.addClass('setting-input');
-
-		$(this).append(this.#ui_label, this.#ui_input);
+		this.#ui_input.attr('name', id).addClass('setting-input');
+		$('<div></div>').append(this.#ui_input).appendTo(this);
+		$(this).addClass('settings-item');
 		if (this.#section) {
 			$(this).appendTo(this.#section);
 		}
-		$(this).after('<br><br>');
 
 		this.update(options);
 		this.#ui_input.on('change', e => {
@@ -284,7 +281,7 @@ export class SettingsSection extends HTMLFormElement {
 	constructor(public readonly id: string, label: SettingLabel, parent: JQuery, store: SettingsMap) {
 		super();
 
-		$(this).append('<h2 class="settings-name"></h2>').addClass('settings-section');
+		$(this).addClass('settings-section center-flex').append('<h2 class="settings-name"></h2>');
 		this.#label = label;
 
 		if (parent) {
@@ -496,18 +493,25 @@ export const settings = new SettingsMap('settings', {
 			value: { key: '/' },
 		},
 		{
-			id: 'nav',
+			id: 'toggle_temp_menu',
 			section: 'keybinds',
 			type: 'keybind',
-			label: 'Toggle Inventory',
+			label: 'Toggle Temporary Ingame Menu',
 			value: { key: 'Tab' },
 		},
 		{
-			id: 'inv',
+			id: 'toggle_menu',
 			section: 'keybinds',
 			type: 'keybind',
-			label: 'Toggle Shipyard/Lab',
+			label: 'Toggle Ingame Menu',
 			value: { key: 'e' },
+		},
+		{
+			id: 'toggle_map',
+			section: 'keybinds',
+			type: 'keybind',
+			label: 'Toggle Map',
+			value: { key: 'm' },
 		},
 		{
 			id: 'screenshot',

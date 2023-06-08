@@ -70,7 +70,7 @@ export class Server {
 		this.socket = io(this.url.href, { reconnection: false, autoConnect: false, auth: { token: cookies.get('token'), session: cookies.get('session') } });
 		this.socket.on('connect', () => {
 			$('#connect').hide();
-			$('canvas.game').show().focus();
+			$('canvas.game').show().trigger('focus');
 			$('#hud').show();
 			$('#tablist p.info').html(`${this.url.hostname}<br>${versions.get(this.pingInfo.version).text}<br>${this.pingInfo.message}<br>`);
 			renderer.clear();

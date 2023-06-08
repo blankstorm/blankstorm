@@ -33,10 +33,7 @@ export class Waypoint extends Node {
 		super(id, level);
 		level.waypoints.push(this);
 		this.gui = $(new WaypointListItem(this));
-		this.marker = $<SVGSVGElement>(`<svg ingame><use href=images/icons.svg#location-dot /></svg><p ingame style=justify-self:center></p>`)
-			.addClass('marker')
-			.hide()
-			.appendTo('body');
+		this.marker = $<SVGSVGElement>(`<svg><use href=images/icons.svg#location-dot /></svg><p style=justify-self:center></p>`).addClass('marker  ingame').hide().appendTo('body');
 		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
 		level.addEventListener('active', () => {
 			this.updateVisibility();

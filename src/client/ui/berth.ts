@@ -8,7 +8,7 @@ import type { UIContext } from './context';
 export class BerthUI extends HTMLDivElement {
 	constructor(berth: Berth, context: UIContext) {
 		super();
-		$(this).addClass('content').attr('bg', 'trans');
+		$(this).addClass('content bg-transparent');
 		$(`<p></p>`)
 			.addClass('active')
 			.text('Building: ' + locales.text(`entity.${berth.productionID}.name`))

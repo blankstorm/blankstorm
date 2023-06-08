@@ -102,7 +102,7 @@ export function update(player: Player, level: LiveSave) {
 
 	screenshots.forEach(s => {
 		contextMenu(
-			$(`<img src=${s} width=256></img>`).appendTo('#q div.screenshots'),
+			$(`<img src=${s} width=256></img>`).appendTo('#ingame-temp-menu div.screenshots'),
 			$('<button><svg><use href=images/icons.svg#download /></svg> Download</button>').on('click', () => {
 				$('<a download=screenshot.png></a>').attr('href', s)[0].click();
 			}),
@@ -116,16 +116,11 @@ export function update(player: Player, level: LiveSave) {
 	});
 	$(':root').css('--font-size', settings.get('font_size') + 'px');
 	if (_mp) {
-		$('#esc .quit').text('Disconnect');
-		$('#esc .options').attr('plot', '12.5px,125px,225px,50px,a');
-		$('#esc .quit').attr('plot', '12.5px,187.5px,225px,50px,a');
-		$('#esc .save').hide();
+		$('#pause .quit').text('Disconnect');
+		$('#pause .save').hide();
 	} else {
-		$('#esc .quit').text('Exit Game');
-		$('#esc .save').attr('plot', '12.5px,125px,225px,50px,a');
-		$('#esc .options').attr('plot', '12.5px,187.5px,225px,50px,a');
-		$('#esc .quit').attr('plot', '12.5px,250px,225px,50px,a');
-		$('#esc .save').show();
+		$('#pause .quit').text('Exit Game');
+		$('#pause .save').show();
 	}
 
 	$('[plot]').each((i, e) => {

@@ -22,8 +22,7 @@ export class SaveListItem extends HTMLLIElement {
 
 		$(this)
 			.css({ 'align-items': 'center', height: '3em', 'word-wrap': 'break-word', overflow: 'none' })
-			.attr('bg', '')
-			.attr('clickable', '')
+			.addClass('bg-normal clickable')
 			.on('click', () => {
 				$('.selected').removeClass('selected');
 				save.store.selected = save.id;
