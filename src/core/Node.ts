@@ -42,7 +42,7 @@ export class Node extends EventTarget {
 	position = Vector3.Zero();
 	rotation = Vector3.Zero();
 	velocity = Vector3.Zero();
-	
+
 	get absolutePosition() {
 		return this.parent instanceof Node ? this.parent.absolutePosition.add(this.position) : this.position;
 	}

@@ -103,18 +103,18 @@ export class Save {
 		this.updateData();
 	}
 
-	protected updateData(){
+	protected updateData() {
 		const date = new Date(this.#data.date);
 		this.#data.date = date.toJSON();
 		this.gui.find('.date').text(date.toLocaleString());
-		
+
 		this.store._map.set(this.id, JSON.stringify(this.#data));
 		this.store.set(this.id, this);
 	}
 
 	load(playerID: string): LiveSave {
-		if(this.#data.activePlayer != playerID) {
-			this.#data.entities.find(e => e.id == this.#data.activePlayer).id = playerID
+		if (this.#data.activePlayer != playerID) {
+			this.#data.entities.find(e => e.id == this.#data.activePlayer).id = playerID;
 			this.#data.activePlayer = playerID;
 		}
 		this.updateData();

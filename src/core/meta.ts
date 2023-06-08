@@ -14,8 +14,8 @@ export const config = {
 			max: 1,
 			radius_min: 300,
 			radius_max: 500,
-			color_min: [.3, .3, .3],
-			color_max: [.4, .4, .4],
+			color_min: [0.3, 0.3, 0.3],
+			color_max: [0.4, 0.4, 0.4],
 		},
 		planets: {
 			min: 1,
@@ -24,7 +24,7 @@ export const config = {
 			radius_max: 50,
 			distance_max: 5e3,
 		},
-	}
+	},
 };
 
 const _versionGroups = ['infdev', 'alpha'] as const,

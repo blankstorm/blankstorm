@@ -18,9 +18,25 @@ const research = {
 	shields: { id: 'shields', productionTime: config.tick_rate, recipe: { titanium: 2500, quartz: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 } },
 	storage: { id: 'storage', productionTime: config.tick_rate, recipe: { titanium: 10000, quartz: 10000, hydrogen: 10000 }, xp: 2, scale: 10, max: 25, requires: {} },
 	missle: { id: 'missle', productionTime: config.tick_rate, recipe: { titanium: 10000, quartz: 1000, hydrogen: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 } },
-	regen: { id: 'regen', productionTime: config.tick_rate, recipe: { titanium: 50000, quartz: 10000, hydrogen: 10000 }, xp: 1, scale: 1.5, max: 25, requires: { reload: 5, armor: 15 } },
+	regen: {
+		id: 'regen',
+		productionTime: config.tick_rate,
+		recipe: { titanium: 50000, quartz: 10000, hydrogen: 10000 },
+		xp: 1,
+		scale: 1.5,
+		max: 25,
+		requires: { reload: 5, armor: 15 },
+	},
 	build: { id: 'build', productionTime: config.tick_rate, recipe: { titanium: 100000 }, xp: 2, scale: 1.5, max: 50, requires: { armor: 10, thrust: 10, reload: 10 } },
-	salvage: { id: 'salvage', productionTime: config.tick_rate, recipe: { titanium: 250000, quartz: 50000, hydrogen: 100000 }, xp: 5, scale: 1.25, max: 25, requires: { build: 5 } },
+	salvage: {
+		id: 'salvage',
+		productionTime: config.tick_rate,
+		recipe: { titanium: 250000, quartz: 50000, hydrogen: 100000 },
+		xp: 5,
+		scale: 1.25,
+		max: 25,
+		requires: { build: 5 },
+	},
 } as const;
 
 export type ResearchID = keyof typeof research;

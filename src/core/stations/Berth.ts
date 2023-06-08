@@ -14,7 +14,7 @@ export class Berth extends StationComponent implements Producer {
 	productionID: ShipType;
 	productionTime: number;
 	canProduce = shipTypes;
-	constructor(id: string, level: Level, options: StationComponentOptions){
+	constructor(id: string, level: Level, options: StationComponentOptions) {
 		super(id, level, options);
 	}
 

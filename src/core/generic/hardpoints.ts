@@ -24,7 +24,7 @@ const genericHardpoints = {
 		range: 200,
 		critChance: 0.05,
 		critFactor: 1.5,
-		targets: [ 'ship', 'station' ],
+		targets: ['ship', 'station'],
 		projectile: {
 			id: 'laser_projectile',
 			count: 1,
