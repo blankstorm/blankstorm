@@ -1,6 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { random } from './utils';
 import type { Level } from './Level';
+import { EventData, LevelEvent } from './events';
 
 export type NodeConstructor<T extends Node> = new (...args: ConstructorParameters<typeof Node>) => T;
 
@@ -15,7 +16,7 @@ export interface SerializedNode {
 	velocity: number[];
 }
 
-export class Node {
+export class Node extends EventTarget {
 	id: string;
 	private _name = '';
 
@@ -25,6 +26,10 @@ export class Node {
 
 	set name(name: string) {
 		this._name = name;
+	}
+
+	get node_type(): string {
+		return this.constructor.name.toLowerCase();
 	}
 
 	level: Level;
@@ -37,17 +42,7 @@ export class Node {
 	position = Vector3.Zero();
 	rotation = Vector3.Zero();
 	velocity = Vector3.Zero();
-
-	constructor(id: string = random.hex(32), level: Level, constructorOptions?: object) {
-		if (constructorOptions) {
-			console.warn(`constructorOptions should not be passed to Node constructor`);
-		}
-		this.id = id || random.hex(32);
-		this.level = level;
-		level.nodes.set(id, this);
-		setTimeout(() => level.emit('node.created', this.serialize()));
-	}
-
+	
 	get absolutePosition() {
 		return this.parent instanceof Node ? this.parent.absolutePosition.add(this.position) : this.position;
 	}
@@ -58,6 +53,22 @@ export class Node {
 
 	get absoluteVelocity() {
 		return this.parent instanceof Node ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
+	}
+
+	constructor(id: string = random.hex(32), level: Level, constructorOptions?: object) {
+		super();
+		if (constructorOptions) {
+			console.warn(`constructorOptions should not be passed to Node constructor`);
+		}
+		this.id = id || random.hex(32);
+		this.level = level;
+		level.nodes.set(id, this);
+		setTimeout(() => level.emit('node.created', this.serialize()));
+	}
+
+	emit(type: string, data?: EventData): boolean {
+		const event = new LevelEvent(type, this.serialize(), data, this.level);
+		return super.dispatchEvent(event);
 	}
 
 	remove() {
@@ -71,7 +82,7 @@ export class Node {
 			name: this.name,
 			owner: this.owner?.id,
 			parent: this.parent?.id,
-			node_type: this.constructor.name.toLowerCase(),
+			node_type: this.node_type,
 			position: this.position.asArray(),
 			rotation: this.rotation.asArray(),
 			velocity: this.velocity.asArray(),

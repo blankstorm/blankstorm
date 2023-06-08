@@ -1,7 +1,8 @@
-import { CelestialBody } from './CelestialBody';
+import { CelestialBody } from '../bodies/CelestialBody';
 import { SerializedStationComponent, StationComponent } from './StationComponent';
-import type { SerializedCelestialBody } from './CelestialBody';
+import type { SerializedCelestialBody } from '../bodies/CelestialBody';
 import type { Level } from '../Level';
+import type { Player } from '../entities/Player';
 
 export interface SerializedStation extends SerializedCelestialBody {
 	type: string;
@@ -13,12 +14,12 @@ export class Station extends CelestialBody {
 	#core: StationComponent;
 
 	isTargetable = true;
-
+	declare owner?: CelestialBody | Player;
 	constructor(id: string, level: Level, options: ConstructorParameters<typeof CelestialBody>[2]) {
 		super(id, level, options);
 
-		this.#core = new StationComponent(null, level, { type: 'core', station: this });
-		this.#core.parent = this;
+		this.#core = new StationComponent(null, level, { type: 'core' });
+		this.#core.station = this.#core.parent = this;
 	}
 
 	get core() {

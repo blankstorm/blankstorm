@@ -38,4 +38,4 @@ export class WaypointListItem extends HTMLLIElement {
 		}
 	}
 }
-customElements.define('waypoint-list-item', WaypointListItem, { extends: 'li' });
+customElements.define('ui-waypoint', WaypointListItem, { extends: 'li' });

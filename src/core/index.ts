@@ -16,8 +16,8 @@ export * from './entities/Ship';
 export * from './bodies/CelestialBody';
 export * from './bodies/Planet';
 export * from './bodies/Star';
-export * from './bodies/StationComponent';
-export * from './bodies/Station';
+export * from './stations/StationComponent';
+export * from './stations/Station';
 
 export * from './Level';
 

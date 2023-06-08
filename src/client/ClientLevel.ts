@@ -8,10 +8,12 @@ import type { LevelEvent } from '../core/events';
 
 export interface SerializedClientLevel extends SerializedLevel {
 	waypoints: SerializedWaypoint[];
+	activePlayer: string;
 }
 
 export class ClientLevel extends Level {
 	isActive = false;
+	activePlayer: string;
 	waypoints: Waypoint[] = [];
 	constructor(name: string) {
 		super(name);
@@ -28,6 +30,7 @@ export class ClientLevel extends Level {
 
 	serialize(): SerializedClientLevel {
 		return Object.assign(super.serialize(), {
+			activePlayer: this.activePlayer,
 			waypoints: this.waypoints.filter(wp => !wp.builtin).map(wp => wp.serialize()),
 		});
 	}
@@ -41,6 +44,7 @@ export class ClientLevel extends Level {
 			waypoint.color = Color3.FromArray(_waypoint.color);
 			waypoint.position = Vector3.FromArray(_waypoint.position);
 		}
+		level.activePlayer = data.activePlayer;
 		return level;
 	}
 }

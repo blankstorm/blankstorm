@@ -33,7 +33,7 @@ const stationComponents = {
 
 export type GenericStationComponentID = keyof typeof stationComponents;
 
-export type GenericStationComponentCollection<T = number> = { [key in GenericStationComponentID]: T };
+export type GenericStationComponentCollection<T = number> = Record<GenericStationComponentID, T>;
 
 const _components: GenericStationComponentCollection<GenericStationComponent> = stationComponents;
 export { _components as stationComponents };

@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { confirm, download } from '../utils';
+import { alert, confirm, download } from '../utils';
 import { versions } from '../../core/meta';
 import type { Save } from '../Save';
 
@@ -9,10 +9,15 @@ export class SaveListItem extends HTMLLIElement {
 
 		const loadAndPlay = async () => {
 			$('#loading_cover').show();
-			const live = save.load();
-			await live.ready();
-			live.play(save.store);
-			$('#loading_cover').hide();
+			try {
+				const live = save.load(save.activePlayer);
+				await live.ready();
+				live.play(save.store);
+				$('#loading_cover').hide();
+			} catch (e) {
+				alert(`Failed to load save: ${e}`);
+				throw e;
+			}
 		};
 
 		$(this)
@@ -52,4 +57,4 @@ export class SaveListItem extends HTMLLIElement {
 		`).appendTo(this);
 	}
 }
-customElements.define('save-list-item', SaveListItem, { extends: 'li' });
+customElements.define('ui-save', SaveListItem, { extends: 'li' });

@@ -44,4 +44,4 @@ export class ServerListItem extends HTMLLIElement {
 			});
 	}
 }
-customElements.define('server-list-item', ServerListItem, { extends: 'li' });
+customElements.define('ui-server', ServerListItem, { extends: 'li' });

@@ -30,7 +30,7 @@ export const core: ListenerCollection<LevelEvent> = {
 	},
 	'player.items.change': async evt => {
 		for (const [id, amount] of Object.entries(evt.data) as [ItemID, number][]) {
-			item_ui[id].find('.count').text(minimize(amount));
+			$(item_ui[id]).find('.count').text(minimize(amount));
 		}
 	},
 };

@@ -1,11 +1,10 @@
 import type { GenericShip } from '../../core/generic/ships';
-import type { Player } from '../../core/entities/Player';
-import type { Level } from '../../core/Level';
 import { locales } from '../locales';
 import $ from 'jquery';
+import type { UIContext } from './context';
 
 export class ShipUI extends HTMLDivElement {
-	constructor(ship: GenericShip, player: Player, level: Level) {
+	constructor(ship: GenericShip, context: UIContext) {
 		super();
 
 		$(`
@@ -16,11 +15,11 @@ export class ShipUI extends HTMLDivElement {
 		$(this)
 			.find('.add')
 			.on('click', () => {
-				level.tryPlayerAction(player.id, 'create_ship', ship);
+				context.level.tryPlayerAction(context.playerID, 'create_ship', { ship });
 			})
 			.parent()
 			.attr('bg', 'none')
 			.appendTo('div.yrd');
 	}
 }
-customElements.define('ship-ui', ShipUI, { extends: 'div' });
+customElements.define('ui-ship', ShipUI, { extends: 'div' });

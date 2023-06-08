@@ -6,7 +6,6 @@ import { FolderMap, random, isJSON } from '../core/utils';
 import { Ship } from '../core/entities/Ship';
 import { Player } from '../core/entities/Player';
 
-import { alert } from './utils';
 import { setPaused, eventLog, setCurrent } from './index';
 import * as listeners from './listeners';
 import * as renderer from '../renderer/index';
@@ -20,6 +19,7 @@ export class SaveMap extends Map<string, Save> {
 	_map: FolderMap;
 	selected?: string;
 	current?: LiveSave;
+	activePlayer: string;
 	constructor(path: string) {
 		super();
 		this._map = new FolderMap(path, fs, '.json');
@@ -75,6 +75,9 @@ export class Save {
 	#data: SerializedClientLevel;
 	store: SaveMap;
 	gui: JQuery<SaveListItem>;
+	get activePlayer(): string {
+		return this.store.activePlayer;
+	}
 	constructor(data: SerializedClientLevel, store: SaveMap) {
 		this.#data = data;
 		this.store = store;
@@ -97,13 +100,24 @@ export class Save {
 
 	set data(data: SerializedClientLevel) {
 		this.#data = data;
-		this.store._map.set(this.id, JSON.stringify(this.#data));
-		const date = new Date(data.date);
+		this.updateData();
+	}
+
+	protected updateData(){
+		const date = new Date(this.#data.date);
+		this.#data.date = date.toJSON();
 		this.gui.find('.date').text(date.toLocaleString());
+		
+		this.store._map.set(this.id, JSON.stringify(this.#data));
 		this.store.set(this.id, this);
 	}
 
-	load(): LiveSave {
+	load(playerID: string): LiveSave {
+		if(this.#data.activePlayer != playerID) {
+			this.#data.entities.find(e => e.id == this.#data.activePlayer).id = playerID
+			this.#data.activePlayer = playerID;
+		}
+		this.updateData();
 		return LiveSave.FromData(this.data);
 	}
 
@@ -141,7 +155,7 @@ export class LiveSave extends ClientLevel {
 			renderer.update(serialized);
 			setPaused(false);
 		} else {
-			alert('That save is in compatible with the current game version');
+			throw 'That save is not compatible with the current game version';
 		}
 	}
 
@@ -162,7 +176,7 @@ export class LiveSave extends ClientLevel {
 		player.name = playerName;
 		player.position = new Vector3(0, 0, -1000).add(random.cords(50, true));
 		player.rotation = new Vector3(0, 0, 0);
-
+		level.activePlayer = player.id;
 		return level;
 	}
 }

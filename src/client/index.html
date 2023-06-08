@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="styles/client.css" type="text/css" />
 	</head>
 	<body oncontextmenu="e=>false" bg="star">
-		<div id="loading_cover" cover bg="alt" style="z-index: 100; display: flex; justify-content: center">
+		<div id="loading_cover" class="cover" bg="alt" style="z-index: 100; display: flex; justify-content: center">
 			<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: calc(50% - 100px); width: 150px; height: 150px" viewBox="0 0 100 100">
 				<defs>
 					<linearGradient id="gradient">
@@ -56,7 +56,7 @@
 			ofs="y"
 			bw
 		></ul>
-		<div id="main" cover bg="none" center-flex>
+		<div id="main" class="cover" bg="none" center-flex>
 			<img src=images/title.png alt="Title" plot=c,90px,475px,75px />
 			<button class="sp" plot="c,260px,350px,50px"></button>
 			<button class="mp" plot="c,360px,350px,50px"></button>
@@ -65,7 +65,7 @@
 			<p class="version" plot="r2em,b1em,fit-content,1em" style="text-align: right"><a target="_blank">Version</a></p>
 			<p class="copyright" plot="2em,b1em,fit-content,1em">&copy; 2022-2023 Dr. Vortex. All Rights Reserved.</p>
 		</div>
-		<ul id="save-list" class="playable-list" hide lsn content bg="trans" overflow-scroll="y" style="padding: 2.5%">
+		<ul id="save-list" class="playable-list content" hide lsn bg="trans" overflow-scroll="y" style="padding: 2.5%">
 			<button class="back" plot="25px,b25px,125px,36px,a">
 				<svg><use href=images/icons.svg#arrow-left /></svg>
 				<span></span>
@@ -79,7 +79,7 @@
 				<span></span>
 			</button>
 		</ul>
-		<ul id="server-list" class="playable-list" hide lsn content bg="trans" overflow-scroll="y" style="padding: 2.5%">
+		<ul id="server-list" class="playable-list content" hide lsn bg="trans" overflow-scroll="y" style="padding: 2.5%">
 			<button class="back" plot="25px,b25px,125px,36px,a">
 				<svg><use href=images/icons.svg#arrow-left /></svg>
 				<span></span>
@@ -157,7 +157,7 @@
 			<button class="cancel"></button>
 			<button class="save"></button>
 		</dialog>
-		<div id="connect" bg="trans" hide content>
+		<div id="connect" bg="trans" hide class="content">
 			<p plot="c,c-2em,75%,1em" style="text-align: center"></p>
 			<button plot="c,c+2em,100px,2em" class="back">
 				<span></span>
@@ -176,7 +176,7 @@
 			<p class="message"></p>
 			<button class="ok">Ok</button>
 		</dialog>
-		<div id="e" ingame bg="trans" content hide game-ui style="z-index: 5" tabindex="-1">
+		<div id="e" ingame bg="trans" class="content" hide game-ui style="z-index: 5" tabindex="-1">
 			<div class="nav" bg="none" plot="5%,25px,90%,45px,a">
 				<button class="trade" plot="c-225px,5px,200px,35px,a">
 					<svg><use href=images/icons.svg#money-check-dollar /></svg>
@@ -195,7 +195,7 @@
 			<div class="yrd" overflow-scroll="y" bg="none" style="display: grid"></div>
 			<div class="lab" overflow-scroll="y" bg="none" style="display: none"></div>
 		</div>
-		<div id="q" ingame bg="trans" content hide game-ui style="z-index: 5" tabindex="-1">
+		<div id="q" ingame bg="trans" class="content" hide game-ui style="z-index: 5" tabindex="-1">
 			<div class="nav" bg="none" plot="5%,25px,90%,45px,a">
 				<button class="inv" plot="c-300px,5px,175px,35px,a">
 					<svg><use href=images/icons.svg#box /></svg>
@@ -235,8 +235,8 @@
 			</div>
 		</div>
 		<div id="markers" style="z-index: 2"></div>
-		<canvas ingame class="game" hide cover style="z-index: 0"></canvas>
-		<div ingame id="debug" bg="none" hide cover style="width: fit-content">
+		<canvas ingame class="game cover" hide style="z-index: 0"></canvas>
+		<div ingame id="debug cover" bg="none" hide style="width: fit-content">
 			<p style="left: 1%; top: 0" class="left"></p>
 			<p style="right: 1%; top: 0; text-align: right" class="right"></p>
 		</div>
@@ -248,7 +248,7 @@
 				</svg>
 			</div>
 		</div>
-		<div id="esc" ingame hide cover bg="none" tabindex="-1">
+		<div id="esc" ingame hide class="cover" bg="none" tabindex="-1">
 			<div class="content" plot="c,c,250px,300px" style="z-index: 10">
 				<button plot="12.5px,62.5px,225px,50px,a" class="resume"></button>
 				<button plot="12.5px,125px,225px,50px,a" class="save"></button>
@@ -256,7 +256,7 @@
 				<button plot="12.5px,250px,225px,50px,a" class="quit"></button>
 			</div>
 		</div>
-		<div id="settings" bg="trans" hide content>
+		<div id="settings" bg="trans" hide class="content">
 			<div id="settings-nav" bg="none">
 				<button class="general" setting-section="general">
 					<svg><use href=images/icons.svg#gear /></svg>

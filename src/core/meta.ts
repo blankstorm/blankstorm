@@ -5,10 +5,26 @@ export const config = {
 	load_remote_manifest: false,
 	debug_mode: true,
 	overwrite_invalid_json: true,
-	planet_max_distance: 5000,
 	default_port: 1123,
 	region_size: 1e5,
 	tick_rate: 10,
+	system_generation: {
+		stars: {
+			min: 1,
+			max: 1,
+			radius_min: 300,
+			radius_max: 500,
+			color_min: [.3, .3, .3],
+			color_max: [.4, .4, .4],
+		},
+		planets: {
+			min: 1,
+			max: 9,
+			radius_min: 25,
+			radius_max: 50,
+			distance_max: 5e3,
+		},
+	}
 };
 
 const _versionGroups = ['infdev', 'alpha'] as const,

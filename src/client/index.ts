@@ -8,10 +8,8 @@ import { GAME_URL, config, version, versions } from '../core/meta';
 import { isHex, isJSON, random, xpToLevel } from '../core/utils';
 import { commands, execCommandString } from '../core/commands';
 import * as api from '../core/api';
-import { Ship } from '../core/entities/Ship';
 import type { Player } from '../core/entities/Player';
 import type { Entity } from '../core/entities/Entity';
-import type { ShipType } from '../core/generic/ships';
 import { Level } from '../core/Level';
 import type { Keybind } from './settings';
 import { upload, minimize, alert, cookies } from './utils';
@@ -199,48 +197,18 @@ export const chat = (...msg: string[]) => {
 export const player: {
 	id: string;
 	username: string;
-	parseAuthData(text: string): void;
-	updateFleet(): void;
 	chat(...msg: string[]): void;
 	data(id?: string): Player & { oplvl: number };
-	get isInBattle(): boolean;
-	authData?: string;
+	authData?: api.ApiReducedUserResult;
 } = {
 	id: '[guest]',
 	username: '[guest]',
-	parseAuthData(text) {
-		player.authData = text;
-		if (isJSON(text)) {
-			const data = JSON.parse(text);
-			if (!data.error) {
-				chat(`Authenication failed: ${data.result} `);
-			} else {
-				localStorage.auth = JSON.stringify(data.result);
-				Object.assign(player, data.result);
-			}
-		} else if (text == undefined) {
-			chat('Failed to connect to account servers or API is no longer compatible.');
-		}
-	},
-	updateFleet: () => {
-		if (player.data().fleet.length <= 0) {
-			chat(locales.text`player.death`);
-			for (const type of ['mosquito', 'cillus']) {
-				const ship = new Ship(null, player.data().level, { type: type as ShipType, power: player.data().power });
-				ship.parent = ship.owner = player.data();
-				player.data().fleet.push(ship);
-			}
-		}
-	},
 	chat: (...msg) => {
 		for (const m of msg) {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
 	data: (id?: string) => (_mp ? servers.get(servers.selected)?.level : current)?.entities?.get(id ?? player.id) ?? {},
-	get isInBattle() {
-		return this.data().fleet.some(ship => !!ship.battle);
-	},
 };
 
 onresize = () => {
@@ -251,14 +219,11 @@ onresize = () => {
 $('#loading_cover p').text('Authenticating...');
 if (cookies.has('token') && navigator.onLine) {
 	try {
-		let result;
+		let result: api.ApiReducedUserResult;
 		try {
 			result = await api.requestUserInfo('token', cookies.get('token'));
 		} catch (e) {
-			throw 'Fetch failed';
-		}
-		if (result.error) {
-			throw `Couldn't log you in (${result})`;
+			throw `Couldn't log you in (${e})`;
 		}
 		player.id = result.id;
 		player.username = result.username;
@@ -276,7 +241,14 @@ onclick = () => {
 };
 
 $('#loading_cover p').text('Loading Locales...');
-ui.init(player.data(), current);
+ui.init({
+	get level() {
+		return current;
+	},
+	get playerID() {
+		return player.data().id;
+	},
+});
 
 //Load saves and servers into the game
 $('#loading_cover p').text('Loading saves...');
@@ -284,6 +256,7 @@ if (!fs.existsSync('saves')) {
 	fs.mkdirSync('saves');
 }
 export const saves = new SaveMap('saves');
+saves.activePlayer = player.id;
 
 $('#loading_cover p').text('Loading servers...');
 export const servers = new ServerMap('servers.json');

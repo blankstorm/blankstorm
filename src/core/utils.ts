@@ -56,7 +56,7 @@ export const random = {
 		}
 		return s;
 	},
-	get bool() {
+	bool() {
 		return !!Math.round(Math.random());
 	},
 	bin: (length = 1) => {

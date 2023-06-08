@@ -8,7 +8,7 @@ export interface SerializedPlanet extends SerializedCelestialBody {
 
 export class Planet extends CelestialBody {
 	biome: string;
-	constructor(id, level, options) {
+	constructor(id?: string, level?: Level, options?: ConstructorParameters<typeof CelestialBody>[2]) {
 		super(id, level, options);
 	}
 

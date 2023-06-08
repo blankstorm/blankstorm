@@ -12,6 +12,7 @@ import { random } from '../../core/utils';
 import type { SerializedPlanet } from '../../core';
 import type { HardpointProjectileHandlerOptions } from '../entities/Hardpoint';
 import { CelestialBodyRenderer } from './CelestialBody';
+import type { biomes as biomeIDs } from '../../core/generic/planets';
 
 export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
@@ -26,6 +27,7 @@ export interface GenericPlanetRendererMaterial {
 	directNoise: boolean;
 	lowerClip: Vector2;
 	range: Vector2;
+	maxResolution?: number;
 }
 
 export class PlanetRendererMaterial extends ShaderMaterial {
@@ -70,7 +72,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
 		texture.setFloat('mapSize', config.planet_material_map_size);
-		texture.setFloat('maxResolution', config.planet_material_max_resolution);
+		texture.setFloat('maxResolution', options.maxResolution || config.planet_material_max_resolution);
 		texture.setFloat('seed', options.seed);
 		texture.setVector2('lowerClamp', options.lowerClamp);
 		texture.setTexture('randomSampler', sampler);
@@ -80,7 +82,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		return texture;
 	}
 
-	updateRandom(texture) {
+	updateRandom(texture: DynamicTexture) {
 		if (!(texture instanceof DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
 		const context = texture.getContext(),
 			imageData = context.getImageData(0, 0, 512, 512);
@@ -91,6 +93,112 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		texture.update();
 	}
 }
+
+const biomes: Record<typeof biomeIDs[number], GenericPlanetRendererMaterial> = {
+	earthlike: {
+		clouds: false, //true,
+		upperColor: new Color3(0.2, 2.0, 0.2),
+		lowerColor: new Color3(0, 0.2, 1.0),
+		haloColor: new Color3(0, 0.2, 1.0),
+		seed: 0.3,
+		cloudSeed: 0.6,
+		lowerClamp: new Vector2(0.6, 1),
+		groundAlbedo: 1.25,
+		cloudAlbedo: 0,
+		directNoise: false,
+		lowerClip: new Vector2(0, 0),
+		range: new Vector2(0.3, 0.35),
+	},
+	volcanic: {
+		upperColor: new Color3(0.9, 0.45, 0.45),
+		lowerColor: new Color3(1.0, 0, 0),
+		haloColor: new Color3(1.0, 0, 0.3),
+		seed: 0.3,
+		cloudSeed: 0.6,
+		clouds: false,
+		lowerClamp: new Vector2(0, 1),
+		maxResolution: 256,
+		cloudAlbedo: 0,
+		groundAlbedo: 1.0,
+		directNoise: false,
+		lowerClip: new Vector2(0, 0),
+		range: new Vector2(0.3, 0.4),
+	},
+	jungle: {
+		upperColor: new Color3(0.1, 0.3, 0.7),
+		lowerColor: new Color3(0, 1.0, 0.1),
+		haloColor: new Color3(0.5, 1.0, 0.5),
+		seed: 0.4,
+		cloudSeed: 0.7,
+		clouds: false, //true,
+		lowerClamp: new Vector2(0, 1),
+		maxResolution: 512,
+		cloudAlbedo: 1.0,
+		groundAlbedo: 1.1,
+		directNoise: false,
+		lowerClip: new Vector2(0, 0),
+		range: new Vector2(0.2, 0.4),
+	},
+	ice: {
+		upperColor: new Color3(1.0, 1.0, 1.0),
+		lowerColor: new Color3(0.7, 0.7, 0.9),
+		haloColor: new Color3(1.0, 1.0, 1.0),
+		seed: 0.8,
+		cloudSeed: 0.4,
+		clouds: false, //true,
+		lowerClamp: new Vector2(0, 1),
+		maxResolution: 256,
+		cloudAlbedo: 1.0,
+		groundAlbedo: 1.1,
+		directNoise: false,
+		lowerClip: new Vector2(0, 0),
+		range: new Vector2(0.3, 0.4),
+	},
+	desert: {
+		upperColor: new Color3(0.9, 0.3, 0),
+		lowerColor: new Color3(1.0, 0.5, 0.1),
+		haloColor: new Color3(1.0, 0.5, 0.1),
+		seed: 0.18,
+		cloudSeed: 0.6,
+		clouds: false,
+		lowerClamp: new Vector2(0.3, 1),
+		maxResolution: 512,
+		cloudAlbedo: 1.0,
+		groundAlbedo: 1.0,
+		directNoise: false,
+		lowerClip: new Vector2(0, 0),
+		range: new Vector2(0.3, 0.4),
+	},
+	islands: {
+		upperColor: new Color3(0.4, 2.0, 0.4),
+		lowerColor: new Color3(0, 0.2, 2.0),
+		haloColor: new Color3(0, 0.2, 2.0),
+		seed: 0.15,
+		cloudSeed: 0.6,
+		clouds: false, //true,
+		lowerClamp: new Vector2(0.6, 1),
+		maxResolution: 512,
+		cloudAlbedo: 1.0,
+		groundAlbedo: 1.2,
+		directNoise: false,
+		lowerClip: new Vector2(0, 0),
+		range: new Vector2(0.2, 0.3),
+	},
+	moon: {
+		upperColor: new Color3(2.0, 1.0, 0),
+		lowerColor: new Color3(0, 0.2, 1.0),
+		cloudSeed: 0.6,
+		lowerClamp: new Vector2(0.6, 1),
+		cloudAlbedo: 0.9,
+		range: new Vector2(0.3, 0.35),
+		haloColor: new Color3(0, 0, 0),
+		seed: 0.5,
+		clouds: false,
+		groundAlbedo: 0.7,
+		directNoise: true,
+		lowerClip: new Vector2(0.5, 0.9),
+	},
+};
 
 export class PlanetRenderer extends CelestialBodyRenderer {
 	biome = '';
@@ -108,9 +216,9 @@ export class PlanetRenderer extends CelestialBodyRenderer {
 	async update(data: SerializedPlanet) {
 		await super.update(data);
 		if (this.biome != data.biome) {
-			if (PlanetRenderer.biomes.has(data.biome)) {
+			if (Object.keys(PlanetRenderer.biomes).includes(data.biome)) {
 				this.biome = data.biome;
-				this.material = new PlanetRendererMaterial(PlanetRenderer.biomes.get(data.biome), this.getScene());
+				this.material = new PlanetRendererMaterial(PlanetRenderer.biomes[data.biome], this.getScene());
 			} else {
 				throw new ReferenceError(`Biome "${data.biome}" does not exist`);
 			}
@@ -123,130 +231,5 @@ export class PlanetRenderer extends CelestialBodyRenderer {
 		return planet;
 	}
 
-	static biomes: Map<string, GenericPlanetRendererMaterial> = new Map([
-		[
-			'earthlike',
-			{
-				clouds: false, //true,
-				upperColor: new Color3(0.2, 2.0, 0.2),
-				lowerColor: new Color3(0, 0.2, 1.0),
-				haloColor: new Color3(0, 0.2, 1.0),
-				seed: 0.3,
-				cloudSeed: 0.6,
-				lowerClamp: new Vector2(0.6, 1),
-				groundAlbedo: 1.25,
-				cloudAlbedo: 0,
-				directNoise: false,
-				lowerClip: new Vector2(0, 0),
-				range: new Vector2(0.3, 0.35),
-			},
-		],
-		[
-			'volcanic',
-			{
-				upperColor: new Color3(0.9, 0.45, 0.45),
-				lowerColor: new Color3(1.0, 0, 0),
-				haloColor: new Color3(1.0, 0, 0.3),
-				seed: 0.3,
-				cloudSeed: 0.6,
-				clouds: false,
-				lowerClamp: new Vector2(0, 1),
-				maxResolution: 256,
-				cloudAlbedo: 0,
-				groundAlbedo: 1.0,
-				directNoise: false,
-				lowerClip: new Vector2(0, 0),
-				range: new Vector2(0.3, 0.4),
-			},
-		],
-		[
-			'jungle',
-			{
-				upperColor: new Color3(0.1, 0.3, 0.7),
-				lowerColor: new Color3(0, 1.0, 0.1),
-				haloColor: new Color3(0.5, 1.0, 0.5),
-				seed: 0.4,
-				cloudSeed: 0.7,
-				clouds: false, //true,
-				lowerClamp: new Vector2(0, 1),
-				maxResolution: 512,
-				cloudAlbedo: 1.0,
-				groundAlbedo: 1.1,
-				directNoise: false,
-				lowerClip: new Vector2(0, 0),
-				range: new Vector2(0.2, 0.4),
-			},
-		],
-		[
-			'ice',
-			{
-				upperColor: new Color3(1.0, 1.0, 1.0),
-				lowerColor: new Color3(0.7, 0.7, 0.9),
-				haloColor: new Color3(1.0, 1.0, 1.0),
-				seed: 0.8,
-				cloudSeed: 0.4,
-				clouds: false, //true,
-				lowerClamp: new Vector2(0, 1),
-				maxResolution: 256,
-				cloudAlbedo: 1.0,
-				groundAlbedo: 1.1,
-				directNoise: false,
-				lowerClip: new Vector2(0, 0),
-				range: new Vector2(0.3, 0.4),
-			},
-		],
-		[
-			'desert',
-			{
-				upperColor: new Color3(0.9, 0.3, 0),
-				lowerColor: new Color3(1.0, 0.5, 0.1),
-				haloColor: new Color3(1.0, 0.5, 0.1),
-				seed: 0.18,
-				cloudSeed: 0.6,
-				clouds: false,
-				lowerClamp: new Vector2(0.3, 1),
-				maxResolution: 512,
-				cloudAlbedo: 1.0,
-				groundAlbedo: 1.0,
-				directNoise: false,
-				lowerClip: new Vector2(0, 0),
-				range: new Vector2(0.3, 0.4),
-			},
-		],
-		[
-			'islands',
-			{
-				upperColor: new Color3(0.4, 2.0, 0.4),
-				lowerColor: new Color3(0, 0.2, 2.0),
-				haloColor: new Color3(0, 0.2, 2.0),
-				seed: 0.15,
-				cloudSeed: 0.6,
-				clouds: false, //true,
-				lowerClamp: new Vector2(0.6, 1),
-				maxResolution: 512,
-				cloudAlbedo: 1.0,
-				groundAlbedo: 1.2,
-				directNoise: false,
-				lowerClip: new Vector2(0, 0),
-				range: new Vector2(0.2, 0.3),
-			},
-		],
-		[
-			'moon',
-			{
-				upperColor: new Color3(2.0, 1.0, 0),
-				lowerColor: new Color3(0, 0.2, 1.0),
-				cloudSeed: 0.6,
-				lowerClamp: new Vector2(0.6, 1),
-				cloudAlbedo: 0.9,
-				range: new Vector2(0.3, 0.35),
-				haloColor: new Color3(0, 0, 0),
-				seed: 0.5,
-				clouds: false,
-				groundAlbedo: 0.7,
-				directNoise: true,
-				lowerClip: new Vector2(0.5, 0.9),
-			},
-		],
-	]);
+	static biomes = biomes;
 }

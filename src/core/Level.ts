@@ -20,11 +20,15 @@ import type { SerializedShip } from './entities/Ship';
 import { Player } from './entities/Player';
 import type { SerializedPlayer } from './entities/Player';
 import type { Node, SerializedNode } from './Node';
-import { LevelEvent, LevelEventData } from './events';
+import { LevelEvent } from './events';
+import type { EventData } from './events';
 import type { Item } from './generic/items';
 import type { GenericShip, ShipType } from './generic/ships';
 import { isResearchLocked, priceOfResearch } from './generic/research';
 import type { Research, ResearchID } from './generic/research';
+import type { Berth } from './stations/Berth';
+import { systemNames } from './generic/level';
+import { biomes } from './generic/planets';
 
 export interface SerializedLevel {
 	date: string;
@@ -38,8 +42,32 @@ export interface SerializedLevel {
 
 interface PlayerActionDataTypes {
 	create_item: Item;
-	create_ship: GenericShip;
+	create_ship: {
+		ship: GenericShip,
+		berth?: Berth
+	};
 	do_research: Research;
+}
+
+export interface CelestialBodyGenerationOptions {
+	min: number;
+	max: number;
+	radius_min: number;
+	radius_max: number;
+}
+
+export interface StarGenerationOptions extends CelestialBodyGenerationOptions {
+	color_min: number[]
+	color_max: number[]
+}
+
+export interface PlanetGenerationOptions extends CelestialBodyGenerationOptions {
+	distance_max: number;
+}
+
+export interface SystemGenerationOptions {
+	stars: StarGenerationOptions;
+	planets: PlanetGenerationOptions;
 }
 
 export class Level extends EventTarget {
@@ -91,9 +119,9 @@ export class Level extends EventTarget {
 				}
 				break;
 			case 'create_ship':
-				if (player.hasItems(data.recipe)) {
-					player.removeItems(data.recipe);
-					const ship = new Ship(null, player.level, { type: data.id as ShipType, power: player.power });
+				if (player.hasItems(data.ship.recipe)) {
+					player.removeItems(data.ship.recipe);
+					const ship = new Ship(null, player.level, { type: data.ship.id as ShipType, power: player.power });
 					ship.parent = ship.owner = player;
 					player.fleet.push(ship);
 				}
@@ -168,37 +196,36 @@ export class Level extends EventTarget {
 	// generation
 	async generateRegion(regionPosition: Vector2) {
 		await this.ready();
-		const name = Level.system.names[random.int(0, Level.system.names.length - 1)],
+		const name = systemNames[random.int(0, systemNames.length - 1)],
 			systemPosition = random.cords(config.region_size / 2, true).addInPlaceFromFloats(regionPosition.x, 0, regionPosition.y);
 		await this.generateSystem(name, systemPosition);
 	}
 
-	async generateSystem(name: string, position: Vector3) {
+	async generateSystem(name: string, position: Vector3, options: SystemGenerationOptions = config.system_generation) {
 		const localDifficulty = Math.max(Math.log10(Vector3.Distance(Vector3.Zero(), position)) - 1, 0.25);
-		const star = new Star(null, this, { radius: random.int(300, 500) });
+		const star = new Star(null, this, { radius: random.int(options.stars.radius_min, options.stars.radius_max) });
 		star.name = name;
 		star.position = position;
 		star.color = Color3.FromArray([
-			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
-			Math.random() ** 3 / 2 + random.float(0.3, 0.4),
+			Math.random() ** 3 / 2 + random.float(options.stars.color_min[0], options.stars.color_max[0]),
+			Math.random() ** 3 / 2 + random.float(options.stars.color_min[1], options.stars.color_max[1]),
+			Math.random() ** 3 / 2 + random.float(options.stars.color_min[2], options.stars.color_max[2]),
 		]);
-		const nameMode = random.bool,
-			planetNum = random.int(1, Level.system.maxPlanets),
-			names = random.bool ? greek.slice(0, planetNum) : range(1, planetNum + 1),
+		const usePrefix = random.bool(),
+			planetCount = random.int(options.planets.min, options.planets.max),
+			names = random.bool() ? greek.slice(0, planetCount) : range(1, planetCount + 1),
 			planets = [];
 		for (let i = 0; i < names.length; i++) {
-			const planetName = nameMode ? names[i] + ' ' + name : name + ' ' + names[i],
-				radius = random.int(25, 50);
+			const radius = random.int(options.planets.radius_min, options.planets.radius_max);
 			const planet = new Planet(null, this, {
 				radius,
 				fleet: Ship.GenerateFleetFromPower(this.difficulty * localDifficulty * (i + 1)),
 				rewards: {},
 			});
 
-			planet.name = random.int(0, 999) == 0 ? 'Jude' : planetName;
-			planet.position = random.cords(random.int((star.radius + radius) * 1.5, config.planet_max_distance), true).add(position);
-			planet.biome = ['earthlike', 'volcanic', 'jungle', 'ice', 'desert', 'moon'][random.int(0, 5)];
+			planet.name = random.int(0, 999) == 0 ? 'Jude' : usePrefix ? names[i] + ' ' + name : name + ' ' + names[i];
+			planet.position = random.cords(random.int((star.radius + radius) * 1.5, options.planets.distance_max), true).add(position);
+			planet.biome = biomes[random.int(0, 5)];
 
 			planets[i] = planet;
 		}
@@ -209,7 +236,7 @@ export class Level extends EventTarget {
 		return this.#performanceMonitor.averageFPS;
 	}
 
-	emit(type: string, emitter: SerializedLevel | SerializedNode, data?: LevelEventData): boolean {
+	emit(type: string, emitter: SerializedLevel | SerializedNode, data?: EventData): boolean {
 		const event = new LevelEvent(type, emitter, data, this);
 		return super.dispatchEvent(event);
 	}
@@ -270,6 +297,18 @@ export class Level extends EventTarget {
 				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
 			}
 		}
+
+		for(const berth of [...this.bodies.values()].filter((body: CelestialBody) => body.node_type == 'berth') as Berth[]){
+			berth.productionTime = Math.max(berth.productionTime - 1, 0);
+			if(berth.productionTime == 0 && berth.productionID) {
+				
+				const ship = new Ship(null, this, { type: berth.productionID });
+				ship.position = berth.absolutePosition;
+				ship.owner = berth.station.owner;
+				berth.productionID = null;
+				this.emit('ship.created', berth.serialize(), { ship });
+			} 
+		}
 	}
 
 	serialize(): SerializedLevel {
@@ -301,105 +340,36 @@ export class Level extends EventTarget {
 		return data;
 	}
 
-	static upgrades = new Map([
-		['infdev_11', data => ({ ...data, version: 'alpha_1.0.0' })],
-		['infdev_12', data => ({ ...data, version: 'alpha_1.0.0' })],
-		[
-			'alpha_1.2.0',
-			data => ({
-				...data,
-				entities: data.entities.map(e => {
-					e.class = e.shipType;
-					return e;
-				}),
-			}),
-		],
-	]);
-
-	static upgrade(data) {
-		while (version != data.version && Level.upgrades.has(data.version)) {
-			data = Level.upgrades.get(data.version)(data);
-			if (version != data.version && !Level.upgrades.has(data.version)) {
-				alert(`Can't upgrade level from ${versions.get(data.version).text} to ${versions.get(version).text}.`);
-			}
+	static async upgrade(data: SerializedLevel) {
+		switch(data.version) {
+			case 'infdev_1':
+			case 'infdev_2':
+			case 'infdev_3':
+			case 'infdev_4':
+			case 'infdev_5':
+			case 'infdev_6':
+			case 'infdev_7':
+			case 'infdev_8':
+			case 'infdev_9':
+			case 'infdev_10':
+			case 'infdev_11':
+			case 'alpha_1.0.0':
+			case 'alpha_1.1.0':
+			case 'alpha_1.2.0':
+			case 'alpha_1.2.1':
+			case 'alpha_1.3.0':
+			case 'alpha_1.3.1':
+			case 'alpha_1.4.0':
+			case 'alpha_1.4.1':
+			case 'alpha_1.4.2':
+				throw `Upgrading from ${versions.get(data.version).text} is not supported`;
 		}
 		return data;
 	}
 
-	static system = {
-		names: [
-			'Abrigato',
-			'Kerali',
-			'Kaltez',
-			'Suzum',
-			'Vespa',
-			'Coruscare',
-			'Vulca',
-			'Jaeger',
-			'Kashyyyk',
-			'Outpost42',
-			'Victoria',
-			'Gesht',
-			'Sanctuary',
-			'Snowmass',
-			'Ja',
-			'Keeg',
-			'Haemeiguli',
-			'Borebalae',
-			'Albataetarius',
-			'Hataerius',
-			'Achernaiphoros',
-			'Antadrophei',
-			'Hoemeirai',
-			'Antabalis',
-			'Hoereo',
-			'Pazadam',
-			'Equidor',
-			'Pax',
-			'Xena',
-			'Titan',
-			'Oturn',
-			'Thuamia',
-			'Heuthea',
-			'Ditharus',
-			'Muxater',
-			'Trukovis',
-			'Bichotune',
-			'Etis',
-			'Leorus',
-			'Aphus',
-			'Harophos',
-			'Athena',
-			'Hades',
-			'Icarus',
-			'Ureus',
-			'Xentos Prime',
-			'Ketlak',
-			'Aerox',
-			'Thryox',
-			'Stratus',
-			'Nox',
-			'Sanctum',
-			'Pastūra',
-			'Tinctus',
-			'Morbus',
-			'Neos',
-			'Nomen',
-			'Numerus',
-			'Pax',
-			'Fornax',
-			'Skorda',
-			'Alli',
-			'Resurs',
-		],
-		size: 5000,
-		maxPlanets: 9,
-	};
-
 	static FromData(levelData: SerializedLevel, level?: Level): Level {
 		if (levelData.version != version) {
-			alert(`Can't load save: wrong version`);
-			throw new Error(`Can't load save from data: wrong version (${levelData.version})`);
+			throw new Error(`Can't load level data: wrong version`);
 		}
 
 		level ??= new Level(levelData.name);
@@ -419,8 +389,15 @@ export class Level extends EventTarget {
 				default:
 			}
 		}
+		const entities = Object.values(levelData.entities);
 
-		for (const data of Object.values(levelData.entities)) {
+		/**
+		 * Note: entities is sorted to make sure all ships are loaded first. 
+		 * This prevents `level.getNodeByID(shipData) as Ship` in the Player constructor from returning null
+		 * Which in turn prevents `ship.owner = ship.parent = this` from throwing an error
+		 */
+		entities.sort(e => e.node_type == 'player' ? 1 : -1);
+		for (const data of entities) {
 			switch (data.node_type) {
 				case 'player':
 					Player.FromData(data as SerializedPlayer, level);

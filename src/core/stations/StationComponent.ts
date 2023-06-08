@@ -1,5 +1,5 @@
-import { CelestialBody } from './CelestialBody';
-import type { SerializedCelestialBody } from './CelestialBody';
+import { CelestialBody } from '../bodies/CelestialBody';
+import type { SerializedCelestialBody } from '../bodies/CelestialBody';
 import type { Level } from '../Level';
 import type { Station } from './Station';
 import { GenericStationComponentID, stationComponents } from '../generic/stationComponents';
@@ -9,29 +9,24 @@ export interface SerializedStationComponent extends SerializedCelestialBody {
 	type: string;
 }
 
+export interface StationComponentOptions {
+	type: GenericStationComponentID;
+}
+
 export class StationComponent extends CelestialBody {
 	hp: number;
-	#station: Station;
+	station: Station;
 	connections: StationComponent[] = [];
 	type: GenericStationComponentID;
-	constructor(id: string, level: Level, { type, station }) {
+	constructor(id: string, level: Level, { type }: StationComponentOptions) {
 		super(id, level, { radius: 1 });
 
 		this.type = type;
 		this.hp = this.generic.hp;
-		this.#station = station;
 	}
 
 	get generic() {
 		return StationComponent.generic[this.type];
-	}
-
-	get station() {
-		return this.#station;
-	}
-
-	set station(val) {
-		this.#station = val;
 	}
 
 	addConnection(component: StationComponent, thisConnecter: number, componentConnecter: number) {
@@ -44,7 +39,7 @@ export class StationComponent extends CelestialBody {
 			throw new ReferenceError(`Subcomponent connecter "${componentConnecter}" does not exist`);
 		}
 
-		this.#station.components.push(component);
+		this.station.components.push(component);
 		this.connections[thisConnecter] = component;
 		component.connections[componentConnecter] = this;
 
@@ -72,7 +67,7 @@ export class StationComponent extends CelestialBody {
 	}
 
 	remove() {
-		this.#station.components.splice(this.#station.components.indexOf(this), 1);
+		this.station.components.splice(this.station.components.indexOf(this), 1);
 		for (const connection of this.connections) {
 			this.removeConnection(connection);
 		}

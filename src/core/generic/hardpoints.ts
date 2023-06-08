@@ -4,6 +4,11 @@ export interface GenericHardpoint {
 	range: number;
 	critChance: number;
 	critFactor: number;
+
+	/**
+	 * The different node_types's that the hardpoint can target
+	 */
+	targets: string[];
 	projectile: {
 		id: string;
 		count: number;
@@ -19,6 +24,7 @@ const genericHardpoints = {
 		range: 200,
 		critChance: 0.05,
 		critFactor: 1.5,
+		targets: [ 'ship', 'station' ],
 		projectile: {
 			id: 'laser_projectile',
 			count: 1,
@@ -30,7 +36,7 @@ const genericHardpoints = {
 
 export type HardpointType = keyof typeof genericHardpoints;
 
-export type GenericHardpointCollection<T = number> = { [key in HardpointType]: T };
+export type GenericHardpointCollection<T = number> = Record<HardpointType, T>;
 
 const _genericHardpoints: GenericHardpointCollection<GenericHardpoint> = genericHardpoints;
 export { _genericHardpoints as genericHardpoints };

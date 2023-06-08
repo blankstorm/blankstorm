@@ -11,19 +11,20 @@ import { contextMenu } from './contextmenu';
 import type { LiveSave } from '../Save';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
+import type { UIContext } from './context';
 
 export const item_ui = {},
 	research_ui = {},
 	ship_ui = {};
-export function init(player: Player, level: LiveSave) {
+export function init(context: UIContext) {
 	for (const [id, item] of Object.entries(items)) {
-		item_ui[id] = new ItemUI(item, player, level);
+		item_ui[id] = new ItemUI(item, context);
 	}
 	for (const [id, _research] of Object.entries(research)) {
-		research_ui[id] = new ResearchUI(_research, player, level);
+		research_ui[id] = new ResearchUI(_research, context);
 	}
 	for (const [type, genericShip] of Object.entries(Ship.generic)) {
-		ship_ui[type] = new ShipUI(genericShip, player, level);
+		ship_ui[type] = new ShipUI(genericShip, context);
 	}
 }
 export function update(player: Player, level: LiveSave) {

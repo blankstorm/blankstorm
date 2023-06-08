@@ -1,11 +1,10 @@
 import type { Item } from '../../core/generic/items';
-import type { Player } from '../../core/entities/Player';
-import type { Level } from '../../core/Level';
 import { locales } from '../locales';
 import $ from 'jquery';
+import type { UIContext } from './context';
 
 export class ItemUI extends HTMLDivElement {
-	constructor(item: Item, player: Player, level: Level) {
+	constructor(item: Item, context: UIContext) {
 		super();
 
 		$(`<span style=text-align:right;>${locales.text(`item.${item.id}.name`)}${item.rare ? ` (rare)` : ``}: </span>
@@ -13,11 +12,11 @@ export class ItemUI extends HTMLDivElement {
 
 		$(this)
 			.on('click', () => {
-				level.tryPlayerAction(player.id, 'create_item', item);
+				context.level.tryPlayerAction(context.playerID, 'create_item', item);
 			})
 			.removeAttr('clickable')
 			.attr('bg', 'none')
 			.appendTo('div.inv');
 	}
 }
-customElements.define('item-ui', ItemUI, { extends: 'div' });
+customElements.define('ui-item', ItemUI, { extends: 'div' });

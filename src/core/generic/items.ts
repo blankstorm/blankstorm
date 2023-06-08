@@ -1,11 +1,5 @@
-import { research } from './research';
-import type { ResearchCollection } from './research';
-
-export interface Producible {
-	id: string;
-	recipe?: Partial<ItemCollection<number>>;
-	requires?: Partial<ResearchCollection<number>>;
-}
+import { config } from '../meta';
+import { Producible } from './production';
 
 export interface Item extends Producible {
 	rare: boolean;
@@ -14,16 +8,16 @@ export interface Item extends Producible {
 }
 
 const items = {
-	titanium: { id: 'titanium', rare: false, value: 1, weight: 1 },
-	quartz: { id: 'quartz', rare: false, value: 2, weight: 0.5 },
-	hydrogen: { id: 'hydrogen', rare: false, value: 4, weight: 1 },
-	ancient_tech: { id: 'ancient_tech', rare: true, value: 1000, weight: 1 },
-	code_snippets: { id: 'code_snippets', rare: true, value: 1000, weight: 1 },
-};
+	titanium: { id: 'titanium', productionTime: config.tick_rate, rare: false, value: 1, weight: 1 },
+	quartz: { id: 'quartz', productionTime: config.tick_rate, rare: false, value: 2, weight: 0.5 },
+	hydrogen: { id: 'hydrogen', productionTime: config.tick_rate, rare: false, value: 4, weight: 1 },
+	ancient_tech: { id: 'ancient_tech', productionTime: config.tick_rate, rare: true, value: 1000, weight: 1 },
+	code_snippets: { id: 'code_snippets', productionTime: config.tick_rate, rare: true, value: 1000, weight: 1 },
+} as const;
 
 export type ItemID = keyof typeof items;
 
-export type ItemCollection<T = number> = { [key in ItemID]: T };
+export type ItemCollection<T = number> = Record<ItemID, T>;
 
 const _items: ItemCollection<Item> = items;
 export { _items as items };
@@ -39,16 +33,3 @@ export interface LootTableEntry {
 }
 
 export type LootTable = LootTableEntry[];
-
-export function computeProductionDifficulty(thing: Producible, recipeScale = 1): number {
-	let difficulty = 0;
-	for (const [id, amount] of Object.entries(thing.recipe)) {
-		const _difficulty = (Math.log10(items[id].value) + 1) * Math.log10((amount / 1000) * recipeScale + 1);
-		difficulty += _difficulty;
-	}
-	for (const [id, level] of Object.entries(thing.requires)) {
-		const _difficulty = Math.log10(computeProductionDifficulty(research[id], research[id].scale ** level));
-		difficulty += _difficulty;
-	}
-	return difficulty;
-}
