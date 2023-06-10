@@ -8,7 +8,7 @@ export class StationComponentRenderer extends ModelRenderer implements Renderer<
 		super(id, scene);
 	}
 
-	static async FromData(data: SerializedStationComponent, scene: Scene) {
+	static async FromJSON(data: SerializedStationComponent, scene: Scene) {
 		const component = new this(data.id, scene);
 		await component.update(data);
 		return component;

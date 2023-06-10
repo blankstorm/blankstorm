@@ -118,7 +118,7 @@ export class Save {
 			this.#data.activePlayer = playerID;
 		}
 		this.updateData();
-		return LiveSave.FromData(this.data);
+		return LiveSave.FromJSON(this.data);
 	}
 
 	remove() {
@@ -150,16 +150,16 @@ export class LiveSave extends ClientLevel {
 			if (store) store.selected = this.id;
 			setCurrent(this);
 			renderer.clear();
-			renderer.update(this.serialize());
+			renderer.update(this.toJSON());
 			setPaused(false);
 		} else {
 			throw 'That save is not compatible with the current game version';
 		}
 	}
 
-	static FromData(saveData: SerializedClientLevel) {
+	static FromJSON(saveData: SerializedClientLevel) {
 		const save = new LiveSave(saveData.name);
-		ClientLevel.FromData(saveData, save);
+		ClientLevel.FromJSON(saveData, save);
 		return save;
 	}
 

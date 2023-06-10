@@ -52,7 +52,7 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Seriali
 		}
 	}
 
-	static async FromData(data: SerializedHardpoint, scene: Scene) {
+	static async FromJSON(data: SerializedHardpoint, scene: Scene) {
 		const hardpoint = new this(data.id, scene);
 		await hardpoint.update(data);
 		return hardpoint;

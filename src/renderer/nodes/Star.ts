@@ -30,7 +30,7 @@ export class StarRenderer extends CelestialBodyRenderer implements Renderer<Seri
 		this.__material.emissiveColor = Color3.FromArray(data.color);
 	}
 
-	static async FromData(data: SerializedStar, scene: Scene) {
+	static async FromJSON(data: SerializedStar, scene: Scene) {
 		const star = new this(data.id, scene);
 		await star.update(data);
 		return star;

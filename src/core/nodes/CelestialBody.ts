@@ -28,7 +28,7 @@ export class CelestialBody extends Node {
 	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true), fleet = [] }) {
 		super(id, level);
 		this.radius = radius;
-		this.rewards = Storage.FromData({ items: rewards, max: 1e10 });
+		this.rewards = Storage.FromJSON({ items: rewards, max: 1e10 });
 		this.fleetPosition = fleetPosition;
 		for (const shipOrType of fleet) {
 			if (shipOrType instanceof Ship) {
@@ -39,25 +39,25 @@ export class CelestialBody extends Node {
 				ship.position.addInPlace(this.fleetPosition);
 			}
 		}
-		setTimeout(() => level.emit('body.created', this.serialize()));
+		setTimeout(() => level.emit('body.created', this.toJSON()));
 	}
 
 	remove() {
-		this.level.emit('body.removed', this.serialize());
+		this.level.emit('body.removed', this.toJSON());
 		super.remove();
 	}
 
-	serialize(): SerializedCelestialBody {
-		return Object.assign(super.serialize(), {
+	toJSON(): SerializedCelestialBody {
+		return Object.assign(super.toJSON(), {
 			fleetPosition: this.fleetPosition.asArray(),
 			fleet: this.fleet.map(ship => ship.id),
-			rewards: this.rewards.serialize().items,
+			rewards: this.rewards.toJSON().items,
 			radius: this.radius,
 		});
 	}
 
-	static FromData(data: SerializedCelestialBody, level: Level, constructorOptions): CelestialBody {
-		return super.FromData(data, level, {
+	static FromJSON(data: SerializedCelestialBody, level: Level, constructorOptions): CelestialBody {
+		return super.FromJSON(data, level, {
 			...constructorOptions,
 			radius: data.radius,
 			rewards: data.rewards,

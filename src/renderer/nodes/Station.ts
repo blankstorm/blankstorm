@@ -24,7 +24,7 @@ export class StationRenderer extends TransformNode implements Renderer<Serialize
 		}
 	}
 
-	static async FromData(data: SerializedStation, scene: Scene) {
+	static async FromJSON(data: SerializedStation, scene: Scene) {
 		const station = new this(data.id, scene);
 		await station.update(data);
 		return station;

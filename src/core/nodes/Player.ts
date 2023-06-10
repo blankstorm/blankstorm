@@ -30,11 +30,11 @@ export class Player extends Entity {
 	constructor(id: string, level: Level, { fleet }: { fleet: (SerializedShip | Ship | string)[] }) {
 		super(id, level);
 		for (const shipData of fleet) {
-			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? (level.getNodeByID(shipData) as Ship) : Ship.FromData(shipData, level);
+			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? (level.getNodeByID(shipData) as Ship) : Ship.FromJSON(shipData, level);
 			ship.owner = ship.parent = this;
 			this.fleet.push(ship);
 		}
-		setTimeout(() => level.emit('player.created', this.serialize()));
+		setTimeout(() => level.emit('player.created', this.toJSON()));
 	}
 
 	get items(): ItemCollection {
@@ -82,7 +82,7 @@ export class Player extends Entity {
 				}
 			}
 		}
-		this.level.emit('player.items.change', this.serialize(), this.items);
+		this.level.emit('player.items.change', this.toJSON(), this.items);
 	}
 
 	removeItems(items: Partial<ItemCollection>) {
@@ -94,7 +94,7 @@ export class Player extends Entity {
 				items[item] -= stored;
 			}
 		}
-		this.level.emit('player.items.change', this.serialize(), this.items);
+		this.level.emit('player.items.change', this.toJSON(), this.items);
 	}
 
 	removeAllItems() {
@@ -120,16 +120,16 @@ export class Player extends Entity {
 		for (const ship of this.fleet) {
 			ship.remove();
 		}
-		this.level.emit('player.reset', this.serialize());
+		this.level.emit('player.reset', this.toJSON());
 	}
 
 	remove() {
-		this.level.emit('player.removed', this.serialize());
+		this.level.emit('player.removed', this.toJSON());
 		super.remove();
 	}
 
-	serialize(): SerializedPlayer {
-		return Object.assign(super.serialize(), {
+	toJSON(): SerializedPlayer {
+		return Object.assign(super.toJSON(), {
 			fleet: this.fleet.map(ship => ship.id),
 			xp: this.xp,
 			xpPoints: this.xpPoints,
@@ -137,7 +137,7 @@ export class Player extends Entity {
 		});
 	}
 
-	static FromData(data: SerializedPlayer, level: Level): Player {
-		return super.FromData(data, level, data) as Player;
+	static FromJSON(data: SerializedPlayer, level: Level): Player {
+		return super.FromJSON(data, level, data) as Player;
 	}
 }

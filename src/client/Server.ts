@@ -96,7 +96,7 @@ export class Server {
 		});
 		this.socket.on('event', (type, emitter, data) => {
 			if (type == 'level.tick') {
-				Level.FromData(emitter, this.level);
+				Level.FromJSON(emitter, this.level);
 				setCurrent(this.level);
 				this.level.sampleTick();
 			}

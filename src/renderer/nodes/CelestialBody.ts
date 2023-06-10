@@ -28,7 +28,7 @@ export class CelestialBodyRenderer extends Mesh implements Renderer<SerializedCe
 		}
 	}
 
-	static async FromData(data: SerializedCelestialBody, scene: Scene) {
+	static async FromJSON(data: SerializedCelestialBody, scene: Scene) {
 		const star = new this(data.id, scene);
 		await star.update(data);
 		return star;

@@ -22,14 +22,14 @@ export class ShipRenderer extends ModelRenderer implements Renderer<SerializedSh
 			if (this.hardpoints.has(hardpointData.id)) {
 				this.hardpoints.get(hardpointData.id).update(hardpointData);
 			} else {
-				const hardpoint = await HardpointRenderer.FromData(hardpointData, this.getScene());
+				const hardpoint = await HardpointRenderer.FromJSON(hardpointData, this.getScene());
 				hardpoint.parent = this;
 				this.hardpoints.set(hardpoint.id, hardpoint);
 			}
 		}
 	}
 
-	static async FromData(data: SerializedShip, scene: Scene) {
+	static async FromJSON(data: SerializedShip, scene: Scene) {
 		const ship = new this(data.id, scene);
 		await ship.update(data);
 		return ship;

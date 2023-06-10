@@ -49,7 +49,7 @@ server.on('ops.update', () => {
 	fs.writeFileSync('ops.json', JSON.stringify(server.ops));
 });
 server.on('save', () => {
-	fs.writeFileSync('level.json', JSON.stringify(server.level.serialize()));
+	fs.writeFileSync('level.json', JSON.stringify(server.level.toJSON()));
 });
 server.on('stop', () => {
 	process.exit();

@@ -226,7 +226,7 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Se
 		}
 	}
 
-	static async FromData(data: SerializedPlanet, scene: Scene) {
+	static async FromJSON(data: SerializedPlanet, scene: Scene) {
 		const planet = new this(data.id, scene);
 		await planet.update(data);
 		return planet;

@@ -157,30 +157,30 @@ export async function clear() {
 	cache = createEmptyCache();
 }
 
-export async function load(serializedNodes: SerializedNode[]) {
+export async function load(toJSONdNodes: SerializedNode[]) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	for (const data of serializedNodes) {
+	for (const data of toJSONdNodes) {
 		let node;
 		switch (data.nodeType) {
 			case 'star':
-				node = await StarRenderer.FromData(data as SerializedStar, scene);
+				node = await StarRenderer.FromJSON(data as SerializedStar, scene);
 				break;
 			case 'planet':
-				node = await PlanetRenderer.FromData(data as SerializedPlanet, scene);
+				node = await PlanetRenderer.FromJSON(data as SerializedPlanet, scene);
 				break;
 			case 'player':
 			case 'client':
-				node = await PlayerRenderer.FromData(data as SerializedPlayer, scene);
+				node = await PlayerRenderer.FromJSON(data as SerializedPlayer, scene);
 				/**
 				 * @todo change this
 				 */
 				camera.target = node.position;
 				break;
 			case 'ship':
-				node = await ShipRenderer.FromData(data as SerializedShip, scene);
+				node = await ShipRenderer.FromJSON(data as SerializedShip, scene);
 				break;
 			default:
 				throw new ReferenceError(`rendering for node type "${data.nodeType}" is not supported`);
@@ -292,7 +292,7 @@ export async function startFollowingPath(entityID: string, path: number[][]) {
 	if (!(renderer instanceof EntityRenderer)) {
 		throw new TypeError(`Node ${entityID} is not an entity`);
 	}
-	await renderer.followPath(Path.FromData(path));
+	await renderer.followPath(Path.FromJSON(path));
 }
 
 export function fireProjectile(hardpointID: string, target: TransformNode, options: FireProjectileOptions) {

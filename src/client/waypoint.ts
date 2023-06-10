@@ -78,8 +78,8 @@ export class Waypoint extends Node {
 		}
 	}
 
-	serialize(): SerializedWaypoint {
-		return Object.assign(super.serialize(), {
+	toJSON(): SerializedWaypoint {
+		return Object.assign(super.toJSON(), {
 			icon: this.icon,
 			color: this.color.asArray(),
 			readonly: this.readonly,

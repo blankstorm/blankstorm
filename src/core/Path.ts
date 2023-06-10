@@ -35,11 +35,11 @@ export default class Path {
 		this.path = path;
 	}
 
-	serialize(): number[][] {
+	toJSON(): number[][] {
 		return this.path.map(node => node.position.asArray());
 	}
 
-	static FromData(path: number[][]) {
+	static FromJSON(path: number[][]) {
 		return new this(path.map(vector => new PathNode(Vector3.FromArray(vector))));
 	}
 

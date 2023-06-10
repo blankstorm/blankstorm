@@ -8,7 +8,7 @@ export class EntityRenderer extends ModelRenderer implements Renderer<Serialized
 		super(id, scene);
 	}
 
-	static async FromData(data: SerializedEntity, scene: Scene) {
+	static async FromJSON(data: SerializedEntity, scene: Scene) {
 		const entity = new this(data.id, scene);
 		await entity.update(data);
 		return entity;

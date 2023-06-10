@@ -16,11 +16,11 @@ export class Entity extends Node {
 
 	constructor(id: string, level: Level) {
 		super(id, level);
-		setTimeout(() => level.emit('entity.created', this.serialize()));
+		setTimeout(() => level.emit('entity.created', this.toJSON()));
 	}
 
 	remove() {
-		this.level.emit('entity.removed', this.serialize());
+		this.level.emit('entity.removed', this.toJSON());
 		super.remove();
 	}
 
@@ -32,7 +32,7 @@ export class Entity extends Node {
 		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
 		const path = Path.Find(this.absolutePosition, location.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.level);
 		if (path.path.length > 0) {
-			this.level.emit('entity.follow_path.start', this.serialize(), { path: path.serialize() });
+			this.level.emit('entity.follow_path.start', this.toJSON(), { path: path.toJSON() });
 			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);
 			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.path.at(-2).position, path.path.at(-1).position);
 			rotation.x -= Math.PI / 2;
@@ -40,14 +40,14 @@ export class Entity extends Node {
 		}
 	}
 
-	serialize(): SerializedEntity {
-		return Object.assign(super.serialize(), {
+	toJSON(): SerializedEntity {
+		return Object.assign(super.toJSON(), {
 			isTargetable: this.isTargetable,
 			selected: this.selected,
 		});
 	}
 
-	static FromData(data: SerializedEntity, level: Level, constructorOptions: object) {
-		return super.FromData(data, level, constructorOptions);
+	static FromJSON(data: SerializedEntity, level: Level, constructorOptions: object) {
+		return super.FromJSON(data, level, constructorOptions);
 	}
 }

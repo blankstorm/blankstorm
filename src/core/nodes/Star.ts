@@ -13,14 +13,14 @@ export class Star extends CelestialBody {
 		super(id, level, options);
 	}
 
-	serialize(): SerializedStar {
-		return Object.assign(super.serialize(), {
+	toJSON(): SerializedStar {
+		return Object.assign(super.toJSON(), {
 			color: this.color.asArray(),
 		});
 	}
 
-	static FromData(data: SerializedStar, level: Level) {
-		const star = super.FromData(data, level, {}) as Star;
+	static FromJSON(data: SerializedStar, level: Level) {
+		const star = super.FromJSON(data, level, {}) as Star;
 		star.color = Color3.FromArray(data.color) || Color3.Random();
 		return star;
 	}

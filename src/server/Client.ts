@@ -26,8 +26,8 @@ export class Client extends Player {
 		this.server.blacklist.push(this.id);
 	}
 
-	serialize(): SerializedPlayer {
-		return Object.assign(super.serialize(), { nodeType: 'player' });
+	toJSON(): SerializedPlayer {
+		return Object.assign(super.toJSON(), { nodeType: 'player' });
 	}
 
 	static GetDisconnectReason(reason: string): string {

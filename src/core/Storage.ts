@@ -25,7 +25,7 @@ export class Storage extends Map {
 		}
 	}
 
-	serialize(): SerializedItemCollection {
+	toJSON(): SerializedItemCollection {
 		return { items: Object.fromEntries([...this]), max: this.#max };
 	}
 
@@ -43,7 +43,7 @@ export class Storage extends Map {
 		this.set(item, this.get(item) - amount);
 	}
 
-	static FromData(data) {
+	static FromJSON(data) {
 		return new this(data.max, data.items);
 	}
 }

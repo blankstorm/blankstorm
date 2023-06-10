@@ -158,7 +158,7 @@ export class ModelRenderer extends TransformNode {
 		}
 	}
 
-	static async FromData(data: SerializedNode, scene: Scene) {
+	static async FromJSON(data: SerializedNode, scene: Scene) {
 		const model = new this(data.id, scene);
 		model.update(data);
 		return model;

@@ -54,7 +54,7 @@ export class Ship extends Entity {
 				return;
 			}
 
-			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromData(hardpoints[i], level) : new Hardpoint(null, level, { type: info.type as HardpointType });
+			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromJSON(hardpoints[i], level) : new Hardpoint(null, level, { type: info.type as HardpointType });
 			hp.parent = hp.owner = this;
 			hp.info = info;
 			this.hardpoints.push(hp);
@@ -79,13 +79,13 @@ export class Ship extends Entity {
 		this.jumpCooldown = this.generic.jumpCooldown;
 	}
 
-	serialize() {
-		return Object.assign(super.serialize(), {
+	toJSON() {
+		return Object.assign(super.toJSON(), {
 			type: this.type,
 			hp: +this.hp.toFixed(3),
 			jumpCooldown: +this.jumpCooldown.toFixed(),
-			storage: this.storage.serialize().items,
-			hardpoints: this.hardpoints.map(hp => hp.serialize()),
+			storage: this.storage.toJSON().items,
+			hardpoints: this.hardpoints.map(hp => hp.toJSON()),
 		});
 	}
 
@@ -103,12 +103,12 @@ export class Ship extends Entity {
 		return fleet;
 	}
 
-	static FromData(data: SerializedShip, level: Level): Ship {
+	static FromJSON(data: SerializedShip, level: Level): Ship {
 		const max = this.generic[data.type].storage;
-		const ship = super.FromData(data, level, data) as Ship;
+		const ship = super.FromJSON(data, level, data) as Ship;
 		ship.hp = data.hp;
 		ship.jumpCooldown = data.jumpCooldown;
-		ship.storage = Storage.FromData({ ...data.storage, max });
+		ship.storage = Storage.FromJSON({ ...data.storage, max });
 		return ship;
 	}
 

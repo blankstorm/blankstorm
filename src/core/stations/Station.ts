@@ -26,17 +26,17 @@ export class Station extends CelestialBody {
 		return this.#core;
 	}
 
-	serialize() {
-		return Object.assign(super.serialize(), {
+	toJSON() {
+		return Object.assign(super.toJSON(), {
 			id: this.id,
-			components: this.#core.serialize(),
+			components: this.#core.toJSON(),
 		});
 	}
 
 	/**
 	 * @todo actually implement
 	 */
-	static FromData(data: SerializedStation, level: Level): Station {
-		return super.FromData(data, level, {}) as Station;
+	static FromJSON(data: SerializedStation, level: Level): Station {
+		return super.FromJSON(data, level, {}) as Station;
 	}
 }

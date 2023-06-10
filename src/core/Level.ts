@@ -235,7 +235,7 @@ export class Level extends EventTarget {
 
 	tick() {
 		this.sampleTick();
-		this.emit('level.tick', this.serialize());
+		this.emit('level.tick', this.toJSON());
 		for (const node of this.nodes.values()) {
 			if (Math.abs(node.rotation.y) > Math.PI) {
 				node.rotation.y += Math.sign(node.rotation.y) * 2 * Math.PI;
@@ -247,7 +247,7 @@ export class Level extends EventTarget {
 			if (node instanceof Ship) {
 				if (node.hp <= 0) {
 					node.remove();
-					this.emit('entity.death', node.serialize());
+					this.emit('entity.death', node.toJSON());
 					continue;
 				}
 				for (const hardpoint of node.hardpoints) {
@@ -297,12 +297,12 @@ export class Level extends EventTarget {
 				ship.position = berth.absolutePosition;
 				ship.owner = berth.station.owner;
 				berth.productionID = null;
-				this.emit('ship.created', berth.serialize(), { ship });
+				this.emit('ship.created', berth.toJSON(), { ship });
 			}
 		}
 	}
 
-	serialize(): SerializedLevel {
+	toJSON(): SerializedLevel {
 		const data = {
 			date: new Date().toJSON(),
 			nodes: [],
@@ -317,7 +317,7 @@ export class Level extends EventTarget {
 				continue;
 			}
 
-			data.nodes.push(node.serialize());
+			data.nodes.push(node.toJSON());
 		}
 
 		return data;
@@ -350,7 +350,7 @@ export class Level extends EventTarget {
 		return data;
 	}
 
-	static FromData(levelData: SerializedLevel, level?: Level): Level {
+	static FromJSON(levelData: SerializedLevel, level?: Level): Level {
 		if (levelData.version != version) {
 			throw new Error(`Can't load level data: wrong version`);
 		}
@@ -371,16 +371,16 @@ export class Level extends EventTarget {
 		for (const data of nodes) {
 			switch (data.nodeType) {
 				case 'player':
-					Player.FromData(data as SerializedPlayer, level);
+					Player.FromJSON(data as SerializedPlayer, level);
 					break;
 				case 'ship':
-					Ship.FromData(data as SerializedShip, level);
+					Ship.FromJSON(data as SerializedShip, level);
 					break;
 				case 'star':
-					Star.FromData(data as SerializedStar, level);
+					Star.FromJSON(data as SerializedStar, level);
 					break;
 				case 'planet':
-					Planet.FromData(data as SerializedPlanet, level);
+					Planet.FromJSON(data as SerializedPlanet, level);
 					break;
 				default:
 			}

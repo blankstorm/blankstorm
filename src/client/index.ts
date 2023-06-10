@@ -47,7 +47,7 @@ const updateSave = () => {
 	$('#pause .save').text('Saving...');
 	try {
 		const save = saves.get(current.id);
-		save.data = current.serialize();
+		save.data = current.toJSON();
 		saves.set(current.id, save);
 		chat('Game saved.');
 	} catch (err) {
@@ -438,7 +438,7 @@ $('#save-new .new').on('click', async () => {
 	$<HTMLDialogElement>('#save-new')[0].close();
 	const name = $('#save-new .name').val() as string;
 	const live = await LiveSave.CreateDefault(name, player.id, player.username);
-	new Save(live.serialize(), saves);
+	new Save(live.toJSON(), saves);
 	live.play(saves);
 });
 $('#pause .resume').on('click', () => {

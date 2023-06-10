@@ -7,5 +7,5 @@ export interface Renderer<S extends SerializedNode> extends TransformNode {
 }
 
 export interface RendererStatic<S extends SerializedNode> {
-	FromData(s: S, scene: Scene): Promise<Renderer<S>>;
+	FromJSON(s: S, scene: Scene): Promise<Renderer<S>>;
 }

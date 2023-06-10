@@ -23,15 +23,15 @@ export class Berth extends StationComponent implements Producer {
 		this.productionTime = +genericShips[type].productionTime;
 	}
 
-	serialize(): SerializedBerth {
-		return Object.assign(super.serialize(), {
+	toJSON(): SerializedBerth {
+		return Object.assign(super.toJSON(), {
 			productionID: this.productionID,
 			productionTime: this.productionTime,
 		});
 	}
 
-	static FromData(data: SerializedBerth, level: Level): Berth {
-		const berth = super.FromData(data, level) as Berth;
+	static FromJSON(data: SerializedBerth, level: Level): Berth {
+		const berth = super.FromJSON(data, level) as Berth;
 		berth.productionID = data.productionID;
 		berth.productionTime = data.productionTime;
 		return berth;

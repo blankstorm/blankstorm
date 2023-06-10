@@ -23,7 +23,7 @@ export class ClientLevel extends Level {
 
 	set isActive(isActive: boolean) {
 		this._isActive = isActive;
-		this.emit('active', this.serialize());
+		this.emit('active', this.toJSON());
 	}
 
 	constructor(name: string) {
@@ -39,18 +39,18 @@ export class ClientLevel extends Level {
 		});
 	}
 
-	serialize(): SerializedClientLevel {
-		const data = Object.assign(super.serialize(), {
+	toJSON(): SerializedClientLevel {
+		const data = Object.assign(super.toJSON(), {
 			activePlayer: this.activePlayer,
-			waypoints: this.waypoints.filter(wp => !wp.builtin).map(wp => wp.serialize()),
+			waypoints: this.waypoints.filter(wp => !wp.builtin).map(wp => wp.toJSON()),
 		});
 		data.nodes = data.nodes.filter(node => node.nodeType != 'waypoint');
 		return data;
 	}
 
-	static FromData(data: SerializedClientLevel, level?: ClientLevel): ClientLevel {
+	static FromJSON(data: SerializedClientLevel, level?: ClientLevel): ClientLevel {
 		level ||= new ClientLevel(data.name);
-		Level.FromData(data, level);
+		Level.FromJSON(data, level);
 		for (const _waypoint of data.waypoints || []) {
 			const waypoint = new Waypoint(_waypoint.id, _waypoint.readonly, false, level);
 			waypoint.name = _waypoint.name;

@@ -68,20 +68,20 @@ export class Node extends EventTarget {
 		this.id = id;
 		this.level = level;
 		level.nodes.set(id, this);
-		setTimeout(() => level.emit('node.created', this.serialize()));
+		setTimeout(() => level.emit('node.created', this.toJSON()));
 	}
 
 	emit(type: string, data?: EventData): boolean {
-		const event = new LevelEvent(type, this.serialize(), data, this.level);
+		const event = new LevelEvent(type, this.toJSON(), data, this.level);
 		return super.dispatchEvent(event);
 	}
 
 	remove() {
-		this.level.emit('node.removed', this.serialize());
+		this.level.emit('node.removed', this.toJSON());
 		this.level.nodes.delete(this.id);
 	}
 
-	serialize(): SerializedNode {
+	toJSON(): SerializedNode {
 		return {
 			id: this.id,
 			name: this.name,
@@ -94,7 +94,7 @@ export class Node extends EventTarget {
 		};
 	}
 
-	static FromData(data: SerializedNode, level: Level, constructorOptions: object): Node {
+	static FromJSON(data: SerializedNode, level: Level, constructorOptions: object): Node {
 		const node = new this(data.id, level, constructorOptions);
 		node.position = Vector3.FromArray(data.position || [0, 0, 0]);
 		node.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);

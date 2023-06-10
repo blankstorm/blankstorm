@@ -58,11 +58,11 @@ export class StationComponent extends CelestialBody {
 		return this.removeConnection(component);
 	}
 
-	serialize(): SerializedStationComponent {
-		return Object.assign(super.serialize(), {
+	toJSON(): SerializedStationComponent {
+		return Object.assign(super.toJSON(), {
 			type: this.type,
 			hp: this.hp,
-			connections: this.connections.map(component => component.serialize()),
+			connections: this.connections.map(component => component.toJSON()),
 		});
 	}
 
@@ -73,8 +73,8 @@ export class StationComponent extends CelestialBody {
 		}
 	}
 
-	static FromData(data: SerializedStationComponent, level: Level): StationComponent {
-		return super.FromData(data, level, data) as StationComponent;
+	static FromJSON(data: SerializedStationComponent, level: Level): StationComponent {
+		return super.FromJSON(data, level, data) as StationComponent;
 	}
 
 	static generic = stationComponents;

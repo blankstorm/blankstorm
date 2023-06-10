@@ -34,7 +34,7 @@ export class PlayerRenderer extends TransformNode implements Renderer<Serialized
 		}
 	}
 
-	static async FromData(data: SerializedPlayer, scene: Scene) {
+	static async FromJSON(data: SerializedPlayer, scene: Scene) {
 		const player = new this(data.id, scene);
 		await player.update(data);
 		return player;
