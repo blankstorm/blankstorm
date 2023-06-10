@@ -99,8 +99,9 @@ svg {
 #debug p {
 	position: fixed;
 }
-#debug span {
-	background-color: #2225;
+
+#debug span, #map-info span {
+	background-color: var(--bg-translucent-text);
 }
 
 .server-ping-rotate {
@@ -156,6 +157,29 @@ div.screenshots img {
 	border: 1px solid var(--text-color);
 	border-radius: 5px;
 	margin: 10px;
+}
+
+#map {
+	display: none;
+	z-index: 5;
+	background-color: #222;
+}
+
+#map-info {
+	position: absolute;
+	right: 1em;
+	top: 1em;
+}
+
+.map-marker {
+	transform-origin: center;
+}
+
+.waypoint-ui {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr) 6fr;
+	margin: 1em 25% 0 25%;
+	padding: 0.5em;
 }
 
 #waypoint-list {

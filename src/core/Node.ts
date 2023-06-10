@@ -1,5 +1,5 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { random } from './utils';
+import { random, resolveConstructors } from './utils';
 import type { Level } from './Level';
 import { EventData, LevelEvent } from './events';
 
@@ -10,7 +10,7 @@ export interface SerializedNode {
 	name: string;
 	owner: string;
 	parent: string;
-	node_type: string;
+	nodeType: string;
 	position: number[];
 	rotation: number[];
 	velocity: number[];
@@ -28,8 +28,12 @@ export class Node extends EventTarget {
 		this._name = name;
 	}
 
-	get node_type(): string {
+	get nodeType(): string {
 		return this.constructor.name.toLowerCase();
+	}
+
+	get nodeTypes(): string[] {
+		return resolveConstructors(this).map(c => c.toLowerCase());
 	}
 
 	level: Level;
@@ -82,7 +86,7 @@ export class Node extends EventTarget {
 			name: this.name,
 			owner: this.owner?.id,
 			parent: this.parent?.id,
-			node_type: this.node_type,
+			nodeType: this.nodeType,
 			position: this.position.asArray(),
 			rotation: this.rotation.asArray(),
 			velocity: this.velocity.asArray(),

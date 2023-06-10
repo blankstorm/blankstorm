@@ -1,13 +1,14 @@
 import { CelestialBody } from './CelestialBody';
 import type { SerializedCelestialBody } from './CelestialBody';
 import type { Level } from '../Level';
+import type { PlanetBiome } from '../generic/planets';
 
 export interface SerializedPlanet extends SerializedCelestialBody {
-	biome: string;
+	biome: PlanetBiome;
 }
 
 export class Planet extends CelestialBody {
-	biome: string;
+	biome: PlanetBiome;
 	constructor(id?: string, level?: Level, options?: ConstructorParameters<typeof CelestialBody>[2]) {
 		super(id, level, options);
 	}

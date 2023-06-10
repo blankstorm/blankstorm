@@ -149,10 +149,8 @@ export class LiveSave extends ClientLevel {
 			$('#hud').show();
 			if (store) store.selected = this.id;
 			setCurrent(this);
-			const serialized = this.serialize();
-			this.emit('active', serialized);
 			renderer.clear();
-			renderer.update(serialized);
+			renderer.update(this.serialize());
 			setPaused(false);
 		} else {
 			throw 'That save is not compatible with the current game version';

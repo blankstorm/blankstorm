@@ -1,36 +1,80 @@
 import $ from 'jquery';
 import { Level } from '../../core/Level';
+import { items } from '../../core/generic/items';
+import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
+import type { ResearchID } from '../../core/generic/research';
+import { genericShips } from '../../core/generic/ships';
+import type { Player } from '../../core/entities/Player';
 import { _mp, screenshots } from '../index';
 import { settings } from '../settings';
 import { locales } from '../locales';
-import { CelestialBody, items, research, Ship, Player, isResearchLocked, priceOfResearch } from '../../core/index';
-import type { ResearchID } from '../../core/index';
 import { ItemUI } from './item';
-import { minimize, confirm } from '../utils';
+import { minimize, confirm, $svg, toDegrees } from '../utils';
 import { contextMenu } from './contextmenu';
-import type { LiveSave } from '../Save';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
-import type { UIContext } from './context';
+import type { MarkerContext, UIContext } from './context';
+import { Marker } from './marker';
+import { config } from '../../core/meta';
+import type { ClientLevel } from '../ClientLevel';
+import type { Waypoint } from '../waypoint';
 
 export const item_ui = {},
 	research_ui = {},
-	ship_ui = {};
+	ship_ui = {},
+	markers: Map<string, Marker> = new Map(),
+	markerContext: MarkerContext = {
+		x: 0,
+		y: 0,
+		scale: 1,
+		rotation: 0,
+		uiContext: null,
+		get svgX() {
+			return this.x * -this.scale;
+		},
+		get svgY() {
+			return this.y * -this.scale;
+		},
+	};
+
 export function init(context: UIContext) {
+	markerContext.uiContext = context;
 	for (const [id, item] of Object.entries(items)) {
 		item_ui[id] = new ItemUI(item, context);
 	}
 	for (const [id, _research] of Object.entries(research)) {
 		research_ui[id] = new ResearchUI(_research, context);
 	}
-	for (const [type, genericShip] of Object.entries(Ship.generic)) {
+	for (const [type, genericShip] of Object.entries(genericShips)) {
 		ship_ui[type] = new ShipUI(genericShip, context);
 	}
+	const size = config.system_generation.max_size;
+	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
+	const grid = $svg('g') as unknown as JQuery<HTMLElement>;
+	grid.css('stroke', 'var(--bg-color)').appendTo('#map-markers');
+	for (let i = -size * 2; i < size * 2; i += 100) {
+		$svg('line')
+			.attr({
+				x1: -size * 2,
+				x2: size * 2,
+				y1: i,
+				y2: i,
+			})
+			.appendTo(grid);
+		$svg('line')
+			.attr({
+				x1: i,
+				x2: i,
+				y1: -size * 2,
+				y2: size * 2,
+			})
+			.appendTo(grid);
+	}
 }
-export function update(player: Player, level: LiveSave) {
-	if (level instanceof Level && player instanceof Player) {
+export function update(player: Player, level: ClientLevel) {
+	if (level instanceof Level && player.nodeType == 'player') {
 		$('div.screenshots').empty();
-		$('div.map>:not(button)').detach();
+		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
 
@@ -64,7 +108,7 @@ export function update(player: Player, level: LiveSave) {
 		}
 
 		//update ship info
-		for (const [id, ship] of Object.entries(Ship.generic)) {
+		for (const [id, ship] of Object.entries(genericShips)) {
 			const materials = Object.entries(ship.recipe).reduce(
 				(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.items[id])}/${minimize(amount)}`,
 				''
@@ -92,12 +136,30 @@ export function update(player: Player, level: LiveSave) {
 		for (const waypoint of level.waypoints) {
 			waypoint.updateVisibility();
 		}
-		for (const [id, body] of level.bodies) {
-			if (body instanceof CelestialBody) {
-				$('select.move').append((body.option = $(`<option value=${id}>${body.name}</option>`)));
+		$('#map-markers').attr(
+			'transform',
+			`translate(${markerContext.svgX} ${markerContext.svgY}) \
+			rotate(${toDegrees(markerContext.rotation)}) \
+			scale(${markerContext.scale})`
+		);
+		$('#map-info').html(
+			`<span>(${markerContext.x.toFixed(0)}, ${markerContext.y.toFixed(0)}) ${toDegrees(markerContext.rotation)}°</span><br><span>${markerContext.scale.toFixed(1)}x</span>`
+		);
+		for (const [id, node] of level.nodes) {
+			if (!markers.has(id) && Marker.supportsNodeType(node.nodeType)) {
+				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
+					continue;
+				}
+				const marker = new Marker(node, markerContext);
+				markers.set(id, marker);
+			}
+
+			if (markers.has(id)) {
+				markers.get(id).update();
 			}
 		}
 	}
+
 	$('.marker').hide();
 
 	screenshots.forEach(s => {
@@ -168,6 +230,6 @@ export function getLast() {
 	return lastUI;
 }
 
-export function setLast(value) {
+export function setLast(value: string) {
 	lastUI = value;
 }

@@ -3,6 +3,11 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import $ from 'jquery';
 $.ajaxSetup({ timeout: 3000 });
+$.event.special.wheel = {
+	setup: function (_, ns, handle) {
+		this.addEventListener('wheel', handle as unknown as EventListener, { passive: true });
+	},
+};
 
 import { GAME_URL, config, version, versions } from '../core/meta';
 import { isHex, isJSON, xpToLevel } from '../core/utils';
@@ -26,12 +31,17 @@ document.title = 'Blankstorm ' + versions.get(version).text;
 $('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
 
 $('#loading_cover p').text('Loading...');
-export let current: LiveSave;
-export function setCurrent(val) {
+import { ClientLevel } from './ClientLevel';
+export let current: ClientLevel;
+export function setCurrent(val: ClientLevel) {
+	if (current) {
+		current.isActive = false;
+	}
 	current = val;
+	current.isActive = true;
 }
 const updateSave = () => {
-	if (!(current instanceof LiveSave)) {
+	if (!(current instanceof ClientLevel)) {
 		throw 'Save Error: you must have a valid save selected.';
 	}
 	$('#pause .save').text('Saving...');
@@ -85,6 +95,31 @@ settings.items.get('screenshot').addEventListener('trigger', () => {
 settings.items.get('save').addEventListener('trigger', e => {
 	e.preventDefault();
 	updateSave();
+});
+
+$('#map,#map-markers').on('keydown', e => {
+	const speed = e.shiftKey ? 100 : 10,
+		max = config.system_generation.max_size / 2;
+	switch (e.key) {
+		case settings.get<Keybind>('map_move_left').key:
+			ui.markerContext.x = Math.max(ui.markerContext.x - speed, -max);
+			break;
+		case settings.get<Keybind>('map_move_right').key:
+			ui.markerContext.x = Math.min(ui.markerContext.x + speed, max);
+			break;
+		case settings.get<Keybind>('map_move_up').key:
+			ui.markerContext.y = Math.max(ui.markerContext.y - speed, -max);
+			break;
+		case settings.get<Keybind>('map_move_down').key:
+			ui.markerContext.y = Math.min(ui.markerContext.y + speed, max);
+			break;
+	}
+	ui.update(player.data(), current);
+});
+$('#map,#map-markers').on('wheel', jqe => {
+	const evt = jqe.originalEvent as WheelEvent;
+	ui.markerContext.scale = Math.min(Math.max(ui.markerContext.scale - Math.sign(evt.deltaY) * 0.1, 0.5), 5);
+	ui.update(player.data(), current);
 });
 
 $('#loading_cover p').text('Initializing locales...');
@@ -194,7 +229,7 @@ export const player: {
 	id: string;
 	username: string;
 	chat(...msg: string[]): void;
-	data(id?: string): Player & { oplvl: number };
+	data(id?: string): Player;
 	authData?: api.ApiReducedUserResult;
 } = {
 	id: '[guest]',
@@ -204,7 +239,7 @@ export const player: {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
-	data: (id?: string) => (_mp ? servers.get(servers.selected)?.level : current)?.entities?.get(id ?? player.id) ?? {},
+	data: (id?: string) => ((_mp ? servers.get(servers.selected)?.level : current)?.entities?.get(id ?? player.id) ?? {}) as unknown as Player,
 };
 
 onresize = () => {
@@ -459,7 +494,12 @@ $('#ingame-temp-menu div.nav button').on('click', e => {
 	}
 	$('#ingame-temp-menu > div.' + section).css('display', 'grid');
 });
-
+$('#map button.waypoints').on('click', () => {
+	$('#waypoint-list').show();
+});
+$('#waypoint-list button.back').on('click', () => {
+	$('#waypoint-list').hide();
+});
 $('#waypoint-list button.new').on('click', () => {
 	const dialog = $<HTMLDialogElement>('#waypoint-dialog');
 	dialog.find('input').val('');
@@ -569,13 +609,13 @@ canvas.on('click', e => {
 		renderer.getCamera().attachControl(canvas, true);
 	}
 
-	if (current instanceof LiveSave) {
+	if (current instanceof ClientLevel) {
 		renderer.handleCanvasClick(e, renderer.scene.getNodeById(player.id));
 	}
 	ui.update(player.data(), current);
 });
 canvas.on('contextmenu', e => {
-	if (current instanceof LiveSave) {
+	if (current instanceof ClientLevel) {
 		const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
 		for (const { entityRenderer, point } of data) {
 			const entity = current.getNodeByID(entityRenderer.id) as Entity;
@@ -635,7 +675,7 @@ $('button').on('click', () => {
 	playsound(sounds.get('ui'), +settings.get('sfx'));
 });
 setInterval(() => {
-	if (current instanceof LiveSave && !isPaused) {
+	if (current instanceof ClientLevel && !isPaused) {
 		current.tick();
 	}
 }, 1000 / config.tick_rate);

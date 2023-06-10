@@ -24,7 +24,7 @@ export const core: ListenerCollection<LevelEvent> = {
 		renderer.startFollowingPath(evt.emitter.id, evt.data.path);
 	},
 	'entity.death': async evt => {
-		if ('node_type' in evt.emitter && evt.emitter.node_type == 'ship') {
+		if ('nodeType' in evt.emitter && evt.emitter.nodeType == 'ship') {
 			playsound(sounds.get('destroy_ship'), +settings.get('sfx'));
 		}
 	},

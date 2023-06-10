@@ -9,6 +9,7 @@ export const config = {
 	region_size: 1e5,
 	tick_rate: 10,
 	system_generation: {
+		max_size: 5e3,
 		stars: {
 			min: 1,
 			max: 1,

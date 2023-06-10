@@ -2,7 +2,7 @@ import $ from 'jquery';
 import type { Waypoint } from '../waypoint';
 import { confirm } from '../utils';
 
-export class WaypointListItem extends HTMLLIElement {
+export class WaypointUI extends HTMLDivElement {
 	constructor(waypoint: Waypoint) {
 		super();
 		$('<span class="edit" style=text-align:center;;grid-column:2;><svg><use href=images/icons.svg#pencil /></svg></span>')
@@ -20,16 +20,13 @@ export class WaypointListItem extends HTMLLIElement {
 				if (yes) waypoint.remove();
 			})
 			.appendTo(this);
-		$(`<span class="icon" style=text-align:center;grid-column:4;><svg style="fill:${waypoint.color.toHexString()}"><use href=images/icons.svg#${
+		$(`<span class="icon" style=text-align:center;grid-column:4;><svg style="fill:${waypoint.color.toHexString()}"><use href="images/icons.svg#${
 			waypoint.icon || 'location-dot'
-		} /></svg></span>
+		}" /></svg></span>
 		<span class="name" style=text-align:left;grid-column:5>${waypoint.name}</span>
 		`).appendTo(this);
 
-		$(this).css({
-			display: 'grid',
-			'grid-template-columns': 'repeat(4, 1fr) 6fr',
-		});
+		$(this).addClass('waypoint-ui bg-normal');
 		if (waypoint.readonly) {
 			$(this)
 				.find('span')
@@ -38,4 +35,4 @@ export class WaypointListItem extends HTMLLIElement {
 		}
 	}
 }
-customElements.define('ui-waypoint', WaypointListItem, { extends: 'li' });
+customElements.define('ui-waypoint', WaypointUI, { extends: 'div' });

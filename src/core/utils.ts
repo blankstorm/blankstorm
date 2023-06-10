@@ -135,8 +135,8 @@ export class JSONFileMap /* implements Map */ {
 		this._write(map);
 	}
 
-	get(key: string): JSONValue {
-		return this._map.get(key);
+	get<T = JSONValue>(key: string): T {
+		return this._map.get(key) as T;
 	}
 
 	has(key: string): boolean {
@@ -268,10 +268,9 @@ export class FolderMap /* implements Map */ {
 	}
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function resolveConstructors(object): string[] {
 	const constructors = [];
-	let prototype = object; // eslint-disable-line @typescript-eslint/ban-types
+	let prototype = object;
 	while (prototype && !['Function', 'Object'].includes(prototype.constructor.name)) {
 		prototype = Object.getPrototypeOf(prototype);
 		constructors.push(prototype.constructor.name);

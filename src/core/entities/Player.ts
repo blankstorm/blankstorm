@@ -22,6 +22,7 @@ export class Player extends Entity {
 	xp = 0;
 	xpPoints = 0;
 	speed = 1;
+	oplvl?: number;
 	get power(): number {
 		return this.fleet.reduce((a, ship) => a + (ship.generic.power || 0), 0);
 	}

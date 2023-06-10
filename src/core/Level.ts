@@ -28,7 +28,7 @@ import { isResearchLocked, priceOfResearch } from './generic/research';
 import type { Research, ResearchID } from './generic/research';
 import type { Berth } from './stations/Berth';
 import { systemNames } from './generic/level';
-import { biomes } from './generic/planets';
+import { planetBiomes } from './generic/planets';
 
 export interface SerializedLevel {
 	date: string;
@@ -76,9 +76,9 @@ export class Level extends EventTarget {
 	version = version;
 	date = new Date();
 	difficulty = 1;
-	nodes = new Map();
-	bodies = new Map();
-	entities = new Map();
+	nodes: Map<string, Node> = new Map();
+	bodies: Map<string, CelestialBody> = new Map();
+	entities: Map<string, Entity> = new Map();
 	#initPromise: Promise<Level>;
 	#performanceMonitor = new PerformanceMonitor(60);
 
@@ -107,7 +107,7 @@ export class Level extends EventTarget {
 		const [action, data] = args;
 		const player = [...this.entities.values()].find(entity => entity instanceof Player && entity.id == id);
 
-		if (!player) {
+		if (!(player instanceof Player)) {
 			return false;
 		}
 
@@ -225,7 +225,7 @@ export class Level extends EventTarget {
 
 			planet.name = random.int(0, 999) == 0 ? 'Jude' : usePrefix ? names[i] + ' ' + name : name + ' ' + names[i];
 			planet.position = random.cords(random.int((star.radius + radius) * 1.5, options.planets.distance_max), true).add(position);
-			planet.biome = biomes[random.int(0, 5)];
+			planet.biome = planetBiomes[random.int(0, 5)];
 
 			planets[i] = planet;
 		}
@@ -256,11 +256,12 @@ export class Level extends EventTarget {
 			entity.position.addInPlace(entity.velocity);
 			entity.velocity.scaleInPlace(0.9);
 
-			if (entity.hp && entity.hp <= 0) {
-				entity.remove();
-				this.emit('entity.death', entity.serialize());
-				//Events: trigger event, for sounds
-			} else if (entity instanceof Ship) {
+			if (entity instanceof Ship) {
+				if (entity.hp <= 0) {
+					entity.remove();
+					this.emit('entity.death', entity.serialize());
+					continue;
+				}
 				for (const hardpoint of entity.hardpoints) {
 					hardpoint.reload = Math.max(--hardpoint.reload, 0);
 
@@ -274,7 +275,10 @@ export class Level extends EventTarget {
 						return previousDistance < currentDistance ? previous : current;
 					}, null);
 
-					if (target) {
+					/**
+					 * @todo Add support for targeting stations
+					 */
+					if (target instanceof Ship) {
 						const targetPoints = [...target.hardpoints, target].filter(targetHardpoint => {
 							const distance = Vector3.Distance(targetHardpoint.absolutePosition, hardpoint.absolutePosition);
 							return distance < hardpoint.generic.range;
@@ -298,7 +302,7 @@ export class Level extends EventTarget {
 			}
 		}
 
-		for (const berth of [...this.bodies.values()].filter((body: CelestialBody) => body.node_type == 'berth') as Berth[]) {
+		for (const berth of [...this.bodies.values()].filter((body: CelestialBody) => body.nodeType == 'berth') as Berth[]) {
 			berth.productionTime = Math.max(berth.productionTime - 1, 0);
 			if (berth.productionTime == 0 && berth.productionID) {
 				const ship = new Ship(null, this, { type: berth.productionID });
@@ -322,7 +326,7 @@ export class Level extends EventTarget {
 		};
 
 		for (const entity of this.entities.values()) {
-			if (!(entity instanceof Entity)) {
+			if (!entity.nodeTypes.includes('entity')) {
 				console.warn(`entity #${entity?.id} not serialized: not an entity`);
 			} else {
 				data.entities.push(entity.serialize());
@@ -330,7 +334,7 @@ export class Level extends EventTarget {
 		}
 
 		for (const body of this.bodies.values()) {
-			if (!(body instanceof CelestialBody)) {
+			if (!body.nodeTypes.includes('celestialbody')) {
 				console.warn(`body #${body?.id} not serialized: not a celestial body`);
 			} else {
 				data.bodies.push(body.serialize());
@@ -378,7 +382,7 @@ export class Level extends EventTarget {
 		level.difficulty = levelData.difficulty;
 
 		for (const data of Object.values(levelData.bodies)) {
-			switch (data.node_type) {
+			switch (data.nodeType) {
 				case 'star':
 					Star.FromData(data as SerializedStar, level);
 					break;
@@ -395,9 +399,9 @@ export class Level extends EventTarget {
 		 * This prevents `level.getNodeByID(shipData) as Ship` in the Player constructor from returning null
 		 * Which in turn prevents `ship.owner = ship.parent = this` from throwing an error
 		 */
-		entities.sort(e => (e.node_type == 'player' ? 1 : -1));
+		entities.sort(e => (e.nodeType == 'player' ? 1 : -1));
 		for (const data of entities) {
-			switch (data.node_type) {
+			switch (data.nodeType) {
 				case 'player':
 					Player.FromData(data as SerializedPlayer, level);
 					break;

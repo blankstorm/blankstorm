@@ -172,7 +172,7 @@ export async function load(levelData: { entities: SerializedEntity[]; bodies: Se
 
 	for (const data of levelData.bodies) {
 		let body;
-		switch (data.node_type) {
+		switch (data.nodeType) {
 			case 'star':
 				body = await StarRenderer.FromData(data as SerializedStar, scene);
 				break;
@@ -180,7 +180,7 @@ export async function load(levelData: { entities: SerializedEntity[]; bodies: Se
 				body = await PlanetRenderer.FromData(data as SerializedPlanet, scene);
 				break;
 			default:
-				throw new ReferenceError(`rendering for CelestialBody type "${data.node_type}" is not supported`);
+				throw new ReferenceError(`rendering for CelestialBody type "${data.nodeType}" is not supported`);
 		}
 
 		bodies.set(data.id, body);
@@ -188,7 +188,7 @@ export async function load(levelData: { entities: SerializedEntity[]; bodies: Se
 
 	for (const data of levelData.entities) {
 		let entity;
-		switch (data.node_type) {
+		switch (data.nodeType) {
 			case 'player':
 			case 'client':
 				entity = await PlayerRenderer.FromData(data as SerializedPlayer, scene);
@@ -201,7 +201,7 @@ export async function load(levelData: { entities: SerializedEntity[]; bodies: Se
 				entity = await ShipRenderer.FromData(data as SerializedShip, scene);
 				break;
 			default:
-				throw new ReferenceError(`rendering for Entity type "${data.node_type}" is not supported`);
+				throw new ReferenceError(`rendering for Entity type "${data.nodeType}" is not supported`);
 		}
 		entities.set(data.id, entity);
 	}
@@ -270,7 +270,7 @@ export function getCamera() {
 }
 
 export function handleCanvasClick(ev, owner) {
-	owner ??= [...this.entities].filter(e => e instanceof PlayerRenderer)[0];
+	owner ??= [...entities.values()].filter(e => e instanceof PlayerRenderer)[0];
 	if (!ev.shiftKey) {
 		for (const entity of entities.values()) {
 			if (entity instanceof ShipRenderer) {

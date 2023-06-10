@@ -5,6 +5,7 @@ import { SerializedWaypoint, Waypoint } from './waypoint';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { SerializedCelestialBody } from '../core/bodies/CelestialBody';
 import type { LevelEvent } from '../core/events';
+import { getIconForNode } from './utils';
 
 export interface SerializedClientLevel extends SerializedLevel {
 	waypoints: SerializedWaypoint[];
@@ -12,9 +13,19 @@ export interface SerializedClientLevel extends SerializedLevel {
 }
 
 export class ClientLevel extends Level {
-	isActive = false;
+	private _isActive = false;
 	activePlayer: string;
 	waypoints: Waypoint[] = [];
+
+	get isActive() {
+		return this._isActive;
+	}
+
+	set isActive(isActive: boolean) {
+		this._isActive = isActive;
+		this.emit('active', this.serialize());
+	}
+
 	constructor(name: string) {
 		super(name);
 
@@ -24,7 +35,7 @@ export class ClientLevel extends Level {
 			waypoint.name = body.name;
 			waypoint.position = Vector3.FromArray(body.position);
 			waypoint.color = Color3.FromHexString('#88ddff');
-			waypoint.icon = Waypoint.GetIconForCelestialBody(body);
+			waypoint.icon = getIconForNode(body);
 		});
 	}
 

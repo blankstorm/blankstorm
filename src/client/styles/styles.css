@@ -14,6 +14,7 @@
 	--bg-shadow: 0 0 6px hsl(var(--hue), 100%, 80%);
 	--hover-shadow: 0 0 8px hsl(var(--hue), 100%, 90%);
 	--bg-radius: 4px;
+	--bg-translucent-text: #2225;
 }
 * {
 	scrollbar-color: var(--text-color);

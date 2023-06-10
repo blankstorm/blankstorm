@@ -6,7 +6,7 @@ import type { Player } from './entities/Player';
 import { isJSON } from './utils';
 
 export interface CommandExecutionContext {
-	executor: Player & { oplvl: number };
+	executor: Player;
 }
 
 export interface Command {

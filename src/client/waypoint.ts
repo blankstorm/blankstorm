@@ -6,8 +6,7 @@ import type { SerializedNode } from '../core/Node';
 import $ from 'jquery';
 
 import { scene } from '../renderer/index';
-import { WaypointListItem } from './ui/waypoint';
-import type { SerializedCelestialBody } from '../core/bodies/CelestialBody';
+import { WaypointUI } from './ui/waypoint';
 import type { ClientLevel } from './ClientLevel';
 
 export interface SerializedWaypoint extends SerializedNode {
@@ -20,7 +19,7 @@ export class Waypoint extends Node {
 	gui: JQuery;
 	marker: JQuery<SVGSVGElement>;
 	#color: Color3 = new Color3(Math.random(), Math.random(), Math.random());
-	#icon: string;
+	#icon = 'location-dot';
 
 	get screenPos() {
 		const viewport = new Viewport(0, 0, innerWidth, innerHeight);
@@ -32,7 +31,7 @@ export class Waypoint extends Node {
 	constructor(id: string, public readonly readonly = false, public readonly builtin = false, level: ClientLevel) {
 		super(id, level);
 		level.waypoints.push(this);
-		this.gui = $(new WaypointListItem(this));
+		this.gui = $(new WaypointUI(this));
 		this.marker = $<SVGSVGElement>(`<svg><use href=images/icons.svg#location-dot /></svg><p style=justify-self:center></p>`).addClass('marker  ingame').hide().appendTo('body');
 		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
 		level.addEventListener('active', () => {
@@ -71,10 +70,10 @@ export class Waypoint extends Node {
 
 	updateVisibility(): void {
 		if (this.level.isActive) {
-			this.gui.detach();
+			this.gui.appendTo('#waypoint-list');
 			this.marker.show();
 		} else {
-			this.gui.appendTo('div.map');
+			this.gui.detach();
 			this.marker.hide();
 		}
 	}
@@ -91,16 +90,5 @@ export class Waypoint extends Node {
 		this.marker.remove();
 		$(this).remove();
 		this.level.waypoints.splice(this.level.waypoints.indexOf(this) - 1, 1);
-	}
-
-	static GetIconForCelestialBody(body: SerializedCelestialBody): string {
-		switch (body.node_type) {
-			case 'planet':
-				return 'earth-americas';
-			case 'star':
-				return 'sun-bright';
-			default:
-				return 'planet-ringed';
-		}
 	}
 }

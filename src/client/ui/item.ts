@@ -1,6 +1,6 @@
+import $ from 'jquery';
 import type { Item } from '../../core/generic/items';
 import { locales } from '../locales';
-import $ from 'jquery';
 import type { UIContext } from './context';
 
 export class ItemUI extends HTMLDivElement {

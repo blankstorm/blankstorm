@@ -176,10 +176,23 @@
 			<div class="ingame-menu-grid shipyard"></div>
 			<div class="ingame-menu-grid lab"></div>
 		</div>
-		<div id="map" class="content bg-transparent game-ui ingame" style="display: none" tabindex="-1"></div>
-		<div id="waypoint-list" class="content bg-transparent">
-			<button class="map new" plot="r25px,b25px,125px,36px,a">
+		<div id="map" class="cover game-ui ingame" tabindex="-1">
+			<svg id="map-markers-container" class="cover" transform-origin="center">
+				<g id="map-markers"></g>
+			</svg>
+			<p id="map-info"></p>
+			<button class="waypoints" plot="r25px,b25px,125px,36px,a">
+				<svg><use href=images/icons.svg#location-dot /></svg>
+				<span></span>
+			</button>
+		</div>
+		<div id="waypoint-list" class="content bg-transparent center-flex" style="z-index: 6">
+			<button class="new" plot="r25px,b25px,125px,36px,a">
 				<svg><use href=images/icons.svg#plus /></svg>
+				<span></span>
+			</button>
+			<button class="back" plot="25px,b25px,125px,36px,a">
+				<svg><use href=images/icons.svg#arrow-left /></svg>
 				<span></span>
 			</button>
 		</div>

@@ -6,7 +6,7 @@ export interface GenericHardpoint {
 	critFactor: number;
 
 	/**
-	 * The different node_types's that the hardpoint can target
+	 * The different nodeTypes's that the hardpoint can target
 	 */
 	targets: string[];
 	projectile: {

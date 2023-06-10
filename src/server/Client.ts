@@ -8,7 +8,7 @@ export class Client extends Player {
 	server: Server;
 	socket: Socket;
 	lastMessager?: Client;
-	oplvl: number;
+	declare oplvl: number;
 	sentPackets = 0;
 	constructor(id: string, server: Server, { fleet, socket }: { fleet: Ship[]; socket: Socket }) {
 		super(id, server.level, { fleet });
@@ -27,7 +27,7 @@ export class Client extends Player {
 	}
 
 	serialize(): SerializedPlayer {
-		return Object.assign(super.serialize(), { node_type: 'player' });
+		return Object.assign(super.serialize(), { nodeType: 'player' });
 	}
 
 	static GetDisconnectReason(reason: string): string {

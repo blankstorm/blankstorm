@@ -141,13 +141,13 @@ export class ModelRenderer extends TransformNode {
 		return this.#instance;
 	}
 
-	async update({ name, position, rotation, parent, node_type, type }: SerializedNode & { type?: string }, rendererType?: RendererType) {
+	async update({ name, position, rotation, parent, nodeType, type }: SerializedNode & { type?: string }, rendererType?: RendererType) {
 		this.name = name;
 		if (!this.#currentPath) {
 			this.position = Vector3.FromArray(position);
 			this.rotation = Vector3.FromArray(rotation);
 		}
-		const _type = rendererType || type || node_type;
+		const _type = rendererType || type || nodeType;
 		if (this.rendererType != _type) {
 			this.rendererType = _type;
 			await this.createInstance(_type);

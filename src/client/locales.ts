@@ -62,8 +62,8 @@ export class LocaleStore extends EventTarget {
 		$('#pause button.quit').text(lang['menu.quit'] ?? 'Main Menu');
 		$('#save-list button.upload span').text(lang['menu.upload'] ?? 'Upload');
 		$('#server-list button.refresh span').text(lang['menu.refresh'] ?? 'Refresh');
-		$(':where(#save-list,#server-list,#save-new,#settings) button.back span').text(lang['menu.back'] ?? 'Back');
-		$(':where(#save-list,#server-list,#ingame-temp-menu) button.new span').text(lang['menu.new'] ?? 'New');
+		$(':where(#save-list,#server-list,#save-new,#settings,#waypoint-list) button.back span').text(lang['menu.back'] ?? 'Back');
+		$(':where(#save-list,#server-list,#ingame-temp-menu,#waypoint-list) button.new span').text(lang['menu.new'] ?? 'New');
 		$('#save-new button.new span').text(lang['menu.start'] ?? 'Start');
 		$(':where(#confirm,#login,#save-edit,#server-dialog) .cancel').text(lang['menu.cancel'] ?? 'Cancel');
 		$(':where(#save-edit,#server-dialog,#waypoint-dialog) .save').text(lang['menu.save'] ?? 'Save');

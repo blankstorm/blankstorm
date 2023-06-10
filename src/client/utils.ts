@@ -1,4 +1,6 @@
 import $ from 'jquery';
+import type { SerializedNode } from '../core/Node';
+import type { PlanetBiome } from '../core/generic/planets';
 
 export const upload = (type, multiple = false) =>
 		new Promise(res =>
@@ -10,19 +12,20 @@ export const upload = (type, multiple = false) =>
 
 export const minimize = Intl.NumberFormat('en', { notation: 'compact' }).format;
 
+type _jquery_text_parameter = string | number | boolean | ((this: HTMLElement, index: number, text: string) => string | number | boolean);
 /* eslint-disable no-redeclare */
-export const alert = message =>
+export const alert = (text: _jquery_text_parameter) =>
 	new Promise(resolve => {
-		$('#alert .message').text(message);
+		$('#alert .message').text(text);
 		$('#alert .ok').on('click', () => {
 			$<HTMLDialogElement>('#alert')[0].close();
 			resolve(true);
 		});
 		$<HTMLDialogElement>('#alert')[0].showModal();
 	});
-export const confirm = message =>
+export const confirm = (text: _jquery_text_parameter) =>
 	new Promise(resolve => {
-		$('#confirm .message').text(message);
+		$('#confirm .message').text(text);
 		$('#confirm .ok').on('click', () => {
 			$<HTMLDialogElement>('#confirm')[0].close();
 			resolve(true);
@@ -101,3 +104,47 @@ export const cookies: Map<string, string> & { get _map(): Map<string, string> } 
 		return new Map(document.cookie.split(';').map((cookie: string) => cookie.split('=', 2)) as [string, string][]);
 	},
 };
+
+export function getIconForNode(node: SerializedNode): string {
+	switch (node.nodeType) {
+		case 'planet':
+			return 'earth-americas';
+		case 'star':
+			return 'sun-bright';
+		case 'ship':
+			return 'triangle';
+		default:
+			return 'planet-ringed';
+	}
+}
+
+export function getColorForBiome(biome: PlanetBiome): string {
+	switch (biome) {
+		case 'earthlike':
+		case 'jungle':
+			return '#cdb';
+		case 'islands':
+			return '#cde';
+		case 'volcanic':
+			return '#dbb';
+		case 'desert':
+			return '#dcb';
+		case 'ice':
+			return '#cee';
+		case 'moon':
+			return '#bbb';
+	}
+}
+
+export function $svg<TElement extends SVGElement>(tag: string): JQuery<TElement> {
+	const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+	return $<TElement>(<TElement>element);
+}
+
+export function toDegrees(radians: number): number {
+	return (radians * 180) / Math.PI;
+}
+
+export function toRadians(degrees: number): number {
+	return (degrees / 180) * Math.PI;
+}

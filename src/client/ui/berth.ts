@@ -1,8 +1,8 @@
 import type { Berth } from '../../core/stations/Berth';
 import $ from 'jquery';
-import { locales } from '../locales';
 import { genericShips, shipTypes } from '../../core/generic/ships';
 import type { ShipType } from '../../core/generic/ships';
+import { locales } from '../locales';
 import type { UIContext } from './context';
 
 export class BerthUI extends HTMLDivElement {

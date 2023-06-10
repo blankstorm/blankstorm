@@ -12,7 +12,7 @@ import { random } from '../../core/utils';
 import type { SerializedPlanet } from '../../core';
 import type { HardpointProjectileHandlerOptions } from '../entities/Hardpoint';
 import { CelestialBodyRenderer } from './CelestialBody';
-import type { biomes as biomeIDs } from '../../core/generic/planets';
+import type { planetBiomes } from '../../core/generic/planets';
 
 export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
@@ -94,7 +94,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	}
 }
 
-const biomes: Record<typeof biomeIDs[number], GenericPlanetRendererMaterial> = {
+const biomes: Record<typeof planetBiomes[number], GenericPlanetRendererMaterial> = {
 	earthlike: {
 		clouds: false, //true,
 		upperColor: new Color3(0.2, 2.0, 0.2),
