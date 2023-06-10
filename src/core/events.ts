@@ -1,4 +1,4 @@
-import type { SerializedNode } from './Node';
+import type { SerializedNode } from './nodes/Node';
 import type { Level, SerializedLevel } from './Level';
 
 export type Listener<Event> = (event: Event) => unknown;

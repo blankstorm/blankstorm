@@ -10,7 +10,7 @@ import type { Level } from '../Level';
 import { genericShips } from '../generic/ships';
 import type { ShipType, GenericShip, HardpointInfo } from '../generic/ships';
 import type { ItemCollection } from '../generic/items';
-import type { CelestialBody } from '../bodies/CelestialBody';
+import type { CelestialBody } from '../nodes/CelestialBody';
 import type { Player } from './Player';
 import type { HardpointType } from '../generic/hardpoints';
 

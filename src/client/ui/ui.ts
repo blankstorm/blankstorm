@@ -4,7 +4,7 @@ import { items } from '../../core/generic/items';
 import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
 import type { ResearchID } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
-import type { Player } from '../../core/entities/Player';
+import type { Player } from '../../core/nodes/Player';
 import { _mp, screenshots } from '../index';
 import { settings } from '../settings';
 import { locales } from '../locales';

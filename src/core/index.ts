@@ -8,14 +8,14 @@ export * from './generic/stationComponents';
 export { default as Path } from './Path';
 export * from './Storage';
 
-export * from './entities/Entity';
-export * from './entities/Player';
-export * from './entities/Hardpoint';
-export * from './entities/Ship';
+export * from './nodes/Entity';
+export * from './nodes/Player';
+export * from './nodes/Hardpoint';
+export * from './nodes/Ship';
+export * from './nodes/CelestialBody';
+export * from './nodes/Planet';
+export * from './nodes/Star';
 
-export * from './bodies/CelestialBody';
-export * from './bodies/Planet';
-export * from './bodies/Star';
 export * from './stations/StationComponent';
 export * from './stations/Station';
 

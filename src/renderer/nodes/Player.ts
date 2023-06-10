@@ -5,8 +5,9 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
 import type { SerializedPlayer } from '../../core';
 import type { CustomHardpointProjectileMaterial } from './Hardpoint';
+import type { Renderer } from './Renderer';
 
-export class PlayerRenderer extends TransformNode {
+export class PlayerRenderer extends TransformNode implements Renderer<SerializedPlayer> {
 	velocity = Vector3.Zero();
 	customHardpointProjectileMaterials: CustomHardpointProjectileMaterial[];
 	constructor(id: string, scene: Scene) {

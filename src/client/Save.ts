@@ -3,8 +3,8 @@ import $ from 'jquery';
 
 import { version } from '../core/meta';
 import { FolderMap, random, isJSON } from '../core/utils';
-import { Ship } from '../core/entities/Ship';
-import { Player } from '../core/entities/Player';
+import { Ship } from '../core/nodes/Ship';
+import { Player } from '../core/nodes/Player';
 
 import { setPaused, eventLog, setCurrent } from './index';
 import * as listeners from './listeners';
@@ -114,7 +114,7 @@ export class Save {
 
 	load(playerID: string): LiveSave {
 		if (this.#data.activePlayer != playerID) {
-			this.#data.entities.find(e => e.id == this.#data.activePlayer).id = playerID;
+			this.#data.nodes.find(e => e.id == this.#data.activePlayer).id = playerID;
 			this.#data.activePlayer = playerID;
 		}
 		this.updateData();

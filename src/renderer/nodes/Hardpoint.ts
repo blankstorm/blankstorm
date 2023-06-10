@@ -1,12 +1,12 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Animation } from '@babylonjs/core/Animations/animation';
 import type { Scene } from '@babylonjs/core/scene';
-
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { Material } from '@babylonjs/core/Materials/material';
 import { random, wait } from '../../core/utils';
 import { ModelRenderer } from '../Model';
 import type { SerializedHardpoint } from '../../core';
-import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { Material } from '@babylonjs/core/Materials/material';
+import type { Renderer } from './Renderer';
 
 export interface CustomHardpointProjectileMaterial {
 	applies_to: string[];
@@ -25,7 +25,7 @@ export interface HardpointProjectileHandlerOptions extends FireProjectileOptions
 
 export type HardpointProjectileHandler = (target: TransformNode, options: HardpointProjectileHandlerOptions) => Promise<unknown>;
 
-export class HardpointRenderer extends ModelRenderer {
+export class HardpointRenderer extends ModelRenderer implements Renderer<SerializedHardpoint> {
 	projectiles = [];
 	_projectile: HardpointProjectileHandler;
 	constructor(id: string, scene: Scene) {

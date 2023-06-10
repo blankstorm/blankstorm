@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type { SerializedNode } from '../core/Node';
+import type { SerializedNode } from '../core/nodes/Node';
 import type { PlanetBiome } from '../core/generic/planets';
 
 export const upload = (type, multiple = false) =>

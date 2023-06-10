@@ -1,12 +1,13 @@
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { Node } from '@babylonjs/core/node';
 import type { Scene } from '@babylonjs/core/scene';
-import type { SerializedCelestialBody } from '../../core';
-import config from '../config';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
+import type { SerializedCelestialBody } from '../../core';
+import config from '../config';
+import type { Renderer } from './Renderer';
 
-export class CelestialBodyRenderer extends Mesh {
+export class CelestialBodyRenderer extends Mesh implements Renderer<SerializedCelestialBody> {
 	radius = 0;
 	// note: using ...args: ConstructorParmeters<Mesh> doesn't work since Mesh is imported as an interface, namespace, and class
 	constructor(name: string, scene?: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean) {

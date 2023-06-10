@@ -1,10 +1,10 @@
-import type { Node } from '../../core/Node';
-import type { Star } from '../../core/bodies/Star';
-import type { Planet } from '../../core/bodies/Planet';
+import type { Node } from '../../core/nodes/Node';
+import type { Star } from '../../core/nodes/Star';
+import type { Planet } from '../../core/nodes/Planet';
 import type { Waypoint } from '../waypoint';
 import type { MarkerContext } from './context';
 import { $svg, getColorForBiome, toDegrees } from '../utils';
-import type { Ship } from '../../core/entities/Ship';
+import type { Ship } from '../../core/nodes/Ship';
 
 export const supportedMarkerNodeTypes = ['planet', 'star', 'ship', 'waypoint'];
 

@@ -1,5 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Level } from './Level';
+import type { CelestialBody } from './nodes/CelestialBody';
 
 export class PathNode {
 	position = Vector3.Zero();
@@ -15,10 +16,10 @@ export class PathNode {
 	get fCost() {
 		return this.gCost + this.hCost;
 	}
-	equals(node) {
+	equals(node: PathNode) {
 		return this.position.equals(node.position);
 	}
-	static Round(vector) {
+	static Round(vector: Vector3) {
 		return new Vector3(Math.round(vector.x), Math.round(vector.y), Math.round(vector.z));
 	}
 }
@@ -87,8 +88,9 @@ export default class Path {
 				path.openNodes.some(node => node.position.equals(v)) ? path.openNodes.find(node => node.position.equals(v)) : new PathNode(currentNode.position.add(v), currentNode)
 			);
 			for (const neighbor of neighbors) {
-				for (const body of level.bodies.values()) {
-					if (Vector3.Distance(body.absolutePosition, neighbor.position) <= body.radius + 1) neighbor.intersects.push(body);
+				for (const node of level.nodes.values()) {
+					if (Vector3.Distance(node.absolutePosition, neighbor.position) <= (node.nodeTypes.includes('celestialbody') ? (<CelestialBody>node).radius : 1) + 1)
+						neighbor.intersects.push(node);
 				}
 				if (!neighbor.intersects.length && !path.closedNodes.some(node => node.equals(neighbor))) {
 					const costToNeighbor = currentNode.gCost + this.NodeDistance(currentNode, neighbor);

@@ -1,9 +1,9 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Level } from '../Level';
 import { random } from '../utils';
-import { Ship } from '../entities/Ship';
-import { Node } from '../Node';
-import type { SerializedNode } from '../Node';
+import { Ship } from './Ship';
+import { Node } from './Node';
+import type { SerializedNode } from './Node';
 import { Storage } from '../Storage';
 import type { ItemCollection } from '../generic/items';
 
@@ -30,7 +30,6 @@ export class CelestialBody extends Node {
 		this.radius = radius;
 		this.rewards = Storage.FromData({ items: rewards, max: 1e10 });
 		this.fleetPosition = fleetPosition;
-		level.bodies.set(this.id, this);
 		for (const shipOrType of fleet) {
 			if (shipOrType instanceof Ship) {
 				this.fleet.push(shipOrType);
@@ -45,7 +44,7 @@ export class CelestialBody extends Node {
 
 	remove() {
 		this.level.emit('body.removed', this.serialize());
-		this.level.bodies.delete(this.id);
+		super.remove();
 	}
 
 	serialize(): SerializedCelestialBody {

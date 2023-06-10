@@ -13,7 +13,7 @@ import { probe } from './index';
 import Path from '../core/Path';
 import { settings } from '../client/settings';
 import { random } from '../core/utils';
-import type { SerializedNode } from '../core/Node';
+import type { SerializedNode } from '../core/nodes/Node';
 import type { Scene } from '@babylonjs/core/scene';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';

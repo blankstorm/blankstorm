@@ -6,20 +6,15 @@ import { random, greek, range } from './utils';
 import { version, versions, config } from './meta';
 import type { VersionID } from './meta';
 
-import { CelestialBody } from './bodies/CelestialBody';
-import type { SerializedCelestialBody } from './bodies/CelestialBody';
-import { Planet } from './bodies/Planet';
-import type { SerializedPlanet } from './bodies/Planet';
-import { Star } from './bodies/Star';
-import type { SerializedStar } from './bodies/Star';
-
-import { Entity } from './entities/Entity';
-import { SerializedEntity } from './entities/Entity';
-import { Ship } from './entities/Ship';
-import type { SerializedShip } from './entities/Ship';
-import { Player } from './entities/Player';
-import type { SerializedPlayer } from './entities/Player';
-import type { Node, SerializedNode } from './Node';
+import { Planet } from './nodes/Planet';
+import type { SerializedPlanet } from './nodes/Planet';
+import { Star } from './nodes/Star';
+import type { SerializedStar } from './nodes/Star';
+import { Ship } from './nodes/Ship';
+import type { SerializedShip } from './nodes/Ship';
+import { Player } from './nodes/Player';
+import type { SerializedPlayer } from './nodes/Player';
+import type { Node, SerializedNode } from './nodes/Node';
 import { LevelEvent } from './events';
 import type { EventData } from './events';
 import type { Item } from './generic/items';
@@ -32,8 +27,7 @@ import { planetBiomes } from './generic/planets';
 
 export interface SerializedLevel {
 	date: string;
-	bodies: SerializedCelestialBody[];
-	entities: SerializedEntity[];
+	nodes: SerializedNode[];
 	difficulty: number;
 	version: VersionID;
 	name: string;
@@ -77,8 +71,6 @@ export class Level extends EventTarget {
 	date = new Date();
 	difficulty = 1;
 	nodes: Map<string, Node> = new Map();
-	bodies: Map<string, CelestialBody> = new Map();
-	entities: Map<string, Entity> = new Map();
 	#initPromise: Promise<Level>;
 	#performanceMonitor = new PerformanceMonitor(60);
 
@@ -105,7 +97,7 @@ export class Level extends EventTarget {
 		}[keyof PlayerActionDataTypes] //see https://stackoverflow.com/a/76335220/21961918
 	): boolean {
 		const [action, data] = args;
-		const player = [...this.entities.values()].find(entity => entity instanceof Player && entity.id == id);
+		const player = [...this.nodes.values()].find(entity => entity.nodeType == 'player' && entity.id == id);
 
 		if (!(player instanceof Player)) {
 			return false;
@@ -140,16 +132,12 @@ export class Level extends EventTarget {
 	}
 
 	//selectors
-	get selectedEntities() {
-		return [...this.entities.values()].filter(e => e.selected);
+	get selected() {
+		return [...this.nodes.values()].filter(e => e.selected);
 	}
 
 	getNodeByID(nodeID: string): Node {
-		for (const [id, entity] of this.entities) {
-			if (id == nodeID) return entity;
-		}
-
-		for (const [id, body] of this.bodies) {
+		for (const [id, body] of this.nodes) {
 			if (id == nodeID) return body;
 		}
 
@@ -162,7 +150,7 @@ export class Level extends EventTarget {
 			case '*':
 				return [...this.nodes.values()];
 			case '@':
-				return [...this.entities.values()].filter(entity => entity.name == selector.substring(1));
+				return [...this.nodes.values()].filter(entity => entity.name == selector.substring(1));
 			case '#':
 				return [...this.nodes.values()].filter(node => node.id == selector.substring(1));
 			case '.':
@@ -248,30 +236,30 @@ export class Level extends EventTarget {
 	tick() {
 		this.sampleTick();
 		this.emit('level.tick', this.serialize());
-		for (const entity of this.entities.values()) {
-			if (Math.abs(entity.rotation.y) > Math.PI) {
-				entity.rotation.y += Math.sign(entity.rotation.y) * 2 * Math.PI;
+		for (const node of this.nodes.values()) {
+			if (Math.abs(node.rotation.y) > Math.PI) {
+				node.rotation.y += Math.sign(node.rotation.y) * 2 * Math.PI;
 			}
 
-			entity.position.addInPlace(entity.velocity);
-			entity.velocity.scaleInPlace(0.9);
+			node.position.addInPlace(node.velocity);
+			node.velocity.scaleInPlace(0.9);
 
-			if (entity instanceof Ship) {
-				if (entity.hp <= 0) {
-					entity.remove();
-					this.emit('entity.death', entity.serialize());
+			if (node instanceof Ship) {
+				if (node.hp <= 0) {
+					node.remove();
+					this.emit('entity.death', node.serialize());
 					continue;
 				}
-				for (const hardpoint of entity.hardpoints) {
+				for (const hardpoint of node.hardpoints) {
 					hardpoint.reload = Math.max(--hardpoint.reload, 0);
 
-					const targets = [...this.entities.values()].filter(e => {
-						const distance = Vector3.Distance(e.absolutePosition, entity.absolutePosition);
-						return e.isTargetable && e.owner != entity.owner && distance < hardpoint.generic.range;
+					const targets = [...this.nodes.values()].filter(e => {
+						const distance = Vector3.Distance(e.absolutePosition, node.absolutePosition);
+						return e.isTargetable && e.owner != node.owner && distance < hardpoint.generic.range;
 					}, null);
 					const target = targets.reduce((previous, current) => {
-						const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), entity.absolutePosition);
-						const currentDistance = Vector3.Distance(current.absolutePosition, entity.absolutePosition);
+						const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), node.absolutePosition);
+						const currentDistance = Vector3.Distance(current.absolutePosition, node.absolutePosition);
 						return previousDistance < currentDistance ? previous : current;
 					}, null);
 
@@ -298,11 +286,11 @@ export class Level extends EventTarget {
 						}
 					}
 				}
-				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
+				node.jumpCooldown = Math.max(--node.jumpCooldown, 0);
 			}
 		}
 
-		for (const berth of [...this.bodies.values()].filter((body: CelestialBody) => body.nodeType == 'berth') as Berth[]) {
+		for (const berth of [...this.nodes.values()].filter((body: Node) => body.nodeType == 'berth') as Berth[]) {
 			berth.productionTime = Math.max(berth.productionTime - 1, 0);
 			if (berth.productionTime == 0 && berth.productionID) {
 				const ship = new Ship(null, this, { type: berth.productionID });
@@ -317,29 +305,21 @@ export class Level extends EventTarget {
 	serialize(): SerializedLevel {
 		const data = {
 			date: new Date().toJSON(),
-			bodies: [],
-			entities: [],
+			nodes: [],
 			difficulty: this.difficulty,
 			version: this.version,
 			name: this.name,
 			id: this.id,
 		};
 
-		for (const entity of this.entities.values()) {
-			if (!entity.nodeTypes.includes('entity')) {
-				console.warn(`entity #${entity?.id} not serialized: not an entity`);
-			} else {
-				data.entities.push(entity.serialize());
+		for (const node of this.nodes.values()) {
+			if (!node.nodeTypes.includes('entity') && !node.nodeTypes.includes('celestialbody')) {
+				continue;
 			}
+
+			data.nodes.push(node.serialize());
 		}
 
-		for (const body of this.bodies.values()) {
-			if (!body.nodeTypes.includes('celestialbody')) {
-				console.warn(`body #${body?.id} not serialized: not a celestial body`);
-			} else {
-				data.bodies.push(body.serialize());
-			}
-		}
 		return data;
 	}
 
@@ -381,32 +361,26 @@ export class Level extends EventTarget {
 		level.version = levelData.version;
 		level.difficulty = levelData.difficulty;
 
-		for (const data of Object.values(levelData.bodies)) {
-			switch (data.nodeType) {
-				case 'star':
-					Star.FromData(data as SerializedStar, level);
-					break;
-				case 'planet':
-					Planet.FromData(data as SerializedPlanet, level);
-					break;
-				default:
-			}
-		}
-		const entities = Object.values(levelData.entities);
-
 		/**
-		 * Note: entities is sorted to make sure all ships are loaded first.
+		 * Note: nodes is sorted to make sure all ships are loaded first.
 		 * This prevents `level.getNodeByID(shipData) as Ship` in the Player constructor from returning null
 		 * Which in turn prevents `ship.owner = ship.parent = this` from throwing an error
 		 */
-		entities.sort(e => (e.nodeType == 'player' ? 1 : -1));
-		for (const data of entities) {
+		const nodes = Object.values(levelData.nodes);
+		nodes.sort(e => (e.nodeType == 'player' ? 1 : -1));
+		for (const data of nodes) {
 			switch (data.nodeType) {
 				case 'player':
 					Player.FromData(data as SerializedPlayer, level);
 					break;
 				case 'ship':
 					Ship.FromData(data as SerializedShip, level);
+					break;
+				case 'star':
+					Star.FromData(data as SerializedStar, level);
+					break;
+				case 'planet':
+					Planet.FromData(data as SerializedPlanet, level);
 					break;
 				default:
 			}

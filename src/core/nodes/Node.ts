@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { random, resolveConstructors } from './utils';
-import type { Level } from './Level';
-import { EventData, LevelEvent } from './events';
+import { random, resolveConstructors } from '../utils';
+import type { Level } from '../Level';
+import { EventData, LevelEvent } from '../events';
 
 export type NodeConstructor<T extends Node> = new (...args: ConstructorParameters<typeof Node>) => T;
 
@@ -59,12 +59,13 @@ export class Node extends EventTarget {
 		return this.parent instanceof Node ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
-	constructor(id: string = random.hex(32), level: Level, constructorOptions?: object) {
+	constructor(id: string, level: Level, constructorOptions?: object) {
+		id ||= random.hex(32);
 		super();
 		if (constructorOptions) {
 			console.warn(`constructorOptions should not be passed to Node constructor`);
 		}
-		this.id = id || random.hex(32);
+		this.id = id;
 		this.level = level;
 		level.nodes.set(id, this);
 		setTimeout(() => level.emit('node.created', this.serialize()));

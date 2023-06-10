@@ -1,8 +1,8 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-import { Ship } from './entities/Ship';
+import { Ship } from './nodes/Ship';
 import { SHORT_URL } from './meta';
-import type { Player } from './entities/Player';
+import type { Player } from './nodes/Player';
 import { isJSON } from './utils';
 
 export interface CommandExecutionContext {
@@ -24,7 +24,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		},
 		kill: {
 			exec({ executor }, selector) {
-				const entities = executor.level.getNodesBySelector(selector);
+				const entities = executor.level.getNodesBySelector(selector).filter(node => node.nodeTypes.includes('entitiy'));
 				entities.forEach(e => e.remove());
 				return `killed ${entities.length} entities`;
 			},

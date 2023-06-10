@@ -3,7 +3,7 @@ import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
 import { SerializedWaypoint, Waypoint } from './waypoint';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { SerializedCelestialBody } from '../core/bodies/CelestialBody';
+import type { SerializedCelestialBody } from '../core/nodes/CelestialBody';
 import type { LevelEvent } from '../core/events';
 import { getIconForNode } from './utils';
 
@@ -40,10 +40,12 @@ export class ClientLevel extends Level {
 	}
 
 	serialize(): SerializedClientLevel {
-		return Object.assign(super.serialize(), {
+		const data = Object.assign(super.serialize(), {
 			activePlayer: this.activePlayer,
 			waypoints: this.waypoints.filter(wp => !wp.builtin).map(wp => wp.serialize()),
 		});
+		data.nodes = data.nodes.filter(node => node.nodeType != 'waypoint');
+		return data;
 	}
 
 	static FromData(data: SerializedClientLevel, level?: ClientLevel): ClientLevel {

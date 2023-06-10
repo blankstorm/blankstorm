@@ -10,9 +10,10 @@ import type { Scene } from '@babylonjs/core/scene';
 import config from '../config';
 import { random } from '../../core/utils';
 import type { SerializedPlanet } from '../../core';
-import type { HardpointProjectileHandlerOptions } from '../entities/Hardpoint';
+import type { HardpointProjectileHandlerOptions } from './Hardpoint';
 import { CelestialBodyRenderer } from './CelestialBody';
-import type { planetBiomes } from '../../core/generic/planets';
+import { planetBiomes } from '../../core/generic/planets';
+import type { Renderer } from './Renderer';
 
 export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
@@ -200,7 +201,7 @@ const biomes: Record<typeof planetBiomes[number], GenericPlanetRendererMaterial>
 	},
 };
 
-export class PlanetRenderer extends CelestialBodyRenderer {
+export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<SerializedPlanet> {
 	biome = '';
 	customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
 	constructor(id: string, scene: Scene) {
@@ -216,9 +217,9 @@ export class PlanetRenderer extends CelestialBodyRenderer {
 	async update(data: SerializedPlanet) {
 		await super.update(data);
 		if (this.biome != data.biome) {
-			if (Object.keys(PlanetRenderer.biomes).includes(data.biome)) {
+			if (Object.keys(biomes).includes(data.biome)) {
 				this.biome = data.biome;
-				this.material = new PlanetRendererMaterial(PlanetRenderer.biomes[data.biome], this.getScene());
+				this.material = new PlanetRendererMaterial(biomes[data.biome], this.getScene());
 			} else {
 				throw new ReferenceError(`Biome "${data.biome}" does not exist`);
 			}
@@ -230,6 +231,4 @@ export class PlanetRenderer extends CelestialBodyRenderer {
 		await planet.update(data);
 		return planet;
 	}
-
-	static biomes = biomes;
 }

@@ -1,4 +1,4 @@
-import type { Player } from '../entities/Player';
+import type { Player } from '../nodes/Player';
 import { config } from '../meta';
 import type { ItemCollection } from './items';
 import { Producible } from './production';

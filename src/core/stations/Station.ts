@@ -1,8 +1,8 @@
-import { CelestialBody } from '../bodies/CelestialBody';
+import { CelestialBody } from '../nodes/CelestialBody';
 import { SerializedStationComponent, StationComponent } from './StationComponent';
-import type { SerializedCelestialBody } from '../bodies/CelestialBody';
+import type { SerializedCelestialBody } from '../nodes/CelestialBody';
 import type { Level } from '../Level';
-import type { Player } from '../entities/Player';
+import type { Player } from '../nodes/Player';
 
 export interface SerializedStation extends SerializedCelestialBody {
 	type: string;

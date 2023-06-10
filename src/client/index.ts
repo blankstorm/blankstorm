@@ -13,8 +13,8 @@ import { GAME_URL, config, version, versions } from '../core/meta';
 import { isHex, isJSON, xpToLevel } from '../core/utils';
 import { commands, execCommandString } from '../core/commands';
 import * as api from '../core/api';
-import type { Player } from '../core/entities/Player';
-import type { Entity } from '../core/entities/Entity';
+import type { Player } from '../core/nodes/Player';
+import type { Entity } from '../core/nodes/Entity';
 import { Level } from '../core/Level';
 import type { Keybind } from './settings';
 import { upload, minimize, alert, cookies } from './utils';
@@ -239,7 +239,7 @@ export const player: {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
-	data: (id?: string) => ((_mp ? servers.get(servers.selected)?.level : current)?.entities?.get(id ?? player.id) ?? {}) as unknown as Player,
+	data: (id?: string) => ((_mp ? servers.get(servers.selected)?.level : current)?.nodes?.get(id ?? player.id) ?? {}) as unknown as Player,
 };
 
 onresize = () => {

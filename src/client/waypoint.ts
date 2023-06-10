@@ -1,8 +1,8 @@
 import { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Node } from '../core/Node';
-import type { SerializedNode } from '../core/Node';
+import { Node } from '../core/nodes/Node';
+import type { SerializedNode } from '../core/nodes/Node';
 import $ from 'jquery';
 
 import { scene } from '../renderer/index';

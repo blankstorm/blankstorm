@@ -1,8 +1,8 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
 import Path from '../Path';
-import { Node } from '../Node';
-import type { SerializedNode } from '../Node';
+import { Node } from './Node';
+import type { SerializedNode } from './Node';
 import type { Level } from '../Level';
 
 export interface SerializedEntity extends SerializedNode {
@@ -16,13 +16,12 @@ export class Entity extends Node {
 
 	constructor(id: string, level: Level) {
 		super(id, level);
-		level.entities.set(this.id, this);
 		setTimeout(() => level.emit('entity.created', this.serialize()));
 	}
 
 	remove() {
 		this.level.emit('entity.removed', this.serialize());
-		this.level.entities.delete(this.id);
+		super.remove();
 	}
 
 	toString() {
