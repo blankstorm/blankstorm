@@ -1,7 +1,7 @@
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { CelestialBody } from './CelestialBody';
 import type { SerializedCelestialBody } from './CelestialBody';
-import type { Level } from '../Level';
+import type { System } from '../System';
 
 export interface SerializedStar extends SerializedCelestialBody {
 	color: number[];
@@ -9,8 +9,8 @@ export interface SerializedStar extends SerializedCelestialBody {
 
 export class Star extends CelestialBody {
 	color: Color3;
-	constructor(id: string, level: Level, options) {
-		super(id, level, options);
+	constructor(id: string, system: System, options) {
+		super(id, system, options);
 	}
 
 	toJSON(): SerializedStar {
@@ -19,8 +19,8 @@ export class Star extends CelestialBody {
 		});
 	}
 
-	static FromJSON(data: SerializedStar, level: Level) {
-		const star = super.FromJSON(data, level, {}) as Star;
+	static FromJSON(data: SerializedStar, system: System) {
+		const star = super.FromJSON(data, system, {}) as Star;
 		star.color = Color3.FromArray(data.color) || Color3.Random();
 		return star;
 	}

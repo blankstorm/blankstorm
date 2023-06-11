@@ -24,7 +24,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		},
 		kill: {
 			exec({ executor }, selector) {
-				const entities = executor.level.getNodesBySelector(selector).filter(node => node.nodeTypes.includes('entitiy'));
+				const entities = executor.system.getNodesBySelector(selector).filter(node => node.nodeTypes.includes('entitiy'));
 				entities.forEach(e => e.remove());
 				return `killed ${entities.length} entities`;
 			},
@@ -32,8 +32,8 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		},
 		spawn: {
 			exec({ executor }, type, selector, extra) {
-				const parent = executor.level.getNodeBySelector(selector);
-				const spawned = new Ship(null, executor.level, { type, power: executor.power });
+				const parent = executor.system.getNodeBySelector(selector);
+				const spawned = new Ship(null, executor.system, { type, power: executor.power });
 				spawned.parent = spawned.owner = parent as Player;
 				if (isJSON(extra)) {
 					//spawned.update(JSON.parse(extra));
@@ -70,7 +70,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		 */
 		tp: {
 			exec({ executor }, selector, x, y, z) {
-				const nodes = executor.level.getNodesBySelector(selector),
+				const nodes = executor.system.getNodesBySelector(selector),
 					location = new Vector3(+x || 0, +y || 0, +z || 0);
 				nodes.forEach(entity => {
 					entity.position = location;

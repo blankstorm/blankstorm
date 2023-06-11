@@ -1,5 +1,5 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Level } from '../Level';
+import type { System } from '../System';
 import { random } from '../utils';
 import { Ship } from './Ship';
 import { Node } from './Node';
@@ -25,25 +25,27 @@ export class CelestialBody extends Node {
 		return this.fleet.reduce((total, ship) => total + ship.generic.power, 0) ?? 0;
 	}
 
-	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true), fleet = [] }) {
-		super(id, level);
+	constructor(id: string, system: System, { radius = 1, rewards = {}, fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true), fleet = [] }) {
+		super(id, system);
 		this.radius = radius;
 		this.rewards = Storage.FromJSON({ items: rewards, max: 1e10 });
 		this.fleetPosition = fleetPosition;
 		for (const shipOrType of fleet) {
+			let ship: Ship;
 			if (shipOrType instanceof Ship) {
-				this.fleet.push(shipOrType);
+				ship = shipOrType;
 			} else {
-				const ship = new Ship(null, level, { type: shipOrType });
-				ship.parent = ship.owner = this;
+				ship = new Ship(null, system, { type: shipOrType });
 				ship.position.addInPlace(this.fleetPosition);
 			}
+			ship.parent = ship.owner = this;
+			this.fleet.push(ship);
 		}
-		setTimeout(() => level.emit('body.created', this.toJSON()));
+		setTimeout(() => system.emit('body.created', this.toJSON()));
 	}
 
 	remove() {
-		this.level.emit('body.removed', this.toJSON());
+		this.system.emit('body.removed', this.toJSON());
 		super.remove();
 	}
 
@@ -56,8 +58,8 @@ export class CelestialBody extends Node {
 		});
 	}
 
-	static FromJSON(data: SerializedCelestialBody, level: Level, constructorOptions): CelestialBody {
-		return super.FromJSON(data, level, {
+	static FromJSON(data: SerializedCelestialBody, system: System, constructorOptions): CelestialBody {
+		return super.FromJSON(data, system, {
 			...constructorOptions,
 			radius: data.radius,
 			rewards: data.rewards,

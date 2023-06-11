@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import { Level } from '../../core/Level';
 import { items } from '../../core/generic/items';
 import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
 import type { ResearchID } from '../../core/generic/research';
@@ -16,7 +15,7 @@ import { ShipUI } from './ship';
 import type { MarkerContext, UIContext } from './context';
 import { Marker } from './marker';
 import { config } from '../../core/meta';
-import type { ClientLevel } from '../ClientLevel';
+import { ClientLevel } from '../ClientLevel';
 import type { Waypoint } from '../waypoint';
 
 export const item_ui = {},
@@ -72,7 +71,7 @@ export function init(context: UIContext) {
 	}
 }
 export function update(player: Player, level: ClientLevel) {
-	if (level instanceof Level && player.nodeType == 'player') {
+	if (level instanceof ClientLevel && player.nodeType == 'player') {
 		$('div.screenshots').empty();
 		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
@@ -133,7 +132,7 @@ export function update(player: Player, level: ClientLevel) {
 			$(ship_ui[id]).find('.locked')[locked ? 'show' : 'hide']();
 		}
 
-		for (const waypoint of level.waypoints) {
+		for (const waypoint of level.getNodeSystem(player.id).waypoints) {
 			waypoint.updateVisibility();
 		}
 		$('#map-markers').attr(
@@ -145,7 +144,7 @@ export function update(player: Player, level: ClientLevel) {
 		$('#map-info').html(
 			`<span>(${markerContext.x.toFixed(0)}, ${markerContext.y.toFixed(0)}) ${toDegrees(markerContext.rotation)}°</span><br><span>${markerContext.scale.toFixed(1)}x</span>`
 		);
-		for (const [id, node] of level.nodes) {
+		for (const [id, node] of level.getNodeSystem(player.id).nodes) {
 			if (!markers.has(id) && Marker.supportsNodeType(node.nodeType)) {
 				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
 					continue;
@@ -153,11 +152,12 @@ export function update(player: Player, level: ClientLevel) {
 				const marker = new Marker(node, markerContext);
 				markers.set(id, marker);
 			}
-
-			if (markers.has(id)) {
-				markers.get(id).update();
-			}
 		}
+
+		for(const marker of markers.values()) {
+			marker.update();
+		}
+
 	}
 
 	$('.marker').hide();

@@ -5,6 +5,7 @@ import type { Waypoint } from '../waypoint';
 import type { MarkerContext } from './context';
 import { $svg, getColorForBiome, toDegrees } from '../utils';
 import type { Ship } from '../../core/nodes/Ship';
+import type { ClientLevel } from '../ClientLevel';
 
 export const supportedMarkerNodeTypes = ['planet', 'star', 'ship', 'waypoint'];
 
@@ -23,7 +24,7 @@ export class Marker {
 			case 'planet':
 				return getColorForBiome((this.target as unknown as Planet).biome);
 			case 'ship':
-				return this.context.uiContext.level.activePlayer == (this.target as unknown as Ship).parent.id ? '#0f0' : '#f00';
+				return this.context.uiContext.system.level.activePlayer == (this.target as unknown as Ship).parent.id ? '#0f0' : '#f00';
 		}
 	}
 
@@ -66,7 +67,7 @@ export class Marker {
 			marker.attr('r', this.target.radius as number);
 		}
 		(<JQuery>(marker.is('svg') ? marker : this.gui)).attr('transform', `rotate(${toDegrees(this.target.absoluteRotation.y)})`).css('fill', this.color);
-		this.context.uiContext.level.isActive ? this.gui.show() : this.gui.hide();
+		(<ClientLevel>this.target.system.level).isActive ? this.gui.show() : this.gui.hide();
 	}
 
 	static supportsNodeType(nodeType: string): boolean {

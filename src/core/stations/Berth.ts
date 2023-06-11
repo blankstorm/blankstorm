@@ -1,5 +1,5 @@
 import type { ShipType } from '../generic/ships';
-import type { Level } from '../Level';
+import type { System } from '../System';
 import type { SerializedStationComponent, StationComponentOptions } from './StationComponent';
 import { StationComponent } from './StationComponent';
 import { genericShips, shipTypes } from '../generic/ships';
@@ -14,8 +14,8 @@ export class Berth extends StationComponent implements Producer {
 	productionID: ShipType;
 	productionTime: number;
 	canProduce = shipTypes;
-	constructor(id: string, level: Level, options: StationComponentOptions) {
-		super(id, level, options);
+	constructor(id: string, system: System, options: StationComponentOptions) {
+		super(id, system, options);
 	}
 
 	build(type: ShipType) {
@@ -30,8 +30,8 @@ export class Berth extends StationComponent implements Producer {
 		});
 	}
 
-	static FromJSON(data: SerializedBerth, level: Level): Berth {
-		const berth = super.FromJSON(data, level) as Berth;
+	static FromJSON(data: SerializedBerth, system: System): Berth {
+		const berth = super.FromJSON(data, system) as Berth;
 		berth.productionID = data.productionID;
 		berth.productionTime = data.productionTime;
 		return berth;

@@ -15,7 +15,7 @@ export class ItemUI extends HTMLDivElement {
 
 		$(this)
 			.on('click', () => {
-				context.level.tryPlayerAction(context.playerID, 'create_item', item);
+				context.system.tryPlayerAction(context.playerID, 'create_item', item);
 			})
 			.addClass('ui-item')
 			.appendTo('div.inventory');

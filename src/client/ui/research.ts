@@ -15,7 +15,7 @@ export class ResearchUI extends HTMLDivElement {
 		$(this)
 			.find('.upgrade')
 			.on('click', () => {
-				context.level.tryPlayerAction(context.playerID, 'do_research', research);
+				context.system.tryPlayerAction(context.playerID, 'do_research', research);
 			});
 
 		$(this).appendTo('div.lab');

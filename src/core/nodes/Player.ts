@@ -6,7 +6,7 @@ import { Entity } from './Entity';
 import type { SerializedEntity } from './Entity';
 import { Ship } from './Ship';
 import type { SerializedShip } from './Ship';
-import type { Level } from '../Level';
+import type { System } from '../System';
 import type { ShipType } from '../generic/ships';
 
 export interface SerializedPlayer extends SerializedEntity {
@@ -27,14 +27,14 @@ export class Player extends Entity {
 		return this.fleet.reduce((a, ship) => a + (ship.generic.power || 0), 0);
 	}
 
-	constructor(id: string, level: Level, { fleet }: { fleet: (SerializedShip | Ship | string)[] }) {
-		super(id, level);
+	constructor(id: string, system: System, { fleet }: { fleet: (SerializedShip | Ship | string)[] }) {
+		super(id, system);
 		for (const shipData of fleet) {
-			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? (level.getNodeByID(shipData) as Ship) : Ship.FromJSON(shipData, level);
+			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? (system.getNodeByID(shipData) as Ship) : Ship.FromJSON(shipData, system);
 			ship.owner = ship.parent = this;
 			this.fleet.push(ship);
 		}
-		setTimeout(() => level.emit('player.created', this.toJSON()));
+		setTimeout(() => system.emit('player.created', this.toJSON()));
 	}
 
 	get items(): ItemCollection {
@@ -82,7 +82,7 @@ export class Player extends Entity {
 				}
 			}
 		}
-		this.level.emit('player.items.change', this.toJSON(), this.items);
+		this.system.emit('player.items.change', this.toJSON(), this.items);
 	}
 
 	removeItems(items: Partial<ItemCollection>) {
@@ -94,7 +94,7 @@ export class Player extends Entity {
 				items[item] -= stored;
 			}
 		}
-		this.level.emit('player.items.change', this.toJSON(), this.items);
+		this.system.emit('player.items.change', this.toJSON(), this.items);
 	}
 
 	removeAllItems() {
@@ -120,11 +120,11 @@ export class Player extends Entity {
 		for (const ship of this.fleet) {
 			ship.remove();
 		}
-		this.level.emit('player.reset', this.toJSON());
+		this.system.emit('player.reset', this.toJSON());
 	}
 
 	remove() {
-		this.level.emit('player.removed', this.toJSON());
+		this.system.emit('player.removed', this.toJSON());
 		super.remove();
 	}
 
@@ -137,7 +137,7 @@ export class Player extends Entity {
 		});
 	}
 
-	static FromJSON(data: SerializedPlayer, level: Level): Player {
-		return super.FromJSON(data, level, data) as Player;
+	static FromJSON(data: SerializedPlayer, system: System): Player {
+		return super.FromJSON(data, system, data) as Player;
 	}
 }

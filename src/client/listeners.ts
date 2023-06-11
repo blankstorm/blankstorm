@@ -5,14 +5,14 @@ import type { LevelEvent, ListenerCollection } from '../core/events';
 import { minimize } from './utils';
 import { item_ui } from './ui/ui';
 import type { ItemID } from '../core/generic/items';
-import type { SerializedLevel } from '../core/Level';
+import type { SerializedSystem } from '../core/System';
 
 export const core: ListenerCollection<LevelEvent> = {
 	'projectile.fire': async evt => {
 		renderer.fireProjectile(evt.emitter.id, evt.data.target, evt.data.projectile);
 	},
 	'level.tick': async evt => {
-		renderer.update(evt.emitter as SerializedLevel);
+		renderer.update(evt.emitter as SerializedSystem);
 	},
 	'player.levelup': async () => {
 		console.debug('Triggered player.levelup (unimplemented)');

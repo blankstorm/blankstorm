@@ -1,5 +1,5 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Level } from './Level';
+import type { System } from './System';
 import type { CelestialBody } from './nodes/CelestialBody';
 
 export class PathNode {
@@ -60,7 +60,7 @@ export default class Path {
 		return path.reverse();
 	}
 
-	static Find(start: Vector3, end: Vector3, level: Level) {
+	static Find(start: Vector3, end: Vector3, system: System) {
 		const path = new this();
 		if (!(start instanceof Vector3)) throw new TypeError('Start must be a Vector');
 		if (!(end instanceof Vector3)) throw new TypeError('End must be a Vector');
@@ -88,7 +88,7 @@ export default class Path {
 				path.openNodes.some(node => node.position.equals(v)) ? path.openNodes.find(node => node.position.equals(v)) : new PathNode(currentNode.position.add(v), currentNode)
 			);
 			for (const neighbor of neighbors) {
-				for (const node of level.nodes.values()) {
+				for (const node of system.nodes.values()) {
 					if (Vector3.Distance(node.absolutePosition, neighbor.position) <= (node.nodeTypes.includes('celestialbody') ? (<CelestialBody>node).radius : 1) + 1)
 						neighbor.intersects.push(node);
 				}

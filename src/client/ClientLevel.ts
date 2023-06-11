@@ -1,21 +1,17 @@
-import { Color3 } from '@babylonjs/core/Maths/math.color';
+import type { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
-import { SerializedWaypoint, Waypoint } from './waypoint';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { SerializedCelestialBody } from '../core/nodes/CelestialBody';
-import type { LevelEvent } from '../core/events';
-import { getIconForNode } from './utils';
+import type { SystemGenerationOptions } from '../core/System';
+import { ClientSystem, SerializedClientSystem } from './ClientSystem';
+import { version } from '../core/meta';
 
-export interface SerializedClientLevel extends SerializedLevel {
-	waypoints: SerializedWaypoint[];
+export interface SerializedClientLevel extends SerializedLevel<SerializedClientSystem> {
 	activePlayer: string;
 }
 
-export class ClientLevel extends Level {
+export class ClientLevel<S extends ClientSystem = ClientSystem> extends Level<S> {
 	private _isActive = false;
 	activePlayer: string;
-	waypoints: Waypoint[] = [];
 
 	get isActive() {
 		return this._isActive;
@@ -23,41 +19,48 @@ export class ClientLevel extends Level {
 
 	set isActive(isActive: boolean) {
 		this._isActive = isActive;
-		this.emit('active', this.toJSON());
+		this.emit('active');
 	}
 
 	constructor(name: string) {
 		super(name);
+	}
 
-		this.addEventListener('body.created', (e: LevelEvent) => {
-			const body = e.emitter as SerializedCelestialBody;
-			const waypoint = new Waypoint(null, true, true, this);
-			waypoint.name = body.name;
-			waypoint.position = Vector3.FromArray(body.position);
-			waypoint.color = Color3.FromHexString('#88ddff');
-			waypoint.icon = getIconForNode(body);
-		});
+	override tick() {
+		this.sampleTick();
+		this.emit('level.tick', this.getNodeSystem(this.activePlayer).toJSON());
+		for (const system of this.systems.values()) {
+			system.tick();
+		}
+	}
+
+	override async generateSystem(name: string, position: Vector2, options?: SystemGenerationOptions): Promise<ClientSystem> {
+		const system = new ClientSystem(null, this);
+		await super.generateSystem(name, position, options, system);
+		return system;
 	}
 
 	toJSON(): SerializedClientLevel {
-		const data = Object.assign(super.toJSON(), {
+		return Object.assign(super.toJSON(), {
 			activePlayer: this.activePlayer,
-			waypoints: this.waypoints.filter(wp => !wp.builtin).map(wp => wp.toJSON()),
-		});
-		data.nodes = data.nodes.filter(node => node.nodeType != 'waypoint');
-		return data;
+		}) as SerializedClientLevel;
 	}
 
 	static FromJSON(data: SerializedClientLevel, level?: ClientLevel): ClientLevel {
-		level ||= new ClientLevel(data.name);
-		Level.FromJSON(data, level);
-		for (const _waypoint of data.waypoints || []) {
-			const waypoint = new Waypoint(_waypoint.id, _waypoint.readonly, false, level);
-			waypoint.name = _waypoint.name;
-			waypoint.color = Color3.FromArray(_waypoint.color);
-			waypoint.position = Vector3.FromArray(_waypoint.position);
+		if (data.version != version) {
+			throw new Error(`Can't load level data: wrong version`);
 		}
+
+		level ||= new ClientLevel(data.name);
+		level.id = data.id;
+		level.date = new Date(data.date);
+		level.version = data.version;
 		level.activePlayer = data.activePlayer;
+
+		for (const systemData of data.systems) {
+			ClientSystem.FromJSON(systemData, level);
+		}
+
 		return level;
 	}
 }

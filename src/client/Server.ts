@@ -1,17 +1,16 @@
 import $ from 'jquery';
 import { io } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 import { chat, setPaused, setCurrent } from './index';
 import { cookies } from './utils';
 import * as listeners from './listeners';
 import * as renderer from '../renderer/index';
 import { LevelEvent } from '../core/events';
-import { Level } from '../core/Level';
 import fs from './fs';
 import { JSONFileMap } from '../core/utils';
 import { ServerListItem } from './ui/server';
 import { config, versions } from '../core/meta';
 
-import type { Socket } from 'socket.io-client';
 import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
 import { ClientLevel } from './ClientLevel';
@@ -65,7 +64,6 @@ export class Server {
 		this._name = name;
 		this.gui = $(new ServerListItem(this));
 		this.store = store;
-		this.level.waypoints = [];
 
 		this.socket = io(this.url.href, { reconnection: false, autoConnect: false, auth: { token: cookies.get('token'), session: cookies.get('session') } });
 		this.socket.on('connect', () => {
@@ -96,7 +94,7 @@ export class Server {
 		});
 		this.socket.on('event', (type, emitter, data) => {
 			if (type == 'level.tick') {
-				Level.FromJSON(emitter, this.level);
+				ClientLevel.FromJSON(emitter, this.level);
 				setCurrent(this.level);
 				this.level.sampleTick();
 			}

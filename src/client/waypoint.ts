@@ -7,7 +7,7 @@ import $ from 'jquery';
 
 import { scene } from '../renderer/index';
 import { WaypointUI } from './ui/waypoint';
-import type { ClientLevel } from './ClientLevel';
+import type { ClientSystem } from './ClientSystem';
 
 export interface SerializedWaypoint extends SerializedNode {
 	color: number[];
@@ -26,15 +26,15 @@ export class Waypoint extends Node {
 		return Vector3.Project(this.position, Matrix.Identity(), scene.getTransformMatrix(), viewport);
 	}
 
-	declare level: ClientLevel;
+	declare system: ClientSystem;
 
-	constructor(id: string, public readonly readonly = false, public readonly builtin = false, level: ClientLevel) {
-		super(id, level);
-		level.waypoints.push(this);
+	constructor(id: string, public readonly readonly = false, public readonly builtin = false, system: ClientSystem) {
+		super(id, system);
+		system.waypoints.push(this);
 		this.gui = $(new WaypointUI(this));
 		this.marker = $<SVGSVGElement>(`<svg><use href=images/icons.svg#location-dot /></svg><p style=justify-self:center></p>`).addClass('marker  ingame').hide().appendTo('body');
 		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
-		level.addEventListener('active', () => {
+		system.addEventListener('active', () => {
 			this.updateVisibility();
 		});
 		this.updateVisibility();
@@ -69,7 +69,7 @@ export class Waypoint extends Node {
 	}
 
 	updateVisibility(): void {
-		if (this.level.isActive) {
+		if (this.system.level.isActive) {
 			this.gui.appendTo('#waypoint-list');
 			this.marker.show();
 		} else {
@@ -89,6 +89,6 @@ export class Waypoint extends Node {
 	remove() {
 		this.marker.remove();
 		$(this).remove();
-		this.level.waypoints.splice(this.level.waypoints.indexOf(this) - 1, 1);
+		this.system.waypoints.splice(this.system.waypoints.indexOf(this) - 1, 1);
 	}
 }

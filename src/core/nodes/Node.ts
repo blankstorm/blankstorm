@@ -1,6 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { random, resolveConstructors } from '../utils';
 import type { Level } from '../Level';
+import type { System } from '../System';
 import { EventData, LevelEvent } from '../events';
 
 export type NodeConstructor<T extends Node> = new (...args: ConstructorParameters<typeof Node>) => T;
@@ -36,9 +37,13 @@ export class Node extends EventTarget {
 		return resolveConstructors(this).map(c => c.toLowerCase());
 	}
 
-	level: Level;
+	system: System;
 	parent?: Node;
 	owner?: Node;
+
+	get level(): Level {
+		return this.system.level;
+	}
 
 	selected = false;
 	isTargetable = false;
@@ -59,14 +64,14 @@ export class Node extends EventTarget {
 		return this.parent instanceof Node ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
-	constructor(id: string, level: Level, constructorOptions?: object) {
+	constructor(id: string, level: System, constructorOptions?: object) {
 		id ||= random.hex(32);
 		super();
 		if (constructorOptions) {
 			console.warn(`constructorOptions should not be passed to Node constructor`);
 		}
 		this.id = id;
-		this.level = level;
+		this.system = level;
 		level.nodes.set(id, this);
 		setTimeout(() => level.emit('node.created', this.toJSON()));
 	}
@@ -77,8 +82,8 @@ export class Node extends EventTarget {
 	}
 
 	remove() {
-		this.level.emit('node.removed', this.toJSON());
-		this.level.nodes.delete(this.id);
+		this.system.emit('node.removed', this.toJSON());
+		this.system.nodes.delete(this.id);
 	}
 
 	toJSON(): SerializedNode {
@@ -94,7 +99,7 @@ export class Node extends EventTarget {
 		};
 	}
 
-	static FromJSON(data: SerializedNode, level: Level, constructorOptions: object): Node {
+	static FromJSON(data: SerializedNode, level: System, constructorOptions: object): Node {
 		const node = new this(data.id, level, constructorOptions);
 		node.position = Vector3.FromArray(data.position || [0, 0, 0]);
 		node.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);

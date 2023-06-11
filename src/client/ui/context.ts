@@ -1,7 +1,7 @@
-import type { ClientLevel } from '../ClientLevel';
+import type { ClientSystem } from '../ClientSystem';
 
 export interface UIContext {
-	get level(): ClientLevel;
+	get system(): ClientSystem;
 	get playerID(): string;
 }
 

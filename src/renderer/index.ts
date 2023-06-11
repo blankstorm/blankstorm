@@ -22,7 +22,7 @@ import { Camera } from './Camera';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { FireProjectileOptions, HardpointRenderer } from './nodes/Hardpoint';
-import type { SerializedLevel } from '../core/Level';
+import type { SerializedSystem } from '../core/System';
 import type { SerializedStar } from '../core/nodes/Star';
 import type { SerializedPlanet } from '../core/nodes/Planet';
 import type { SerializedPlayer } from '../core/nodes/Player';
@@ -30,12 +30,10 @@ import type { SerializedShip } from '../core/nodes/Ship';
 import type { SerializedNode } from '../core/nodes/Node';
 import type { Renderer } from './nodes/Renderer';
 
-function createEmptyCache(): SerializedLevel {
+function createEmptyCache(): SerializedSystem {
 	return {
 		id: null,
-		date: null,
 		difficulty: null,
-		version: null,
 		name: null,
 		nodes: [],
 	};
@@ -44,7 +42,7 @@ function createEmptyCache(): SerializedLevel {
 let skybox: Mesh,
 	xzPlane: Mesh,
 	camera: Camera,
-	cache: SerializedLevel = createEmptyCache(),
+	cache: SerializedSystem = createEmptyCache(),
 	hitboxes = false,
 	gl: GlowLayer;
 export let engine: Engine, scene: Scene, hl: HighlightLayer, probe: ReflectionProbe;
@@ -157,12 +155,12 @@ export async function clear() {
 	cache = createEmptyCache();
 }
 
-export async function load(toJSONdNodes: SerializedNode[]) {
+export async function load(serializedNodes: SerializedNode[]) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	for (const data of toJSONdNodes) {
+	for (const data of serializedNodes) {
 		let node;
 		switch (data.nodeType) {
 			case 'star':
@@ -190,19 +188,19 @@ export async function load(toJSONdNodes: SerializedNode[]) {
 	}
 }
 
-export async function update(levelData: SerializedLevel) {
+export async function update(systemData: SerializedSystem) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
 	const renderersToAdd: SerializedNode[] = [];
 
-	if (levelData.id != cache.id && cache.id) {
-		console.warn(`Updating the renderer with a different level (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);
+	if (systemData.id != cache.id && cache.id) {
+		console.warn(`Updating the renderer with a different system (${cache.id} -> ${systemData.id}). The renderer should be cleared first.`);
 	}
 
-	for (const node of [...cache.nodes, ...levelData.nodes]) {
-		const data = levelData.nodes.find(_body => _body.id == node.id),
+	for (const node of [...cache.nodes, ...systemData.nodes]) {
+		const data = systemData.nodes.find(_body => _body.id == node.id),
 			cached = cache.nodes.find(_body => _body.id == node.id);
 		if (!cached) {
 			renderersToAdd.push(node);
@@ -219,7 +217,7 @@ export async function update(levelData: SerializedLevel) {
 	}
 
 	const result = await load(renderersToAdd);
-	cache = levelData;
+	cache = systemData;
 	return result;
 }
 

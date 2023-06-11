@@ -33,7 +33,8 @@
 		"@typescript-eslint/no-empty-function": "warn",
 		"no-case-declarations": "off",
 		"prefer-const": "warn",
-		"@typescript-eslint/adjacent-overload-signatures": "warn"
+		"@typescript-eslint/adjacent-overload-signatures": "warn",
+		"@typescript-eslint/no-inferrable-types": "warn"
 		
 	},
 	"ignorePatterns": ["scripts/*.js"]

@@ -1,6 +1,6 @@
 import { CelestialBody } from './CelestialBody';
 import type { SerializedCelestialBody } from './CelestialBody';
-import type { Level } from '../Level';
+import type { System } from '../System';
 import type { PlanetBiome } from '../generic/planets';
 
 export interface SerializedPlanet extends SerializedCelestialBody {
@@ -9,8 +9,8 @@ export interface SerializedPlanet extends SerializedCelestialBody {
 
 export class Planet extends CelestialBody {
 	biome: PlanetBiome;
-	constructor(id?: string, level?: Level, options?: ConstructorParameters<typeof CelestialBody>[2]) {
-		super(id, level, options);
+	constructor(id?: string, system?: System, options?: ConstructorParameters<typeof CelestialBody>[2]) {
+		super(id, system, options);
 	}
 
 	toJSON(): SerializedPlanet {
@@ -19,8 +19,8 @@ export class Planet extends CelestialBody {
 		});
 	}
 
-	static FromJSON(data: SerializedPlanet, level: Level) {
-		const planet = super.FromJSON(data, level, {}) as Planet;
+	static FromJSON(data: SerializedPlanet, system: System) {
+		const planet = super.FromJSON(data, system, {}) as Planet;
 		planet.biome = data.biome;
 		return planet;
 	}

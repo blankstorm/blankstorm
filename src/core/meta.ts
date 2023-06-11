@@ -8,7 +8,9 @@ export const config = {
 	default_port: 1123,
 	region_size: 1e5,
 	tick_rate: 10,
+	level_max_size: 1000,
 	system_generation: {
+		difficulty: 1,
 		max_size: 5e3,
 		stars: {
 			min: 1,

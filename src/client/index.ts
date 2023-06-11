@@ -15,7 +15,6 @@ import { commands, execCommandString } from '../core/commands';
 import * as api from '../core/api';
 import type { Player } from '../core/nodes/Player';
 import type { Entity } from '../core/nodes/Entity';
-import { Level } from '../core/Level';
 import type { Keybind } from './settings';
 import { upload, minimize, alert, cookies } from './utils';
 import { Waypoint } from './waypoint';
@@ -239,7 +238,7 @@ export const player: {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
-	data: (id?: string) => ((_mp ? servers.get(servers.selected)?.level : current)?.nodes?.get(id ?? player.id) ?? {}) as unknown as Player,
+	data: (id: string = player.id) => ((_mp ? servers.get(servers.selected).level : current)?.getNodeSystem(id)?.nodes?.get(id) ?? {}) as unknown as Player,
 };
 
 onresize = () => {
@@ -273,8 +272,8 @@ onclick = () => {
 
 $('#loading_cover p').text('Loading Locales...');
 ui.init({
-	get level() {
-		return current;
+	get system() {
+		return current.getNodeSystem(player.data().id);
 	},
 	get playerID() {
 		return player.data().id;
@@ -541,7 +540,7 @@ $('#waypoint-dialog .save').on('click', () => {
 	} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 		alert(locales.text`error.waypoint.range`);
 	} else {
-		const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, current);
+		const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, current.getNodeSystem(current.activePlayer));
 		waypoint.name = name;
 		waypoint.color = Color3.FromHexString(color);
 		waypoint.position = new Vector3(x, y, z);
@@ -618,7 +617,7 @@ canvas.on('contextmenu', e => {
 	if (current instanceof ClientLevel) {
 		const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(player.id));
 		for (const { entityRenderer, point } of data) {
-			const entity = current.getNodeByID(entityRenderer.id) as Entity;
+			const entity = current.getNodeSystem(current.activePlayer).getNodeByID(entityRenderer.id) as Entity;
 			entity.moveTo(point, false);
 		}
 	}
@@ -681,10 +680,11 @@ setInterval(() => {
 }, 1000 / config.tick_rate);
 
 const loop = () => {
-	if (current instanceof Level && !isPaused) {
-		const camera = renderer.getCamera();
+	if (current instanceof ClientLevel && !isPaused) {
+		const camera = renderer.getCamera(),
+			currentSystem = current.getNodeSystem(current.activePlayer);
 		camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
-		for (const waypoint of current.waypoints) {
+		for (const waypoint of currentSystem.waypoints) {
 			const pos = waypoint.screenPos;
 			waypoint.marker
 				.css({

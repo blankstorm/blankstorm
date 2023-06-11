@@ -6,7 +6,7 @@ import type { SerializedEntity } from './Entity';
 import { Hardpoint } from './Hardpoint';
 import type { SerializedHardpoint } from './Hardpoint';
 import { Storage } from '../Storage';
-import type { Level } from '../Level';
+import type { System } from '../System';
 import { genericShips } from '../generic/ships';
 import type { ShipType, GenericShip, HardpointInfo } from '../generic/ships';
 import type { ItemCollection } from '../generic/items';
@@ -36,9 +36,9 @@ export class Ship extends Entity {
 	/**
 	 * @todo move distance related stuff to ship creation
 	 */
-	constructor(id: string, level: Level, { type, hardpoints = [], power }: { type: ShipType; hardpoints?: SerializedHardpoint[]; power?: number }) {
+	constructor(id: string, system: System, { type, hardpoints = [], power }: { type: ShipType; hardpoints?: SerializedHardpoint[]; power?: number }) {
 		if (type && !Ship.generic[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
-		super(id, level);
+		super(id, system);
 
 		const distance = Math.log(random.int(0, power || 1) ** 3 + 1);
 		this.position.addInPlace(random.cords(distance, true));
@@ -54,7 +54,7 @@ export class Ship extends Entity {
 				return;
 			}
 
-			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromJSON(hardpoints[i], level) : new Hardpoint(null, level, { type: info.type as HardpointType });
+			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromJSON(hardpoints[i], system) : new Hardpoint(null, system, { type: info.type as HardpointType });
 			hp.parent = hp.owner = this;
 			hp.info = info;
 			this.hardpoints.push(hp);
@@ -103,9 +103,9 @@ export class Ship extends Entity {
 		return fleet;
 	}
 
-	static FromJSON(data: SerializedShip, level: Level): Ship {
+	static FromJSON(data: SerializedShip, system: System): Ship {
 		const max = this.generic[data.type].storage;
-		const ship = super.FromJSON(data, level, data) as Ship;
+		const ship = super.FromJSON(data, system, data) as Ship;
 		ship.hp = data.hp;
 		ship.jumpCooldown = data.jumpCooldown;
 		ship.storage = Storage.FromJSON({ ...data.storage, max });

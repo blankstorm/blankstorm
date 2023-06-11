@@ -1,4 +1,4 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
 
 import { version } from '../core/meta';
@@ -13,7 +13,8 @@ import fs from './fs';
 import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
 import type { LevelEvent } from '../core/events';
-import { ClientLevel, SerializedClientLevel } from './ClientLevel';
+import { ClientLevel } from './ClientLevel';
+import type { SerializedClientLevel } from './ClientLevel';
 
 export class SaveMap extends Map<string, Save> {
 	_map: FolderMap;
@@ -114,7 +115,7 @@ export class Save {
 
 	load(playerID: string): LiveSave {
 		if (this.#data.activePlayer != playerID) {
-			this.#data.nodes.find(e => e.id == this.#data.activePlayer).id = playerID;
+			this.#data.systems.find(system => system.nodes.some(node => node.id == this.#data.activePlayer)).nodes.find(node => node.id == this.#data.activePlayer).id = playerID;
 			this.#data.activePlayer = playerID;
 		}
 		this.updateData();
@@ -150,7 +151,7 @@ export class LiveSave extends ClientLevel {
 			if (store) store.selected = this.id;
 			setCurrent(this);
 			renderer.clear();
-			renderer.update(this.toJSON());
+			renderer.update(this.getNodeSystem(this.activePlayer).toJSON());
 			setPaused(false);
 		} else {
 			throw 'That save is not compatible with the current game version';
@@ -166,15 +167,15 @@ export class LiveSave extends ClientLevel {
 	static async CreateDefault(name: string, playerID: string, playerName: string) {
 		const level = new LiveSave(name);
 		await level.ready();
-		await level.generateSystem('Crash Site', Vector3.Zero());
-
-		const fleet = ['mosquito', 'cillus'].map((type: ShipType) => new Ship(null, level, { type }));
+		const system = await level.generateSystem('Crash Site', Vector2.Zero());
+		const fleet = ['mosquito', 'cillus'].map((type: ShipType) => new Ship(null, system, { type }));
 		fleet[0].position.z += 4;
-		const player = new Player(playerID, level, { fleet });
+		const player = new Player(playerID, system, { fleet });
 		player.name = playerName;
 		player.position = new Vector3(0, 0, -1000).add(random.cords(50, true));
 		player.rotation = new Vector3(0, 0, 0);
 		level.activePlayer = player.id;
+		level.rootSystem = system;
 		return level;
 	}
 }

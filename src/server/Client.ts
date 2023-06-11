@@ -5,14 +5,12 @@ import type { Socket } from 'socket.io';
 import type { Ship } from '../core/nodes/Ship';
 
 export class Client extends Player {
-	server: Server;
 	socket: Socket;
 	lastMessager?: Client;
 	declare oplvl: number;
 	sentPackets = 0;
-	constructor(id: string, server: Server, { fleet, socket }: { fleet: Ship[]; socket: Socket }) {
-		super(id, server.level, { fleet });
-		this.server = server;
+	constructor(id: string, public server: Server, { fleet, socket }: { fleet: Ship[]; socket: Socket }) {
+		super(id, server.level.getNodeSystem(id), { fleet });
 		this.socket = socket;
 	}
 
