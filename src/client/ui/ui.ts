@@ -154,10 +154,9 @@ export function update(player: Player, level: ClientLevel) {
 			}
 		}
 
-		for(const marker of markers.values()) {
+		for (const marker of markers.values()) {
 			marker.update();
 		}
-
 	}
 
 	$('.marker').hide();

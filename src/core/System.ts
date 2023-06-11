@@ -277,7 +277,7 @@ export class System extends EventTarget {
 		 */
 		const nodes = Object.values(systemData.nodes);
 		nodes.sort((node1, node2) => {
-			const priority = [ 'star', 'planet', 'ship', 'player' ];
+			const priority = ['star', 'planet', 'ship', 'player'];
 			return priority.findIndex(t => t == node1.nodeType) < priority.findIndex(t => t == node2.nodeType) ? -1 : 1;
 		});
 		for (const data of nodes) {
