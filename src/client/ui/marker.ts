@@ -1,10 +1,11 @@
 import type { Node } from '../../core/nodes/Node';
 import type { Star } from '../../core/nodes/Star';
 import type { Planet } from '../../core/nodes/Planet';
+import type { Ship } from '../../core/nodes/Ship';
+import { toDegrees } from '../../core/utils';
 import type { Waypoint } from '../waypoint';
 import type { MarkerContext } from './context';
-import { $svg, getColorForBiome, toDegrees } from '../utils';
-import type { Ship } from '../../core/nodes/Ship';
+import { $svg, getColorForBiome } from '../utils';
 import type { ClientLevel } from '../ClientLevel';
 
 export const supportedMarkerNodeTypes = ['planet', 'star', 'ship', 'waypoint'];

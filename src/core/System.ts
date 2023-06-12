@@ -119,9 +119,9 @@ export class System extends EventTarget {
 		return [...this.nodes.values()].filter(e => e.selected);
 	}
 
-	getNodeByID(nodeID: string): Node {
-		for (const [id, body] of this.nodes) {
-			if (id == nodeID) return body;
+	getNodeByID<N extends Node = Node>(nodeID: string): N {
+		for (const [id, node] of this.nodes) {
+			if (id == nodeID) return <N>node;
 		}
 
 		return null;

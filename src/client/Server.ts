@@ -53,18 +53,11 @@ export class Server {
 	level = new ClientLevel('server_level');
 	kickMessage: string;
 	socket: Socket;
-	gui: JQuery<ServerListItem>;
-	store: ServerMap;
+	gui = $<ServerListItem>(new ServerListItem(this));
 	pingInfo?: ServerPingInfo;
-	_url: string;
-	_name: string;
 
-	constructor(url: string, name: string, store: ServerMap) {
-		this._url = url;
-		this._name = name;
-		this.gui = $(new ServerListItem(this));
-		this.store = store;
-
+	constructor(public _url: string, public _name: string, public store: ServerMap) {
+		this.level.isServer = true;
 		this.socket = io(this.url.href, { reconnection: false, autoConnect: false, auth: { token: cookies.get('token'), session: cookies.get('session') } });
 		this.socket.on('connect', () => {
 			$('#connect').hide();

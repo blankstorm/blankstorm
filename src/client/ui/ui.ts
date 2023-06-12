@@ -4,18 +4,18 @@ import { isResearchLocked, priceOfResearch, research } from '../../core/generic/
 import type { ResearchID } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
 import type { Player } from '../../core/nodes/Player';
-import { _mp, screenshots } from '../index';
+import { config } from '../../core/meta';
+import { toDegrees } from '../../core/utils';
 import { settings } from '../settings';
 import { locales } from '../locales';
 import { ItemUI } from './item';
-import { minimize, confirm, $svg, toDegrees } from '../utils';
-import { contextMenu } from './contextmenu';
+import { minimize, $svg } from '../utils';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 import type { MarkerContext, UIContext } from './context';
 import { Marker } from './marker';
-import { config } from '../../core/meta';
-import { ClientLevel } from '../ClientLevel';
+
+import { ClientSystem } from '../ClientSystem';
 import type { Waypoint } from '../waypoint';
 
 export const item_ui = {},
@@ -70,9 +70,10 @@ export function init(context: UIContext) {
 			.appendTo(grid);
 	}
 }
-export function update(player: Player, level: ClientLevel) {
-	if (level instanceof ClientLevel && player.nodeType == 'player') {
-		$('div.screenshots').empty();
+
+export function update(ctx: UIContext) {
+	if (ctx.system instanceof ClientSystem) {
+		const player = ctx.system.level.getNodeSystem(ctx.playerID).getNodeByID<Player>(ctx.playerID);
 		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
@@ -132,7 +133,7 @@ export function update(player: Player, level: ClientLevel) {
 			$(ship_ui[id]).find('.locked')[locked ? 'show' : 'hide']();
 		}
 
-		for (const waypoint of level.getNodeSystem(player.id).waypoints) {
+		for (const waypoint of ctx.system.waypoints) {
 			waypoint.updateVisibility();
 		}
 		$('#map-markers').attr(
@@ -144,7 +145,7 @@ export function update(player: Player, level: ClientLevel) {
 		$('#map-info').html(
 			`<span>(${markerContext.x.toFixed(0)}, ${markerContext.y.toFixed(0)}) ${toDegrees(markerContext.rotation)}°</span><br><span>${markerContext.scale.toFixed(1)}x</span>`
 		);
-		for (const [id, node] of level.getNodeSystem(player.id).nodes) {
+		for (const [id, node] of ctx.system.nodes) {
 			if (!markers.has(id) && Marker.supportsNodeType(node.nodeType)) {
 				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
 					continue;
@@ -157,32 +158,19 @@ export function update(player: Player, level: ClientLevel) {
 		for (const marker of markers.values()) {
 			marker.update();
 		}
+
+		if (ctx.system.level.isServer) {
+			$('#pause .quit').text('Disconnect');
+			$('#pause .save').hide();
+		} else {
+			$('#pause .quit').text('Exit Game');
+			$('#pause .save').show();
+		}
 	}
 
 	$('.marker').hide();
 
-	screenshots.forEach(s => {
-		contextMenu(
-			$(`<img src=${s} width=256></img>`).appendTo('#ingame-temp-menu div.screenshots'),
-			$('<button><svg><use href=images/icons.svg#download /></svg> Download</button>').on('click', () => {
-				$('<a download=screenshot.png></a>').attr('href', s)[0].click();
-			}),
-			$('<button><svg><use href=images/icons.svg#trash /></svg> Delete</button>').on('click', () => {
-				confirm('Are you sure?').then(() => {
-					screenshots.splice(screenshots.indexOf(s), 1);
-					update(player, level);
-				});
-			})
-		);
-	});
 	$(':root').css('--font-size', settings.get('font_size') + 'px');
-	if (_mp) {
-		$('#pause .quit').text('Disconnect');
-		$('#pause .save').hide();
-	} else {
-		$('#pause .quit').text('Exit Game');
-		$('#pause .save').show();
-	}
 
 	$('[plot]').each((i, e) => {
 		const plot = $(e)

@@ -56,6 +56,16 @@ const updateSave = () => {
 	$('#pause .save').text('Save Game');
 };
 
+import type { UIContext } from './ui/context';
+const uiContext: UIContext = {
+	get system() {
+		return current?.getNodeSystem(current.activePlayer);
+	},
+	get playerID() {
+		return player.data().id;
+	},
+};
+
 $('#loading_cover p').text('Initializing settings...');
 import { settings } from './settings';
 settings.items.get('forward').addEventListener('trigger', () => {
@@ -88,8 +98,7 @@ settings.items.get('toggle_temp_menu').addEventListener('trigger', () => {
 	changeUI('#ingame-temp-menu');
 });
 settings.items.get('screenshot').addEventListener('trigger', () => {
-	screenshots.push(canvas[0].toDataURL('image/png'));
-	ui.update(player.data(), current);
+	new ScreenshotUI(canvas[0].toDataURL('image/png'));
 });
 settings.items.get('save').addEventListener('trigger', e => {
 	e.preventDefault();
@@ -113,17 +122,18 @@ $('#map,#map-markers').on('keydown', e => {
 			ui.markerContext.y = Math.min(ui.markerContext.y + speed, max);
 			break;
 	}
-	ui.update(player.data(), current);
+	ui.update(uiContext);
 });
 $('#map,#map-markers').on('wheel', jqe => {
 	const evt = jqe.originalEvent as WheelEvent;
 	ui.markerContext.scale = Math.min(Math.max(ui.markerContext.scale - Math.sign(evt.deltaY) * 0.1, 0.5), 5);
-	ui.update(player.data(), current);
+	ui.update(uiContext);
 });
 
 $('#loading_cover p').text('Initializing locales...');
 import { locales } from './locales';
 import type { LocaleEvent } from './locales';
+import { ScreenshotUI } from './ui/screenshot';
 locales.addEventListener('fetch', (e: LocaleEvent) => {
 	settings.items.get('locale').addOption(e.locale.language, e.locale.name);
 });
@@ -264,21 +274,14 @@ if (cookies.has('token') && navigator.onLine) {
 	}
 }
 oncontextmenu = () => {
-	$('.cm').not(':last').remove();
+	$('.context-menu').not(':last').remove();
 };
 onclick = () => {
-	$('.cm').remove();
+	$('.context-menu').remove();
 };
 
-$('#loading_cover p').text('Loading Locales...');
-ui.init({
-	get system() {
-		return current.getNodeSystem(player.data().id);
-	},
-	get playerID() {
-		return player.data().id;
-	},
-});
+$('#loading_cover p').text('Loading locales...');
+ui.init(uiContext);
 
 //Load saves and servers into the game
 $('#loading_cover p').text('Loading saves...');
@@ -369,7 +372,7 @@ $('#main .mp').on('click', () => {
 $('#main .options').on('click', () => {
 	ui.setLast('#main');
 	$('#settings').show();
-	ui.update(player.data(), current);
+	ui.update(uiContext);
 });
 $('#main .exit').on('click', () => {
 	close();
@@ -395,7 +398,7 @@ $('#server-dialog .save').on('click', () => {
 		server.name = name;
 		server._url = url;
 	}
-	ui.update(player.data(), current);
+	ui.update(uiContext);
 	$<HTMLDialogElement>('#server-dialog')[0].close();
 });
 $('#server-dialog .cancel').on('click', () => {
@@ -408,7 +411,7 @@ $('#save-edit .save').on('click', () => {
 	if (saves.has(id)) {
 		save.data.name = name;
 	}
-	ui.update(player.data(), current);
+	ui.update(uiContext);
 	$<HTMLDialogElement>('#save-edit')[0].close();
 });
 $('#save-edit .cancel').on('click', () => {
@@ -516,9 +519,9 @@ $('#settings-nav button:not(.back)').on('click', e => {
 $('#settings button.back').on('click', () => {
 	$('#settings').hide();
 	$(ui.getLast()).show();
-	ui.update(player.data(), current);
+	ui.update(uiContext);
 });
-$('#settings div.general input').on('change', () => ui.update(player.data(), current));
+$('#settings div.general input').on('change', () => ui.update(uiContext));
 $<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
 	const lang = e.target.value;
 	if (locales.has(lang)) {
@@ -611,7 +614,7 @@ canvas.on('click', e => {
 	if (current instanceof ClientLevel) {
 		renderer.handleCanvasClick(e, renderer.scene.getNodeById(player.id));
 	}
-	ui.update(player.data(), current);
+	ui.update(uiContext);
 });
 canvas.on('contextmenu', e => {
 	if (current instanceof ClientLevel) {
@@ -662,13 +665,13 @@ $('#ingame-temp-menu')
 			changeUI('#ingame-temp-menu');
 		}
 	})
-	.on('click', () => ui.update(player.data(), current));
+	.on('click', () => ui.update(uiContext));
 $('canvas.game,#pause,#hud').on('keydown', e => {
 	if (e.key == 'Escape') {
 		changeUI('#pause', true);
 		isPaused = !isPaused;
 	}
-	ui.update(player.data(), current);
+	ui.update(uiContext);
 });
 $('button').on('click', () => {
 	playsound(sounds.get('ui'), +settings.get('sfx'));
@@ -738,7 +741,7 @@ const loop = () => {
 	}
 };
 
-ui.update(player.data(), current);
+ui.update(uiContext);
 $('#loading_cover p').text('Done!');
 $('#loading_cover').fadeOut(1000);
 console.log('Game loaded successful');

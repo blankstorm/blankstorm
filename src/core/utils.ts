@@ -277,3 +277,20 @@ export function resolveConstructors(object): string[] {
 	}
 	return constructors;
 }
+
+export function toDegrees(radians: number): number {
+	return (radians * 180) / Math.PI;
+}
+
+export function toRadians(degrees: number): number {
+	return (degrees / 180) * Math.PI;
+}
+
+/**
+ * Gets a random int, r, with the probability P(r) = (1/base)**r
+ * For example, with base 2: P(1) = 1/2, P(2) = 1/4, etc.
+ * @param base the inverse probability
+ */
+export function getRandomIntWithRecursiveProbability(base = 2): number {
+	return -Math.floor(Math.log(Math.random()) / Math.log(base));
+}

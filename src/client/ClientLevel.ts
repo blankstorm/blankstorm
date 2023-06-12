@@ -10,7 +10,7 @@ export interface SerializedClientLevel extends SerializedLevel<SerializedClientS
 }
 
 export class ClientLevel<S extends ClientSystem = ClientSystem> extends Level<S> {
-	private _isActive = false;
+	protected _isActive = false;
 	activePlayer: string;
 
 	get isActive() {
@@ -21,6 +21,8 @@ export class ClientLevel<S extends ClientSystem = ClientSystem> extends Level<S>
 		this._isActive = isActive;
 		this.emit('active');
 	}
+
+	isServer = false;
 
 	constructor(name: string) {
 		super(name);

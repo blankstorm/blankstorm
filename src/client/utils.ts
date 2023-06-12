@@ -140,11 +140,3 @@ export function $svg<TElement extends SVGElement>(tag: string): JQuery<TElement>
 	const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
 	return $<TElement>(<TElement>element);
 }
-
-export function toDegrees(radians: number): number {
-	return (radians * 180) / Math.PI;
-}
-
-export function toRadians(degrees: number): number {
-	return (degrees / 180) * Math.PI;
-}
