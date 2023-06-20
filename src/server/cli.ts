@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import * as fs from 'node:fs';
 import { config as coreConfig } from '../core/meta';
 import { readJSONFile } from './utils';
-import { Log, LogLevel } from './Log';
+import { Log, LogLevel } from '../core/Log';
 import { Server } from './Server';
 import { ServerOptions } from './Server';
 

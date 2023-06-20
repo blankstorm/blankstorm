@@ -13,7 +13,7 @@ import type { LevelEvent } from '../core/events';
 import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
 
-import { Log, LogLevel } from './Log';
+import { Log, LogLevel } from '../core/Log';
 import { Client, ClientStore } from './Client';
 import { captureArrayUpdates } from './utils';
 

@@ -24,7 +24,7 @@ export class LogEntry {
 	getTimeString() {
 		const time = +(this.time / 1000).toFixed();
 		const seconds = time % 60;
-		const minutes = Math.floor(time % 3600 / 60);
+		const minutes = Math.floor((time % 3600) / 60);
 		const hours = Math.floor(time / 3600);
 		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 	}
