@@ -12,6 +12,11 @@ export const config = {
 	system_generation: {
 		difficulty: 1,
 		max_size: 5e3,
+		connections: {
+			probability: 0.5,
+			distance_min: 0.25,
+			distance_max: 10,
+		},
 		stars: {
 			min: 1,
 			max: 1,

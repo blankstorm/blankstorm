@@ -1,7 +1,7 @@
 import type { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
-import type { SystemGenerationOptions } from '../core/System';
+import type { SystemGenerationOptions } from '../core/generic/system';
 import { ClientSystem, SerializedClientSystem } from './ClientSystem';
 import { version } from '../core/meta';
 

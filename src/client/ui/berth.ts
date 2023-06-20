@@ -22,8 +22,8 @@ export class BerthUI extends HTMLDivElement {
 		}
 		$(`<p><tool-tip></tool-tip><svg style=font-size:1.5em><use href=images/icons.svg#circle-plus /></svg></p>`)
 			.addClass('non-active add add-or-upgrade-icon')
-			.on('click', () => {
-				context.system.tryPlayerAction(context.playerID, 'create_ship', { ship: genericShips[select.val() as ShipType], berth });
+			.on('click', async () => {
+				await context.system.tryPlayerAction(context.playerID, 'create_ship', { ship: genericShips[select.val() as ShipType], berth });
 			})
 			.appendTo(this);
 

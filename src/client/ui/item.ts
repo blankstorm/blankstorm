@@ -14,8 +14,8 @@ export class ItemUI extends HTMLDivElement {
 		$('<span></span>').addClass('count').appendTo(this);
 
 		$(this)
-			.on('click', () => {
-				context.system.tryPlayerAction(context.playerID, 'create_item', item);
+			.on('click', async () => {
+				await context.system.tryPlayerAction(context.playerID, 'create_item', item);
 			})
 			.addClass('ui-item')
 			.appendTo('div.inventory');

@@ -1,8 +1,7 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
-
-import type { Node, SerializedNode } from './nodes/Node';
+import { Node, SerializedNode } from './nodes/Node';
 import { Planet } from './nodes/Planet';
 import type { SerializedPlanet } from './nodes/Planet';
 import { Ship } from './nodes/Ship';
@@ -16,56 +15,51 @@ import type { Item } from './generic/items';
 import type { GenericShip, ShipType } from './generic/ships';
 import type { Research, ResearchID } from './generic/research';
 import { priceOfResearch, isResearchLocked } from './generic/research';
+import type { SystemGenerationOptions } from './generic/system';
 import type { Berth } from './stations/Berth';
-
 import type { Level } from './Level';
 import { config } from './meta';
-import { greek, random, range } from './utils';
+import { getRandomIntWithRecursiveProbability, greek, random, range } from './utils';
 import { EventData, LevelEvent } from './events';
 
-export interface CelestialBodyGenerationOptions {
-	min: number;
-	max: number;
-	radius_min: number;
-	radius_max: number;
-}
-
-export interface StarGenerationOptions extends CelestialBodyGenerationOptions {
-	color_min: number[];
-	color_max: number[];
-}
-
-export interface PlanetGenerationOptions extends CelestialBodyGenerationOptions {
-	distance_max: number;
-}
-
-export interface SystemGenerationOptions {
-	difficulty: number;
-	stars: StarGenerationOptions;
-	planets: PlanetGenerationOptions;
-}
+export type SerializedSystemConnection = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
 
 export interface SerializedSystem {
 	nodes: SerializedNode[];
 	name: string;
 	id: string;
 	difficulty: number;
+	position: number[];
+	connections: SerializedSystemConnection[];
 }
 
-interface PlayerActionDataTypes {
+export interface PlayerActionData {
 	create_item: Item;
 	create_ship: {
 		ship: GenericShip;
 		berth?: Berth;
 	};
 	do_research: Research;
+	warp: {
+		target: System;
+		ships: Ship[];
+	};
 }
+
+export interface _SystemConnection {
+	system: System;
+	position: Vector2;
+}
+
+export type SystemConnection = System | Vector2;
 
 export class System extends EventTarget {
 	name = '';
 	nodes: Map<string, Node> = new Map();
 	difficulty = 1;
 	#performanceMonitor = new PerformanceMonitor(60);
+	position: Vector2;
+	connections: SystemConnection[] = [];
 
 	constructor(public id: string, public level: Level) {
 		super();
@@ -73,45 +67,60 @@ export class System extends EventTarget {
 		this.level.systems.set(this.id, this);
 	}
 
-	tryPlayerAction(
+	async tryPlayerAction(
 		id: string,
 		...args: {
-			[A in keyof PlayerActionDataTypes]: [action: A, data: PlayerActionDataTypes[A]];
-		}[keyof PlayerActionDataTypes] //see https://stackoverflow.com/a/76335220/21961918
-	): boolean {
+			[A in keyof PlayerActionData]: [action: A, data: PlayerActionData[A]];
+		}[keyof PlayerActionData] //see https://stackoverflow.com/a/76335220/21961918
+	): Promise<boolean> {
 		const [action, data] = args;
-		const player = [...this.nodes.values()].find(entity => entity.nodeType == 'player' && entity.id == id);
+		const player = this.nodes.get(id) as Player;
 
-		if (!(player instanceof Player)) {
+		if (player?.nodeType != 'player') {
 			return false;
 		}
 
 		switch (action) {
 			case 'create_item':
-				if (data.recipe && player.hasItems(data.recipe)) {
-					player.removeItems(data.recipe);
-					player.addItems({ [data.id]: player.items[data.id] + 1 });
+				if (!data.recipe || !player.hasItems(data.recipe)) {
+					return false;
 				}
+
+				player.removeItems(data.recipe);
+				player.addItems({ [data.id]: player.items[data.id] + 1 });
 				break;
 			case 'create_ship':
-				if (player.hasItems(data.ship.recipe)) {
-					player.removeItems(data.ship.recipe);
-					const ship = new Ship(null, player.system, { type: data.ship.id as ShipType, power: player.power });
-					ship.parent = ship.owner = player;
-					player.fleet.push(ship);
+				if (!player.hasItems(data.ship.recipe)) {
+					return false;
 				}
+
+				player.removeItems(data.ship.recipe);
+				const ship = new Ship(null, player.system, { type: data.ship.id as ShipType, power: player.power });
+				ship.parent = ship.owner = player;
+				player.fleet.push(ship);
 				break;
 			case 'do_research':
+				if (player.research[id] >= data.max || isResearchLocked(data.id as ResearchID, player) || player.xpPoints < 1) {
+					return false;
+				}
 				const neededItems = priceOfResearch(data.id as ResearchID, player.research[data.id]);
-				if (player.hasItems(neededItems) && player.research[id] < data.max && !isResearchLocked(data.id as ResearchID, player) && player.xpPoints >= 1) {
-					player.removeItems(neededItems);
-					player.research[data.id]++;
-					player.xpPoints--;
+				if (!player.hasItems(neededItems)) {
+					return false;
+				}
+
+				player.removeItems(neededItems);
+				player.research[data.id]++;
+				player.xpPoints--;
+				break;
+			case 'warp':
+				for (const ship of data.ships) {
+					ship.jumpTo(data.target);
 				}
 				break;
 			default: //action does not exist
 				return false;
 		}
+		return true;
 	}
 
 	//selectors
@@ -180,7 +189,7 @@ export class System extends EventTarget {
 
 	tick() {
 		this.sampleTick();
-		this.emit('level.tick', this.toJSON());
+		this.emit('system.tick', this.toJSON());
 		for (const node of this.nodes.values()) {
 			if (Math.abs(node.rotation.y) > Math.PI) {
 				node.rotation.y += Math.sign(node.rotation.y) * 2 * Math.PI;
@@ -189,22 +198,23 @@ export class System extends EventTarget {
 			node.position.addInPlace(node.velocity);
 			node.velocity.scaleInPlace(0.9);
 
-			if (node instanceof Ship) {
-				if (node.hp <= 0) {
-					node.remove();
-					this.emit('entity.death', node.toJSON());
+			if (node.nodeTypes.includes('ship')) {
+				const ship = node as Ship;
+				if (ship.hp <= 0) {
+					ship.remove();
+					this.emit('entity.death', ship.toJSON());
 					continue;
 				}
-				for (const hardpoint of node.hardpoints) {
+				for (const hardpoint of ship.hardpoints) {
 					hardpoint.reload = Math.max(--hardpoint.reload, 0);
 
 					const targets = [...this.nodes.values()].filter(e => {
-						const distance = Vector3.Distance(e.absolutePosition, node.absolutePosition);
-						return e.isTargetable && e.owner != node.owner && distance < hardpoint.generic.range;
+						const distance = Vector3.Distance(e.absolutePosition, ship.absolutePosition);
+						return e.isTargetable && e.owner != ship.owner && distance < hardpoint.generic.range;
 					}, null);
 					const target = targets.reduce((previous, current) => {
-						const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), node.absolutePosition);
-						const currentDistance = Vector3.Distance(current.absolutePosition, node.absolutePosition);
+						const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), ship.absolutePosition);
+						const currentDistance = Vector3.Distance(current.absolutePosition, ship.absolutePosition);
 						return previousDistance < currentDistance ? previous : current;
 					}, null);
 
@@ -231,29 +241,46 @@ export class System extends EventTarget {
 						}
 					}
 				}
-				node.jumpCooldown = Math.max(--node.jumpCooldown, 0);
+				ship.jumpCooldown = Math.max(--ship.jumpCooldown, 0);
 			}
-		}
 
-		for (const berth of [...this.nodes.values()].filter((body: Node) => body.nodeType == 'berth') as Berth[]) {
-			berth.productionTime = Math.max(berth.productionTime - 1, 0);
-			if (berth.productionTime == 0 && berth.productionID) {
-				const ship = new Ship(null, this, { type: berth.productionID });
-				ship.position = berth.absolutePosition;
-				ship.owner = berth.station.owner;
-				berth.productionID = null;
-				this.emit('ship.created', berth.toJSON(), { ship });
+			if (node.nodeTypes.includes('berth')) {
+				const berth = node as Berth;
+				berth.productionTime = Math.max(berth.productionTime - 1, 0);
+				if (berth.productionTime == 0 && berth.productionID) {
+					const ship = new Ship(null, this, { type: berth.productionID });
+					ship.position = berth.absolutePosition;
+					ship.owner = berth.station.owner;
+					berth.productionID = null;
+					this.emit('ship.created', berth.toJSON(), { ship });
+				}
 			}
 		}
 	}
 
 	toJSON(): SerializedSystem {
-		const data = {
+		const data: SerializedSystem = {
 			nodes: [],
 			difficulty: this.difficulty,
 			name: this.name,
 			id: this.id,
+			position: this.position.asArray(),
+			connections: [],
 		};
+
+		for (const connection of this.connections) {
+			if (connection instanceof System) {
+				data.connections.push({ type: 'system', value: connection.id });
+				continue;
+			}
+
+			if (connection instanceof Vector2) {
+				data.connections.push({ type: 'position', value: connection.asArray() });
+				continue;
+			}
+
+			data.connections.push({ type: 'other', value: connection });
+		}
 
 		for (const node of this.nodes.values()) {
 			if (!node.nodeTypes.includes('entity') && !node.nodeTypes.includes('celestialbody')) {
@@ -268,14 +295,29 @@ export class System extends EventTarget {
 
 	static FromJSON(systemData: SerializedSystem, level: Level, system?: System): System {
 		system ||= new System(systemData.id, level);
+		system.name = systemData.name;
 		system.difficulty = systemData.difficulty;
+		system.position = Vector2.FromArray(systemData.position);
+
+		for (const connection of systemData.connections) {
+			switch (connection.type) {
+				case 'system':
+					system.connections.push(level.systems.get(connection.value));
+					break;
+				case 'position':
+					system.connections.push(Vector2.FromArray(connection.value));
+					break;
+				default:
+					system.connections.push(connection.value);
+			}
+		}
 
 		/**
 		 * Note: nodes is sorted to make sure celestialbodies are loaded before ships before players
 		 * This prevents `level.getNodeByID(shipData) as Ship` in the Player constructor from returning null
 		 * Which in turn prevents `ship.owner = ship.parent = this` from throwing an error
 		 */
-		const nodes = Object.values(systemData.nodes);
+		const nodes = systemData.nodes;
 		nodes.sort((node1, node2) => {
 			const priority = ['star', 'planet', 'ship', 'player'];
 			return priority.findIndex(t => t == node1.nodeType) < priority.findIndex(t => t == node2.nodeType) ? -1 : 1;
@@ -303,6 +345,9 @@ export class System extends EventTarget {
 
 	static async Generate(name: string, options: SystemGenerationOptions = config.system_generation, level: Level, system?: System) {
 		system ||= new System(null, level);
+		system.name = name;
+		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
+		system.connections = new Array(connectionCount);
 		const star = new Star(null, system, { radius: random.int(options.stars.radius_min, options.stars.radius_max) });
 		star.name = name;
 		star.position = Vector3.Zero();

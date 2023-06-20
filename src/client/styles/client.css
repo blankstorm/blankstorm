@@ -100,7 +100,7 @@ svg {
 	position: fixed;
 }
 
-#debug span, #map-info span {
+.text-overlay span {
 	background-color: var(--bg-translucent-text);
 }
 
@@ -168,6 +168,12 @@ div.screenshots img {
 #map-info {
 	position: absolute;
 	right: 1em;
+	top: 1em;
+}
+
+#system-info {
+	position: absolute;
+	left: 1em;
 	top: 1em;
 }
 

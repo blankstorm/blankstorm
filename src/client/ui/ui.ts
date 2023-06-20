@@ -142,9 +142,14 @@ export function update(ctx: UIContext) {
 			rotate(${toDegrees(markerContext.rotation)}) \
 			scale(${markerContext.scale})`
 		);
-		$('#map-info').html(
-			`<span>(${markerContext.x.toFixed(0)}, ${markerContext.y.toFixed(0)}) ${toDegrees(markerContext.rotation)}°</span><br><span>${markerContext.scale.toFixed(1)}x</span>`
-		);
+		$('#map-info').html(`
+			<span>(${markerContext.x.toFixed(0)}, ${markerContext.y.toFixed(0)}) ${toDegrees(markerContext.rotation)}°</span><br>
+			<span>${markerContext.scale.toFixed(1)}x</span>
+		`);
+		$('#system-info').html(`
+			<span><strong>${ctx.system.name}</strong></span><br>
+			<span>${ctx.system.connections.length} hyperspace connection(s)</span>
+		`);
 		for (const [id, node] of ctx.system.nodes) {
 			if (!markers.has(id) && Marker.supportsNodeType(node.nodeType)) {
 				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {

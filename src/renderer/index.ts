@@ -36,6 +36,8 @@ function createEmptyCache(): SerializedSystem {
 		difficulty: null,
 		name: null,
 		nodes: [],
+		connections: [],
+		position: [],
 	};
 }
 

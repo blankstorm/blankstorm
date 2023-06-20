@@ -8,8 +8,9 @@ import type { VersionID } from './meta';
 import type { SerializedNode } from './nodes/Node';
 import { LevelEvent } from './events';
 import type { EventData } from './events';
-import { systemNames } from './generic/system';
-import { SerializedSystem, System, SystemGenerationOptions } from './System';
+import { System } from './System';
+import type { SerializedSystem } from './System';
+import type { SystemGenerationOptions } from './generic/system';
 
 export interface SerializedLevel<S extends SerializedSystem = SerializedSystem> {
 	date: string;
@@ -55,16 +56,11 @@ export class Level<S extends System = System> extends EventTarget {
 		return this.rootSystem;
 	}
 
-	// generation
-	async generateRegion() {
-		await this.ready();
-		const name = systemNames[random.int(0, systemNames.length - 1)];
-		await this.generateSystem(name, Vector2.Random(1, config.level_max_size));
-	}
-
 	async generateSystem(name: string, position: Vector2, options: SystemGenerationOptions = config.system_generation, system?: System) {
 		const difficulty = Math.max(Math.log10(Vector2.Distance(Vector2.Zero(), position)) - 1, 0.25);
-		return System.Generate(name, { ...options, difficulty }, this, system);
+		system = await System.Generate(name, { ...options, difficulty }, this, system);
+		system.position = position;
+		return system;
 	}
 
 	//events and ticking
@@ -140,7 +136,6 @@ export class Level<S extends System = System> extends EventTarget {
 		for (const systemData of levelData.systems) {
 			System.FromJSON(systemData, level);
 		}
-
 		return level;
 	}
 }

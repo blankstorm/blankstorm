@@ -287,10 +287,10 @@ export function toRadians(degrees: number): number {
 }
 
 /**
- * Gets a random int, r, with the probability P(r) = (1/base)**r
- * For example, with base 2: P(1) = 1/2, P(2) = 1/4, etc.
- * @param base the inverse probability
+ * Gets a random int, r, with the probability P(r) = (base)**r
+ * For example, with a probability of 1/2: P(1) = 1/2, P(2) = 1/4, etc.
+ * @param probability the probability
  */
-export function getRandomIntWithRecursiveProbability(base = 2): number {
-	return -Math.floor(Math.log(Math.random()) / Math.log(base));
+export function getRandomIntWithRecursiveProbability(probability = 0.5): number {
+	return -Math.floor(Math.log(Math.random()) / Math.log(1 / probability));
 }

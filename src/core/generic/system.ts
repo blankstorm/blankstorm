@@ -63,3 +63,32 @@ export const systemNames = [
 	'Alli',
 	'Resurs',
 ];
+
+export interface CelestialBodyGenerationOptions {
+	min: number;
+	max: number;
+	radius_min: number;
+	radius_max: number;
+}
+
+export interface StarGenerationOptions extends CelestialBodyGenerationOptions {
+	color_min: number[];
+	color_max: number[];
+}
+
+export interface PlanetGenerationOptions extends CelestialBodyGenerationOptions {
+	distance_max: number;
+}
+
+export interface ConnectionsGenerationOptions {
+	probability: number;
+	distance_min: number;
+	distance_max: number;
+}
+
+export interface SystemGenerationOptions {
+	difficulty: number;
+	stars: StarGenerationOptions;
+	planets: PlanetGenerationOptions;
+	connections: ConnectionsGenerationOptions;
+}

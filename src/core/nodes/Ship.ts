@@ -1,4 +1,4 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 
 import { random } from '../utils';
 import { Entity } from './Entity';
@@ -70,13 +70,19 @@ export class Ship extends Entity {
 		this.owner.fleet.splice(this.owner.fleet.indexOf(this), 1);
 	}
 
-	jump(location) {
-		if (!(location instanceof Vector3)) throw new TypeError('Location is not a Vector3');
-		if (this.jumpCooldown > 0) return 'Hyperspace still on cooldown';
-		if (Vector3.Distance(this.position, location) > this.generic.jumpRange) return 'Target location out of range';
+	jumpTo(targetSystem: System) {
+		if (this.jumpCooldown) {
+			return false;
+		}
 
-		this.position = location.clone();
-		this.jumpCooldown = this.generic.jumpCooldown;
+		const distance = Vector2.Distance(this.system.position, targetSystem.position);
+
+		if (distance > this.generic.jumpRange) {
+			return false;
+		}
+
+		this.system = targetSystem;
+		this.jumpCooldown = this.generic.jumpCooldown + 0;
 	}
 
 	toJSON() {

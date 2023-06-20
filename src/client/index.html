@@ -180,7 +180,8 @@
 			<svg id="map-markers-container" class="cover" transform-origin="center">
 				<g id="map-markers"></g>
 			</svg>
-			<p id="map-info"></p>
+			<div id="system-info" class="text-overlay"></div>
+			<div id="map-info" class="text-overlay"></div>
 			<button class="waypoints" plot="r25px,b25px,125px,36px,a">
 				<svg><use href=images/icons.svg#location-dot /></svg>
 				<span></span>
@@ -197,13 +198,13 @@
 			</button>
 		</div>
 		<canvas class="game cover ingame" style="display: none; z-index: 0"></canvas>
-		<div id="debug cover ingame" style="display: none; width: fit-content">
+		<div id="debug" class="text-overlay cover ingame" style="display: none; width: fit-content">
 			<p style="left: 1%; top: 0" class="left"></p>
 			<p style="right: 1%; top: 0; text-align: right" class="right"></p>
 		</div>
 		<div id="hud" class="ingame" style="display: none">
 			<p class="level" plot="c,b1em,150px,1em" style="text-align: center; line-height: 3em"></p>
-			<div class="xp" plot="c,b1em,300px,1em">
+			<div class="xp" plot="c,b1em,300px,1em" style="border: 1px solid var(--text-color); border-radius: var(--bg-radius)">
 				<svg class="xp" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1" border>
 					<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
 				</svg>
