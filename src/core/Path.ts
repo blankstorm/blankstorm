@@ -24,7 +24,7 @@ export class PathNode {
 	}
 }
 
-export default class Path {
+export class Path {
 	path: PathNode[];
 	openNodes = [];
 	closedNodes = [];

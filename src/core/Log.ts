@@ -5,7 +5,6 @@ export enum LogLevel {
 	WARN = 1,
 	ERROR = 2,
 	DEBUG = 3,
-	VERBOSE = 4,
 }
 
 export class LogEntry {
@@ -43,13 +42,45 @@ export class Log extends EventEmitter {
 		return this.#entries.slice(0);
 	}
 
-	addMessage(message: string, level?: LogLevel, doNotOutput?: boolean): void {
+	addMessage(message: string, level?: LogLevel): void {
 		const entry = new LogEntry(message, level);
 		this.#entries.push(entry);
-		this.emit('log');
+		this.emit('message');
+	}
 
-		if ((!doNotOutput && doNotOutput !== false) || !this.doNotOutput) {
-			console.log(entry.toString());
+	log(message: string, doNotOutput?: boolean): void {
+		this.addMessage(message, LogLevel.LOG);
+		this.emit('log');
+		if (!doNotOutput) {
+			console.log(message);
+		}
+	}
+
+	warn(error: Error, doNotOutput?: boolean): void;
+	warn(message: string, doNotOutput?: boolean): void;
+	warn(message: string | Error, doNotOutput?: boolean): void {
+		this.addMessage(message instanceof Error ? message.name : message, LogLevel.WARN);
+		this.emit('warn');
+		if (!doNotOutput) {
+			console.warn(message);
+		}
+	}
+
+	error(error: Error, doNotOutput?: boolean): void;
+	error(message: string, doNotOutput?: boolean): void;
+	error(message: string | Error, doNotOutput?: boolean): void {
+		this.addMessage(message instanceof Error ? message.stack : message, LogLevel.ERROR);
+		this.emit('error');
+		if (!doNotOutput) {
+			console.error(message);
+		}
+	}
+
+	debug(message: string, doNotOutput?: boolean): void {
+		this.addMessage(message, LogLevel.DEBUG);
+		this.emit('debug');
+		if (!doNotOutput) {
+			console.debug(message);
 		}
 	}
 

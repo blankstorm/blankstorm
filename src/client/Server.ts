@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
-import { chat, setPaused, setCurrent } from './index';
+import { chat, setPaused, setCurrent, log } from './index';
 import { cookies } from './utils';
 import * as listeners from './listeners';
 import * as renderer from '../renderer/index';
@@ -92,7 +92,7 @@ export class Server {
 				this.level.sampleTick();
 			}
 			if (!listeners.core[type]) {
-				console.warn(new Error(`Recieved invalid packet type "${type}"`));
+				log.warn(new Error(`Recieved invalid packet type "${type}"`));
 			} else {
 				const evt = new LevelEvent(type, emitter, data);
 				listeners.core[type](evt);

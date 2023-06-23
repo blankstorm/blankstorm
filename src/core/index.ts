@@ -1,11 +1,10 @@
 //core info and setup
-import { version, versions } from './meta';
 export * from './generic/items';
 export * from './generic/research';
 export * from './generic/ships';
 export * from './generic/hardpoints';
 export * from './generic/stationComponents';
-export { default as Path } from './Path';
+export * from './Path';
 export * from './Storage';
 
 export * from './nodes/Entity';
@@ -25,5 +24,3 @@ export * from './meta';
 export * from './utils';
 export * from './commands';
 export * from './api';
-
-console.log(`Blankstorm Core (${versions.get(version).text}) loaded successfully`);

@@ -24,12 +24,20 @@ import fs from './fs';
 import * as ui from './ui/ui';
 import { sounds, playsound } from './audio';
 import * as renderer from '../renderer/index';
+import { Log } from '../core/Log';
+
+export const log = new Log();
+
+function initLog(message: string): void {
+	$('#loading_cover p').text(message);
+	log.log('init: ' + message);
+}
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
 $('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
 
-$('#loading_cover p').text('Loading...');
+initLog('Loading...');
 import { ClientLevel } from './ClientLevel';
 export let current: ClientLevel;
 export function setCurrent(val: ClientLevel) {
@@ -66,7 +74,7 @@ const uiContext: UIContext = {
 	},
 };
 
-$('#loading_cover p').text('Initializing settings...');
+initLog('Initializing settings...');
 import { settings } from './settings';
 settings.items.get('forward').addEventListener('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Forward());
@@ -130,7 +138,7 @@ $('#map,#map-markers').on('wheel', jqe => {
 	ui.update(uiContext);
 });
 
-$('#loading_cover p').text('Initializing locales...');
+initLog('Initializing locales...');
 import { locales } from './locales';
 import type { LocaleEvent } from './locales';
 import { ScreenshotUI } from './ui/screenshot';
@@ -143,16 +151,16 @@ for (const [id, section] of settings.sections) {
 }
 
 //load mods (if any)
-$('#loading_cover p').text('Loading Mods...');
+initLog('Loading Mods...');
 try {
 	if (!fs.existsSync('mods')) {
 		fs.mkdirSync('mods');
 	}
 
 	const mods = fs.readdirSync('mods');
-	console.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
+	log.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
 } catch (err) {
-	console.error('Failed to load mods: ' + err);
+	log.error('Failed to load mods: ' + err);
 }
 
 export let isPaused = true,
@@ -163,13 +171,13 @@ export let isPaused = true,
 export const canvas = $<HTMLCanvasElement>('canvas.game'),
 	setPaused = paused => (isPaused = paused);
 
-$('#loading_cover p').text('Initalizing ');
+initLog('Initalizing ');
 try {
 	await renderer.init(canvas[0], msg => {
 		$('#loading_cover p').text(`Initalizing renderer: ${msg}`);
 	});
 } catch (err) {
-	console.error('Failed to initalize renderer: ' + err.stack);
+	log.error('Failed to initalize renderer: ' + err.stack);
 	alert('Failed to initalize renderer: ' + err.stack);
 }
 
@@ -225,7 +233,7 @@ const cli = { line: 0, currentInput: '', i: $('#chat-input').val(), prev: [], co
 
 export const chat = (...msg: string[]) => {
 	for (const m of msg) {
-		console.log(`[chat] ${m}`);
+		log.log(`(chat) ${m}`);
 		$(`<li bg=none></li>`)
 			.text(m)
 			.appendTo('#chat')
@@ -256,7 +264,7 @@ onresize = () => {
 	console.warn('Do not paste any code someone gave you, as they may be trying to steal your information');
 };
 
-$('#loading_cover p').text('Authenticating...');
+initLog('Authenticating...');
 if (cookies.has('token') && navigator.onLine) {
 	try {
 		let result: api.ApiReducedUserResult;
@@ -280,18 +288,18 @@ onclick = () => {
 	$('.context-menu').remove();
 };
 
-$('#loading_cover p').text('Loading locales...');
+initLog('Loading locales...');
 ui.init(uiContext);
 
 //Load saves and servers into the game
-$('#loading_cover p').text('Loading saves...');
+initLog('Loading saves...');
 if (!fs.existsSync('saves')) {
 	fs.mkdirSync('saves');
 }
 export const saves = new SaveMap('saves');
 saves.activePlayer = player.id;
 
-$('#loading_cover p').text('Loading servers...');
+initLog('Loading servers...');
 export const servers = new ServerMap('servers.json');
 
 commands.set('playsound', {
@@ -314,7 +322,7 @@ commands.set('reload', {
 });
 export const eventLog = [];
 if (config.debug_mode) {
-	$('#loading_cover p').text('Debug: Assigning variables...');
+	initLog('Debug: Assigning variables...');
 	const BABYLON = await import('@babylonjs/core/index'),
 		core = await import('../core/index'),
 		{ default: io } = await import('socket.io-client'),
@@ -349,7 +357,7 @@ if (config.debug_mode) {
 	});
 }
 
-$('#loading_cover p').text('Registering event listeners...');
+initLog('Registering event listeners...');
 //Event Listeners (UI transitions, creating saves, etc.)
 
 $('#main .sp').on('click', () => {
@@ -528,7 +536,7 @@ $<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e 
 		locales.load(lang);
 	} else {
 		alert('That locale is not loaded.');
-		console.warn(`Failed to load locale ${lang}`);
+		log.warn(`Failed to load locale ${lang}`);
 	}
 });
 $('#waypoint-dialog .save').on('click', () => {
@@ -742,7 +750,7 @@ const loop = () => {
 };
 
 ui.update(uiContext);
-$('#loading_cover p').text('Done!');
+initLog('Done!');
 $('#loading_cover').fadeOut(1000);
-console.log('Game loaded successful');
+log.log('Client loaded successful');
 renderer.engine.runRenderLoop(loop);

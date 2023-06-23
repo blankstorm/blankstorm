@@ -9,7 +9,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture';
 import { Engine } from '@babylonjs/core/Engines/engine';
 
-import Path from '../core/Path';
+import { Path } from '../core/Path';
 
 import config from './config';
 import { PlayerRenderer } from './nodes/Player';

@@ -13,7 +13,7 @@ import type { LevelEvent } from '../core/events';
 import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
 
-import { Log, LogLevel } from '../core/Log';
+import { Log } from '../core/Log';
 import { Client, ClientStore } from './Client';
 import { captureArrayUpdates } from './utils';
 
@@ -121,7 +121,7 @@ export class Server extends EventEmitter {
 				if (typeof err == 'string') {
 					next(new Error(err));
 				} else {
-					this.log.addMessage('Client auth failed: ' + err.stack, LogLevel.ERROR);
+					this.log.error('Client auth failed: ' + err.stack);
 					next(new Error('Server error'));
 				}
 			}
@@ -135,7 +135,7 @@ export class Server extends EventEmitter {
 		if (levelData) {
 			this.level = Level.FromJSON(levelData);
 		} else {
-			this.log.addMessage('No level detected. Generating...');
+			this.log.log('No level detected. Generating...');
 			this.level = new Level('server_level');
 		}
 
@@ -168,31 +168,31 @@ export class Server extends EventEmitter {
 	}
 
 	save() {
-		this.log.addMessage('Saved the current level');
+		this.log.log('Saved the current level');
 		this.emit('save');
 	}
 
-	stop(logLevel: LogLevel = LogLevel.LOG) {
+	stop() {
 		this.isStopping = true;
-		this.log.addMessage('Stopping...', logLevel);
+		this.log.log('Stopping...');
 		for (const client of this.clients.values()) {
 			client.kick('Server shutting down');
 		}
 		this.io.close();
 		this.httpServer.close();
-		this.log.addMessage('Stopped', logLevel);
+		this.log.log('Stopped');
 		this.emit('stop');
 	}
 
-	restart(logLevel: LogLevel = LogLevel.LOG, restartProcess = false) {
+	restart(restartProcess = false) {
 		this.isStopping = true;
-		this.log.addMessage('Restarting...', logLevel);
+		this.log.log('Restarting...');
 		for (const client of this.clients.values()) {
 			client.kick('Server restarting');
 		}
 		this.io.close();
 		this.httpServer.close();
-		this.log.addMessage('Restarted', logLevel);
+		this.log.log('Restarted');
 		this.emit('restart', restartProcess);
 	}
 
@@ -206,7 +206,7 @@ export class Server extends EventEmitter {
 		});
 		client.socket.on('disconnect', reason => {
 			const message = Client.GetDisconnectReason(reason);
-			this.log.addMessage(`${client.name} left (${message})`);
+			this.log.log(`${client.name} left (${message})`);
 			this.io.emit('chat', `${client.name} left`);
 			this.clients.delete(client.socket.id);
 			this.io.emit(
@@ -221,7 +221,7 @@ export class Server extends EventEmitter {
 			}
 		});
 		client.socket.on('chat', data => {
-			this.log.addMessage(`[Chat] ${client.name}: ${data}`);
+			this.log.log(`(Chat) ${client.name}: ${data}`);
 			this.io.emit('chat', `${client.name}: ${data}`);
 		});
 	}
@@ -237,7 +237,7 @@ export class Server extends EventEmitter {
 		} catch (err) {
 			if (!data) {
 				// the fetch failed (instead of the request being invalid)
-				this.log.addMessage('Client auth API request failed: ' + err.stack, LogLevel.WARN);
+				this.log.warn('Client auth API request failed: ' + err.stack);
 				throw 'Auth request failed';
 			}
 
@@ -269,7 +269,7 @@ export class Server extends EventEmitter {
 		const client = new Client(clientData.id, this, { socket, fleet: [] });
 		client.name = clientData.username;
 		this.clients.set(socket.id, client);
-		this.log.addMessage(`${client.name} connected with socket id ${socket.id}`);
+		this.log.log(`${client.name} connected with socket id ${socket.id}`);
 		this.io.emit('chat', `${client.name} joined`);
 		return;
 	}

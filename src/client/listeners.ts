@@ -6,6 +6,7 @@ import { minimize } from './utils';
 import { item_ui } from './ui/ui';
 import type { ItemID } from '../core/generic/items';
 import type { SerializedSystem } from '../core/System';
+import { log } from '.';
 
 export const core: ListenerCollection<LevelEvent> = {
 	'projectile.fire': async evt => {
@@ -15,7 +16,7 @@ export const core: ListenerCollection<LevelEvent> = {
 		renderer.update(evt.emitter as SerializedSystem);
 	},
 	'player.levelup': async () => {
-		console.debug('Triggered player.levelup (unimplemented)');
+		log.debug('Triggered player.levelup (unimplemented)');
 	},
 	'player.death': async () => {
 		renderer.getCamera().reset();

@@ -95,7 +95,7 @@ export type JSONValue = string | number | boolean | { [x: string]: JSONValue } |
 export class JSONFileMap /* implements Map */ {
 	path: string;
 	#fs: typeof FS;
-	constructor(path, fs) {
+	constructor(path: string, fs) {
 		this.path = path;
 		this.#fs = fs;
 
