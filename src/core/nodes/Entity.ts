@@ -1,6 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-import Path from '../Path';
+import { Path } from '../Path';
 import { Node } from './Node';
 import type { SerializedNode } from './Node';
 import type { System } from '../System';

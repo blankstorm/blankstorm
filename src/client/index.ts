@@ -169,12 +169,12 @@ export let isPaused = true,
 	hitboxes = false;
 
 export const canvas = $<HTMLCanvasElement>('canvas.game'),
-	setPaused = paused => (isPaused = paused);
+	setPaused = (paused: boolean) => (isPaused = paused);
 
-initLog('Initalizing ');
+initLog('Initalizing renderer...');
 try {
 	await renderer.init(canvas[0], msg => {
-		$('#loading_cover p').text(`Initalizing renderer: ${msg}`);
+		initLog(`Initalizing renderer: ${msg}`);
 	});
 } catch (err) {
 	log.error('Failed to initalize renderer: ' + err.stack);
@@ -326,7 +326,8 @@ if (config.debug_mode) {
 	const BABYLON = await import('@babylonjs/core/index'),
 		core = await import('../core/index'),
 		{ default: io } = await import('socket.io-client'),
-		UI = await import('./ui/index');
+		UI = await import('./ui/index'),
+		utils = await import('./utils');
 
 	Object.assign(window, {
 		core,
@@ -345,6 +346,8 @@ if (config.debug_mode) {
 		config,
 		ui,
 		UI,
+		utils,
+		log,
 		_mp,
 		changeUI,
 		BABYLON,
