@@ -34,7 +34,7 @@ export class Waypoint extends Node {
 		this.gui = $(new WaypointUI(this));
 		this.marker = $<SVGSVGElement>(`<svg><use href=images/icons.svg#location-dot /></svg><p style=justify-self:center></p>`).addClass('marker  ingame').hide().appendTo('body');
 		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
-		system.addEventListener('active', () => {
+		system.on('active', () => {
 			this.updateVisibility();
 		});
 		this.updateVisibility();

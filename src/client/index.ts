@@ -140,10 +140,10 @@ $('#map,#map-markers').on('wheel', jqe => {
 
 initLog('Initializing locales...');
 import { locales } from './locales';
-import type { LocaleEvent } from './locales';
+import type { Locale } from './locales';
 import { ScreenshotUI } from './ui/screenshot';
-locales.addEventListener('fetch', (e: LocaleEvent) => {
-	settings.items.get('locale').addOption(e.locale.language, e.locale.name);
+locales.on('fetch', (locale: Locale) => {
+	settings.items.get('locale').addOption(locale.language, locale.name);
 });
 await locales.init('locales/en.json');
 for (const [id, section] of settings.sections) {

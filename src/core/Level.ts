@@ -5,12 +5,10 @@ import { random } from './utils';
 import { version, versions, config } from './meta';
 import type { VersionID } from './meta';
 
-import type { SerializedNode } from './nodes/Node';
-import { LevelEvent } from './events';
-import type { EventData } from './events';
 import { System } from './System';
 import type { SerializedSystem } from './System';
 import type { SystemGenerationOptions } from './generic/system';
+import { EventEmitter } from 'eventemitter3';
 
 export interface SerializedLevel<S extends SerializedSystem = SerializedSystem> {
 	date: string;
@@ -21,7 +19,7 @@ export interface SerializedLevel<S extends SerializedSystem = SerializedSystem> 
 	id: string;
 }
 
-export class Level<S extends System = System> extends EventTarget {
+export class Level<S extends System = System> extends EventEmitter {
 	id = random.hex(16);
 	version = version;
 	date = new Date();
@@ -66,11 +64,6 @@ export class Level<S extends System = System> extends EventTarget {
 	//events and ticking
 	get tps(): number {
 		return this.#performanceMonitor.averageFPS;
-	}
-
-	emit(type: string, emitter?: SerializedSystem | SerializedNode, data?: EventData): boolean {
-		const event = new LevelEvent(type, emitter, data, this);
-		return super.dispatchEvent(event);
 	}
 
 	sampleTick() {

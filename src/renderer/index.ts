@@ -8,26 +8,25 @@ import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture';
 import { Engine } from '@babylonjs/core/Engines/engine';
-
-import { Path } from '../core/Path';
-
-import config from './config';
-import { PlayerRenderer } from './nodes/Player';
-import { PlanetRenderer, PlanetRendererMaterial } from './nodes/Planet';
-import { StarRenderer } from './nodes/Star';
-import { ModelRenderer } from './Model';
-import { ShipRenderer } from './nodes/Ship';
-import { EntityRenderer } from './nodes/Entity';
-import { Camera } from './Camera';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { FireProjectileOptions, HardpointRenderer } from './nodes/Hardpoint';
+import { Path } from '../core/Path';
 import type { SerializedSystem } from '../core/System';
+import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { SerializedStar } from '../core/nodes/Star';
 import type { SerializedPlanet } from '../core/nodes/Planet';
 import type { SerializedPlayer } from '../core/nodes/Player';
 import type { SerializedShip } from '../core/nodes/Ship';
 import type { SerializedNode } from '../core/nodes/Node';
+import config from './config';
+import { Camera } from './Camera';
+import { ModelRenderer } from './Model';
+import { PlayerRenderer } from './nodes/Player';
+import { PlanetRenderer, PlanetRendererMaterial } from './nodes/Planet';
+import { StarRenderer } from './nodes/Star';
+import { ShipRenderer } from './nodes/Ship';
+import { EntityRenderer } from './nodes/Entity';
+import type { HardpointRenderer } from './nodes/Hardpoint';
 import type { Renderer } from './nodes/Renderer';
 
 function createEmptyCache(): SerializedSystem {
@@ -295,9 +294,9 @@ export async function startFollowingPath(entityID: string, path: number[][]) {
 	await renderer.followPath(Path.FromJSON(path));
 }
 
-export function fireProjectile(hardpointID: string, target: TransformNode, options: FireProjectileOptions) {
+export function fireProjectile(hardpointID: string, targetID: string, options: GenericProjectile) {
 	const hardpointRenderer = scene.getTransformNodeById(hardpointID) as HardpointRenderer,
 		parent = hardpointRenderer?.parent?.parent as PlayerRenderer | PlanetRenderer,
-		targetRenderer = scene.getTransformNodeById(target.id);
+		targetRenderer = scene.getTransformNodeById(targetID);
 	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials: parent.customHardpointProjectileMaterials });
 }

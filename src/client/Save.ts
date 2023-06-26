@@ -12,7 +12,6 @@ import * as renderer from '../renderer/index';
 import fs from './fs';
 import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
-import type { LevelEvent } from '../core/events';
 import { ClientLevel } from './ClientLevel';
 import type { SerializedClientLevel } from './ClientLevel';
 
@@ -132,11 +131,11 @@ export class LiveSave extends ClientLevel {
 	constructor(name: string) {
 		super(name);
 		for (const [id, listener] of Object.entries(listeners.core)) {
-			this.addEventListener(
+			this.on(
 				id,
-				(evt: LevelEvent) => {
-					eventLog.push(evt);
-					listener(evt);
+				(...args) => {
+					eventLog.push(...args);
+					listener(...args);
 				},
 				{ passive: true }
 			);

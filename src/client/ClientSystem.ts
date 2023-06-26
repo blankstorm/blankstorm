@@ -4,7 +4,6 @@ import type { SerializedSystem } from '../core/System';
 import { SerializedWaypoint, Waypoint } from './waypoint';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { SerializedCelestialBody } from '../core/nodes/CelestialBody';
-import type { LevelEvent } from '../core/events';
 import { getIconForNode } from './utils';
 import type { ClientLevel } from './ClientLevel';
 
@@ -19,8 +18,7 @@ export class ClientSystem extends System {
 	constructor(id: string, level: ClientLevel) {
 		super(id, level);
 
-		this.addEventListener('body.created', (e: LevelEvent) => {
-			const body = e.emitter as SerializedCelestialBody;
+		this.on('body.created', (body: SerializedCelestialBody) => {
 			const waypoint = new Waypoint(null, true, true, this);
 			waypoint.name = body.name;
 			waypoint.position = Vector3.FromArray(body.position);

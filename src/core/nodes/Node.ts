@@ -2,7 +2,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { random, resolveConstructors } from '../utils';
 import type { Level } from '../Level';
 import type { System } from '../System';
-import { EventData, LevelEvent } from '../events';
+import EventEmitter from 'eventemitter3';
 
 export type NodeConstructor<T extends Node> = new (...args: ConstructorParameters<typeof Node>) => T;
 
@@ -17,7 +17,7 @@ export interface SerializedNode {
 	velocity: number[];
 }
 
-export class Node extends EventTarget {
+export class Node extends EventEmitter {
 	id: string;
 	private _name = '';
 
@@ -74,11 +74,6 @@ export class Node extends EventTarget {
 		this.system = level;
 		level.nodes.set(id, this);
 		setTimeout(() => level.emit('node.created', this.toJSON()));
-	}
-
-	emit(type: string, data?: EventData): boolean {
-		const event = new LevelEvent(type, this.toJSON(), data, this.level);
-		return super.dispatchEvent(event);
 	}
 
 	remove() {

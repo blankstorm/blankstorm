@@ -40,6 +40,7 @@
 		"@babylonjs/core": "^6.4.1",
 		"@babylonjs/loaders": "^6.4.1",
 		"browserfs": "^2.0.0",
+		"eventemitter3": "^5.0.1",
 		"jquery": "^3.6.2",
 		"socket.io": "^4.6.1",
 		"socket.io-client": "^4.6.1"

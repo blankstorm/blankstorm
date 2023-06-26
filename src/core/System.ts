@@ -20,7 +20,7 @@ import type { Berth } from './stations/Berth';
 import type { Level } from './Level';
 import { config } from './meta';
 import { getRandomIntWithRecursiveProbability, greek, random, range } from './utils';
-import { EventData, LevelEvent } from './events';
+import EventEmitter from 'eventemitter3';
 
 export type SerializedSystemConnection = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
 
@@ -53,7 +53,7 @@ export interface _SystemConnection {
 
 export type SystemConnection = System | Vector2;
 
-export class System extends EventTarget {
+export class System extends EventEmitter {
 	name = '';
 	nodes: Map<string, Node> = new Map();
 	difficulty = 1;
@@ -176,11 +176,6 @@ export class System extends EventTarget {
 	//events and ticking
 	get tps(): number {
 		return this.#performanceMonitor.averageFPS;
-	}
-
-	emit(type: string, emitter: SerializedSystem | SerializedNode, data?: EventData): boolean {
-		const event = new LevelEvent(type, emitter, data, this.level);
-		return super.dispatchEvent(event);
 	}
 
 	sampleTick() {

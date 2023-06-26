@@ -5,7 +5,6 @@ import { chat, setPaused, setCurrent, log } from './index';
 import { cookies } from './utils';
 import * as listeners from './listeners';
 import * as renderer from '../renderer/index';
-import { LevelEvent } from '../core/events';
 import fs from './fs';
 import { JSONFileMap } from '../core/utils';
 import { ServerListItem } from './ui/server';
@@ -85,17 +84,16 @@ export class Server {
 		this.socket.on('chat', message => {
 			chat(message);
 		});
-		this.socket.on('event', (type, emitter, data) => {
+		this.socket.on('event', (type, ...data) => {
 			if (type == 'level.tick') {
-				ClientLevel.FromJSON(emitter, this.level);
+				ClientLevel.FromJSON(data[0], this.level);
 				setCurrent(this.level);
 				this.level.sampleTick();
 			}
 			if (!listeners.core[type]) {
 				log.warn(new Error(`Recieved invalid packet type "${type}"`));
 			} else {
-				const evt = new LevelEvent(type, emitter, data);
-				listeners.core[type](evt);
+				listeners.core[type](...data);
 			}
 		});
 		this.socket.on('disconnect', reason => {

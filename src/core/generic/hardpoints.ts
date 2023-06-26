@@ -1,3 +1,10 @@
+export interface GenericProjectile {
+	id: string;
+	count: number;
+	interval: number;
+	speed: number;
+}
+
 export interface GenericHardpoint {
 	damage: number;
 	reload: number;
@@ -9,12 +16,7 @@ export interface GenericHardpoint {
 	 * The different nodeTypes's that the hardpoint can target
 	 */
 	targets: string[];
-	projectile: {
-		id: string;
-		count: number;
-		interval: number;
-		speed: number;
-	};
+	projectile: GenericProjectile;
 }
 
 const genericHardpoints = {

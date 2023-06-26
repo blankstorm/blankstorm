@@ -62,7 +62,7 @@ export class Hardpoint extends Node {
 		// this is so we don't have a circular dependency by importing Ship
 		const targetConstructors = resolveConstructors(target);
 
-		this.system.emit('projectile.fire', this.toJSON(), { target: target.toJSON(), projectile: this.generic.projectile });
+		this.system.emit('projectile.fire', this.id, target.id, this.generic.projectile);
 		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
 		this.reload = this.generic.reload;
 		await wait(time);

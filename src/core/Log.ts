@@ -1,3 +1,5 @@
+import EventEmitter from 'eventemitter3';
+
 export enum LogLevel {
 	LOG = 0,
 	WARN = 1,
@@ -27,7 +29,7 @@ export class LogEntry {
 	}
 }
 
-export class Log extends EventTarget {
+export class Log extends EventEmitter {
 	#entries: LogEntry[] = [];
 	doNotOutput: boolean;
 
@@ -38,11 +40,6 @@ export class Log extends EventTarget {
 
 	get entries(): LogEntry[] {
 		return this.#entries.slice(0);
-	}
-
-	emit(type: string): boolean {
-		const event = new Event(type);
-		return this.dispatchEvent(event);
 	}
 
 	addMessage(message: string, level?: LogLevel): void {

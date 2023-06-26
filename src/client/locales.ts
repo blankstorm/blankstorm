@@ -2,6 +2,7 @@ import { isJSON } from '../core/utils';
 import { version } from '../core/meta';
 import { settings } from './settings';
 import $ from 'jquery';
+import EventEmitter from 'eventemitter3';
 
 export interface Locale {
 	language: string;
@@ -10,22 +11,12 @@ export interface Locale {
 	text: { [key: string]: string };
 }
 
-export class LocaleEvent extends Event {
-	constructor(type: string, public locale: Locale) {
-		super(type);
-	}
-}
-
-export class LocaleStore extends EventTarget {
+export class LocaleStore extends EventEmitter {
 	#store: Map<string, Locale> = new Map();
 	#currentLang = 'en';
 
 	constructor() {
 		super();
-	}
-
-	private emit(type: string, locale: Locale) {
-		return this.dispatchEvent(new LocaleEvent(type, locale));
 	}
 
 	/**

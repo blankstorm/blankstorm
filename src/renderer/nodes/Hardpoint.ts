@@ -5,18 +5,17 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { random, wait } from '../../core/utils';
 import { ModelRenderer } from '../Model';
-import type { SerializedHardpoint } from '../../core';
 import type { Renderer } from './Renderer';
+import type { SerializedHardpoint } from '../../core/nodes/Hardpoint';
+import type { GenericProjectile } from '../../core/generic/hardpoints';
 
 export interface CustomHardpointProjectileMaterial {
 	applies_to: string[];
 	material: Material;
 }
 
-export interface FireProjectileOptions {
+export interface FireProjectileOptions extends GenericProjectile {
 	materials: { applies_to: string[]; material: Material }[];
-	speed: number;
-	id: string;
 }
 
 export interface HardpointProjectileHandlerOptions extends FireProjectileOptions {

@@ -9,7 +9,6 @@ import { version, config as coreConfig } from '../core/meta';
 import type { VersionID } from '../core/meta';
 import { execCommandString } from './commands';
 import { requestUserInfo } from '../core/api';
-import type { LevelEvent } from '../core/events';
 import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
 
@@ -140,8 +139,8 @@ export class Server extends EventEmitter {
 		}
 
 		for (const type of ['projectile.fire', 'level.tick', 'player.death', 'entity.follow_path.start']) {
-			this.level.addEventListener(type, async (evt: LevelEvent) => {
-				this.io.emit('event', type, evt.emitter, evt.data);
+			this.level.on(type, async (...args) => {
+				this.io.emit('event', ...args);
 			});
 		}
 
