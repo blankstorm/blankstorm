@@ -1,33 +1,27 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
 
-import { version } from '../core/meta';
 import { FolderMap, random, isJSON } from '../core/utils';
 import { Ship } from '../core/nodes/Ship';
 import { Player } from '../core/nodes/Player';
 
-import { setPaused, eventLog, setCurrent } from './index';
-import * as listeners from './listeners';
-import * as renderer from '../renderer/index';
 import fs from './fs';
 import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
 import { ClientLevel } from './ClientLevel';
 import type { SerializedClientLevel } from './ClientLevel';
+import type { ClientContext } from './contexts';
 
 export class SaveMap extends Map<string, Save> {
 	_map: FolderMap;
 	selected?: string;
 	current?: LiveSave;
 	activePlayer: string;
-	constructor(path: string) {
+	constructor(path: string, context: ClientContext) {
 		super();
 		this._map = new FolderMap(path, fs, '.json');
+		context._saves = this;
 
-		this._getMap(); // update properly
-	}
-
-	_getMap() {
 		for (const [id, content] of this._map._map) {
 			if (!isJSON(content)) {
 				continue;
@@ -36,10 +30,9 @@ export class SaveMap extends Map<string, Save> {
 			const data = JSON.parse(content);
 
 			if (!super.has(id)) {
-				new Save(data, this);
+				new Save(data, context);
 			}
 		}
-		return this;
 	}
 
 	get(id: string): Save {
@@ -73,18 +66,19 @@ export class SaveMap extends Map<string, Save> {
 
 export class Save {
 	#data: SerializedClientLevel;
-	store: SaveMap;
+	get store(): SaveMap {
+		return this.context.saves;
+	}
 	gui: JQuery<SaveListItem>;
 	get activePlayer(): string {
 		return this.store.activePlayer;
 	}
-	constructor(data: SerializedClientLevel, store: SaveMap) {
+	constructor(data: SerializedClientLevel, public context: ClientContext) {
 		this.#data = data;
-		this.store = store;
-		this.gui = $(new SaveListItem(this));
-		if (store) {
-			store.set(this.id, this);
+		if (context.saves) {
+			context.saves.set(this.id, this);
 		}
+		this.gui = $(new SaveListItem(this, context));
 	}
 
 	get id() {
@@ -92,8 +86,8 @@ export class Save {
 	}
 
 	get data(): SerializedClientLevel {
-		if (this.store._map.has(this.id)) {
-			this.#data = JSON.parse(this.store._map.get(this.id));
+		if (this.context.saves._map.has(this.id)) {
+			this.#data = JSON.parse(this.context.saves._map.get(this.id));
 		}
 		return this.#data;
 	}
@@ -108,8 +102,8 @@ export class Save {
 		this.#data.date = date.toJSON();
 		this.gui.find('.date').text(date.toLocaleString());
 
-		this.store._map.set(this.id, JSON.stringify(this.#data));
-		this.store.set(this.id, this);
+		this.context.saves._map.set(this.id, JSON.stringify(this.#data));
+		this.context.saves.set(this.id, this);
 	}
 
 	load(playerID: string): LiveSave {
@@ -122,7 +116,7 @@ export class Save {
 	}
 
 	remove() {
-		if (this.store) this.store.delete(this.id);
+		if (this.context.saves) this.context.saves.delete(this.id);
 		this.gui.remove();
 	}
 }
@@ -130,31 +124,6 @@ export class Save {
 export class LiveSave extends ClientLevel {
 	constructor(name: string) {
 		super(name);
-		for (const [id, listener] of Object.entries(listeners.core)) {
-			this.on(
-				id,
-				(...args) => {
-					eventLog.push(...args);
-					listener(...args);
-				},
-				{ passive: true }
-			);
-		}
-	}
-
-	play(store: SaveMap) {
-		if (this.version == version) {
-			$('#save-list').hide();
-			$('canvas.game').show().trigger('focus');
-			$('#hud').show();
-			if (store) store.selected = this.id;
-			setCurrent(this);
-			renderer.clear();
-			renderer.update(this.getNodeSystem(this.activePlayer).toJSON());
-			setPaused(false);
-		} else {
-			throw 'That save is not compatible with the current game version';
-		}
 	}
 
 	static FromJSON(saveData: SerializedClientLevel) {

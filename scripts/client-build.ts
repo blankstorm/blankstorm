@@ -3,7 +3,7 @@ import type { BuildOptions } from 'esbuild';
 import * as fs from 'fs';
 import { join, resolve } from 'path';
 import pkg from '../package.json' assert { type: 'json' };
-import { version as rawVersion } from '../src/core/meta';
+import { version as rawVersion } from '../src/core/metadata';
 import * as electronBuilder from 'electron-builder';
 import { fileURLToPath } from 'url';
 import { parseArgs } from 'util';

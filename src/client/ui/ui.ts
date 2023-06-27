@@ -4,7 +4,7 @@ import { isResearchLocked, priceOfResearch, research } from '../../core/generic/
 import type { ResearchID } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
 import type { Player } from '../../core/nodes/Player';
-import { config } from '../../core/meta';
+import { config } from '../../core/metadata';
 import { toDegrees } from '../../core/utils';
 import { settings } from '../settings';
 import { locales } from '../locales';
@@ -12,7 +12,7 @@ import { ItemUI } from './item';
 import { minimize, $svg } from '../utils';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
-import type { MarkerContext, UIContext } from './context';
+import type { ClientContext, MarkerContext } from '../contexts';
 import { Marker } from './marker';
 
 import { ClientSystem } from '../ClientSystem';
@@ -27,7 +27,7 @@ export const item_ui = {},
 		y: 0,
 		scale: 1,
 		rotation: 0,
-		uiContext: null,
+		client: null,
 		get svgX() {
 			return this.x * -this.scale;
 		},
@@ -36,8 +36,8 @@ export const item_ui = {},
 		},
 	};
 
-export function init(context: UIContext) {
-	markerContext.uiContext = context;
+export function init(context: ClientContext) {
+	markerContext.client = context;
 	for (const [id, item] of Object.entries(items)) {
 		item_ui[id] = new ItemUI(item, context);
 	}
@@ -71,9 +71,9 @@ export function init(context: UIContext) {
 	}
 }
 
-export function update(ctx: UIContext) {
-	if (ctx.system instanceof ClientSystem) {
-		const player = ctx.system.level.getNodeSystem(ctx.playerID).getNodeByID<Player>(ctx.playerID);
+export function update(ctx: ClientContext) {
+	if (ctx.playerSystem instanceof ClientSystem) {
+		const player = ctx.playerSystem.level.getNodeSystem(ctx.playerID).getNodeByID<Player>(ctx.playerID);
 		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
@@ -133,7 +133,7 @@ export function update(ctx: UIContext) {
 			$(ship_ui[id]).find('.locked')[locked ? 'show' : 'hide']();
 		}
 
-		for (const waypoint of ctx.system.waypoints) {
+		for (const waypoint of ctx.playerSystem.waypoints) {
 			waypoint.updateVisibility();
 		}
 		$('#map-markers').attr(
@@ -147,10 +147,10 @@ export function update(ctx: UIContext) {
 			<span>${markerContext.scale.toFixed(1)}x</span>
 		`);
 		$('#system-info').html(`
-			<span><strong>${ctx.system.name}</strong></span><br>
-			<span>${ctx.system.connections.length} hyperspace connection(s)</span>
+			<span><strong>${ctx.playerSystem.name}</strong></span><br>
+			<span>${ctx.playerSystem.connections.length} hyperspace connection(s)</span>
 		`);
-		for (const [id, node] of ctx.system.nodes) {
+		for (const [id, node] of ctx.playerSystem.nodes) {
 			if (!markers.has(id) && Marker.supportsNodeType(node.nodeType)) {
 				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
 					continue;
@@ -164,7 +164,7 @@ export function update(ctx: UIContext) {
 			marker.update();
 		}
 
-		if (ctx.system.level.isServer) {
+		if (ctx.current.isServer) {
 			$('#pause .quit').text('Disconnect');
 			$('#pause .save').hide();
 		} else {

@@ -41,19 +41,19 @@ export function getByString(object: object, path: string, seperator = /[.[\]'"]/
 	return path
 		.split(seperator)
 		.filter(p => p)
-		.reduce((o, p) => (o ? o[p] : null), this);
+		.reduce((o, p) => (o ? o[p] : null), object);
 }
 
 export function setByString(object: object, path: string, value, seperator = /[.[\]'"]/) {
 	return path
 		.split(seperator)
 		.filter(p => p)
-		.reduce((o, p, i) => (o[p] = path.split(seperator).filter(p => p).length === ++i ? value : o[p] || {}), this);
+		.reduce((o, p, i) => (o[p] = path.split(seperator).filter(p => p).length === ++i ? value : o[p] || {}), object);
 }
 
 export const cookies: Map<string, string> & { get _map(): Map<string, string> } = {
 	clear() {
-		for (const key of this.entries()) {
+		for (const key of this.keys()) {
 			this.delete(key);
 		}
 	},

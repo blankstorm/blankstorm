@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { computeProductionDifficulty } from './production';
 import { genericHardpoints } from './hardpoints';
-import { config } from '../meta';
+import { config } from '../metadata';
 import type { Producible } from './production';
 
 export interface HardpointInfo {

@@ -10,7 +10,7 @@
 		"format": "npm run format:check && npm run format:fix",
 		"lint": "eslint src/**/*.{ts,cjs}",
 		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
-		"lint:ts": "tsc --project tsconfig.json",
+		"lint:ts": "tsc --project tsconfig.lint.json",
 		"test:client": "npm run deploy:client && electron dist/web/app.cjs --bs-debug",
 		"test:server": "ts-node src/server/cli.ts",
 		"build:client": "ts-node scripts/client-build.ts --for-app",

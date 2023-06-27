@@ -5,8 +5,8 @@ import { Server as SocketIOServer } from 'socket.io';
 import type { Socket } from 'socket.io';
 import type { ServerOptions as EngineIOOptions } from 'engine.io';
 
-import { version, config as coreConfig } from '../core/meta';
-import type { VersionID } from '../core/meta';
+import { version, config as coreConfig } from '../core/metadata';
+import type { VersionID } from '../core/metadata';
 import { execCommandString } from './commands';
 import { requestUserInfo } from '../core/api';
 import { Level } from '../core/Level';

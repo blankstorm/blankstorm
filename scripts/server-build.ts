@@ -2,7 +2,7 @@ import { build } from 'esbuild';
 import * as fs from 'fs';
 import * as path from 'path';
 import { exec as pkg } from 'pkg';
-import { version as rawVersion } from '../src/core/meta';
+import { version as rawVersion } from '../src/core/metadata';
 
 const version = (rawVersion as string).replaceAll('_', '-');
 const outfile = 'dist/tmp/server.js';

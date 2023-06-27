@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
 import { Ship } from './nodes/Ship';
-import { SHORT_URL } from './meta';
+import { SHORT_URL } from './metadata';
 import type { Player } from './nodes/Player';
 import { isJSON } from './utils';
 

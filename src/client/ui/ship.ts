@@ -1,10 +1,10 @@
 import type { GenericShip } from '../../core/generic/ships';
 import { locales } from '../locales';
 import $ from 'jquery';
-import type { UIContext } from './context';
+import type { ClientContext } from '../contexts';
 
 export class ShipUI extends HTMLDivElement {
-	constructor(ship: GenericShip, context: UIContext) {
+	constructor(ship: GenericShip, context: ClientContext) {
 		super();
 
 		$(`
@@ -15,7 +15,7 @@ export class ShipUI extends HTMLDivElement {
 		$(this)
 			.find('.add')
 			.on('click', async () => {
-				await context.system.tryPlayerAction(context.playerID, 'create_ship', { ship });
+				await context.playerSystem.tryPlayerAction(context.playerID, 'create_ship', { ship });
 			});
 		$(this).appendTo('div.shipyard');
 	}

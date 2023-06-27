@@ -1,9 +1,15 @@
 import $ from 'jquery';
 import { confirm } from '../utils';
 import type { Server } from '../Server';
+import type { ClientContext } from '../contexts';
+
+function connectAndStartPlaying(server: Server, context: ClientContext) {
+	server.connect();
+	context.startPlaying(server.level);
+}
 
 export class ServerListItem extends HTMLLIElement {
-	constructor(server: Server) {
+	constructor(server: Server, context: ClientContext) {
 		super();
 		$(this)
 			.css({
@@ -15,9 +21,9 @@ export class ServerListItem extends HTMLLIElement {
 			.on('click', () => {
 				$('.selected').removeClass('selected');
 				$(this).addClass('selected');
-				server.store.selected = server.id;
+				context.servers.selected = server.id;
 			})
-			.on('dblclick', () => server.connect())
+			.on('dblclick', () => connectAndStartPlaying(server, context))
 			.prependTo('#server-list');
 		$(`<p class="delete" style=position:absolute;left:15%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(this);
 		$(`<p class="play" style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(this);
@@ -33,7 +39,7 @@ export class ServerListItem extends HTMLLIElement {
 			});
 		$(this)
 			.find('.play')
-			.on('click', () => server.connect());
+			.on('click', () => connectAndStartPlaying(server, context));
 		$(this)
 			.find('.edit')
 			.on('click', () => {

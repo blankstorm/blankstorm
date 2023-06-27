@@ -1,10 +1,11 @@
 import $ from 'jquery';
 import { alert, confirm, download } from '../utils';
-import { versions } from '../../core/meta';
+import { versions } from '../../core/metadata';
 import type { Save } from '../Save';
+import type { ClientContext } from '../contexts';
 
 export class SaveListItem extends HTMLLIElement {
-	constructor(save: Save) {
+	constructor(save: Save, context: ClientContext) {
 		super();
 
 		const loadAndPlay = async () => {
@@ -12,7 +13,7 @@ export class SaveListItem extends HTMLLIElement {
 			try {
 				const live = save.load(save.activePlayer);
 				await live.ready();
-				live.play(save.store);
+				context.startPlaying(live);
 				$('#loading_cover').hide();
 			} catch (e) {
 				alert(`Failed to load save: ${e}`);

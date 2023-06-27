@@ -3,21 +3,19 @@ import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Animation } from '@babylonjs/core/Animations/animation';
-import { hl } from './index';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
-
-import '@babylonjs/loaders/glTF/index';
-
-import config from './config';
-import { probe } from './index';
-import { Path } from '../core/Path';
-import { settings } from '../client/settings';
-import { random } from '../core/utils';
-import type { SerializedNode } from '../core/nodes/Node';
 import type { Scene } from '@babylonjs/core/scene';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+
+import '@babylonjs/loaders/glTF/index';
+
+import config from './config';
+import { Path } from '../core/Path';
+import { settings } from '../client/settings';
+import { random } from '../core/utils';
+import type { SerializedNode } from '../core/nodes/Node';
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
@@ -48,7 +46,9 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
 		}
 		for (const mesh of this.getChildMeshes()) {
-			hl.addMesh(mesh as Mesh, Color3.Green());
+			this.getScene()
+				.getHighlightLayerByName('highlight')
+				.addMesh(mesh as Mesh, Color3.Green());
 		}
 		this.#selected = true;
 	}
@@ -58,7 +58,9 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
 		}
 		for (const mesh of this.getChildMeshes()) {
-			hl.removeMesh(mesh as Mesh);
+			this.getScene()
+				.getHighlightLayerByName('highlight')
+				.removeMesh(mesh as Mesh);
 		}
 		this.#selected = false;
 	}
@@ -67,7 +69,7 @@ export class ModelRenderer extends TransformNode {
 		return this.#currentPath;
 	}
 
-	async followPath(path) {
+	async followPath(path: Path) {
 		if (!(path instanceof Path)) throw new TypeError('path must be a Path');
 		if (path.path.length == 0) {
 			return;
@@ -193,13 +195,13 @@ export class ModelRenderer extends TransformNode {
 			material: Object.assign(container.materials[0], {
 				realTimeFiltering: true,
 				realTimeFilteringQuality: config.realtime_filtering_quality,
-				reflectionTexture: probe.cubeTexture,
+				reflectionTexture: scene.reflectionProbes[0].cubeTexture,
 			}),
 			position: Vector3.Zero(),
 			isVisible: false,
 			isPickable: false,
 		});
-		probe.renderList.push(container.meshes[1]);
+		scene.reflectionProbes[0].renderList.push(container.meshes[1]);
 		ModelRenderer.genericMeshes.set(id, container);
 	}
 }

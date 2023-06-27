@@ -1,7 +1,7 @@
 import type { Player } from '../nodes/Player';
-import { config } from '../meta';
+import { config } from '../metadata';
 import type { ItemCollection } from './items';
-import { Producible } from './production';
+import type { Producible } from './production';
 
 export interface Research extends Producible {
 	xp: number;

@@ -1,28 +1,27 @@
 import $ from 'jquery';
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
-import { chat, setPaused, setCurrent, log } from './index';
 import { cookies } from './utils';
-import * as listeners from './listeners';
-import * as renderer from '../renderer/index';
 import fs from './fs';
 import { JSONFileMap } from '../core/utils';
 import { ServerListItem } from './ui/server';
-import { config, versions } from '../core/meta';
-
+import { config, versions } from '../core/metadata';
 import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
 import { ClientLevel } from './ClientLevel';
+import EventEmitter from 'eventemitter3';
+import type { ClientContext } from './contexts';
 
 export class ServerMap extends Map<string, Server> {
 	private _map: JSONFileMap;
 	selected?: string;
-	constructor(path: string) {
+	constructor(path: string, context: ClientContext) {
 		super();
 		this._map = new JSONFileMap(path, fs);
+		context._servers = this;
 		for (const [id, data] of this._map._map) {
 			if (!super.has(id)) {
-				Server.FromJSON(data as SerializedServer, this);
+				Server.FromJSON(data as SerializedServer, context);
 			}
 		}
 	}
@@ -48,24 +47,20 @@ export type SerializedServer = JSONValue & {
 	name: string;
 };
 
-export class Server {
+export class Server extends EventEmitter {
 	level = new ClientLevel('server_level');
 	kickMessage: string;
 	socket: Socket;
-	gui = $<ServerListItem>(new ServerListItem(this));
+	gui: JQuery<ServerListItem>;
 	pingInfo?: ServerPingInfo;
 
-	constructor(public _url: string, public _name: string, public store: ServerMap) {
+	constructor(public _url: string, public _name: string, public context: ClientContext) {
+		super();
+		this.gui = $<ServerListItem>(new ServerListItem(this, context));
 		this.level.isServer = true;
 		this.socket = io(this.url.href, { reconnection: false, autoConnect: false, auth: { token: cookies.get('token'), session: cookies.get('session') } });
 		this.socket.on('connect', () => {
-			$('#connect').hide();
-			$('canvas.game').show().trigger('focus');
-			$('#hud').show();
 			$('#tablist p.info').html(`${this.url.hostname}<br>${versions.get(this.pingInfo.version).text}<br>${this.pingInfo.message}<br>`);
-			renderer.clear();
-			renderer.engine.resize();
-			setPaused(false);
 		});
 		this.socket.on('connect_error', err => {
 			$('#connect p').text('Connection refused: ' + err.message);
@@ -82,19 +77,15 @@ export class Server {
 			this.kickMessage = 'Kicked from server: ' + message;
 		});
 		this.socket.on('chat', message => {
-			chat(message);
+			this.context.chat(message);
 		});
-		this.socket.on('event', (type, ...data) => {
+		this.socket.on('event', (type: string, ...data) => {
 			if (type == 'level.tick') {
 				ClientLevel.FromJSON(data[0], this.level);
-				setCurrent(this.level);
 				this.level.sampleTick();
 			}
-			if (!listeners.core[type]) {
-				log.warn(new Error(`Recieved invalid packet type "${type}"`));
-			} else {
-				listeners.core[type](...data);
-			}
+
+			this.level.emit(type, ...data);
 		});
 		this.socket.on('disconnect', reason => {
 			const message =
@@ -114,7 +105,7 @@ export class Server {
 			$('[ingame]').hide();
 			$(reason == 'io client disconnect' ? '#server-list' : '#connect').show();
 		});
-		this.store.set(this.id, this);
+		this.context.servers.set(this.id, this);
 	}
 
 	get id() {
@@ -128,7 +119,7 @@ export class Server {
 	set name(val) {
 		this.gui.find('.name').text(val);
 		this._name = val;
-		this.store.set(this.id, this);
+		this.context.servers.set(this.id, this);
 	}
 
 	get url() {
@@ -137,7 +128,7 @@ export class Server {
 
 	set url(val) {
 		this._url = val instanceof URL ? val.href : val;
-		this.store.set(this.id, this);
+		this.context.servers.set(this.id, this);
 	}
 
 	connect() {
@@ -155,8 +146,8 @@ export class Server {
 		if (this.socket.connected) {
 			this.socket.disconnect();
 		}
-		this.store.selected = null;
-		for (const server of this.store.values()) {
+		this.context.servers.selected = null;
+		for (const server of this.context.servers.values()) {
 			server.ping();
 		}
 	}
@@ -213,7 +204,7 @@ export class Server {
 		return `${url.protocol.slice(0, -1)}_${url.hostname}_${url.port}`;
 	}
 
-	static FromJSON(data: SerializedServer, store: ServerMap): Server {
-		return new Server(data.url, data.name, store);
+	static FromJSON(data: SerializedServer, context: ClientContext): Server {
+		return new Server(data.url, data.name, context);
 	}
 }

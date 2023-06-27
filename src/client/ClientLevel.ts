@@ -3,7 +3,7 @@ import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
 import type { SystemGenerationOptions } from '../core/generic/system';
 import { ClientSystem, SerializedClientSystem } from './ClientSystem';
-import { version } from '../core/meta';
+import { version } from '../core/metadata';
 
 export interface SerializedClientLevel extends SerializedLevel<SerializedClientSystem> {
 	activePlayer: string;
@@ -26,14 +26,6 @@ export class ClientLevel<S extends ClientSystem = ClientSystem> extends Level<S>
 
 	constructor(name: string) {
 		super(name);
-	}
-
-	override tick() {
-		this.sampleTick();
-		this.emit('level.tick', this.getNodeSystem(this.activePlayer).toJSON());
-		for (const system of this.systems.values()) {
-			system.tick();
-		}
 	}
 
 	override async generateSystem(name: string, position: Vector2, options?: SystemGenerationOptions): Promise<ClientSystem> {

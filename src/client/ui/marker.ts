@@ -4,7 +4,7 @@ import type { Planet } from '../../core/nodes/Planet';
 import type { Ship } from '../../core/nodes/Ship';
 import { toDegrees } from '../../core/utils';
 import type { Waypoint } from '../waypoint';
-import type { MarkerContext } from './context';
+import type { MarkerContext } from '../contexts';
 import { $svg, getColorForBiome } from '../utils';
 import type { ClientLevel } from '../ClientLevel';
 
@@ -25,7 +25,7 @@ export class Marker {
 			case 'planet':
 				return getColorForBiome((this.target as unknown as Planet).biome);
 			case 'ship':
-				return this.context.uiContext.system.level.activePlayer == (this.target as unknown as Ship).parent.id ? '#0f0' : '#f00';
+				return this.context.client.current.activePlayer == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
 		}
 	}
 

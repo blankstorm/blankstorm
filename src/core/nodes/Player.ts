@@ -31,7 +31,8 @@ export class Player extends Entity {
 		super(id, system);
 		for (const shipData of fleet) {
 			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? (system.getNodeByID(shipData) as Ship) : Ship.FromJSON(shipData, system);
-			ship.owner = ship.parent = this;
+			ship.owner = this;
+			ship.position.addInPlace(this.absolutePosition);
 			this.fleet.push(ship);
 		}
 		setTimeout(() => system.emit('player.created', this.toJSON()));

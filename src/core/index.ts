@@ -20,7 +20,7 @@ export * from './stations/Station';
 
 export * from './Level';
 
-export * from './meta';
+export * from './metadata';
 export * from './utils';
 export * from './commands';
 export * from './api';

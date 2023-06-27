@@ -1,5 +1,5 @@
-import { config } from '../meta';
-import { Producible } from './production';
+import { config } from '../metadata';
+import type { Producible } from './production';
 
 export interface Item extends Producible {
 	rare: boolean;

@@ -9,7 +9,7 @@ $.event.special.wheel = {
 	},
 };
 
-import { GAME_URL, config, version, versions } from '../core/meta';
+import { GAME_URL, config, version, versions } from '../core/metadata';
 import { isHex, isJSON, xpToLevel } from '../core/utils';
 import { commands, execCommandString } from '../core/commands';
 import * as api from '../core/api';
@@ -25,6 +25,21 @@ import * as ui from './ui/ui';
 import { sounds, playsound } from './audio';
 import * as renderer from '../renderer/index';
 import { Log } from '../core/Log';
+import { ClientLevel } from './ClientLevel';
+import type { GenericProjectile } from '../core/generic/hardpoints';
+import type { SerializedSystem } from '../core/System';
+import type { SerializedNode } from '../core/nodes/Node';
+import type { ItemCollection, ItemID } from '../core/generic/items';
+import { settings } from './settings';
+
+import { locales } from './locales';
+import type { Locale } from './locales';
+import { ScreenshotUI } from './ui/screenshot';
+import { ClientContext } from './contexts';
+
+//Set the title
+document.title = 'Blankstorm ' + versions.get(version).text;
+$('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
 
 export const log = new Log();
 
@@ -33,20 +48,110 @@ function initLog(message: string): void {
 	log.log('init: ' + message);
 }
 
-//Set the title
-document.title = 'Blankstorm ' + versions.get(version).text;
-$('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
-
-initLog('Loading...');
-import { ClientLevel } from './ClientLevel';
-export let current: ClientLevel;
-export function setCurrent(val: ClientLevel) {
-	if (current) {
-		current.isActive = false;
+export const chat = (...msg: string[]) => {
+	for (const m of msg) {
+		log.log(`(chat) ${m}`);
+		$(`<li bg=none></li>`)
+			.text(m)
+			.appendTo('#chat')
+			.fadeOut(1000 * +settings.get('chat_timeout'));
+		$(`<li bg=none></li>`).text(m).appendTo('#chat-history');
 	}
-	current = val;
-	current.isActive = true;
+};
+
+initLog('Initializing...');
+let current: ClientLevel;
+export const context: ClientContext = {
+	get playerSystem() {
+		return current?.getNodeSystem(current.activePlayer);
+	},
+
+	get playerID() {
+		return player.data().id;
+	},
+
+	get current() {
+		return current;
+	},
+
+	set current(value) {
+		if (current) {
+			current.isActive = false;
+		}
+		current = value;
+		current.isActive = true;
+	},
+
+	get saves() {
+		return this._saves;
+	},
+	get servers() {
+		return this._servers;
+	},
+	chat,
+
+	startPlaying(level: ClientLevel) {
+		if (level.version != version) {
+			alert('Incompatible version');
+			return false;
+		}
+
+		$('#save-list,#server-list').hide();
+		$('canvas.game').show().trigger('focus');
+		$('#hud').show();
+		context.current = level;
+		renderer.clear();
+		renderer.update(this.playerSystem.toJSON());
+		level.on('projectile.fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
+			renderer.fireProjectile(hardpointID, targetID, projectile);
+		});
+		level.on('system.tick', async (system: SerializedSystem) => {
+			if (this.playerSystem.id == system.id) {
+				renderer.update(system);
+			}
+		});
+		level.on('player.levelup', async () => {
+			log.debug('Triggered player.levelup (unimplemented)');
+		});
+		level.on('player.death', async () => {
+			renderer.getCamera().reset();
+		});
+		level.on('entity.follow_path.start', async (entityID: string, path: number[][]) => {
+			renderer.startFollowingPath(entityID, path);
+		});
+		level.on('entity.death', async (node: SerializedNode) => {
+			if (node.nodeType == 'ship') {
+				playsound(sounds.get('destroy_ship'), +settings.get('sfx'));
+			}
+		});
+		level.on('player.items.change', async (player, items: ItemCollection) => {
+			for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
+				$(ui.item_ui[id]).find('.count').text(minimize(amount));
+			}
+		});
+		isPaused = false;
+
+		return true;
+	},
+
+	stopPlaying(level) {
+		for (const event of ['projectile.fire', 'level.tick', 'player.levelup', 'player.death', 'entity.follow_path.start', 'entity.death', 'player.items.change']) {
+			level.off(event);
+		}
+		isPaused = true;
+		return true;
+	},
+};
+
+initLog('Loading saves...');
+if (!fs.existsSync('saves')) {
+	fs.mkdirSync('saves');
 }
+const saves = new SaveMap('saves', context);
+
+initLog('Loading servers...');
+const servers = new ServerMap('servers.json', context);
+
 const updateSave = () => {
 	if (!(current instanceof ClientLevel)) {
 		throw 'Save Error: you must have a valid save selected.';
@@ -64,18 +169,8 @@ const updateSave = () => {
 	$('#pause .save').text('Save Game');
 };
 
-import type { UIContext } from './ui/context';
-const uiContext: UIContext = {
-	get system() {
-		return current?.getNodeSystem(current.activePlayer);
-	},
-	get playerID() {
-		return player.data().id;
-	},
-};
-
 initLog('Initializing settings...');
-import { settings } from './settings';
+
 settings.items.get('forward').addEventListener('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Forward());
 });
@@ -130,18 +225,15 @@ $('#map,#map-markers').on('keydown', e => {
 			ui.markerContext.y = Math.min(ui.markerContext.y + speed, max);
 			break;
 	}
-	ui.update(uiContext);
+	ui.update(context);
 });
 $('#map,#map-markers').on('wheel', jqe => {
 	const evt = jqe.originalEvent as WheelEvent;
 	ui.markerContext.scale = Math.min(Math.max(ui.markerContext.scale - Math.sign(evt.deltaY) * 0.1, 0.5), 5);
-	ui.update(uiContext);
+	ui.update(context);
 });
 
 initLog('Initializing locales...');
-import { locales } from './locales';
-import type { Locale } from './locales';
-import { ScreenshotUI } from './ui/screenshot';
 locales.on('fetch', (locale: Locale) => {
 	settings.items.get('locale').addOption(locale.language, locale.name);
 });
@@ -231,17 +323,6 @@ const changeUI = (selector: string, hideAll?: boolean) => {
 };
 const cli = { line: 0, currentInput: '', i: $('#chat-input').val(), prev: [], counter: 0 };
 
-export const chat = (...msg: string[]) => {
-	for (const m of msg) {
-		log.log(`(chat) ${m}`);
-		$(`<li bg=none></li>`)
-			.text(m)
-			.appendTo('#chat')
-			.fadeOut(1000 * +settings.get('chat_timeout'));
-		$(`<li bg=none></li>`).text(m).appendTo('#chat-history');
-	}
-};
-
 export const player: {
 	id: string;
 	username: string;
@@ -281,6 +362,7 @@ if (cookies.has('token') && navigator.onLine) {
 		chat(e);
 	}
 }
+saves.activePlayer = player.id;
 oncontextmenu = () => {
 	$('.context-menu').not(':last').remove();
 };
@@ -289,18 +371,7 @@ onclick = () => {
 };
 
 initLog('Loading locales...');
-ui.init(uiContext);
-
-//Load saves and servers into the game
-initLog('Loading saves...');
-if (!fs.existsSync('saves')) {
-	fs.mkdirSync('saves');
-}
-export const saves = new SaveMap('saves');
-saves.activePlayer = player.id;
-
-initLog('Loading servers...');
-export const servers = new ServerMap('servers.json');
+ui.init(context);
 
 commands.set('playsound', {
 	exec(context, name, volume = settings.get('sfx')) {
@@ -331,6 +402,7 @@ if (config.debug_mode) {
 
 	Object.assign(window, {
 		core,
+		client: context,
 		cookies,
 		eventLog,
 		settings,
@@ -340,8 +412,6 @@ if (config.debug_mode) {
 		api,
 		renderer,
 		player,
-		saves,
-		servers,
 		fs,
 		config,
 		ui,
@@ -354,9 +424,6 @@ if (config.debug_mode) {
 		Save,
 		LiveSave,
 		Server,
-		getCurrent() {
-			return current;
-		},
 	});
 }
 
@@ -383,7 +450,7 @@ $('#main .mp').on('click', () => {
 $('#main .options').on('click', () => {
 	ui.setLast('#main');
 	$('#settings').show();
-	ui.update(uiContext);
+	ui.update(context);
 });
 $('#main .exit').on('click', () => {
 	close();
@@ -404,12 +471,12 @@ $('#server-dialog .save').on('click', () => {
 	const name = $('#server-dialog .name').val() as string,
 		url = $('#server-dialog .url').val() as string,
 		id = Server.GetID(url);
-	const server = servers.has(id) ? servers.get(id) : new Server(url, name, servers);
+	const server = servers.has(id) ? servers.get(id) : new Server(url, name, context);
 	if (servers.has(id)) {
 		server.name = name;
 		server._url = url;
 	}
-	ui.update(uiContext);
+	ui.update(context);
 	$<HTMLDialogElement>('#server-dialog')[0].close();
 });
 $('#server-dialog .cancel').on('click', () => {
@@ -422,7 +489,7 @@ $('#save-edit .save').on('click', () => {
 	if (saves.has(id)) {
 		save.data.name = name;
 	}
-	ui.update(uiContext);
+	ui.update(context);
 	$<HTMLDialogElement>('#save-edit')[0].close();
 });
 $('#save-edit .cancel').on('click', () => {
@@ -432,7 +499,7 @@ $('#save-list button.upload').on('click', async () => {
 	const files = await upload('.json');
 	const text = await files[0].text();
 	if (isJSON(text)) {
-		new Save(JSON.parse(text), saves);
+		new Save(JSON.parse(text), context);
 	} else {
 		alert(`Can't load save: not JSON.`);
 	}
@@ -451,8 +518,8 @@ $('#save-new .new').on('click', async () => {
 	$<HTMLDialogElement>('#save-new')[0].close();
 	const name = $('#save-new .name').val() as string;
 	const live = await LiveSave.CreateDefault(name, player.id, player.username);
-	new Save(live.toJSON(), saves);
-	live.play(saves);
+	new Save(live.toJSON(), context);
+	context.startPlaying(live);
 });
 $('#pause .resume').on('click', () => {
 	$('#pause').hide();
@@ -530,9 +597,9 @@ $('#settings-nav button:not(.back)').on('click', e => {
 $('#settings button.back').on('click', () => {
 	$('#settings').hide();
 	$(ui.getLast()).show();
-	ui.update(uiContext);
+	ui.update(context);
 });
-$('#settings div.general input').on('change', () => ui.update(uiContext));
+$('#settings div.general input').on('change', () => ui.update(context));
 $<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
 	const lang = e.target.value;
 	if (locales.has(lang)) {
@@ -625,7 +692,7 @@ canvas.on('click', e => {
 	if (current instanceof ClientLevel) {
 		renderer.handleCanvasClick(e, renderer.scene.getNodeById(player.id));
 	}
-	ui.update(uiContext);
+	ui.update(context);
 });
 canvas.on('contextmenu', e => {
 	if (current instanceof ClientLevel) {
@@ -676,13 +743,13 @@ $('#ingame-temp-menu')
 			changeUI('#ingame-temp-menu');
 		}
 	})
-	.on('click', () => ui.update(uiContext));
+	.on('click', () => ui.update(context));
 $('canvas.game,#pause,#hud').on('keydown', e => {
 	if (e.key == 'Escape') {
 		changeUI('#pause', true);
 		isPaused = !isPaused;
 	}
-	ui.update(uiContext);
+	ui.update(context);
 });
 $('button').on('click', () => {
 	playsound(sounds.get('ui'), +settings.get('sfx'));
@@ -752,7 +819,7 @@ const loop = () => {
 	}
 };
 
-ui.update(uiContext);
+ui.update(context);
 initLog('Done!');
 $('#loading_cover').fadeOut(1000);
 log.log('Client loaded successful');

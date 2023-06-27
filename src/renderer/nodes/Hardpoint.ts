@@ -22,7 +22,7 @@ export interface HardpointProjectileHandlerOptions extends FireProjectileOptions
 	material?: Material;
 }
 
-export type HardpointProjectileHandler = (target: TransformNode, options: HardpointProjectileHandlerOptions) => Promise<unknown>;
+export type HardpointProjectileHandler = (this: HardpointRenderer, target: TransformNode, options: HardpointProjectileHandlerOptions) => Promise<unknown>;
 
 export class HardpointRenderer extends ModelRenderer implements Renderer<SerializedHardpoint> {
 	projectiles = [];

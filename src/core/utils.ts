@@ -1,5 +1,5 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { config } from './meta';
+import { config } from './metadata';
 import type * as FS from 'fs';
 
 export const filterObject = (object, ...keys) => Object.fromEntries(Object.entries(object).filter(([key]) => keys.includes(key)));

@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import * as fs from 'node:fs';
-import { config as coreConfig } from '../core/meta';
+import { config as coreConfig } from '../core/metadata';
 import { readJSONFile } from './utils';
 import { Log } from '../core/Log';
 import { Server } from './Server';

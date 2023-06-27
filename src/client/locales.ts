@@ -1,5 +1,5 @@
 import { isJSON } from '../core/utils';
-import { version } from '../core/meta';
+import { version } from '../core/metadata';
 import { settings } from './settings';
 import $ from 'jquery';
 import EventEmitter from 'eventemitter3';

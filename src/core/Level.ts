@@ -2,8 +2,8 @@ import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 
 import { random } from './utils';
-import { version, versions, config } from './meta';
-import type { VersionID } from './meta';
+import { version, versions, config } from './metadata';
+import type { VersionID } from './metadata';
 
 import { System } from './System';
 import type { SerializedSystem } from './System';

@@ -18,7 +18,7 @@ import { priceOfResearch, isResearchLocked } from './generic/research';
 import type { SystemGenerationOptions } from './generic/system';
 import type { Berth } from './stations/Berth';
 import type { Level } from './Level';
-import { config } from './meta';
+import { config } from './metadata';
 import { getRandomIntWithRecursiveProbability, greek, random, range } from './utils';
 import EventEmitter from 'eventemitter3';
 
