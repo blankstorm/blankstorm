@@ -26,7 +26,6 @@
 		"menu.map": "Waypoints",
 		"menu.items": "Inventory",
 		"menu.screenshots": "Screenshots",
-		"menu.trade": "Trade",
 		"menu.shipyard": "Shipyard",
 		"menu.lab": "Laboratory",
 		"error.color": "That color is not supported (use hex)",

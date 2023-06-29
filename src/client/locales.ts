@@ -65,7 +65,6 @@ export class LocaleStore extends EventEmitter {
 		$('#map button.waypoints span').text(lang['menu.waypoints'] ?? 'Waypoints');
 		$('#ingame-temp-menu div.nav button[section=inventory] span').text(lang['menu.items'] ?? 'Inventory');
 		$('#ingame-temp-menu div.nav button[section=screenshots] span').text(lang['menu.screenshots'] ?? 'Screenshots');
-		$('#ingame-temp-menu div.nav button[section=trade] span').text(lang['menu.trade'] ?? 'Trade');
 		$('#ingame-temp-menu div.nav button[section=shipyard] span').text(lang['menu.shipyard'] ?? 'Shipyard');
 		$('#ingame-temp-menu div.nav button[section=lab] span').text(lang['menu.lab'] ?? 'Laboratory');
 		this.emit('load', lang);

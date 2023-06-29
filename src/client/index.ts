@@ -227,8 +227,7 @@ $('#map,#map-markers').on('keydown', e => {
 	}
 	ui.update(context);
 });
-$('#map,#map-markers').on('wheel', jqe => {
-	const evt = jqe.originalEvent as WheelEvent;
+$('#map,#map-markers').on('wheel', ({ originalEvent: evt }: JQuery.TriggeredEvent & { originalEvent: WheelEvent }) => {
 	ui.markerContext.scale = Math.min(Math.max(ui.markerContext.scale - Math.sign(evt.deltaY) * 0.1, 0.5), 5);
 	ui.update(context);
 });
@@ -256,7 +255,6 @@ try {
 }
 
 export let isPaused = true,
-	_mp = false,
 	mpEnabled = false,
 	hitboxes = false;
 
@@ -303,7 +301,7 @@ const toggleChat = (command?: boolean) => {
 	}
 };
 const runCommand = (command: string): string | void => {
-	if (_mp) {
+	if (context.current.isServer) {
 		servers.get(servers.selected).socket.emit('command', command);
 	} else {
 		return execCommandString(command, { executor: player.data() }, true);
@@ -337,7 +335,7 @@ export const player: {
 			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 		}
 	},
-	data: (id: string = player.id) => ((_mp ? servers.get(servers.selected).level : current)?.getNodeSystem(id)?.nodes?.get(id) ?? {}) as unknown as Player,
+	data: (id: string = player.id) => ((context.current.isServer ? servers.get(servers.selected).level : current)?.getNodeSystem(id)?.nodes?.get(id) ?? {}) as unknown as Player,
 };
 
 onresize = () => {
@@ -391,39 +389,39 @@ commands.set('reload', {
 	},
 	oplvl: 0,
 });
-export const eventLog = [];
 if (config.debug_mode) {
 	initLog('Debug: Assigning variables...');
 	const BABYLON = await import('@babylonjs/core/index'),
 		core = await import('../core/index'),
 		{ default: io } = await import('socket.io-client'),
-		UI = await import('./ui/index'),
 		utils = await import('./utils');
 
 	Object.assign(window, {
-		core,
-		client: context,
-		cookies,
-		eventLog,
-		settings,
-		locales,
+		//libraries
 		$,
-		io,
-		api,
-		renderer,
-		player,
-		fs,
-		config,
-		ui,
-		UI,
-		utils,
-		log,
-		_mp,
-		changeUI,
 		BABYLON,
-		Save,
+		fs,
+		io,
+
+		//classes
 		LiveSave,
 		Server,
+		Save,
+
+		//everything else
+		changeUI,
+		client: context,
+		configFromBuild: _config,
+		config,
+		cookies,
+		core,
+		locales,
+		log,
+		player,
+		renderer,
+		settings,
+		ui,
+		utils,
 	});
 }
 
@@ -431,13 +429,11 @@ initLog('Registering event listeners...');
 //Event Listeners (UI transitions, creating saves, etc.)
 
 $('#main .sp').on('click', () => {
-	_mp = false;
 	$('#main').hide();
 	$('#save-list').show();
 });
 $('#main .mp').on('click', () => {
 	if (mpEnabled) {
-		_mp = true;
 		$('#main').hide();
 		$('#server-list').show();
 		for (const server of servers.values()) {
@@ -535,7 +531,7 @@ $('#pause .options').on('click', () => {
 $('#pause .quit').on('click', () => {
 	isPaused = true;
 	$('.ingame').hide();
-	if (_mp) {
+	if (context.current.isServer) {
 		servers.get(servers.selected).disconnect();
 	} else {
 		saves.selected = null;
@@ -673,7 +669,7 @@ $('#chat-input').on('keydown', e => {
 			if (/[^\s/]/.test($('#chat-input').val() as string)) {
 				if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#chat-input').val());
 				if ($('#chat-input').val()[0] == '/') chat(runCommand(($('#chat-input').val() as string).slice(1)) as string);
-				else _mp ? servers.get(servers.selected).socket.emit('chat', $('#chat-input').val()) : player.chat($('#chat-input').val() as string);
+				else context.current.isServer ? servers.get(servers.selected).socket.emit('chat', $('#chat-input').val()) : player.chat($('#chat-input').val() as string);
 				$('#chat-input').val('');
 				toggleChat();
 				cli.line = 0;
@@ -718,7 +714,7 @@ canvas.on('keydown', e => {
 			break;
 		case 'Tab':
 			e.preventDefault();
-			if (_mp) $('#tablist').show();
+			if (context.current.isServer) $('#tablist').show();
 			break;
 	}
 });
@@ -732,7 +728,7 @@ canvas.on('keyup', e => {
 	switch (e.key) {
 		case 'Tab':
 			e.preventDefault();
-			if (_mp) $('#tablist').hide();
+			if (context.current.isServer) $('#tablist').hide();
 			break;
 	}
 });

@@ -3,7 +3,7 @@ export const SHORT_URL = 'https://bs.drvortex.dev';
 
 export const config = {
 	load_remote_manifest: false,
-	debug_mode: true,
+	debug_mode: _config.debug_mode,
 	overwrite_invalid_json: true,
 	default_port: 1123,
 	region_size: 1e5,
