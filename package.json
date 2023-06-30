@@ -5,8 +5,8 @@
 	"main": "src/client/app.cjs",
 	"type": "module",
 	"scripts": {
-		"format:check": "prettier --check {src,scripts}/**/*.{html,ts,cjs}",
-		"format:fix": "prettier --write {src,scripts}/**/*.{html,ts,cjs}",
+		"format:check": "prettier --check {src,build}/**/*.{html,ts,cjs}",
+		"format:fix": "prettier --write {src,build}/**/*.{html,ts,cjs}",
 		"format": "npm run format:check && npm run format:fix",
 		"lint": "eslint {src,build}/**/*.{ts,cjs}",
 		"lint:ci": "npm run lint -- -f node_modules/eslint-formatter-azure-devops/index.js",
