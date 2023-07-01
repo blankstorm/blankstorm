@@ -10,14 +10,12 @@ const version = getVersionFromPackage();
 
 const options = {
 	verbose: false,
-	output: 'src/server/index.ts',
 	watch: false,
 	mode: 'dev',
 	...parseArgs({
 		options: {
 			verbose: { type: 'boolean', short: 'v', default: false },
 			watch: { type: 'boolean', short: 'w', default: false },
-			output: { type: 'string', short: 'o', default: 'dist/web' },
 			mode: { type: 'string', short: 'm', default: 'dev' },
 		},
 	}).values,
@@ -26,7 +24,7 @@ const options = {
 const outfile = 'dist/tmp/server.js';
 
 const esbuildConfig = {
-	entryPoints: [],
+	entryPoints: ['src/server/cli.ts'],
 	bundle: true,
 	outfile,
 	platform: 'node',
