@@ -29,20 +29,20 @@ export function getOptions(mode: Mode | string): BuildOptions {
 }
 
 function resolveReplacement(value) {
-	if(value === null || typeof value !== 'object') {
+	if (value === null || typeof value !== 'object') {
 		return JSON.stringify(value);
 	}
 
 	return Object.entries(value).flatMap(([key, value]) => {
 		const replacement = resolveReplacement(value);
 
-		if(!Array.isArray(replacement)) {
+		if (!Array.isArray(replacement)) {
 			return [[key, replacement]];
 		}
 
 		const entries = replacement.map(([nestedKey, nestedValue]) => [`${key}.${nestedKey}`, nestedValue]);
 
-		entries.push([key, JSON.stringify(value)])
+		entries.push([key, JSON.stringify(value)]);
 
 		return entries;
 	});
