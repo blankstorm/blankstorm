@@ -20,7 +20,7 @@ import type { SerializedShip } from '../core/nodes/Ship';
 import type { SerializedNode } from '../core/nodes/Node';
 import config from './config';
 import { Camera } from './Camera';
-import { ModelRenderer } from './Model';
+import { initModel, modelPaths } from './models';
 import { PlayerRenderer } from './nodes/Player';
 import { PlanetRenderer, PlanetRendererMaterial } from './nodes/Planet';
 import { StarRenderer } from './nodes/Star';
@@ -108,13 +108,13 @@ export async function init(
 	await messageHandler('reflection probe');
 	probe = new ReflectionProbe('probe', 256, scene);
 
-	await messageHandler('assets');
-	const modelKeys = [...ModelRenderer.modelPaths.keys()];
-	// using forEach so we can get the index
-	for (const id of modelKeys) {
-		const i = modelKeys.indexOf(id);
-		await messageHandler(`model "${id}" (${i + 1}/${modelKeys.length})`);
-		await ModelRenderer.InitModel(id, scene);
+	await messageHandler('models');
+
+	const modelIDs = [...modelPaths.keys()];
+	for (const id of modelIDs) {
+		const i = modelIDs.indexOf(id);
+		await messageHandler(`model "${id}" (${i + 1}/${modelIDs.length})`);
+		await initModel(id, scene);
 	}
 }
 

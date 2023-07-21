@@ -1,6 +1,6 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { SerializedEntity } from '../../core';
-import { ModelRenderer } from '../Model';
+import { ModelRenderer } from '../models';
 import type { Renderer } from './Renderer';
 
 export class EntityRenderer extends ModelRenderer implements Renderer<SerializedEntity> {

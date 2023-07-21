@@ -1,6 +1,6 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { HardpointRenderer } from './Hardpoint';
-import { ModelRenderer } from '../Model';
+import { ModelRenderer } from '../models';
 import { ShipType, genericShips } from '../../core/generic/ships';
 import type { SerializedShip } from '../../core/nodes/Ship';
 import type { Renderer } from './Renderer';

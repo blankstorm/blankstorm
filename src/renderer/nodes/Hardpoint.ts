@@ -4,7 +4,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { random, wait } from '../../core/utils';
-import { ModelRenderer } from '../Model';
+import { ModelRenderer } from '../models';
 import type { Renderer } from './Renderer';
 import type { SerializedHardpoint } from '../../core/nodes/Hardpoint';
 import type { GenericProjectile } from '../../core/generic/hardpoints';

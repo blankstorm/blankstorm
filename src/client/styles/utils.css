@@ -34,10 +34,6 @@
 		linear-gradient(to bottom, var(--bg-color) 0%, var(--bg-color-seethru) 20%, var(--bg-color-seethru) 50%, var(--bg-color-seethru) 80%, var(--bg-color) 100%) !important;
 }
 
-.bg-star {
-	background-image: url('../images/menu.png');
-}
-
 .bg-light {
 	border-radius: var(--bg-radius);
 	box-shadow: var(--bg-shadow);

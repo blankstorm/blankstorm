@@ -4,13 +4,13 @@
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel=icon href=images/icon.png type=image/png>
+		<link rel=icon href="_build.asset_dir/images/icon.png" type=image/png>
 		<link rel="stylesheet" href="styles/styles.css" type="text/css" />
 		<link rel="stylesheet" href="styles/utils.css" type="text/css" />
 		<link rel="stylesheet" href="styles/client.css" type="text/css" />
 	</head>
 
-	<body data-server-no-reload oncontextmenu="e=>false" class="bg-star">
+	<body data-server-no-reload oncontextmenu="e=>false" background="_build.asset_dir/images/menu.png">
 		<div id="loading_cover" class="cover bg-alt" style="z-index: 100; display: flex; justify-content: center">
 			<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: calc(50% - 100px); width: 150px; height: 150px" viewBox="0 0 100 100">
 				<defs>
@@ -31,7 +31,7 @@
 		<ul id="chat" style="overflow: none"></ul>
 		<ul id="chat-history" class="ingame" style="overflow-y: scroll; display: none"></ul>
 		<div id="main" class="cover">
-			<img src=images/title.png alt="Title" plot=c,90px,475px,75px />
+			<img src="_build.asset_dir/images/title.png" alt="Title" plot="c,90px,475px,75px" />
 			<button class="sp" plot="c,260px,350px,50px"></button>
 			<button class="mp" plot="c,360px,350px,50px"></button>
 			<button class="options" plot="c,460px,350px,50px"></button>

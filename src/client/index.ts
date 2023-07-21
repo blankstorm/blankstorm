@@ -411,7 +411,7 @@ if (config.debug_mode) {
 		//everything else
 		changeUI,
 		client: context,
-		configFromBuild: _config,
+		buildOptions: $build,
 		config,
 		cookies,
 		core,

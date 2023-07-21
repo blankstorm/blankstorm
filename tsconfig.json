@@ -15,6 +15,6 @@
 		"esm": true,
 		"experimentalSpecifierResolution": "node",
 	},
-	"include": ["src/**/*.ts", "build/*.ts", "src/typings/*.d.ts"],
+	"include": ["src/**/*.ts", ".build/*.ts", "src/typings/*.d.ts"],
 	"exclude": ["node_modules"]
 }
