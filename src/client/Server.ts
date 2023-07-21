@@ -154,7 +154,7 @@ export class Server extends EventEmitter {
 
 	async ping() {
 		const info = this.gui.find('.info');
-		info.find('span').html('<svg><use href=images/icons.svg#arrows-rotate /></svg>').find('svg').addClass('server-ping-rotate');
+		info.find('span').html('<svg><use href="_build.asset_dir/images/icons.svg#arrows-rotate"/></svg>').find('svg').addClass('server-ping-rotate');
 		const beforeTime = performance.now();
 		try {
 			const res = await fetch(`${this.url.origin}/ping`);
@@ -163,11 +163,11 @@ export class Server extends EventEmitter {
 				info.find('span').text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${this.pingInfo.current_clients}/${this.pingInfo.max_clients}`);
 				info.find('tool-tip').html(`${this.url.hostname}<br><br>${versions.get(this.pingInfo.version).text || this.pingInfo.version}<br><br>${this.pingInfo.message}`);
 			} catch (e) {
-				info.find('span').html('<svg><use href=images/icons.svg#xmark /></svg>');
+				info.find('span').html('<svg><use href="_build.asset_dir/images/icons.svg#xmark"/></svg>');
 				info.find('tool-tip').html('Invalid response');
 			}
 		} catch (e) {
-			info.find('span').html('<svg><use href=images/icons.svg#xmark /></svg>');
+			info.find('span').html('<svg><use href="_build.asset_dir/images/icons.svg#xmark"/></svg>');
 			info.find('tool-tip').html(`Can't connect to server`);
 		} finally {
 			info.find('span svg').removeClass('server-ping-rotate');

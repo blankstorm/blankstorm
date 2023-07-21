@@ -99,7 +99,7 @@ export function update(ctx: ClientContext) {
 					`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
 						player.research[id] >= t.max
 							? `<strong>Max Level</strong>`
-							: `${player.research[id]} <svg><use href=images/icons.svg#arrow-right /></svg> ${player.research[id] + 1}`
+							: `${player.research[id]} <svg><use href="_build.asset_dir/images/icons.svg#arrow-right"/></svg> ${player.research[id] + 1}`
 					}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
 						settings.get('tooltips') ? '<br>type: ' + id : ''
 					}`

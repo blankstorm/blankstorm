@@ -5,7 +5,7 @@ import pkg from '../package.json' assert { type: 'json' };
 import * as electronBuilder from 'electron-builder';
 import { fileURLToPath } from 'url';
 import { parseArgs } from 'util';
-import { getOptions, getNonJSReplacements } from './options';
+import { getOptions, getReplacements } from './options';
 import counterPlugin from './counter';
 import { deleteOutput, getVersionFromPackage, renameOutput } from './utils';
 import { replace } from 'esbuild-plugin-replace';
@@ -100,7 +100,7 @@ const esbuildConfig = {
 	},
 	define: { $build: JSON.stringify(buildOptions) },
 	plugins: [
-		replace({ include: /\.(css|html)$/, values: getNonJSReplacements(buildOptions) }),
+		replace({ include: /\.(css|html|ts)$/, values: getReplacements(buildOptions) }),
 		{
 			name: 'app-builder-client',
 			setup(build: esbuild.PluginBuild) {

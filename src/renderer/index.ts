@@ -88,7 +88,7 @@ export async function init(
 	const skyboxMaterial = new StandardMaterial('skybox.mat', scene);
 	skyboxMaterial.backFaceCulling = false;
 	skyboxMaterial.disableLighting = true;
-	skyboxMaterial.reflectionTexture = CubeTexture.CreateFromImages(Array(6).fill('images/skybox.jpg'), scene);
+	skyboxMaterial.reflectionTexture = CubeTexture.CreateFromImages(Array(6).fill($build.asset_dir + '/images/skybox.jpg'), scene);
 	skyboxMaterial.reflectionTexture.coordinatesMode = 5;
 	skybox.material = skyboxMaterial;
 	skybox.infiniteDistance = true;

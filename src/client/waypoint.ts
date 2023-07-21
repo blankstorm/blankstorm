@@ -32,7 +32,10 @@ export class Waypoint extends Node {
 		super(id, system);
 		system.waypoints.push(this);
 		this.gui = $(new WaypointUI(this));
-		this.marker = $<SVGSVGElement>(`<svg><use href=images/icons.svg#location-dot /></svg><p style=justify-self:center></p>`).addClass('marker  ingame').hide().appendTo('body');
+		this.marker = $<SVGSVGElement>(`<svg><use href="_build.asset_dir/images/icons.svg#location-dot /></svg><p style=justify-self:center></p>`)
+			.addClass('marker "ingame')
+			.hide()
+			.appendTo('body');
 		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
 		system.on('active', () => {
 			this.updateVisibility();
@@ -46,8 +49,8 @@ export class Waypoint extends Node {
 
 	set icon(icon: string) {
 		this.#icon = icon;
-		this.gui.find('.icon use').attr('href', 'images/icons.svg#' + icon);
-		this.marker.find('use').attr('href', 'images/icons.svg#' + icon);
+		this.gui.find('.icon use').attr('href', '_build.asset_dir/images/icons.svg#' + icon);
+		this.marker.find('use').attr('href', '_build.asset_dir/images/icons.svg#' + icon);
 	}
 
 	get color(): Color3 {

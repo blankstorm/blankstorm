@@ -25,9 +25,9 @@ export class ServerListItem extends HTMLLIElement {
 			})
 			.on('dblclick', () => connectAndStartPlaying(server, context))
 			.prependTo('#server-list');
-		$(`<p class="delete" style=position:absolute;left:15%><svg><use href=images/icons.svg#trash /></svg></p>`).appendTo(this);
-		$(`<p class="play" style=position:absolute;left:20%><svg><use href=images/icons.svg#play /></svg></p>`).appendTo(this);
-		$(`<p class="edit" style=position:absolute;left:25%><svg><use href=images/icons.svg#pencil /></svg></p>`).appendTo(this);
+		$(`<p class="delete" style=position:absolute;left:15%><svg><use href="_build.asset_dir/images/icons.svg#trash"/></svg></p>`).appendTo(this);
+		$(`<p class="play" style=position:absolute;left:20%><svg><use href="_build.asset_dir/images/icons.svg#play"/></svg></p>`).appendTo(this);
+		$(`<p class="edit" style=position:absolute;left:25%><svg><use href="_build.asset_dir/images/icons.svg#pencil"/></svg></p>`).appendTo(this);
 		$(`<p class="name" style=position:absolute;left:30%>${server.name}</p>`).appendTo(this);
 		$(`<p class="info" style=position:absolute;left:75%><span></span><tool-tip></tool-tip></p>`).appendTo(this);
 		$(this)

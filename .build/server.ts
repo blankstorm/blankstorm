@@ -1,8 +1,7 @@
 import * as esbuild from 'esbuild';
 import { exec as pkg } from 'pkg';
 import { parseArgs } from 'node:util';
-import { replace } from 'esbuild-plugin-replace';
-import { getOptions, getReplacements } from './options';
+import { getOptions } from './options';
 import counterPlugin from './counter';
 import { getVersionFromPackage, renameOutput } from './utils';
 
@@ -29,8 +28,8 @@ const esbuildConfig = {
 	outfile,
 	platform: 'node',
 	keepNames: true,
+	define: { $build: JSON.stringify(getOptions(options.mode)) },
 	plugins: [
-		replace({ include: /\.ts$/, values: getReplacements(getOptions(options.mode)) }),
 		{
 			name: 'app-builder-server',
 			setup(build) {

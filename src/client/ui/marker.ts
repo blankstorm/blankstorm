@@ -54,7 +54,7 @@ export class Marker {
 	update() {
 		if (this.target.nodeType == 'waypoint') {
 			this.gui.find('.internal-marker use').attr({
-				href: 'images/icons.svg#' + ('icon' in this.target ? this.target.icon : 'location-dot'),
+				href: '_build.asset_dir/images/icons.svg#' + ('icon' in this.target ? this.target.icon : 'location-dot'),
 				transform: 'scale(.025)',
 			});
 		}

@@ -31,18 +31,18 @@ export class SaveListItem extends HTMLLIElement {
 			})
 			.on('dblclick', loadAndPlay)
 			.prependTo('#save-list');
-		$(`<p class="delete" style="position:absolute;left:10%"><svg><use href=images/icons.svg#trash /></svg></p>`)
+		$(`<p class="delete" style="position:absolute;left:10%"><svg><use href="_build.asset_dir/images/icons.svg#trash"/></svg></p>`)
 			.on('click', async e => {
 				if (e.shiftKey || (await confirm('Are you sure?'))) {
 					save.remove();
 				}
 			})
 			.appendTo(this);
-		$(`<p class="download" style="position:absolute;left:15%"><svg><use href=images/icons.svg#download /></svg></p>`)
+		$(`<p class="download" style="position:absolute;left:15%"><svg><use href="_build.asset_dir/images/icons.svg#download"/></svg></p>`)
 			.on('click', () => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'))
 			.appendTo(this);
-		$(`<p class="play" style="position:absolute;left:20%"><svg><use href=images/icons.svg#play /></svg></p>`).on('click', loadAndPlay).appendTo(this);
-		$(`<p class="edit" style="position:absolute;left:25%"><svg><use href=images/icons.svg#pencil /></svg></p>`)
+		$(`<p class="play" style="position:absolute;left:20%"><svg><use href="_build.asset_dir/images/icons.svg#play"/></svg></p>`).on('click', loadAndPlay).appendTo(this);
+		$(`<p class="edit" style="position:absolute;left:25%"><svg><use href="_build.asset_dir/images/icons.svg#pencil"/></svg></p>`)
 			.on('click', () => {
 				$('#save-edit').find('.id').val(save.id);
 				$('#save-edit').find('.name').val(save.data.name);

@@ -48,11 +48,7 @@ function resolveReplacement(value) {
 }
 
 export function getReplacements(options: BuildOptions): { [key: string]: string } {
-	return Object.fromEntries(resolveReplacement({ _build: options }));
-}
-
-export function getNonJSReplacements(options: BuildOptions): { [key: string]: string } {
-	const replacements = getReplacements(options);
+	const replacements = Object.fromEntries(resolveReplacement({ _build: options }));
 
 	for (const key in replacements) {
 		if (/".*"/.test(replacements[key])) {

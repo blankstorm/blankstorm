@@ -121,7 +121,7 @@ export const context: ClientContext = {
 		});
 		level.on('entity.death', async (node: SerializedNode) => {
 			if (node.nodeType == 'ship') {
-				playsound(sounds.get('destroy_ship'), +settings.get('sfx'));
+				playsound('destroy_ship', +settings.get('sfx'));
 			}
 		});
 		level.on('player.items.change', async (player, items: ItemCollection) => {
@@ -374,7 +374,7 @@ ui.init(context);
 commands.set('playsound', {
 	exec(context, name, volume = settings.get('sfx')) {
 		if (sounds.has(name)) {
-			playsound(sounds.get(name), volume);
+			playsound(name, volume);
 		} else {
 			throw new ReferenceError(`sound "${name}" does not exist`);
 		}
@@ -748,7 +748,7 @@ $('canvas.game,#pause,#hud').on('keydown', e => {
 	ui.update(context);
 });
 $('button').on('click', () => {
-	playsound(sounds.get('ui'), +settings.get('sfx'));
+	playsound('ui', +settings.get('sfx'));
 });
 setInterval(() => {
 	if (current instanceof ClientLevel && !isPaused) {
