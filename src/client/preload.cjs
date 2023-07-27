@@ -1,4 +1,10 @@
 /* eslint-env node */
 const { contextBridge } = require('electron');
 
-contextBridge.exposeInMainWorld('_fs', require('fs'));
+const allowedToRequire = ['fs'];
+
+contextBridge.exposeInMainWorld('_require', pkg => {
+	if (allowedToRequire.includes(pkg)) {
+		return require(pkg);
+	}
+});
