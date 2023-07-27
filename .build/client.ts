@@ -47,8 +47,9 @@ function fromPath(sourcePath: string) {
 	return files;
 }
 
+const copyright = `Copyright © ${new Date().getFullYear()} ${pkg.author}. All Rights Reserved.`;
 const _files0 = options.output + '/**/*';
-const electronBuilderConfig = {
+const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
 	projectDir: path.resolve(fileURLToPath(import.meta.url), '..', '..'),
 	config: {
@@ -60,7 +61,7 @@ const electronBuilderConfig = {
 		files: [_files0, 'package.json'],
 		appId: 'dev.drvortex.blankstorm',
 		productName: 'Blankstorm Client',
-		copyright: 'Copyright © 2022 ${author}',
+		copyright,
 		icon: './icon.png',
 		nsis: {
 			oneClick: false,
@@ -83,7 +84,7 @@ const electronBuilderConfig = {
 const entryPoints = ['index.ts', 'index.html', 'locales', 'shaders', 'styles', 'app.cjs', 'preload.cjs'];
 const buildOptions = getOptions(options.mode);
 
-const esbuildConfig = {
+const esbuildConfig: esbuild.BuildOptions = {
 	entryPoints: entryPoints.flatMap(p => fromPath(path.join(input, p))),
 	assetNames: '[dir]/[name]',
 	outdir: options.output,
@@ -100,7 +101,7 @@ const esbuildConfig = {
 	},
 	define: { $build: JSON.stringify(buildOptions) },
 	plugins: [
-		replace({ include: /\.(css|html|ts)$/, values: getReplacements(buildOptions) }),
+		replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } }),
 		{
 			name: 'app-builder-client',
 			setup(build: esbuild.PluginBuild) {
@@ -109,7 +110,7 @@ const esbuildConfig = {
 				});
 				build.onEnd(async () => {
 					if (options.app) {
-						await electronBuilder.build(electronBuilderConfig as electronBuilder.CliOptions);
+						await electronBuilder.build(electronBuilderConfig);
 						renameOutput({
 							[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${version}.exe`,
 							[`Blankstorm Client Setup ${pkg.version}.exe.blockmap`]: `blankstorm-client-${version}.exe.blockmap`,
@@ -123,7 +124,7 @@ const esbuildConfig = {
 		},
 		counterPlugin(options.watch),
 	],
-} as esbuild.BuildOptions;
+};
 
 const symlinkPath = path.join(input, buildOptions.asset_dir);
 if (fs.existsSync(symlinkPath)) {
