@@ -46,5 +46,5 @@ jobs:
             - name: Cache build
               uses: actions/cache@v3
               with:
-                path: ./build
+                path: ./dist
                 key: ${{ runner.os }}
