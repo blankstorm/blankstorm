@@ -42,9 +42,3 @@ jobs:
 
             - name: Build server
               run: npm run build:server
-
-            - name: Cache build
-              uses: actions/cache@v3
-              with:
-                path: ./dist
-                key: ${{ runner.os }}
