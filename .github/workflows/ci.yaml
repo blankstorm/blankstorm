@@ -55,6 +55,6 @@ jobs:
             - name: Upload build
               uses: 'google-github-actions/upload-cloud-storage@v1'
               with:
-                  path: ./dist/blankstorm-client-*
+                  path: ./dist/blankstorm-client*
                   destination: drvortex.dev
                   parent: false
