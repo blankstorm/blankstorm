@@ -393,7 +393,7 @@ if (config.debug_mode) {
 	initLog('Debug: Assigning variables...');
 	const BABYLON = await import('@babylonjs/core/index'),
 		core = await import('../core/index'),
-		{ default: io } = await import('socket.io-client'),
+		{ io } = await import('socket.io-client'),
 		utils = await import('./utils');
 
 	Object.assign(window, {
