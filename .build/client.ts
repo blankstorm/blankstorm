@@ -9,6 +9,7 @@ import { getOptions, getReplacements } from './options';
 import counterPlugin from './counter';
 import { deleteOutput, getVersionFromPackage, renameOutput } from './utils';
 import { replace } from 'esbuild-plugin-replace';
+import archiver from 'archiver';
 const version = getVersionFromPackage();
 
 const options = {
@@ -111,6 +112,20 @@ const esbuildConfig: esbuild.BuildOptions = {
 				build.onEnd(async () => {
 					if (options.app) {
 						await electronBuilder.build(electronBuilderConfig);
+						for (const platform of ['win', 'linux', 'mac']) {
+							renameOutput({ [`${platform}-unpacked`]: `blankstorm-client-${version}-${platform}` });
+							const dirPath = `dist/blankstorm-client-${version}`;
+							if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
+								continue;
+							}
+
+							console.log('Compressing: ' + platform);
+							const archive = archiver('zip', { zlib: { level: 9 } });
+
+							archive.pipe(fs.createWriteStream(`dist/blankstorm-client-${version}-${platform}.zip`));
+							await archive.directory(dirPath, false).finalize();
+							console.log('Compressed: ' + platform);
+						}
 						renameOutput({
 							[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${version}.exe`,
 							[`Blankstorm Client Setup ${pkg.version}.exe.blockmap`]: `blankstorm-client-${version}.exe.blockmap`,
