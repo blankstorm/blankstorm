@@ -52,9 +52,6 @@ jobs:
                   workload_identity_provider: projects/195808230594/locations/global/workloadIdentityPools/github/providers/oidc
                   service_account: github-actions@blankstorm.iam.gserviceaccount.com
 
-            - name: Zip unpacked build contents
-              uses: montudor/action-zip@v1.0.0
-
             - name: Upload build
               uses: 'google-github-actions/upload-cloud-storage@v1'
               with:
