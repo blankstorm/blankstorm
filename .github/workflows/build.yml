@@ -1,0 +1,27 @@
+name: Build and Upload
+
+on:
+    workflow_dispatch:
+
+jobs:
+    ci:
+        uses: ./.github/workflows/ci.yaml
+    build:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+        name: ${{ matrix.os }}
+        permissions:
+            contents: read
+            id-token: write
+        defaults:
+            run:
+                shell: bash
+        steps:
+            - name: Upload build
+              uses: actions/upload-artifact@v3
+              with:
+                  name: build
+                  path: |
+                      find dist -maxdepth 1 -type f -name 'blankstorm*'
