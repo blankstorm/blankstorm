@@ -119,7 +119,6 @@ const esbuildConfig: esbuild.BuildOptions = {
 								continue;
 							}
 
-
 							console.log('Compressing: ' + platform);
 							const archive = archiver('zip', { zlib: { level: 9 } });
 
