@@ -114,10 +114,11 @@ const esbuildConfig: esbuild.BuildOptions = {
 						await electronBuilder.build(electronBuilderConfig);
 						for (const platform of ['win', 'linux', 'mac']) {
 							renameOutput({ [`${platform}-unpacked`]: `blankstorm-client-${version}-${platform}` });
-							const dirPath = `dist/blankstorm-client-${version}`;
+							const dirPath = `dist/blankstorm-client-${version}-${platform}`;
 							if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
 								continue;
 							}
+
 
 							console.log('Compressing: ' + platform);
 							const archive = archiver('zip', { zlib: { level: 9 } });
