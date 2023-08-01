@@ -112,7 +112,7 @@ const esbuildConfig: esbuild.BuildOptions = {
 				build.onEnd(async () => {
 					if (options.app) {
 						await electronBuilder.build(electronBuilderConfig);
-						for (const platform of ['win', 'linux', 'mac']) {
+						for (const platform of ['win', 'linux']) {
 							renameOutput({ [`${platform}-unpacked`]: `blankstorm-client-${version}-${platform}` });
 							const dirPath = `dist/blankstorm-client-${version}-${platform}`;
 							if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
@@ -130,6 +130,8 @@ const esbuildConfig: esbuild.BuildOptions = {
 							[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${version}.exe`,
 							[`Blankstorm Client-${pkg.version}.AppImage`]: `blankstorm-client-${version}.AppImage`,
 							[`blankstorm-client_${pkg.version}_amd64.snap`]: `blankstorm-client-${version}.snap`,
+							[`blankstorm-client-${pkg.version}.dmg`]: `blankstorm-client-${version}.dmg`,
+							[`blankstorm-client-${pkg.version}-mac.zip`]: `blankstorm-client-${version}-mac.zip`,
 						});
 						deleteOutput([
 							'builder-debug.yml',
