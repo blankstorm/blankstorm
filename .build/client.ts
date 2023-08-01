@@ -128,11 +128,17 @@ const esbuildConfig: esbuild.BuildOptions = {
 						}
 						renameOutput({
 							[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${version}.exe`,
-							[`Blankstorm Client Setup ${pkg.version}.exe.blockmap`]: `blankstorm-client-${version}.exe.blockmap`,
 							[`Blankstorm Client-${pkg.version}.AppImage`]: `blankstorm-client-${version}.AppImage`,
-							[`blankstorm-client_${pkg.version}_amd64.snap`]: `blankstorm-client-${version}.snap]`,
+							[`blankstorm-client_${pkg.version}_amd64.snap`]: `blankstorm-client-${version}.snap`,
 						});
-						deleteOutput(['builder-debug.yml', 'builder-effective-config.yaml', 'latest.yml', '.icon-ico', 'tmp']);
+						deleteOutput([
+							'builder-debug.yml',
+							'builder-effective-config.yaml',
+							'latest.yml',
+							'.icon-ico',
+							'tmp',
+							`Blankstorm Client Setup ${pkg.version}.exe.blockmap`,
+						]);
 					}
 				});
 			},
