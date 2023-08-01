@@ -137,9 +137,12 @@ const esbuildConfig: esbuild.BuildOptions = {
 							'builder-debug.yml',
 							'builder-effective-config.yaml',
 							'latest.yml',
+							'latest-mac.yml',
 							'.icon-ico',
 							'tmp',
 							`Blankstorm Client Setup ${pkg.version}.exe.blockmap`,
+							`Blankstorm Client-${pkg.version}-mac.zip.blockmap`,
+							`Blankstorm Client-${pkg.version}.dmg.blockmap`,
 						]);
 					}
 				});
