@@ -47,13 +47,6 @@ jobs:
             - name: Build server
               run: npm run build:server
 
-            - name: "[Debug] Build upload info"
-              run: |
-                echo "Not uploading:"
-                find dist -maxdepth 1 -type f -not -name 'blankstorm*'
-                echo "Uploading:"
-                find dist -maxdepth 1 -type f -name 'blankstorm*'
-
             - name: Upload build
               uses: actions/upload-artifact@v3
               with:
