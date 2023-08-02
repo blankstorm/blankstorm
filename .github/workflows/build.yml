@@ -4,15 +4,12 @@ on:
     workflow_dispatch:
 
 jobs:
-    ci:
-        uses: ./.github/workflows/ci.yml
     build:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
         name: ${{ matrix.os }}
-        needs: ci
         permissions:
             contents: read
             id-token: write
@@ -20,6 +17,23 @@ jobs:
             run:
                 shell: bash
         steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Build client
+              run: npm run build:client
+
+            - name: Build server
+              run: npm run build:server
+
             - name: Upload build
               uses: actions/upload-artifact@v3
               with:
