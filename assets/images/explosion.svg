@@ -1,3 +1,4 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2e2f6fc1b956dba1c5cb2d9e95f57bf5943708f988ece42ea32201d6cbe9697d
-size 211
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
+<circle cx="250" cy="250" r="210" fill="#fff" stroke="#000" stroke-width="8"/>
+</svg>

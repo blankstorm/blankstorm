@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a68d0e1f3d8eb7471d694840cef33166fd265caaf757bc258b54c135d2a32405
-size 479
+import os
+import bpy
+
+dirname = os.path.dirname(__file__)
+cwd = os.getcwd()
+os.chdir(dirname)
+for filename in os.listdir(dirname):
+	if not filename.endswith('.blend'):
+		continue
+	filename = os.path.basename(filename)
+	path = os.path.join(dirname, filename)
+	for obj in bpy.data.objects:
+        if bpy.data.objects[obj.name].type != 'MESH':
+	print('Exporting: ' + filename + )
+	bpy.ops.export_scene.gltf(filepath=path, export_copyright='Dr. Vortex')
+os.chdir(cwd)

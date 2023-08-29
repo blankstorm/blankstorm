@@ -1,3 +1,13 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f0b349f01fd2b3bc21386aafd9b2e579e14170d6a9ae85e8a006e2b55cf83536
-size 421
+#!/bin/sh
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P ) # https://stackoverflow.com/a/24112741
+
+# Check if Blender is not installed
+if ! command -v blender >/dev/null 2>&1; then
+    echo "Blender is not installed. Please install Blender to export models."
+    exit 1
+fi
+
+# Blender is installed, so run Blender with Python script
+echo "found Blender! Exporting models..."
+blender -P export.py
+echo "Done!"
