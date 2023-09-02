@@ -20,7 +20,8 @@
 	cursor: pointer;
 }
 
-.bg-normal, tool-tip {
+.bg-normal,
+tool-tip {
 	border-radius: var(--bg-radius);
 	box-shadow: var(--bg-shadow);
 	background-color: var(--bg-color);

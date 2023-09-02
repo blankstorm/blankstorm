@@ -19,5 +19,5 @@
 		"no-empty": "warn",
 		"no-case-declarations": "off"
 	},
-	"ignorePatterns": [	"scripts/*.js" ]
+	"ignorePatterns": ["scripts/*.js"]
 }
