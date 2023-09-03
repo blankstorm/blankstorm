@@ -23,4 +23,3 @@ export * from './Level';
 export * from './metadata';
 export * from './utils';
 export * from './commands';
-export * from './api';

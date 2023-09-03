@@ -8,11 +8,11 @@ $.event.special.wheel = {
 		this.addEventListener('wheel', handle as unknown as EventListener, { passive: true });
 	},
 };
+import { type Account, account } from '@blankstorm/api';
 
 import { GAME_URL, config, version, versions } from '../core/metadata';
 import { isHex, isJSON, xpToLevel } from '../core/utils';
 import { commands, execCommandString } from '../core/commands';
-import * as api from '../core/api';
 import type { Player } from '../core/nodes/Player';
 import type { Entity } from '../core/nodes/Entity';
 import type { Keybind } from './settings';
@@ -326,7 +326,7 @@ export const player: {
 	username: string;
 	chat(...msg: string[]): void;
 	data(id?: string): Player;
-	authData?: api.ApiReducedUserResult;
+	authData?: Account;
 } = {
 	id: '[guest]',
 	username: '[guest]',
@@ -346,9 +346,9 @@ onresize = () => {
 initLog('Authenticating...');
 if (cookies.has('token') && navigator.onLine) {
 	try {
-		let result: api.ApiReducedUserResult;
+		let result: Account;
 		try {
-			result = await api.requestUserInfo('token', cookies.get('token'));
+			result = await account.info('token', cookies.get('token'));
 		} catch (e) {
 			throw `Couldn't log you in (${e})`;
 		}
@@ -552,7 +552,7 @@ $('#login')
 		try {
 			const email = $('#login').find('input.email').val() as string;
 			const password = $('#login').find('input.password').val() as string;
-			const result = await api.login(email, password);
+			const result = await account.login(email, password);
 			document.cookie = `token=${result.token}`;
 			$('#login').find('.error').hide().text('');
 			$<HTMLDialogElement>('#login')[0].close();

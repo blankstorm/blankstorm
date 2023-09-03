@@ -4,11 +4,11 @@ import EventEmitter from 'node:events';
 import { Server as SocketIOServer } from 'socket.io';
 import type { Socket } from 'socket.io';
 import type { ServerOptions as EngineIOOptions } from 'engine.io';
+import { account } from '@blankstorm/api';
 
 import { version, config as coreConfig } from '../core/metadata';
 import type { VersionID } from '../core/metadata';
 import { execCommandString } from './commands';
-import { requestUserInfo } from '../core/api';
 import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
 
@@ -232,7 +232,7 @@ export class Server extends EventEmitter {
 
 		let data;
 		try {
-			data = await requestUserInfo('token', socket.handshake.auth.token);
+			data = await account.info('token', socket.handshake.auth.token);
 		} catch (err) {
 			if (!data) {
 				// the fetch failed (instead of the request being invalid)
