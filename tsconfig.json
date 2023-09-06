@@ -5,7 +5,7 @@
 		"target": "ESNext",
 		"moduleResolution": "bundler",
 		"outDir": "dist/tmp/ts",
-		"typeRoots": ["node_modules/@types", "src/typings" ],
+		"typeRoots": ["node_modules/@types", "src/typings"],
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
 		"noImplicitThis": true
@@ -13,7 +13,7 @@
 	"files": ["src/index.ts"],
 	"ts-node": {
 		"esm": true,
-		"experimentalSpecifierResolution": "node",
+		"experimentalSpecifierResolution": "node"
 	},
 	"include": ["src/**/*.ts", ".build/*.ts", "src/typings/*.d.ts"],
 	"exclude": ["node_modules"]

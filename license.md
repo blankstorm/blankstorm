@@ -34,7 +34,6 @@ The licensor reserve's the right to take down any content at their discretion.
 
 The licensor might make upgrades, updates or patches (collectivly "updates") available from time to time, but they don't have to. they are also not obliged to provide ongoing support or maintenance of any Game. With updates come changes that might not work well with other software, such as Mods. This is unfortunate, but it is something the licensor does not take responsibility for.
 
-
 ## Warranty and Liability
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
