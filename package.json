@@ -1,6 +1,7 @@
 {
 	"name": "blankstorm-client",
 	"version": "1.0.0-alpha-1.4.4",
+	"private": true,
 	"description": "Blankstorm",
 	"main": "src/client/app.cjs",
 	"type": "module",
