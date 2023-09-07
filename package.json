@@ -11,7 +11,7 @@
 		"lint": "eslint . && tsc --project tsconfig.json --noEmit",
 		"dev:client": "ts-node .build/client.ts -o dist/dev-client && electron dist/dev-client/app.cjs --bs-debug",
 		"dev:server": "ts-node src/server/cli.ts",
-		"build:client": "ts-node .build/client.ts --app",
+		"build:client": "ts-node .build/client.ts",
 		"build:server": "ts-node .build/server.ts",
 		"build": "npm run build:client && npm run build:server"
 	},

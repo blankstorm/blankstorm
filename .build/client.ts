@@ -16,14 +16,14 @@ const options = {
 		verbose: false,
 		output: 'dist/tmp/client',
 		watch: false,
-		app: false,
+		'no-app': false,
 		mode: 'dev',
 		...parseArgs({
 			options: {
 				verbose: { type: 'boolean', short: 'v', default: false },
 				watch: { type: 'boolean', short: 'w', default: false },
 				output: { type: 'string', short: 'o', default: 'dist/tmp/client' },
-				app: { type: 'boolean', default: false },
+				'no-app': { type: 'boolean', default: false },
 				mode: { type: 'string', short: 'm', default: 'dev' },
 			},
 		}).values,
@@ -110,7 +110,7 @@ const esbuildConfig: esbuild.BuildOptions = {
 					fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
 				});
 				build.onEnd(async () => {
-					if (options.app) {
+					if (!options['no-app']) {
 						await electronBuilder.build(electronBuilderConfig);
 						for (const platform of ['win', 'linux']) {
 							renameOutput({ [`${platform}-unpacked`]: `blankstorm-client-${version}-${platform}` });
