@@ -1,5 +1,5 @@
 {
-	"name": "blankstorm-client",
+	"name": "@blankstorm/blankstorm",
 	"version": "1.0.0-alpha-1.4.4",
 	"private": true,
 	"description": "Blankstorm",
@@ -17,7 +17,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/dr-vortex/blankstorm.git"
+		"url": "git+https://github.com/blankstorm/blankstorm.git"
 	},
 	"keywords": [
 		"blankstorm",
@@ -26,9 +26,9 @@
 	"author": "Dr. Vortex",
 	"license": "See license.md",
 	"bugs": {
-		"url": "https://github.com/dr-vortex/blankstorm/issues"
+		"url": "https://github.com/blankstorm/blankstorm/issues"
 	},
-	"homepage": "https://blankstorm.drvortex.dev",
+	"homepage": "https://blankstorm.net",
 	"engines": {
 		"node": ">=18.0.0"
 	},
