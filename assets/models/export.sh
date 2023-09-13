@@ -10,5 +10,5 @@ fi
 
 # Blender is installed, so run Blender with Python script
 echo "found Blender! Exporting models..."
-blender -P "$dir_path/export.py" -- -i . -o "$dir_path/../../dist/assets"
+blender -P "$dir_path/export.py" -- -i "$dir_path" -o "$dir_path/../../dist/assets"
 echo "Done!"

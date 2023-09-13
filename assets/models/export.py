@@ -1,18 +1,29 @@
+import sys
 import os
 import argparse
 import bpy
 
 dirname = os.path.dirname(__file__)
-
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--input', help='input directory', default=dirname)
 parser.add_argument('-o', '--output', help='output directory', default=dirname)
 parser.add_argument('-v', '--verbose', help='verbose logs', action='store_true')
-args = parser.parse_args()
+args = None
+try:
+	index = sys.argv.index('--')
+	_args = sys.argv[index+1:] # the list after '--'
+	args = parser.parse_args(_args)
+except ValueError as e: # '--' not in the list:
+	print('Incorrect parameters')
+	exit()
 
 cwd = os.getcwd()
 os.chdir(args.input)
+if args.verbose:
+	print('Exporting from: ' + args.input)
 for filename in os.listdir(args.input):
+	if args.verbose:
+		print('Checking: ' + filename)
 	try:
 		if not filename.endswith('.blend'):
 			continue
