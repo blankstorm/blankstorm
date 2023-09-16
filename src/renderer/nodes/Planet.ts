@@ -14,6 +14,7 @@ import type { HardpointProjectileHandlerOptions } from './Hardpoint';
 import { CelestialBodyRenderer } from './CelestialBody';
 import { planetBiomes } from '../../core/generic/planets';
 import type { Renderer } from './Renderer';
+import * as planetShader from '../shaders/planet';
 
 export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
@@ -39,7 +40,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	cloudTexture: ProceduralTexture;
 	constructor(options: GenericPlanetRendererMaterial, scene: Scene) {
 		const id = random.hex(8);
-		super('PlanetMaterial.' + id, scene, './shaders/planet', {
+		super('PlanetMaterial.' + id, scene, planetShader, {
 			attributes: ['position', 'normal', 'uv'],
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
 			needAlphaBlending: true,

@@ -1,4 +1,4 @@
-import type { BuildOptions } from '../../.build/options';
+import type { BuildOptions } from '../.build/options';
 
 declare global {
 	const $build: BuildOptions;

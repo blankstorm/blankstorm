@@ -5,16 +5,19 @@
 		"target": "ESNext",
 		"moduleResolution": "bundler",
 		"outDir": "dist/tmp/ts",
-		"typeRoots": ["node_modules/@types", "src/typings"],
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
-		"noImplicitThis": true
+		"noImplicitThis": true,
+		"paths": {
+			"*.glslx": ["./src/types.d.ts"]
+		},
+		"moduleSuffixes": [".glslx", ""]
 	},
 	"files": ["src/index.ts"],
 	"ts-node": {
 		"esm": true,
 		"experimentalSpecifierResolution": "node"
 	},
-	"include": ["src/**/*.ts", ".build/*.ts", "src/typings/*.d.ts"],
+	"include": ["./src/**/*.ts", "./.build/*.ts", "./src/*.d.ts"],
 	"exclude": ["node_modules"]
 }

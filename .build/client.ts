@@ -9,6 +9,7 @@ import { getOptions, getReplacements } from './options';
 import counterPlugin from './counter';
 import { deleteOutput, getVersionFromPackage, renameOutput } from './utils';
 import { replace } from 'esbuild-plugin-replace';
+import glslPlugin from 'esbuild-plugin-glslx';
 import archiver from 'archiver';
 const version = getVersionFromPackage();
 
@@ -18,6 +19,7 @@ const options = {
 		watch: false,
 		'no-app': false,
 		mode: 'dev',
+		debug: false,
 		...parseArgs({
 			options: {
 				verbose: { type: 'boolean', short: 'v', default: false },
@@ -25,6 +27,7 @@ const options = {
 				output: { type: 'string', short: 'o', default: 'dist/tmp/client' },
 				'no-app': { type: 'boolean', default: false },
 				mode: { type: 'string', short: 'm', default: 'dev' },
+				debug: { type: 'boolean', default: false },
 			},
 		}).values,
 	},
@@ -82,7 +85,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 	},
 };
 
-const entryPoints = ['index.ts', 'index.html', 'locales', 'shaders', 'styles', 'app.cjs', 'preload.cjs'];
+const entryPoints = ['index.ts', 'index.html', 'locales', 'styles', 'app.cjs', 'preload.cjs'];
 const buildOptions = getOptions(options.mode);
 
 const esbuildConfig: esbuild.BuildOptions = {
@@ -90,18 +93,18 @@ const esbuildConfig: esbuild.BuildOptions = {
 	assetNames: '[dir]/[name]',
 	outdir: options.output,
 	bundle: true,
-	minify: true,
+	minify: !options.debug,
 	keepNames: true,
 	sourcemap: true,
 	format: 'esm',
 	loader: {
 		'.html': 'copy',
-		'.fx': 'copy',
 		'.json': 'copy',
 		'.cjs': 'copy',
 	},
 	define: { $build: JSON.stringify(buildOptions) },
 	plugins: [
+		glslPlugin(),
 		replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } }),
 		{
 			name: 'app-builder-client',

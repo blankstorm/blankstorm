@@ -51,6 +51,7 @@
 		"electron": "^26.2.0",
 		"electron-builder": "^24.6.3",
 		"esbuild": "^0.17.14",
+		"esbuild-plugin-glslx": "^0.0.4",
 		"esbuild-plugin-replace": "^1.4.0",
 		"eslint": "^8.24.0",
 		"mime-types": "^2.1.35",
