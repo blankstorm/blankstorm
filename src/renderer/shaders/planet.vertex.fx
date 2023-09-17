@@ -11,17 +11,12 @@ uniform mat4 worldViewProjection;
 uniform mat4 rotation;
 
 // Varying
-varying vec3 vPositionW;
-varying vec3 vNormalW;
-varying vec3 vNormal;
-varying vec3 vNormalR;
+varying vec3 worldPosition;
+varying vec3 _normal;
 
 void main(void) {
-	vec4 outPosition = worldViewProjection * vec4(position, 1.0);
-	gl_Position = outPosition;
+	gl_Position = worldViewProjection * vec4(position, 1.0);
 
-	vPositionW = vec3(world * vec4(position, 1.0));
-	vNormalW = normalize(vec3(world * vec4(normal, 0.0)));
-	vNormal = normal;
-	vNormalR = vec3(rotation * vec4(normal, 0.0));
+	worldPosition = vec3(world * vec4(position, 1.0));
+	_normal = normal;
 }

@@ -1,10 +1,8 @@
 ﻿precision highp float;
 
 // Vertex
-varying vec3 vPositionW;
-varying vec3 vNormalW;
-varying vec3 vNormal;
-varying vec3 vNormalR;
+varying vec3 worldPosition;
+varying vec3 _normal;
 
 // Refs
 uniform vec3 cameraPosition;
@@ -21,21 +19,21 @@ float computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float
 }
 
 void main(void) {
-	vec3 color = textureCube(textureSampler, vNormal).rgb * options.y;
-	vec3 cloud = textureCube(cloudSampler, vNormalR).rgb * options.z;
+	vec3 worldNormal = normalize(vec3(world * vec4(normal, 0.0)));
+	vec3 color = textureCube(textureSampler, _normal).rgb * options.y;
+	vec3 cloud = textureCube(cloudSampler, vec3(rotation * vec4(_normal, 0.0))).rgb * options.z;
 
 	// Light
-	vec3 direction = lightPosition - vPositionW;
-	vec3 lightVectorW = normalize(direction);
+	vec3 lightVectorW = normalize(lightPosition - worldPosition);
 
 	// diffuse
-	float ndl = max(0., dot(vNormalW, lightVectorW)) + 0.05;
+	float ndl = max(0., dot(worldNormal, lightVectorW)) + 0.05;
 
 	ndl = min(asin(ndl), 1.0);
 
 	// Fresnel
-	vec3 viewDirectionW = normalize(cameraPosition - vPositionW);
-	float fresnelTerm = computeFresnelTerm(viewDirectionW, vNormalW, 0.65, 16.);
+	vec3 viewDirectionW = normalize(cameraPosition - worldPosition);
+	float fresnelTerm = computeFresnelTerm(viewDirectionW, worldNormal, 0.65, 16.);
 
 	// Emissive
 	vec3 emissiveColor = haloColor * (1.0 - fresnelTerm) *clamp(1.0 - ndl, 0.2, 1.0);
