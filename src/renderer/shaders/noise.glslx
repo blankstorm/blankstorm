@@ -12,6 +12,9 @@ uniform sampler2D randomSampler;
 uniform float mapSize;
 uniform float maxResolution;
 uniform float seed;
+uniform vec2 lowerClamp;
+uniform vec3 options;
+uniform vec2 range;
 
 float random5(vec2 co) {
 	return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
@@ -83,13 +86,18 @@ float scalarField(float x, float y, float z) {
 	float levelMax = helper(x, y, z, resolutionMax);
 
 	float c = seed;
-	c *= 1.0 + level1*0.8;
-	c *= 1.0 + level2*0.4;
-	c *= 1.0 + level3*0.2;
-	c *= 1.0 + level4*0.1;
-	c *= 1.0 + level5*0.05;
-	c *= 1.0 + levelMax*(0.025);
-	
+	c *= 1.0 + level1 * 0.8;
+	c *= 1.0 + level2 * 0.4;
+	c *= 1.0 + level3 * 0.2;
+	c *= 1.0 + level4 * 0.1;
+	c *= 1.0 + level5 * 0.05;
+	c *= 1.0 + levelMax * 0.025;
+
+	if (c < options.y)
+	{
+		c *= options.z;
+	}
+
 	return clamp(c, 0.0, 1.0);
 }
 
@@ -109,12 +117,34 @@ vec3 getSphericalCoord(float face, float x, float y, float width) {
 	return normalize(coord);
 }
 
-void main() {
+export void fragmentSource() {
 	float x = vUV.x;
 	float y = vUV.y;
 	vec3 sphericalCoord = getSphericalCoord(face, x * mapSize, y * mapSize, mapSize);
 
-	float color = scalarField(sphericalCoord.x, sphericalCoord.y, sphericalCoord.z);
+	float luminance = scalarField(sphericalCoord.x, sphericalCoord.y, sphericalCoord.z);
 
-	gl_FragColor = vec4(color, color, color, 1.0);
+	if (options.x > 0.)
+	{
+		gl_FragColor = vec4(luminance, luminance, luminance, 1.0);
+	}
+	else
+	{
+		if (luminance < range.x)
+		{
+			float scale0 = luminance / range.x;
+			gl_FragColor = vec4(lowerColor, 1.0) * clamp(scale0, lowerClamp.x, lowerClamp.y);
+		}
+		else if (luminance < range.y)
+		{
+			float scaleLeft1 = (luminance - range.x) / (range.y - range.x);
+			float scaleRight1 = (luminance - range.x) / (1.0 - range.x);
+			gl_FragColor = vec4(lowerColor, 1.0) * (1.0 - scaleLeft1) + vec4(upperColor, 1.0) * scaleRight1;
+		}
+		else
+		{
+			float scale2 = (luminance - range.x) / (1.0 - range.x);
+			gl_FragColor = vec4(upperColor, 1.0) * scale2;
+		}
+	}
 }

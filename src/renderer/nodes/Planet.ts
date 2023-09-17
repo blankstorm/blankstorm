@@ -15,6 +15,8 @@ import { CelestialBodyRenderer } from './CelestialBody';
 import { planetBiomes } from '../../core/generic/planets';
 import type { Renderer } from './Renderer';
 import * as planetShader from '../shaders/planet';
+import * as cloudShader from '../shaders/cloud';
+import * as noiseShader from '../shaders/noise';
 
 export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
@@ -55,19 +57,19 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 
 		this.noiseTexture = this.generateTexture(
 			id,
-			'./shaders/noise',
+			noiseShader,
 			{ ...options, options: new Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y) },
 			scene
 		);
 		this.setTexture('textureSampler', this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, './shaders/cloud', { ...options, options: new Vector3(1.0, 0, 0) }, scene);
+		this.cloudTexture = this.generateTexture(id, cloudShader, { ...options, options: new Vector3(1.0, 0, 0) }, scene);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);
 	}
 
-	generateTexture(id: string, path: string, options, scene: Scene) {
+	generateTexture(id: string, path, options, scene: Scene) {
 		const sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
 		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, config.planet_material_map_size, path, scene, null, true, true);
