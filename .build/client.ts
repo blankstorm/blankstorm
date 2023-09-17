@@ -17,7 +17,7 @@ const version = getVersionFromPackage();
 
 const options = {
 		verbose: false,
-		output: path.join(dirname, 'dist/tmp/client'),
+		output: path.join(dirname, 'build/client'),
 		watch: false,
 		'no-app': false,
 		mode: 'dev',
@@ -26,7 +26,7 @@ const options = {
 			options: {
 				verbose: { type: 'boolean', short: 'v', default: false },
 				watch: { type: 'boolean', short: 'w', default: false },
-				output: { type: 'string', short: 'o', default: path.join(dirname, 'dist/tmp/client') },
+				output: { type: 'string', short: 'o', default: path.join(dirname, 'build/client') },
 				'no-app': { type: 'boolean', default: false },
 				mode: { type: 'string', short: 'm', default: 'dev' },
 				debug: { type: 'boolean', default: false },
@@ -34,7 +34,7 @@ const options = {
 		}).values,
 	},
 	input = path.join(dirname, 'src/client'),
-	asset_path = path.join(dirname, 'dist/tmp/assets');
+	asset_path = path.join(dirname, 'build/assets');
 
 function fromPath(sourcePath: string) {
 	if (!fs.statSync(sourcePath).isDirectory()) {
@@ -57,14 +57,14 @@ const copyright = `Copyright © ${new Date().getFullYear()} ${pkg.author}. All R
 const _files0 = options.output + '/**/*';
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
-	projectDir: path.resolve(fileURLToPath(import.meta.url), '..', '..'),
+	projectDir: dirname,
 	config: {
 		extends: null,
 		extraMetadata: {
-			main: path.join(options.output, 'app.cjs'),
+			main: 'build/client/app.cjs',
 			version: pkg.version,
 		},
-		files: [_files0, 'package.json'],
+		files: ['build/client/**/*', 'package.json'],
 		appId: 'dev.drvortex.blankstorm',
 		productName: 'Blankstorm Client',
 		copyright,
@@ -113,8 +113,8 @@ const esbuildConfig: esbuild.BuildOptions = {
 			setup(build: esbuild.PluginBuild) {
 				build.onStart(() => {
 					//build assets
-					for(const f of fs.readdirSync(path.join(dirname, 'assets'))){
-						if(f == 'models') {
+					for (const f of fs.readdirSync(path.join(dirname, 'assets'))) {
+						if (f == 'models') {
 							execSync('bash ' + path.join(dirname, 'assets/models/export.sh'));
 							continue;
 						}
@@ -124,40 +124,44 @@ const esbuildConfig: esbuild.BuildOptions = {
 					fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
 				});
 				build.onEnd(async () => {
-					if (!options['no-app']) {
-						await electronBuilder.build(electronBuilderConfig);
-						for (const platform of ['win', 'linux']) {
-							renameOutput({ [`${platform}-unpacked`]: `blankstorm-client-${version}-${platform}` });
-							const dirPath = `dist/blankstorm-client-${version}-${platform}`;
-							if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
-								continue;
+					try {
+						if (!options['no-app']) {
+							await electronBuilder.build(electronBuilderConfig);
+							for (const platform of ['win', 'linux']) {
+								renameOutput({ [`${platform}-unpacked`]: `blankstorm-client-${version}-${platform}` });
+								const dirPath = `dist/blankstorm-client-${version}-${platform}`;
+								if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
+									continue;
+								}
+
+								console.log('Compressing: ' + platform);
+								const archive = archiver('zip', { zlib: { level: 9 } });
+
+								archive.pipe(fs.createWriteStream(`dist/blankstorm-client-${version}-${platform}.zip`));
+								await archive.directory(dirPath, false).finalize();
+								console.log('Compressed: ' + platform);
 							}
-
-							console.log('Compressing: ' + platform);
-							const archive = archiver('zip', { zlib: { level: 9 } });
-
-							archive.pipe(fs.createWriteStream(`dist/blankstorm-client-${version}-${platform}.zip`));
-							await archive.directory(dirPath, false).finalize();
-							console.log('Compressed: ' + platform);
+							renameOutput({
+								[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${version}.exe`,
+								[`Blankstorm Client-${pkg.version}.AppImage`]: `blankstorm-client-${version}.AppImage`,
+								[`blankstorm-client_${pkg.version}_amd64.snap`]: `blankstorm-client-${version}.snap`,
+								[`Blankstorm Client-${pkg.version}.dmg`]: `blankstorm-client-${version}.dmg`,
+								[`Blankstorm Client-${pkg.version}-mac.zip`]: `blankstorm-client-${version}-mac.zip`,
+							});
+							deleteOutput([
+								'builder-debug.yml',
+								'builder-effective-config.yaml',
+								'latest.yml',
+								'latest-mac.yml',
+								'.icon-ico',
+								'tmp',
+								`Blankstorm Client Setup ${pkg.version}.exe.blockmap`,
+								`Blankstorm Client-${pkg.version}-mac.zip.blockmap`,
+								`Blankstorm Client-${pkg.version}.dmg.blockmap`,
+							]);
 						}
-						renameOutput({
-							[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${version}.exe`,
-							[`Blankstorm Client-${pkg.version}.AppImage`]: `blankstorm-client-${version}.AppImage`,
-							[`blankstorm-client_${pkg.version}_amd64.snap`]: `blankstorm-client-${version}.snap`,
-							[`Blankstorm Client-${pkg.version}.dmg`]: `blankstorm-client-${version}.dmg`,
-							[`Blankstorm Client-${pkg.version}-mac.zip`]: `blankstorm-client-${version}-mac.zip`,
-						});
-						deleteOutput([
-							'builder-debug.yml',
-							'builder-effective-config.yaml',
-							'latest.yml',
-							'latest-mac.yml',
-							'.icon-ico',
-							'tmp',
-							`Blankstorm Client Setup ${pkg.version}.exe.blockmap`,
-							`Blankstorm Client-${pkg.version}-mac.zip.blockmap`,
-							`Blankstorm Client-${pkg.version}.dmg.blockmap`,
-						]);
+					} catch (e) {
+						console.error(e);
 					}
 				});
 			},
@@ -170,7 +174,7 @@ const symlinkPath = path.join(input, buildOptions.asset_dir);
 if (fs.existsSync(symlinkPath)) {
 	fs.unlinkSync(symlinkPath);
 }
-if(!fs.existsSync(asset_path)) {
+if (!fs.existsSync(asset_path)) {
 	fs.mkdirSync(asset_path, { recursive: true });
 }
 fs.symlinkSync(asset_path, symlinkPath);

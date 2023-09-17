@@ -3,7 +3,7 @@
 	"version": "1.0.0-alpha-1.4.4",
 	"private": true,
 	"description": "Blankstorm",
-	"main": "src/client/app.cjs",
+	"main": "build/client/app.cjs",
 	"type": "module",
 	"scripts": {
 		"format:check": "prettier --check . --ignore-path .gitignore",

@@ -4,7 +4,7 @@
 		"module": "ESNext",
 		"target": "ESNext",
 		"moduleResolution": "bundler",
-		"outDir": "dist/tmp/ts",
+		"outDir": "build/ts",
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
 		"noImplicitThis": true,

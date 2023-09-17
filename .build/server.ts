@@ -20,7 +20,7 @@ const options = {
 	}).values,
 };
 
-const outfile = 'dist/tmp/server.js';
+const outfile = 'build/server.js';
 
 const esbuildConfig = {
 	entryPoints: ['src/server/cli.ts'],
