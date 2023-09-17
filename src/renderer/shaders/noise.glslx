@@ -1,4 +1,4 @@
-﻿// Noise function by https://github.com/holgerl/procedural-planet
+// Noise function by https://github.com/holgerl/procedural-planet
 precision highp float;
 
 varying vec2 vPosition;
