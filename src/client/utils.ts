@@ -1,6 +1,8 @@
 import $ from 'jquery';
 import type { SerializedNode } from '../core/nodes/Node';
 import type { PlanetBiome } from '../core/generic/planets';
+const { fileURLToPath } = _require('node:url');
+const path = _require('node:path');
 
 export const upload = (type, multiple = false) =>
 		new Promise(res =>
@@ -12,20 +14,28 @@ export const upload = (type, multiple = false) =>
 
 export const minimize = Intl.NumberFormat('en', { notation: 'compact' }).format;
 
-type _jquery_text_parameter = string | number | boolean | ((this: HTMLElement, index: number, text: string) => string | number | boolean);
+export function fixPaths(text: string): string {
+	return text.replaceAll(/file:\/\/\/[A-Za-z0-9+&@#/%?=~_|!:,.;-]*[-A-Za-z0-9+&@#/%=~_|]/g, match =>
+		fileURLToPath(match)
+			.replace(path.resolve(fileURLToPath(import.meta.url), '..', '..', '..'), '')
+			.replaceAll('\\', '/')
+	);
+}
+
+
 /* eslint-disable no-redeclare */
-export const alert = (text: _jquery_text_parameter) =>
+export const alert = (text: string) =>
 	new Promise(resolve => {
-		$('#alert .message').text(text);
+		$('#alert .message').html(text.replaceAll('\n', '<br>'));
 		$('#alert .ok').on('click', () => {
 			$<HTMLDialogElement>('#alert')[0].close();
 			resolve(true);
 		});
 		$<HTMLDialogElement>('#alert')[0].showModal();
 	});
-export const confirm = (text: _jquery_text_parameter) =>
+export const confirm = (text: string) =>
 	new Promise(resolve => {
-		$('#confirm .message').text(text);
+		$('#confirm .message').html(text.replaceAll('\n', '<br>'));
 		$('#confirm .ok').on('click', () => {
 			$<HTMLDialogElement>('#confirm')[0].close();
 			resolve(true);

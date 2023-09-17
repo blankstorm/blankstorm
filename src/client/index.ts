@@ -16,7 +16,7 @@ import { commands, execCommandString } from '../core/commands';
 import type { Player } from '../core/nodes/Player';
 import type { Entity } from '../core/nodes/Entity';
 import type { Keybind } from './settings';
-import { upload, minimize, alert, cookies } from './utils';
+import { upload, minimize, alert, cookies, fixPaths } from './utils';
 import { Waypoint } from './waypoint';
 import { SaveMap, Save, LiveSave } from './Save';
 import { ServerMap, Server } from './Server';
@@ -36,6 +36,8 @@ import { locales } from './locales';
 import type { Locale } from './locales';
 import { ScreenshotUI } from './ui/screenshot';
 import { ClientContext } from './contexts';
+const { fileURLToPath } = _require('node:url');
+const path = _require('node:path');
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
@@ -251,7 +253,9 @@ try {
 	const mods = fs.readdirSync('mods');
 	log.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
 } catch (err) {
-	log.error('Failed to load mods: ' + err);
+	const message = 'Failed to load mods: ' + fixPaths(err.stack);
+	log.error(message);
+	alert(message).then(close);
 }
 
 export let isPaused = true,
@@ -267,8 +271,9 @@ try {
 		initLog(`Initalizing renderer: ${msg}`);
 	});
 } catch (err) {
-	log.error('Failed to initalize renderer: ' + err.stack);
-	alert('Failed to initalize renderer: ' + err.stack);
+	const message = 'Failed to initalize renderer: ' + fixPaths(err.stack);
+	log.error(message);
+	alert(message).then(close);
 }
 
 export const screenshots = [],
