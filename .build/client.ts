@@ -1,21 +1,23 @@
 import * as esbuild from 'esbuild';
-import * as fs from 'fs';
-import path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 import pkg from '../package.json' assert { type: 'json' };
 import * as electronBuilder from 'electron-builder';
-import { fileURLToPath } from 'url';
-import { parseArgs } from 'util';
+import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 import { getOptions, getReplacements } from './options';
 import counterPlugin from './counter';
 import { deleteOutput, getVersionFromPackage, renameOutput } from './utils';
 import { replace } from 'esbuild-plugin-replace';
 import glslPlugin from 'esbuild-plugin-glslx';
 import archiver from 'archiver';
+import { execSync } from 'node:child_process';
+const dirname = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const version = getVersionFromPackage();
 
 const options = {
 		verbose: false,
-		output: 'dist/tmp/client',
+		output: path.join(dirname, 'dist/tmp/client'),
 		watch: false,
 		'no-app': false,
 		mode: 'dev',
@@ -24,15 +26,15 @@ const options = {
 			options: {
 				verbose: { type: 'boolean', short: 'v', default: false },
 				watch: { type: 'boolean', short: 'w', default: false },
-				output: { type: 'string', short: 'o', default: 'dist/tmp/client' },
+				output: { type: 'string', short: 'o', default: path.join(dirname, 'dist/tmp/client') },
 				'no-app': { type: 'boolean', default: false },
 				mode: { type: 'string', short: 'm', default: 'dev' },
 				debug: { type: 'boolean', default: false },
 			},
 		}).values,
 	},
-	input = 'src/client',
-	asset_path = 'assets';
+	input = path.join(dirname, 'src/client'),
+	asset_path = path.join(dirname, 'dist/tmp/assets');
 
 function fromPath(sourcePath: string) {
 	if (!fs.statSync(sourcePath).isDirectory()) {
@@ -110,6 +112,15 @@ const esbuildConfig: esbuild.BuildOptions = {
 			name: 'app-builder-client',
 			setup(build: esbuild.PluginBuild) {
 				build.onStart(() => {
+					//build assets
+					for(const f of fs.readdirSync(path.join(dirname, 'assets'))){
+						if(f == 'models') {
+							execSync('bash ' + path.join(dirname, 'assets/models/export.sh'));
+							continue;
+						}
+
+						fs.cpSync(path.join(dirname, 'assets', f), path.join(asset_path, f), { recursive: true });
+					}
 					fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
 				});
 				build.onEnd(async () => {
@@ -159,7 +170,10 @@ const symlinkPath = path.join(input, buildOptions.asset_dir);
 if (fs.existsSync(symlinkPath)) {
 	fs.unlinkSync(symlinkPath);
 }
-fs.symlinkSync(path.resolve(asset_path), symlinkPath);
+if(!fs.existsSync(asset_path)) {
+	fs.mkdirSync(asset_path, { recursive: true });
+}
+fs.symlinkSync(asset_path, symlinkPath);
 // see https://stackoverflow.com/a/34434957/17637456
 
 if (options.watch) {
