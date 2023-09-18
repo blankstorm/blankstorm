@@ -5,7 +5,7 @@ import { FolderMap, random, isJSON } from '../core/utils';
 import { Ship } from '../core/nodes/Ship';
 import { Player } from '../core/nodes/Player';
 
-import fs from './fs';
+const fs = app.require('fs');
 import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
 import { ClientLevel } from './ClientLevel';

@@ -9,7 +9,7 @@
 		"format:check": "prettier --check . --ignore-path .gitignore",
 		"format": "prettier --write src . --ignore-path .gitignore",
 		"lint": "eslint . && tsc --project tsconfig.json --noEmit",
-		"dev:client": "ts-node .build/client.ts -o dist/dev-client && electron dist/dev-client/app.cjs --bs-debug",
+		"dev:client": "ts-node .build/client.ts --no-app && electron build/client/app.cjs --bs-debug --bs-open-devtools",
 		"dev:server": "ts-node src/server/cli.ts",
 		"build:client": "ts-node .build/client.ts",
 		"build:server": "ts-node .build/server.ts",

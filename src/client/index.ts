@@ -20,7 +20,7 @@ import { upload, minimize, alert, cookies, fixPaths } from './utils';
 import { Waypoint } from './waypoint';
 import { SaveMap, Save, LiveSave } from './Save';
 import { ServerMap, Server } from './Server';
-import fs from './fs';
+const fs = app.require('fs');
 import * as ui from './ui/ui';
 import { sounds, playsound } from './audio';
 import * as renderer from '../renderer/index';
@@ -36,14 +36,14 @@ import { locales } from './locales';
 import type { Locale } from './locales';
 import { ScreenshotUI } from './ui/screenshot';
 import { ClientContext } from './contexts';
-const { fileURLToPath } = _require('node:url');
-const path = _require('node:path');
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
 $('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
 
-export const log = new Log();
+const cliOptions = await app.getCliOptions();
+
+const log = new Log();
 
 function initLog(message: string): void {
 	$('#loading_cover p').text(message);
@@ -64,6 +64,7 @@ export const chat = (...msg: string[]) => {
 initLog('Initializing...');
 let current: ClientLevel;
 export const context: ClientContext = {
+	log,
 	get playerSystem() {
 		return current?.getNodeSystem(current.activePlayer);
 	},
@@ -113,7 +114,7 @@ export const context: ClientContext = {
 			}
 		});
 		level.on('player.levelup', async () => {
-			log.debug('Triggered player.levelup (unimplemented)');
+			context.log.debug('Triggered player.levelup (unimplemented)');
 		});
 		level.on('player.death', async () => {
 			renderer.getCamera().reset();
@@ -173,39 +174,39 @@ const updateSave = () => {
 
 initLog('Initializing settings...');
 
-settings.items.get('forward').addEventListener('trigger', () => {
+settings.items.get('forward').on('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Forward());
 });
-settings.items.get('left').addEventListener('trigger', () => {
+settings.items.get('left').on('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Left());
 });
-settings.items.get('right').addEventListener('trigger', () => {
+settings.items.get('right').on('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Right());
 });
-settings.items.get('back').addEventListener('trigger', () => {
+settings.items.get('back').on('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Backward());
 });
-settings.items.get('chat').addEventListener('trigger', e => {
+settings.items.get('chat').on('trigger', e => {
 	e.preventDefault();
 	toggleChat();
 });
-settings.items.get('command').addEventListener('trigger', e => {
+settings.items.get('command').on('trigger', e => {
 	e.preventDefault();
 	toggleChat(true);
 });
-settings.items.get('toggle_menu').addEventListener('trigger', () => {
+settings.items.get('toggle_menu').on('trigger', () => {
 	// not implemented
 });
-settings.items.get('toggle_map').addEventListener('trigger', () => {
+settings.items.get('toggle_map').on('trigger', () => {
 	changeUI('#map');
 });
-settings.items.get('toggle_temp_menu').addEventListener('trigger', () => {
+settings.items.get('toggle_temp_menu').on('trigger', () => {
 	changeUI('#ingame-temp-menu');
 });
-settings.items.get('screenshot').addEventListener('trigger', () => {
+settings.items.get('screenshot').on('trigger', () => {
 	new ScreenshotUI(canvas[0].toDataURL('image/png'));
 });
-settings.items.get('save').addEventListener('trigger', e => {
+settings.items.get('save').on('trigger', e => {
 	e.preventDefault();
 	updateSave();
 });
@@ -236,7 +237,7 @@ $('#map,#map-markers').on('wheel', ({ originalEvent: evt }: JQuery.TriggeredEven
 
 initLog('Initializing locales...');
 locales.on('fetch', (locale: Locale) => {
-	settings.items.get('locale').addOption(locale.language, locale.name);
+	settings.items.get('locale').ui.addOption(locale.language, locale.name);
 });
 await locales.init('locales/en.json');
 for (const [id, section] of settings.sections) {
@@ -251,11 +252,11 @@ try {
 	}
 
 	const mods = fs.readdirSync('mods');
-	log.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
+	context.log.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
 } catch (err) {
 	const message = 'Failed to load mods: ' + fixPaths(err.stack);
-	log.error(message);
-	alert(message).then(close);
+	context.log.error(message);
+	alert(message).then(() => !cliOptions['bs-debug'] && close());
 }
 
 export let isPaused = true,
@@ -272,8 +273,8 @@ try {
 	});
 } catch (err) {
 	const message = 'Failed to initalize renderer: ' + fixPaths(err.stack);
-	log.error(message);
-	alert(message).then(close);
+	context.log.error(message);
+	alert(message).then(() => !cliOptions['bs-debug'] && close());
 }
 
 export const screenshots = [],
@@ -421,7 +422,7 @@ if (config.debug_mode) {
 		cookies,
 		core,
 		locales,
-		log,
+		log: context.log,
 		player,
 		renderer,
 		settings,
@@ -607,7 +608,7 @@ $<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e 
 		locales.load(lang);
 	} else {
 		alert('That locale is not loaded.');
-		log.warn(`Failed to load locale ${lang}`);
+		context.log.warn(`Failed to load locale ${lang}`);
 	}
 });
 $('#waypoint-dialog .save').on('click', () => {
@@ -823,5 +824,5 @@ const loop = () => {
 ui.update(context);
 initLog('Done!');
 $('#loading_cover').fadeOut(1000);
-log.log('Client loaded successful');
+context.log.log('Client loaded successful');
 renderer.engine.runRenderLoop(loop);

@@ -1,6 +1,9 @@
 import $ from 'jquery';
+import EventEmitter from 'eventemitter3';
 import { JSONFileMap } from '../core/utils';
-import fs from './fs';
+import { SettingsItemUI } from './ui/settings-item';
+import { SettingsSectionUI } from './ui/settings-section';
+const fs = app.require('fs');
 
 export class SettingsError extends Error {
 	target: SettingsItem;
@@ -22,7 +25,7 @@ export interface Keybind {
 	key: string;
 }
 
-export const SettingTypes = ['boolean', 'checkbox', 'string', 'range', 'number', 'hidden', 'color', 'select', 'keybind'];
+export const SettingTypes = ['boolean', 'string', 'range', 'number', 'hidden', 'color', 'select', 'keybind'];
 export type SettingType = typeof SettingTypes[number];
 
 export type SettingValue = boolean | string | string[] | number | Keybind;
@@ -45,38 +48,29 @@ export interface SettingsItemOptions {
 	step: number;
 }
 
-export class SettingsItem extends HTMLDivElement {
-	#id: string;
-	#type: SettingType;
+export class SettingsItem extends EventEmitter {
+	private _id: string;
+	protected _type: SettingType;
 	label: SettingLabel;
 
-	#section: SettingsSection;
-	#store: SettingsMap;
+	protected _section: SettingsSection;
+	protected _store: SettingsMap;
 
-	#ui_label = $('<label></label>').addClass('settings-label').css('text-align', 'right').appendTo(this);
-	#ui_input: JQuery<HTMLInputElement>;
-
-	//Used by select
-	#options = [];
-	#value: Keybind = {
-		alt: false,
-		ctrl: false,
-		key: '',
-	};
+	protected _ui: SettingsItemUI;
 
 	//Used by keybind
-	constructor(id: string, options: Partial<SettingsItemOptions>, store) {
+	constructor(id: string, options: Partial<SettingsItemOptions>, store: SettingsMap) {
 		super();
 		options ||= {};
-		this.#id = id;
+		this._id = id;
 		this.label = options.label;
-		this.#store = store;
+		this._store = store;
 
 		if (options.section instanceof SettingsSection) {
-			this.#section = options.section;
+			this._section = options.section;
 		} else if (store.sections.has(options.section)) {
 			const section = store.sections.get(options.section);
-			this.#section = section;
+			this._section = section;
 		} else if (options.section) {
 			throw new SettingsError(`Settings section "${options.section}" does not exist`);
 		}
@@ -84,122 +78,59 @@ export class SettingsItem extends HTMLDivElement {
 		switch (options.type) {
 			case 'checkbox':
 			case 'boolean':
-				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', 'checkbox');
 				options.type = 'boolean';
-				break;
-			case 'string':
-				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', 'text');
 				break;
 			case 'range':
 			case 'number':
 			case 'hidden':
 			case 'color':
-				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', options.type);
 				options.type = options.type == 'color' ? 'color' : 'number';
 				break;
+			case 'string':
 			case 'select':
-				this.#ui_input = $('<select></select>');
-				this.#ui_input.text(options.value);
-				for (const option of options.options || []) {
-					this.addOption(option.name, option.label);
-				}
-				break;
 			case 'keybind':
-				this.#ui_input = $('<button></button>');
-				this.#ui_input
-					.on('click', e => {
-						e.preventDefault();
-						e.target.focus();
-					})
-					.on('keydown', e => {
-						e.preventDefault();
-						this.value = {
-							alt: e.altKey,
-							ctrl: e.ctrlKey,
-							key: e.key,
-						};
-					});
 				break;
 			default:
 				throw new SettingsError(`Invalid type: ${options.type}`, this);
 		}
 
-		this.#type = options.type;
-
-		this.#ui_input.attr('name', id).addClass('setting-input');
-		$('<div></div>').append(this.#ui_input).appendTo(this);
-		$(this).addClass('settings-item');
-		if (this.#section) {
-			$(this).appendTo(this.#section);
-		}
-
+		this._type = options.type;
+		this._ui = new SettingsItemUI(this);
 		this.update(options);
-		this.#ui_input.on('change', e => {
-			this.value = this.type == 'boolean' ? e.target.checked : e.target.value;
-			this.#store.set(this.id, this.value);
-		});
 
 		if (options.value) {
 			this.value = options.value;
 		}
+		
 	}
 
 	get id() {
-		return this.#id;
+		return this._id;
 	}
 
 	get value(): SettingValue {
-		switch (this.#type) {
-			case 'keybind':
-				return this.#value;
-			case 'boolean':
-				return this.#ui_input.is(':checked');
-			case 'number':
-				return +this.#ui_input.val();
-			default:
-				return this.#ui_input.val();
-		}
+		return this.ui.value;
 	}
 
 	set value(val: SettingValue) {
-		switch (this.#type) {
-			case 'keybind':
-				this.#value = val as Keybind;
-				this.#ui_input.text((this.#value.ctrl ? 'Ctrl + ' : '') + (this.#value.alt ? 'Alt + ' : '') + this.#value.key);
-				break;
-			case 'boolean':
-				this.#ui_input[0].checked = val as boolean;
-				break;
-			case 'number':
-				this.#ui_input.val(+val);
-				break;
-			default:
-				this.#ui_input.val(val as string);
-		}
-
-		let label = '';
-		if (typeof this.label == 'function') {
-			label = this.label(val);
-		} else {
-			label = this.label;
-		}
-		this.#ui_label.text(label);
+		this._ui.value = val;
 		this.emit('update');
 	}
 
-	get type() {
-		return this.#type;
+	get type(): SettingType {
+		return this._type;
 	}
 
 	get ui() {
-		return $(this);
+		return this._ui;
 	}
 
 	get section() {
-		return this.#section;
+		return this._section;
+	}
+
+	get store() {
+		return this._store;
 	}
 
 	get metadata() {
@@ -210,7 +141,7 @@ export class SettingsItem extends HTMLDivElement {
 		};
 
 		for (const attr of ['step', 'min', 'max']) {
-			const val = this.#ui_input.attr(attr);
+			const val = this._ui.getAttribute(attr);
 			if (val) {
 				data[attr] = isFinite(+val) ? +val : val;
 			}
@@ -219,53 +150,25 @@ export class SettingsItem extends HTMLDivElement {
 		return data;
 	}
 
-	//for selects
-	hasOption(name: string) {
-		return this.#options.findIndex(el => el.val() == name) != -1;
-	}
-
-	addOption(name: string, label: string) {
-		const option = $('<option></option>');
-		option.val(name);
-		option.text(label);
-		this.#options.push(option);
-		this.#ui_input.append(option);
-	}
-
-	removeOption(name: string): boolean {
-		const option = this.#options.find(el => el.val() == name);
-		if (option) {
-			this.#ui_input.remove(option);
-			this.#options.splice(this.#options.indexOf(option), 1);
-			return true;
-		}
-		return false;
-	}
-
-	emit(type: string): boolean {
-		return this.dispatchEvent(new SettingsEvent(type, this));
-	}
-
 	update(options: { min?: number; max?: number; step?: number }) {
 		if (isFinite(options?.min)) {
-			this.#ui_input.attr('min', +options.min);
+			this._ui._input.attr('min', +options.min);
 		}
 
 		if (isFinite(options?.max)) {
-			this.#ui_input.attr('max', +options.max);
+			this._ui._input.attr('max', +options.max);
 		}
 
 		if (isFinite(options?.step)) {
-			this.#ui_input.attr('step', +options.step);
+			this._ui._input.attr('step', +options.step);
 		}
 	}
 
 	dispose() {
-		this.#ui_input.detach();
-		this.#store.items.delete(this.#id);
+		this._ui._input.detach();
+		this._store.items.delete(this._id);
 	}
 }
-customElements.define('settings-item', SettingsItem, { extends: 'div' });
 
 export interface SettingsSectionOptions {
 	id: string;
@@ -273,44 +176,43 @@ export interface SettingsSectionOptions {
 	parent: JQuery;
 }
 
-export class SettingsSection extends HTMLFormElement {
-	#parent: JQuery;
-	#store: SettingsMap;
-	#label: SettingLabel;
+export class SettingsSection extends EventEmitter {
+	ui: SettingsSectionUI;
 
-	constructor(public readonly id: string, label: SettingLabel, parent: JQuery, store: SettingsMap) {
+	constructor(public readonly id: string, protected _label: SettingLabel, protected _store: SettingsMap) {
 		super();
 
-		$(this).addClass('settings-section center-flex').append('<h2 class="settings-name"></h2>');
-		this.#label = label;
-
-		if (parent) {
-			this.#parent = parent;
-			$(parent).append(this);
+		if (_store) {
+			_store.sections.set(id, this);
 		}
 
-		if (store) {
-			this.#store = store;
-			store.sections.set(id, this);
-		}
+		this.ui = new SettingsSectionUI(this);
+	}
+
+	get store(): SettingsMap {
+		return this._store;
 	}
 
 	get label(): string {
-		return typeof this.#label == 'function' ? this.#label() : this.#label;
+		return typeof this._label == 'function' ? this._label() : this._label;
 	}
 
 	set label(value: SettingLabel) {
-		this.#label = value;
-		$(this).find('h2.settings-name').text(`Settings - ${this.label}`);
+		this._label = value;
+		this.ui.update();
 	}
 
 	get parent() {
-		return this.#parent;
+		return this.ui.parent;
+	}
+
+	set parent(value) {
+		this.ui.parent = value;
 	}
 
 	dispose(disposeItems?: boolean) {
 		if (disposeItems) {
-			for (const item of this.#store.items.values()) {
+			for (const item of this._store.items.values()) {
 				if (item.section == this) {
 					item.dispose();
 				}
@@ -318,10 +220,9 @@ export class SettingsSection extends HTMLFormElement {
 		}
 
 		$(this).detach();
-		this.#store.sections.delete(this.id);
+		this._store.sections.delete(this.id);
 	}
 }
-customElements.define('settings-section', SettingsSection, { extends: 'form' });
 
 export class SettingsMap extends JSONFileMap {
 	sections: Map<string, SettingsSection> = new Map();
@@ -340,7 +241,8 @@ export class SettingsMap extends JSONFileMap {
 		super(id + '.json', fs);
 
 		for (const _section of sections) {
-			const section = _section instanceof SettingsSection ? _section : new SettingsSection(_section.id, _section.label, _section.parent, this);
+			const section = _section instanceof SettingsSection ? _section : new SettingsSection(_section.id, _section.label, this);
+			section.ui.parent = _section.parent;
 			this.sections.set(section.id, section);
 		}
 

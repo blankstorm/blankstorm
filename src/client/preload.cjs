@@ -1,6 +1,11 @@
 /* eslint-env node */
-const { contextBridge } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('_require', pkg => {
-	return require(pkg);
+contextBridge.exposeInMainWorld('app', {
+	require(pkg) {
+		return require(pkg)
+	},
+	getCliOptions() {
+		return ipcRenderer.invoke('cli_flags');
+	}
 });

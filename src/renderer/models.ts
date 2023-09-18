@@ -167,27 +167,10 @@ export class ModelRenderer extends TransformNode {
 	}
 }
 
-export const modelPaths = new Map(
-	Object.entries({
-		wind: 'wind.glb',
-		mosquito: 'mosquito.glb',
-		cillus: 'cillus.glb',
-		inca: 'inca.glb',
-		pilsung: 'pilsung.glb',
-		apis: 'apis.glb',
-		hurricane: 'hurricane.glb',
-		horizon: 'horizon.glb',
-		laser: 'laser.glb',
-		laser_projectile: 'laser_projectile.glb',
-		station_core: 'station/core.glb',
-		station_connecter_i: 'station/connecter_i.glb',
-	})
-);
-
 export const genericMeshes: Map<string, AssetContainer> = new Map();
 
-export async function initModel(id: string, scene: Scene) {
-	const container = await SceneLoader.LoadAssetContainerAsync('', `${$build.asset_dir}/models/${modelPaths.get(id)}`, scene);
+export async function initModels(path: string, scene: Scene) {
+	const container = await SceneLoader.LoadAssetContainerAsync(`${$build.asset_dir}/models/${path}.glb`, '', scene);
 	Object.assign(container.meshes[0], {
 		rotationQuaternion: null,
 		material: Object.assign(container.materials[0], {
@@ -200,7 +183,7 @@ export async function initModel(id: string, scene: Scene) {
 		isPickable: false,
 	});
 	scene.reflectionProbes[0].renderList.push(container.meshes[1]);
-	genericMeshes.set(id, container);
+	genericMeshes.set(path, container);
 }
 
 export type RendererType = Parameters<typeof genericMeshes.get>[0];

@@ -20,7 +20,7 @@ import type { SerializedShip } from '../core/nodes/Ship';
 import type { SerializedNode } from '../core/nodes/Node';
 import config from './config';
 import { Camera } from './Camera';
-import { initModel, modelPaths } from './models';
+import { initModels } from './models';
 import { PlayerRenderer } from './nodes/Player';
 import { PlanetRenderer, PlanetRendererMaterial } from './nodes/Planet';
 import { StarRenderer } from './nodes/Star';
@@ -110,11 +110,10 @@ export async function init(
 
 	await messageHandler('models');
 
-	const modelIDs = [...modelPaths.keys()];
-	for (const id of modelIDs) {
-		const i = modelIDs.indexOf(id);
-		await messageHandler(`model "${id}" (${i + 1}/${modelIDs.length})`);
-		await initModel(id, scene);
+	const models = ['apis', 'cillus', 'horizon', 'hurricane', 'inca', 'laser', 'laser_cannon_double', 'mosquito', 'pilsung', 'wind'];
+	for (const id of models) {
+		await messageHandler(`models (${id}) (${models.indexOf(id) + 1}/${models.length})`);
+		await initModels(id, scene);
 	}
 }
 

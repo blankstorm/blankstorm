@@ -1,9 +1,11 @@
+import type { Log } from '../core/Log';
 import type { ClientLevel } from './ClientLevel';
 import type { ClientSystem } from './ClientSystem';
 import type { SaveMap } from './Save';
 import type { ServerMap } from './Server';
 
 export interface ClientContext {
+	log: Log;
 	startPlaying(level: ClientLevel): boolean;
 	stopPlaying(level: ClientLevel): boolean;
 	get saves(): SaveMap;

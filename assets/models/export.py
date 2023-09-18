@@ -28,16 +28,16 @@ for filename in os.listdir(args.input):
 		if not filename.endswith('.blend'):
 			continue
 		filename = os.path.splitext(filename)[0]
-		blend_path = os.path.join(args.input, filename) + '.blend'
-		export_path = os.path.join(args.output, filename) + '.glb'
 		if not os.path.exists(args.output):
 			os.makedirs(args.output)
 		print('Exporting: ' + filename)
 		bpy.ops.wm.read_factory_settings(use_empty=True)
-		bpy.ops.wm.open_mainfile(filepath=blend_path)
+		bpy.ops.wm.open_mainfile(filepath=os.path.join(args.input, filename) + '.blend')
 		for window in bpy.context.window_manager.windows:
 			with bpy.context.temp_override(window=window):
-				bpy.ops.export_scene.gltf(filepath=export_path, export_copyright='Dr. Vortex', export_apply=True)
+				for scene in bpy.data.scenes:
+					bpy.context.window.scene = scene
+					bpy.ops.export_scene.gltf(filepath=args.output + '/' + scene.name + '.glb', export_copyright='Dr. Vortex', export_apply=True)
 	except Exception as e:
 		print('Failed to export: ' + str(e))
 		continue

@@ -1,5 +1,5 @@
 /* eslint-env node */
-const { app, shell, nativeTheme, BrowserWindow } = require('electron');
+const { app, shell, nativeTheme, ipcMain, BrowserWindow } = require('electron');
 const path = require('path');
 const { parseArgs } = require('node:util');
 
@@ -17,6 +17,7 @@ const options = {
 	initialScale = 100;
 
 app.whenReady().then(() => {
+	ipcMain.handle('cli_flags', () => options);
 	const window = new BrowserWindow({
 		width: 16 * initialScale,
 		height: 9 * initialScale,
@@ -37,6 +38,8 @@ app.whenReady().then(() => {
 		e.preventDefault();
 		shell.openExternal(url);
 	});
+
+	
 
 	const inputHandler = (ev, input) => {
 		switch (input.key) {
