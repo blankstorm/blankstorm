@@ -174,39 +174,39 @@ const updateSave = () => {
 
 initLog('Initializing settings...');
 
-settings.items.get('forward').on('trigger', () => {
+settings.items.get('forward').addEventListener('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Forward());
 });
-settings.items.get('left').on('trigger', () => {
+settings.items.get('left').addEventListener('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Left());
 });
-settings.items.get('right').on('trigger', () => {
+settings.items.get('right').addEventListener('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Right());
 });
-settings.items.get('back').on('trigger', () => {
+settings.items.get('back').addEventListener('trigger', () => {
 	renderer.getCamera().addVelocity(Vector3.Backward());
 });
-settings.items.get('chat').on('trigger', e => {
+settings.items.get('chat').addEventListener('trigger', e => {
 	e.preventDefault();
 	toggleChat();
 });
-settings.items.get('command').on('trigger', e => {
+settings.items.get('command').addEventListener('trigger', e => {
 	e.preventDefault();
 	toggleChat(true);
 });
-settings.items.get('toggle_menu').on('trigger', () => {
+settings.items.get('toggle_menu').addEventListener('trigger', () => {
 	// not implemented
 });
-settings.items.get('toggle_map').on('trigger', () => {
+settings.items.get('toggle_map').addEventListener('trigger', () => {
 	changeUI('#map');
 });
-settings.items.get('toggle_temp_menu').on('trigger', () => {
+settings.items.get('toggle_temp_menu').addEventListener('trigger', () => {
 	changeUI('#ingame-temp-menu');
 });
-settings.items.get('screenshot').on('trigger', () => {
+settings.items.get('screenshot').addEventListener('trigger', () => {
 	new ScreenshotUI(canvas[0].toDataURL('image/png'));
 });
-settings.items.get('save').on('trigger', e => {
+settings.items.get('save').addEventListener('trigger', e => {
 	e.preventDefault();
 	updateSave();
 });
@@ -237,7 +237,7 @@ $('#map,#map-markers').on('wheel', ({ originalEvent: evt }: JQuery.TriggeredEven
 
 initLog('Initializing locales...');
 locales.on('fetch', (locale: Locale) => {
-	settings.items.get('locale').ui.addOption(locale.language, locale.name);
+	settings.items.get('locale').addOption(locale.language, locale.name);
 });
 await locales.init('locales/en.json');
 for (const [id, section] of settings.sections) {

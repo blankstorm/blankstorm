@@ -39,8 +39,6 @@ app.whenReady().then(() => {
 		shell.openExternal(url);
 	});
 
-	
-
 	const inputHandler = (ev, input) => {
 		switch (input.key) {
 			case 'F12':

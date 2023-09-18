@@ -8,7 +8,7 @@ interface CliOptions {
 declare global {
 	const $build: BuildOptions;
 	const app: {
-		require: typeof require,
+		require: typeof require;
 		getCliOptions(): Promise<CliOptions>;
 	};
 }

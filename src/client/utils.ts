@@ -22,7 +22,6 @@ export function fixPaths(text: string): string {
 	);
 }
 
-
 /* eslint-disable no-redeclare */
 export const alert = (text: string) =>
 	new Promise(resolve => {
