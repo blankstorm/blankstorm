@@ -62,7 +62,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 		extends: null,
 		extraMetadata: {
 			main: 'build/client/app.cjs',
-			version: pkg.version,
+			version,
 		},
 		files: ['build/client/**/*', 'package.json'],
 		appId: 'dev.drvortex.blankstorm',
@@ -112,16 +112,25 @@ const esbuildConfig: esbuild.BuildOptions = {
 			name: 'app-builder-client',
 			setup(build: esbuild.PluginBuild) {
 				build.onStart(() => {
-					//build assets
-					for (const f of fs.readdirSync(path.join(dirname, 'assets'))) {
-						if (f == 'models') {
-							execSync('bash ' + path.join(dirname, 'assets/models/export.sh'));
-							continue;
-						}
+					try {
+						//build assets
+						for (const f of fs.readdirSync(path.join(dirname, 'assets'))) {
+							if (f == 'models') {
+								execSync('bash ' + path.join(dirname, 'assets/models/export.sh'), { stdio: 'inherit' });
+								continue;
+							}
 
-						fs.cpSync(path.join(dirname, 'assets', f), path.join(asset_path, f), { recursive: true });
+							fs.cpSync(path.join(dirname, 'assets', f), path.join(asset_path, f), { recursive: true });
+						}
+						fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
+					} catch (e) {
+						if('stdout' in e && 'stderr' in e && 'error' in e) {
+							console.error(e.stderr);
+							console.error(e.error);
+						} else {
+							console.error(e);
+						}
 					}
-					fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
 				});
 				build.onEnd(async () => {
 					try {
