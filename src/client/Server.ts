@@ -18,7 +18,6 @@ export class ServerMap extends Map<string, Server> {
 	constructor(path: string, context: ClientContext) {
 		super();
 		this._map = new JSONFileMap(path, fs);
-		context._servers = this;
 		for (const [id, data] of this._map._map) {
 			if (!super.has(id)) {
 				Server.FromJSON(data as SerializedServer, context);
@@ -77,7 +76,7 @@ export class Server extends EventEmitter {
 			this.kickMessage = 'Kicked from server: ' + message;
 		});
 		this.socket.on('chat', message => {
-			this.context.chat(message);
+			this.context.sendChatMessage(message);
 		});
 		this.socket.on('event', (type: string, ...data) => {
 			if (type == 'level.tick') {

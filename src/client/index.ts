@@ -35,7 +35,8 @@ import { settings } from './settings';
 import { locales } from './locales';
 import type { Locale } from './locales';
 import { ScreenshotUI } from './ui/screenshot';
-import { ClientContext } from './contexts';
+import type { ClientContext, PlayerContext } from './contexts';
+import type { ClientSystem } from './ClientSystem';
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
@@ -50,7 +51,7 @@ function initLog(message: string): void {
 	log.log('init: ' + message);
 }
 
-export const chat = (...msg: string[]) => {
+export const sendChatMessage = (...msg: string[]) => {
 	for (const m of msg) {
 		log.log(`(chat) ${m}`);
 		$(`<li bg=none></li>`)
@@ -62,16 +63,28 @@ export const chat = (...msg: string[]) => {
 };
 
 initLog('Initializing...');
+export const player: PlayerContext = {
+	id: '[guest]',
+	username: '[guest]',
+	oplvl: 0,
+	lastchange: undefined,
+	created: undefined,
+	disabled: false,
+	chat: (...msg) => {
+		for (const m of msg) {
+			sendChatMessage(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+		}
+	},
+	data: (id: string = player.id) => ((context.current.isServer ? servers.get(servers.selected).level : current)?.getNodeSystem(id)?.nodes?.get(id) ?? {}) as unknown as Player,
+	get system(): ClientSystem {
+		return current?.getNodeSystem(current.activePlayer);
+	},
+};
+
 let current: ClientLevel;
 export const context: ClientContext = {
 	log,
-	get playerSystem() {
-		return current?.getNodeSystem(current.activePlayer);
-	},
-
-	get playerID() {
-		return player.data().id;
-	},
+	player,
 
 	get current() {
 		return current;
@@ -84,14 +97,9 @@ export const context: ClientContext = {
 		current = value;
 		current.isActive = true;
 	},
-
-	get saves() {
-		return this._saves;
-	},
-	get servers() {
-		return this._servers;
-	},
-	chat,
+	saves: undefined,
+	servers: undefined,
+	sendChatMessage,
 
 	startPlaying(level: ClientLevel) {
 		if (level.version != version) {
@@ -104,12 +112,12 @@ export const context: ClientContext = {
 		$('#hud').show();
 		context.current = level;
 		renderer.clear();
-		renderer.update(this.playerSystem.toJSON());
+		renderer.update(this.player.system.toJSON());
 		level.on('projectile.fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
 			renderer.fireProjectile(hardpointID, targetID, projectile);
 		});
 		level.on('system.tick', async (system: SerializedSystem) => {
-			if (this.playerSystem.id == system.id) {
+			if (this.player.system.id == system.id) {
 				renderer.update(system);
 			}
 		});
@@ -150,10 +158,10 @@ initLog('Loading saves...');
 if (!fs.existsSync('saves')) {
 	fs.mkdirSync('saves');
 }
-const saves = new SaveMap('saves', context);
+const saves = (context.saves = new SaveMap('saves', context));
 
 initLog('Loading servers...');
-const servers = new ServerMap('servers.json', context);
+const servers = (context.servers = new ServerMap('servers.json', context));
 
 const updateSave = () => {
 	if (!(current instanceof ClientLevel)) {
@@ -164,9 +172,9 @@ const updateSave = () => {
 		const save = saves.get(current.id);
 		save.data = current.toJSON();
 		saves.set(current.id, save);
-		chat('Game saved.');
+		sendChatMessage('Game saved.');
 	} catch (err) {
-		chat('Failed to save game.');
+		sendChatMessage('Failed to save game.');
 		throw err;
 	}
 	$('#pause .save').text('Save Game');
@@ -327,23 +335,6 @@ const changeUI = (selector: string, hideAll?: boolean) => {
 };
 const cli = { line: 0, currentInput: '', i: $('#chat-input').val(), prev: [], counter: 0 };
 
-export const player: {
-	id: string;
-	username: string;
-	chat(...msg: string[]): void;
-	data(id?: string): Player;
-	authData?: Account;
-} = {
-	id: '[guest]',
-	username: '[guest]',
-	chat: (...msg) => {
-		for (const m of msg) {
-			chat(`${player.username}: ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
-		}
-	},
-	data: (id: string = player.id) => ((context.current.isServer ? servers.get(servers.selected).level : current)?.getNodeSystem(id)?.nodes?.get(id) ?? {}) as unknown as Player,
-};
-
 onresize = () => {
 	renderer.engine.resize();
 	console.warn('Do not paste any code someone gave you, as they may be trying to steal your information');
@@ -358,12 +349,10 @@ if (cookies.has('token') && navigator.onLine) {
 		} catch (e) {
 			throw `Couldn't log you in (${e})`;
 		}
-		player.id = result.id;
-		player.username = result.username;
-		player.authData = result;
+		Object.assign(player, result);
 		mpEnabled = true;
 	} catch (e) {
-		chat(e);
+		sendChatMessage(e);
 	}
 }
 saves.activePlayer = player.id;
@@ -674,7 +663,7 @@ $('#chat-input').on('keydown', e => {
 			cli.counter = 0;
 			if (/[^\s/]/.test($('#chat-input').val() as string)) {
 				if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#chat-input').val());
-				if ($('#chat-input').val()[0] == '/') chat(runCommand(($('#chat-input').val() as string).slice(1)) as string);
+				if ($('#chat-input').val()[0] == '/') sendChatMessage(runCommand(($('#chat-input').val() as string).slice(1)) as string);
 				else context.current.isServer ? servers.get(servers.selected).socket.emit('chat', $('#chat-input').val()) : player.chat($('#chat-input').val() as string);
 				$('#chat-input').val('');
 				toggleChat();

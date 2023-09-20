@@ -20,7 +20,6 @@ export class SaveMap extends Map<string, Save> {
 	constructor(path: string, context: ClientContext) {
 		super();
 		this._map = new FolderMap(path, fs, '.json');
-		context._saves = this;
 
 		for (const [id, content] of this._map._map) {
 			if (!isJSON(content)) {
