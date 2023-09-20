@@ -124,7 +124,7 @@ const esbuildConfig: esbuild.BuildOptions = {
 						}
 						fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
 					} catch (e) {
-						if(!('status' in e)) {
+						if (!('status' in e)) {
 							console.error(e);
 						}
 					}
