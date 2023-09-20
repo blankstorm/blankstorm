@@ -178,13 +178,22 @@ const esbuildConfig: esbuild.BuildOptions = {
 
 const symlinkPath = path.join(input, buildOptions.asset_dir);
 if (fs.existsSync(symlinkPath)) {
-	fs.unlinkSync(symlinkPath);
+	if (fs.statSync(symlinkPath).isDirectory()) {
+		fs.rmSync(symlinkPath, { recursive: true, force: true });
+	} else {
+		fs.unlinkSync(symlinkPath);
+	}
 }
 if (!fs.existsSync(asset_path)) {
 	fs.mkdirSync(asset_path, { recursive: true });
 }
-fs.symlinkSync(asset_path, symlinkPath);
-// see https://stackoverflow.com/a/34434957/17637456
+try {
+	fs.symlinkSync(asset_path, symlinkPath);
+} catch (e) {
+	console.log('Failed to symlink: ' + e.message);
+	console.log('Attempting to copy...');
+	fs.cpSync(asset_path, symlinkPath, { recursive: true, force: true });
+}
 
 if (options.watch) {
 	console.log('Watching...');
@@ -193,4 +202,8 @@ if (options.watch) {
 } else {
 	await esbuild.build(esbuildConfig);
 }
-fs.unlinkSync(symlinkPath);
+if (fs.statSync(symlinkPath).isDirectory()) {
+	fs.rmSync(symlinkPath, { recursive: true, force: true });
+} else {
+	fs.unlinkSync(symlinkPath);
+}
