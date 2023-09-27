@@ -3,9 +3,9 @@ import { exec as pkg } from 'pkg';
 import { parseArgs } from 'node:util';
 import { getOptions } from './options';
 import counterPlugin from './counter';
-import { getVersionFromPackage, renameOutput } from './utils';
+import { getVersionInfo, renameOutput } from './utils';
 
-const version = getVersionFromPackage();
+const { display: displayVersion } = getVersionInfo();
 
 const options = {
 	verbose: false,
@@ -36,9 +36,9 @@ const esbuildConfig = {
 				build.onEnd(async () => {
 					await pkg([outfile, '--output', 'dist/server', '--target', 'latest-win,latest-linux,latest-macos']);
 					renameOutput({
-						'server-win.exe': `blankstorm-server-${version}.exe`,
-						'server-macos': `blankstorm-server-${version}-macos`,
-						'server-linux': `blankstorm-server-${version}-linux`,
+						'server-win.exe': `blankstorm-server-${displayVersion}.exe`,
+						'server-macos': `blankstorm-server-${displayVersion}-macos`,
+						'server-linux': `blankstorm-server-${displayVersion}-linux`,
 					});
 				});
 			},
