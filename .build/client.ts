@@ -7,13 +7,13 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { getOptions, getReplacements } from './options';
 import counterPlugin from './counter';
-import { deleteOutput, getVersionFromPackage, renameOutput } from './utils';
+import { deleteOutput, getVersionInfo, renameOutput } from './utils';
 import { replace } from 'esbuild-plugin-replace';
 import glslPlugin from 'esbuild-plugin-glslx';
 import archiver from 'archiver';
 import { execSync } from 'node:child_process';
 const dirname = path.resolve(fileURLToPath(import.meta.url), '..', '..');
-const version = getVersionFromPackage();
+const { display: displayVersion, electronBuilder: electronBuilderVersions } = getVersionInfo();
 
 const options = {
 		verbose: false,
@@ -62,7 +62,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 		extends: null,
 		extraMetadata: {
 			main: 'build/client/app.cjs',
-			version,
+			...electronBuilderVersions,
 		},
 		files: ['build/client/**/*', 'package.json'],
 		appId: 'dev.drvortex.blankstorm',
@@ -134,8 +134,8 @@ const esbuildConfig: esbuild.BuildOptions = {
 						if (!options['no-app']) {
 							await electronBuilder.build(electronBuilderConfig);
 							for (const platform of ['win', 'linux']) {
-								renameOutput({ [`${platform}-unpacked`]: `blankstorm-client-${version}-${platform}` });
-								const dirPath = `dist/blankstorm-client-${version}-${platform}`;
+								renameOutput({ [`${platform}-unpacked`]: `blankstorm-client-${displayVersion}-${platform}` });
+								const dirPath = `dist/blankstorm-client-${displayVersion}-${platform}`;
 								if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
 									continue;
 								}
@@ -143,16 +143,16 @@ const esbuildConfig: esbuild.BuildOptions = {
 								console.log('Compressing: ' + platform);
 								const archive = archiver('zip', { zlib: { level: 9 } });
 
-								archive.pipe(fs.createWriteStream(`dist/blankstorm-client-${version}-${platform}.zip`));
+								archive.pipe(fs.createWriteStream(`dist/blankstorm-client-${displayVersion}-${platform}.zip`));
 								await archive.directory(dirPath, false).finalize();
 								console.log('Compressed: ' + platform);
 							}
 							renameOutput({
-								[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${version}.exe`,
-								[`Blankstorm Client-${pkg.version}.AppImage`]: `blankstorm-client-${version}.AppImage`,
-								[`blankstorm-client_${pkg.version}_amd64.snap`]: `blankstorm-client-${version}.snap`,
-								[`Blankstorm Client-${pkg.version}.dmg`]: `blankstorm-client-${version}.dmg`,
-								[`Blankstorm Client-${pkg.version}-mac.zip`]: `blankstorm-client-${version}-mac.zip`,
+								[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${displayVersion}.exe`,
+								[`Blankstorm Client-${pkg.version}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
+								[`blankstorm-client_${pkg.version}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
+								[`Blankstorm Client-${pkg.version}.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
+								[`Blankstorm Client-${pkg.version}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
 							});
 							deleteOutput([
 								'builder-debug.yml',

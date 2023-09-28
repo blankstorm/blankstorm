@@ -2,10 +2,31 @@ import path from 'node:path';
 import * as fs from 'node:fs';
 import pkg from '../package.json' assert { type: 'json' };
 
-export function getVersionFromPackage() {
-	let i = pkg.version.search(/alpha|beta/);
-	i = i == -1 ? 0 : i;
-	return pkg.version.slice(i);
+export interface VersionInfo {
+	version: string;
+	subversion: string;
+	type?: 'indev' | 'alpha' | 'beta' | 'prerelease' | 'release' | string;
+	display: string;
+	electronBuilder: {
+		version: string;
+		shortVersion: string;
+		shortVersionWindows: string;
+	};
+}
+export function getVersionInfo(): VersionInfo {
+	const { groups: match } = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(pkg.version);
+	const shortVersion = match.type ? match.version : '0.' + match.version;
+	return {
+		version: match.version,
+		subversion: match.subversion,
+		type: match.type,
+		display: ['alpha', 'beta'].includes(match.type) ? `${match.type}-${match.subversion}` : match.version,
+		electronBuilder: {
+			version: pkg.version,
+			shortVersion,
+			shortVersionWindows: shortVersion,
+		},
+	};
 }
 
 export function renameOutput(renames: { [key: string]: string }, outPath = 'dist') {
