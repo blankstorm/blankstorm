@@ -12,40 +12,57 @@ import { ItemUI } from './item';
 import { minimize, $svg } from '../utils';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
-import type { ClientContext, MarkerContext } from '../contexts';
 import { Marker } from './marker';
-
+import type { ClientContext } from '../client';
 import { ClientSystem } from '../ClientSystem';
 import type { Waypoint } from '../waypoint';
 
-export const item_ui = {},
-	research_ui = {},
-	ship_ui = {},
-	markers: Map<string, Marker> = new Map(),
-	markerContext: MarkerContext = {
+export interface Context {
+	items: Map<string, ItemUI>;
+	research: Map<string, ResearchUI>;
+	ships: Map<string, ShipUI>;
+	markers: Map<string, Marker>;
+	map: {
+		x: number;
+		y: number;
+		get svgX(): number;
+		get svgY(): number;
+		rotation: number;
+		scale: number;
+	};
+	client: ClientContext;
+}
+
+export const context: Context = {
+	items: new Map(),
+	ships: new Map(),
+	research: new Map(),
+	markers: new Map(),
+	map: {
 		x: 0,
 		y: 0,
 		scale: 1,
 		rotation: 0,
-		client: null,
 		get svgX() {
 			return this.x * -this.scale;
 		},
 		get svgY() {
 			return this.y * -this.scale;
 		},
-	};
+	},
+	client: null,
+};
 
-export function init(context: ClientContext) {
-	markerContext.client = context;
+export function init(client: ClientContext) {
+	context.client = client;
 	for (const [id, item] of Object.entries(items)) {
-		item_ui[id] = new ItemUI(item, context);
+		context.items.set(id, new ItemUI(item, client));
 	}
 	for (const [id, _research] of Object.entries(research)) {
-		research_ui[id] = new ResearchUI(_research, context);
+		context.research.set(id, new ResearchUI(_research, client));
 	}
 	for (const [type, genericShip] of Object.entries(genericShips)) {
-		ship_ui[type] = new ShipUI(genericShip, context);
+		context.ships.set(type, new ShipUI(genericShip, client));
 	}
 	const size = config.system_generation.max_size;
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
@@ -72,14 +89,14 @@ export function init(context: ClientContext) {
 }
 
 export function update(ctx: ClientContext) {
-	if (ctx.playerSystem instanceof ClientSystem) {
-		const player = ctx.playerSystem.level.getNodeSystem(ctx.playerID).getNodeByID<Player>(ctx.playerID);
+	if (ctx.player.system instanceof ClientSystem) {
+		const player = ctx.player.system.level.getNodeSystem(ctx.player.id).getNodeByID<Player>(ctx.player.id);
 		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
 
 		for (const [id, amount] of Object.entries(player.items)) {
-			$(item_ui[id]).find('.count').text(minimize(amount));
+			$(context.items.get(id)).find('.count').text(minimize(amount));
 		}
 
 		//update tech info
@@ -93,7 +110,7 @@ export function update(ctx: ClientContext) {
 					result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 				''
 			);
-			$(research_ui[id])
+			$(context.research.get(id))
 				.find('.upgrade tool-tip')
 				.html(
 					`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
@@ -104,7 +121,7 @@ export function update(ctx: ClientContext) {
 						settings.get('tooltips') ? '<br>type: ' + id : ''
 					}`
 				);
-			$(research_ui[id]).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
+			$(context.research.get(id)).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
 		}
 
 		//update ship info
@@ -118,7 +135,7 @@ export function update(ctx: ClientContext) {
 					`${result}<br>${tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${tech}`}`,
 				''
 			);
-			$(ship_ui[id])
+			$(context.ships.get(id))
 				.find('.add tool-tip')
 				.html(
 					`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
@@ -130,37 +147,37 @@ export function update(ctx: ClientContext) {
 			for (const t in ship.requires) {
 				if (isResearchLocked(t as ResearchID, player)) locked = true;
 			}
-			$(ship_ui[id]).find('.locked')[locked ? 'show' : 'hide']();
+			$(context.ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
 		}
 
-		for (const waypoint of ctx.playerSystem.waypoints) {
+		for (const waypoint of ctx.player.system.waypoints) {
 			waypoint.updateVisibility();
 		}
 		$('#map-markers').attr(
 			'transform',
-			`translate(${markerContext.svgX} ${markerContext.svgY}) \
-			rotate(${toDegrees(markerContext.rotation)}) \
-			scale(${markerContext.scale})`
+			`translate(${context.map.svgX} ${context.map.svgY}) \
+			rotate(${toDegrees(context.map.rotation)}) \
+			scale(${context.map.scale})`
 		);
 		$('#map-info').html(`
-			<span>(${markerContext.x.toFixed(0)}, ${markerContext.y.toFixed(0)}) ${toDegrees(markerContext.rotation)}°</span><br>
-			<span>${markerContext.scale.toFixed(1)}x</span>
+			<span>(${context.map.x.toFixed(0)}, ${context.map.y.toFixed(0)}) ${toDegrees(context.map.rotation)}°</span><br>
+			<span>${context.map.scale.toFixed(1)}x</span>
 		`);
 		$('#system-info').html(`
-			<span><strong>${ctx.playerSystem.name}</strong></span><br>
-			<span>${ctx.playerSystem.connections.length} hyperspace connection(s)</span>
+			<span><strong>${ctx.player.system.name}</strong></span><br>
+			<span>${ctx.player.system.connections.length} hyperspace connection(s)</span>
 		`);
-		for (const [id, node] of ctx.playerSystem.nodes) {
-			if (!markers.has(id) && Marker.supportsNodeType(node.nodeType)) {
+		for (const [id, node] of ctx.player.system.nodes) {
+			if (!context.markers.has(id) && Marker.supportsNodeType(node.nodeType)) {
 				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
 					continue;
 				}
-				const marker = new Marker(node, markerContext);
-				markers.set(id, marker);
+				const marker = new Marker(node, ctx);
+				context.markers.set(id, marker);
 			}
 		}
 
-		for (const marker of markers.values()) {
+		for (const marker of context.markers.values()) {
 			marker.update();
 		}
 

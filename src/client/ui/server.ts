@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import { confirm } from '../utils';
 import type { Server } from '../Server';
-import type { ClientContext } from '../contexts';
+import type { ClientContext } from '../client';
 
 function connectAndStartPlaying(server: Server, context: ClientContext) {
 	server.connect();

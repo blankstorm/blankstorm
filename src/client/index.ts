@@ -35,8 +35,9 @@ import { settings } from './settings';
 import { locales } from './locales';
 import type { Locale } from './locales';
 import { ScreenshotUI } from './ui/screenshot';
-import type { ClientContext, PlayerContext } from './contexts';
+import type { PlayerContext } from './contexts';
 import type { ClientSystem } from './ClientSystem';
+import { ClientContext } from './client';
 
 //Set the title
 document.title = 'Blankstorm ' + versions.get(version).text;
@@ -85,6 +86,7 @@ let current: ClientLevel;
 export const context: ClientContext = {
 	log,
 	player,
+	ui: ui.context,
 
 	get current() {
 		return current;
@@ -137,7 +139,7 @@ export const context: ClientContext = {
 		});
 		level.on('player.items.change', async (player, items: ItemCollection) => {
 			for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
-				$(ui.item_ui[id]).find('.count').text(minimize(amount));
+				$(context.ui.items.get(id)).find('.count').text(minimize(amount));
 			}
 		});
 		isPaused = false;
@@ -224,22 +226,22 @@ $('#map,#map-markers').on('keydown', e => {
 		max = config.system_generation.max_size / 2;
 	switch (e.key) {
 		case settings.get<Keybind>('map_move_left').key:
-			ui.markerContext.x = Math.max(ui.markerContext.x - speed, -max);
+			context.ui.map.x = Math.max(context.ui.map.x - speed, -max);
 			break;
 		case settings.get<Keybind>('map_move_right').key:
-			ui.markerContext.x = Math.min(ui.markerContext.x + speed, max);
+			context.ui.map.x = Math.min(context.ui.map.x + speed, max);
 			break;
 		case settings.get<Keybind>('map_move_up').key:
-			ui.markerContext.y = Math.max(ui.markerContext.y - speed, -max);
+			context.ui.map.y = Math.max(context.ui.map.y - speed, -max);
 			break;
 		case settings.get<Keybind>('map_move_down').key:
-			ui.markerContext.y = Math.min(ui.markerContext.y + speed, max);
+			context.ui.map.y = Math.min(context.ui.map.y + speed, max);
 			break;
 	}
 	ui.update(context);
 });
 $('#map,#map-markers').on('wheel', ({ originalEvent: evt }: JQuery.TriggeredEvent & { originalEvent: WheelEvent }) => {
-	ui.markerContext.scale = Math.min(Math.max(ui.markerContext.scale - Math.sign(evt.deltaY) * 0.1, 0.5), 5);
+	context.ui.map.scale = Math.min(Math.max(context.ui.map.scale - Math.sign(evt.deltaY) * 0.1, 0.5), 5);
 	ui.update(context);
 });
 

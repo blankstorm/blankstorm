@@ -4,7 +4,7 @@ import type { Planet } from '../../core/nodes/Planet';
 import type { Ship } from '../../core/nodes/Ship';
 import { toDegrees } from '../../core/utils';
 import type { Waypoint } from '../waypoint';
-import type { MarkerContext } from '../contexts';
+import type { ClientContext } from '../client';
 import { $svg, getColorForBiome } from '../utils';
 import type { ClientLevel } from '../ClientLevel';
 
@@ -25,11 +25,11 @@ export class Marker {
 			case 'planet':
 				return getColorForBiome((this.target as unknown as Planet).biome);
 			case 'ship':
-				return this.context.client.current.activePlayer == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
+				return this.context.ui.client.current.activePlayer == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
 		}
 	}
 
-	constructor(public readonly target: Node, public context: MarkerContext) {
+	constructor(public readonly target: Node, public context: ClientContext) {
 		this.gui.attr('id', this.markerID).addClass('map-marker').appendTo('#map-markers');
 		let internalMarker: JQuery<SVGElement>;
 		switch (target.nodeType) {

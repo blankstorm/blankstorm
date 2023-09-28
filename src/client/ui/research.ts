@@ -1,7 +1,7 @@
 import type { Research } from '../../core/generic/research';
 import { locales } from '../locales';
 import $ from 'jquery';
-import type { ClientContext } from '../contexts';
+import type { ClientContext } from '../client';
 
 export class ResearchUI extends HTMLDivElement {
 	constructor(research: Research, context: ClientContext) {
@@ -15,7 +15,7 @@ export class ResearchUI extends HTMLDivElement {
 		$(this)
 			.find('.upgrade')
 			.on('click', async () => {
-				await context.playerSystem.tryPlayerAction(context.playerID, 'do_research', research);
+				await context.player.system.tryPlayerAction(context.player.id, 'do_research', research);
 			});
 
 		$(this).appendTo('div.lab');

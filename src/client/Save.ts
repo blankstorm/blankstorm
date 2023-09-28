@@ -10,7 +10,7 @@ import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
 import { ClientLevel } from './ClientLevel';
 import type { SerializedClientLevel } from './ClientLevel';
-import type { ClientContext } from './contexts';
+import type { ClientContext } from './client';
 
 export class SaveMap extends Map<string, Save> {
 	_map: FolderMap;

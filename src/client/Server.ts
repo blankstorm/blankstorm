@@ -10,7 +10,7 @@ import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
 import { ClientLevel } from './ClientLevel';
 import EventEmitter from 'eventemitter3';
-import type { ClientContext } from './contexts';
+import type { ClientContext } from './client';
 
 export class ServerMap extends Map<string, Server> {
 	private _map: JSONFileMap;
