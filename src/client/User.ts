@@ -4,7 +4,6 @@ import { ClientSystem } from './ClientSystem';
 import { Client } from './client';
 
 export class User implements Account {
-
 	id = '_guest_';
 	username = '[guest]';
 	oplvl = 0;

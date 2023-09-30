@@ -1,16 +1,12 @@
 import type { BuildOptions } from '../.build/options';
-
-interface CliOptions {
-	'bs-debug': boolean;
-	'bs-open-devtools': boolean;
-}
+import type { AppContext } from './client/contexts';
 
 declare global {
 	const $build: BuildOptions;
-	const app: {
-		require: typeof require;
-		getCliOptions(): Promise<CliOptions>;
-	};
+	const app: AppContext;
+	interface Performance {
+		memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number; totalJSHeapSize: number };
+	}
 }
 
 export {};

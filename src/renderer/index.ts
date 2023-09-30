@@ -9,6 +9,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Path } from '../core/Path';
 import type { SerializedSystem } from '../core/System';

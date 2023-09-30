@@ -1,21 +1,30 @@
 import $ from 'jquery';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { account } from '@blankstorm/api';
 import { items } from '../../core/generic/items';
 import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
 import type { ResearchID } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
 import type { Player } from '../../core/nodes/Player';
-import { config } from '../../core/metadata';
-import { toDegrees } from '../../core/utils';
-import { settings } from '../settings';
+import { GAME_URL, config, version, versions } from '../../core/metadata';
+import { isHex, isJSON, toDegrees } from '../../core/utils';
+import { Entity } from '../../core/nodes/Entity';
+import { Keybind, settings } from '../settings';
 import { locales } from '../locales';
 import { ItemUI } from './item';
-import { minimize, $svg } from '../utils';
+import { minimize, $svg, upload } from '../utils';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 import { Marker } from './marker';
-import type { ClientContext } from '../client';
+import type { Client, ClientContext } from '../client';
 import { ClientSystem } from '../ClientSystem';
-import type { Waypoint } from '../waypoint';
+import { Waypoint } from '../waypoint';
+import { Server } from '../Server';
+import { Save, LiveSave } from '../Save';
+import { ClientLevel } from '../ClientLevel';
+import { playsound } from '../audio';
+import * as renderer from '../../renderer';
 
 export interface Context {
 	items: Map<string, ItemUI>;
@@ -54,6 +63,8 @@ export const context: Context = {
 };
 
 export function init(client: ClientContext) {
+	document.title = 'Blankstorm ' + versions.get(version).text;
+	$('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
 	context.client = client;
 	for (const [id, item] of Object.entries(items)) {
 		context.items.set(id, new ItemUI(item, client));
@@ -241,4 +252,348 @@ export function getLast() {
 
 export function setLast(value: string) {
 	lastUI = value;
+}
+
+let strobeInterval = null;
+function strobe(rate) {
+	if (strobeInterval) {
+		clearInterval(strobeInterval);
+		$(':root').css('--hue', 200);
+		strobeInterval = null;
+	} else {
+		strobeInterval = setInterval(() => {
+			let hue = +$(':root').css('--hue');
+			if (hue > 360) hue -= 360;
+			$(':root').css('--hue', ++hue);
+		}, 1000 / rate);
+	}
+}
+
+export function registerListeners(client: Client) {
+	let cli: { [key: string]: any };
+	$('#main .sp').on('click', () => {
+		$('#main').hide();
+		$('#save-list').show();
+	});
+	$('#main .mp').on('click', () => {
+		if (client.isMultiplayerEnabled) {
+			$('#main').hide();
+			$('#server-list').show();
+			for (const server of client.servers.values()) {
+				server.ping();
+			}
+		} else {
+			$<HTMLDialogElement>('#login')[0].showModal();
+		}
+	});
+	$('#main .options').on('click', () => {
+		setLast('#main');
+		$('#settings').show();
+		update(client);
+	});
+	$('#main .exit').on('click', () => {
+		close();
+	});
+	$('.playable-list .back').on('click', () => {
+		$('.playable-list').hide();
+		$('#main').show();
+	});
+	$('#save-list .new').on('click', () => {
+		$<HTMLDialogElement>('#save-new')[0].showModal();
+	});
+	$('#server-list .new').on('click', () => {
+		$('#server-dialog').find('.name').val('');
+		$('#server-dialog').find('.url').val('');
+		$<HTMLDialogElement>('#server-dialog')[0].showModal();
+	});
+	$('#server-dialog .save').on('click', () => {
+		const name = $('#server-dialog .name').val() as string,
+			url = $('#server-dialog .url').val() as string,
+			id = Server.GetID(url);
+		const server = client.servers.has(id) ? client.servers.get(id) : new Server(url, name, client);
+		if (client.servers.has(id)) {
+			server.name = name;
+			server._url = url;
+		}
+		update(client);
+		$<HTMLDialogElement>('#server-dialog')[0].close();
+	});
+	$('#server-dialog .cancel').on('click', () => {
+		$<HTMLDialogElement>('#server-dialog')[0].close();
+	});
+	$('#save-edit .save').on('click', () => {
+		const id = $('#save-edit .id').val() as string,
+			name = $('#save-edit .name').val() as string;
+		const save = client.saves.get(id);
+		if (client.saves.has(id)) {
+			save.data.name = name;
+		}
+		update(client);
+		$<HTMLDialogElement>('#save-edit')[0].close();
+	});
+	$('#save-edit .cancel').on('click', () => {
+		$<HTMLDialogElement>('#save-edit')[0].close();
+	});
+	$('#save-list button.upload').on('click', async () => {
+		const files = await upload('.json');
+		const text = await files[0].text();
+		if (isJSON(text)) {
+			new Save(JSON.parse(text), client);
+		} else {
+			alert(`Can't load save: not JSON.`);
+		}
+	});
+	$('#server-list button.refresh').on('click', () => {
+		client.servers.forEach(server => server.ping());
+	});
+	$('#connect button.back').on('click', () => {
+		$('#server-list').show();
+		$('#connect').hide();
+	});
+	$('#save-new button.back').on('click', () => {
+		$<HTMLDialogElement>('#save-new')[0].close();
+	});
+	$('#save-new .new').on('click', async () => {
+		$<HTMLDialogElement>('#save-new')[0].close();
+		const name = $('#save-new .name').val() as string;
+		const live = await LiveSave.CreateDefault(name, client.player.id, client.player.username);
+		new Save(live.toJSON(), client);
+		client.startPlaying(live);
+	});
+	$('#pause .resume').on('click', () => {
+		$('#pause').hide();
+		$('canvas.game').trigger('focus');
+		client.unpause();
+	});
+	$('#pause .save').on('click', client.flushSave.bind(client));
+	$('#pause .options').on('click', () => {
+		setLast('#pause');
+		$('#pause').hide();
+		$('#settings').show();
+	});
+	$('#pause .quit').on('click', () => {
+		client.pause();
+		$('.ingame').hide();
+		if (client.current.isServer) {
+			client.servers.get(client.servers.selected).disconnect();
+		} else {
+			client.saves.selected = null;
+			$('#main').show();
+		}
+	});
+	$('#login')
+		.find('.cancel')
+		.on('click', e => {
+			e.preventDefault();
+			$('#login').find('.error').hide();
+			$<HTMLDialogElement>('#login')[0].close();
+		});
+	$('#login')
+		.find('button.login')
+		.on('click', async e => {
+			e.preventDefault();
+			try {
+				const email = $('#login').find('input.email').val() as string;
+				const password = $('#login').find('input.password').val() as string;
+				const result = await account.login(email, password);
+				document.cookie = `token=${result.token}`;
+				$('#login').find('.error').hide().text('');
+				$<HTMLDialogElement>('#login')[0].close();
+				await alert(`Welcome, ${result.username}! ` + locales.text`menu.logged_in.message`);
+				location.reload();
+			} catch (e) {
+				$('#login').find('.error').text(e.message).show();
+			}
+		});
+	$('#ingame-temp-menu div.nav button').on('click', e => {
+		const section = $(e.target).closest('button[section]').attr('section');
+		$(`#ingame-temp-menu > div:not(.nav)`).hide();
+		if (section == 'inventory') {
+			$('div.item-bar').show();
+		}
+		$('#ingame-temp-menu > div.' + section).css('display', 'grid');
+	});
+	$('#map button.waypoints').on('click', () => {
+		$('#waypoint-list').show();
+	});
+	$('#waypoint-list button.back').on('click', () => {
+		$('#waypoint-list').hide();
+	});
+	$('#waypoint-list button.new').on('click', () => {
+		const dialog = $<HTMLDialogElement>('#waypoint-dialog');
+		dialog.find('input').val('');
+		dialog[0].showModal();
+	});
+	$('#settings-nav button:not(.back)').on('click', e => {
+		const target = $(e.target),
+			button = target.is('button') ? target : target.parent('button');
+		$('#settings > div:not(#settings-nav)')
+			.hide()
+			.filter(`[setting-section=${button.attr('setting-section')}]`)
+			.show();
+	});
+
+	$('#settings button.back').on('click', () => {
+		$('#settings').hide();
+		$(getLast()).show();
+		update(client);
+	});
+	$('#settings div.general input').on('change', () => update(client));
+	$<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
+		const lang = e.target.value;
+		if (locales.has(lang)) {
+			locales.load(lang);
+		} else {
+			alert('That locale is not loaded.');
+			client.log.warn(`Failed to load locale ${lang}`);
+		}
+	});
+	$('#waypoint-dialog .save').on('click', () => {
+		const wpd = $<HTMLDialogElement & { _waypoint?: Waypoint }>('#waypoint-dialog');
+		const x = +wpd.find('[name=x]').val(),
+			y = +wpd.find('[name=y]').val(),
+			z = +wpd.find('[name=z]').val(),
+			color = wpd.find('[name=color]').val() as string,
+			name = wpd.find('[name=name]').val() as string;
+		if (!isHex(color.slice(1))) {
+			alert(locales.text`error.waypoint.color`);
+		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
+			alert(locales.text`error.waypoint.range`);
+		} else {
+			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, client.current.getNodeSystem(client.current.activePlayer));
+			waypoint.name = name;
+			waypoint.color = Color3.FromHexString(color);
+			waypoint.position = new Vector3(x, y, z);
+			$<HTMLDialogElement>('#waypoint-dialog')[0].close();
+		}
+	});
+	$('#waypoint-dialog .cancel').on('click', () => {
+		$<HTMLDialogElement>('#waypoint-dialog')[0].close();
+	});
+	$('html')
+		.on('keydown', e => {
+			switch (e.key) {
+				case 'F8':
+					e.preventDefault();
+					open(`${GAME_URL}/bugs/new`, 'target=_blank');
+					break;
+				case 'b':
+					if (e.ctrlKey) strobe(100);
+					break;
+			}
+		})
+		.on('mousemove', e => {
+			$('tool-tip').each((i, tooltip) => {
+				const computedStyle = getComputedStyle(tooltip);
+				const left = (settings.get('font_size') as number) + e.clientX,
+					top = (settings.get('font_size') as number) + e.clientY;
+				$(tooltip).css({
+					left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
+					top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height)),
+				});
+			});
+		});
+	$('#chat-input').on('keydown', e => {
+		if (cli.line == 0) cli.currentInput = $('#chat-input').val() as string;
+		switch (e.key) {
+			case 'Escape':
+				client.toggleChatUI();
+				break;
+			case 'ArrowUp':
+				if (cli.line > -cli.prev.length) $('#chat-input').val(cli.prev.at(--cli.line));
+				if (cli.line == -cli.prev.length) if (++cli.counter == 69) $('#chat-input').val('nice');
+				break;
+			case 'ArrowDown':
+				cli.counter = 0;
+				if (cli.line < 0) ++cli.line == 0 ? $('#chat-input').val(cli.currentInput) : $('#chat-input').val(cli.prev.at(cli.line));
+				break;
+			case 'Enter':
+				cli.counter = 0;
+				if (/[^\s/]/.test($('#chat-input').val() as string)) {
+					if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#chat-input').val());
+					if ($('#chat-input').val()[0] == '/') client.sendChatMessage(client.runCommand(($('#chat-input').val() as string).slice(1)) as string);
+					else
+						client.current.isServer
+							? client.servers.get(client.servers.selected).socket.emit('chat', $('#chat-input').val())
+							: client.player.chat($('#chat-input').val() as string);
+					$('#chat-input').val('');
+					client.toggleChatUI();
+					cli.line = 0;
+				}
+				break;
+		}
+	});
+	$('canvas.game').on('focus', () => {
+		renderer.getCamera().attachControl($('canvas.game'), true);
+	});
+	$('canvas.game').on('click', e => {
+		if (!client.isPaused) {
+			renderer.getCamera().attachControl($('canvas.game'), true);
+		}
+
+		if (client.current instanceof ClientLevel) {
+			renderer.handleCanvasClick(e, renderer.scene.getNodeById(client.player.id));
+		}
+		update(client);
+	});
+	$('canvas.game').on('contextmenu', e => {
+		if (client.current instanceof ClientLevel) {
+			const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(client.player.id));
+			for (const { entityRenderer, point } of data) {
+				const entity = client.current.getNodeSystem(client.current.activePlayer).getNodeByID(entityRenderer.id) as Entity;
+				entity.moveTo(point, false);
+			}
+		}
+	});
+	$('canvas.game').on('keydown', e => {
+		switch (e.key) {
+			case 'F3':
+				$('#debug').toggle();
+			case 'F1':
+				e.preventDefault();
+				$('#hud,.marker').toggle();
+				break;
+			case 'F4':
+				e.preventDefault();
+				client.hitboxesEnabled = !client.hitboxesEnabled;
+				renderer.setHitboxes(client.hitboxesEnabled);
+				break;
+			case 'Tab':
+				e.preventDefault();
+				if (client.current.isServer) $('#tablist').show();
+				break;
+		}
+	});
+	$('canvas.game,.game-ui,#hud,#tablist').on('keydown', e => {
+		for (const setting of [...settings.items.values()].filter(item => item.type == 'keybind')) {
+			const bind = setting.value as Keybind;
+			if (e.key == bind.key && (!bind.alt || e.altKey) && (!bind.ctrl || e.ctrlKey)) setting.emit('trigger');
+		}
+	});
+	$('canvas.game').on('keyup', e => {
+		switch (e.key) {
+			case 'Tab':
+				e.preventDefault();
+				if (client.current.isServer) $('#tablist').hide();
+				break;
+		}
+	});
+
+	$('#ingame-temp-menu')
+		.on('keydown', e => {
+			if (e.key == settings.get('toggle_temp_menu') || e.key == 'Escape') {
+				client.changeUI('#ingame-temp-menu');
+			}
+		})
+		.on('click', () => update(client));
+	$('canvas.game,#pause,#hud').on('keydown', e => {
+		if (e.key == 'Escape') {
+			client.changeUI('#pause', true);
+			client.isPaused ? client.unpause() : client.pause();
+		}
+		update(client);
+	});
+	$('button').on('click', () => {
+		playsound('ui', +settings.get('sfx'));
+	});
 }

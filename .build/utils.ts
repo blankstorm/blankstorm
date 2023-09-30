@@ -3,6 +3,7 @@ import * as fs from 'node:fs';
 import pkg from '../package.json' assert { type: 'json' };
 
 export interface VersionInfo {
+	fullVersion: string;
 	version: string;
 	subversion: string;
 	type?: 'indev' | 'alpha' | 'beta' | 'prerelease' | 'release' | string;
@@ -13,10 +14,11 @@ export interface VersionInfo {
 		shortVersionWindows: string;
 	};
 }
-export function getVersionInfo(): VersionInfo {
-	const { groups: match } = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(pkg.version);
-	const shortVersion = match.type ? match.version : '0.' + match.version;
+export function getVersionInfo(fullVersion: string = pkg.version): VersionInfo {
+	const { groups: match } = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion);
+	const shortVersion = match.type ? '0.' + match.subversion : match.version + '.0';
 	return {
+		fullVersion,
 		version: match.version,
 		subversion: match.subversion,
 		type: match.type,

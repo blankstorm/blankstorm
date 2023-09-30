@@ -13,7 +13,7 @@ import glslPlugin from 'esbuild-plugin-glslx';
 import archiver from 'archiver';
 import { execSync } from 'node:child_process';
 const dirname = path.resolve(fileURLToPath(import.meta.url), '..', '..');
-const { display: displayVersion, electronBuilder: electronBuilderVersions } = getVersionInfo();
+const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
 
 const options = {
 		verbose: false,
@@ -115,9 +115,9 @@ const esbuildConfig: esbuild.BuildOptions = {
 					try {
 						//build assets
 						for (const f of fs.readdirSync(path.join(dirname, 'assets'))) {
+							console.log('Exporting assets: ' + f);
 							if (f == 'models') {
-								execSync('bash ' + path.join(dirname, 'assets/models/export.sh'), { stdio: 'inherit' });
-								continue;
+								execSync('bash ' + path.join(dirname, 'assets/models/export.sh'), options.verbose ? { stdio: 'inherit' } : null);								continue;
 							}
 
 							fs.cpSync(path.join(dirname, 'assets', f), path.join(asset_path, f), { recursive: true });
@@ -148,22 +148,23 @@ const esbuildConfig: esbuild.BuildOptions = {
 								console.log('Compressed: ' + platform);
 							}
 							renameOutput({
-								[`Blankstorm Client Setup ${pkg.version}.exe`]: `blankstorm-client-${displayVersion}.exe`,
-								[`Blankstorm Client-${pkg.version}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
-								[`blankstorm-client_${pkg.version}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
-								[`Blankstorm Client-${pkg.version}.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
-								[`Blankstorm Client-${pkg.version}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
+								[`Blankstorm Client Setup ${fullVersion}.exe`]: `blankstorm-client-${displayVersion}.exe`,
+								[`Blankstorm Client-${fullVersion}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
+								[`blankstorm-client_${fullVersion}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
+								[`Blankstorm Client-${fullVersion}.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
+								[`Blankstorm Client-${fullVersion}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
 							});
 							deleteOutput([
+								'__snap-amd64',
 								'builder-debug.yml',
 								'builder-effective-config.yaml',
 								'latest.yml',
 								'latest-mac.yml',
 								'.icon-ico',
 								'tmp',
-								`Blankstorm Client Setup ${pkg.version}.exe.blockmap`,
-								`Blankstorm Client-${pkg.version}-mac.zip.blockmap`,
-								`Blankstorm Client-${pkg.version}.dmg.blockmap`,
+								`Blankstorm Client Setup ${fullVersion}.exe.blockmap`,
+								`Blankstorm Client-${fullVersion}-mac.zip.blockmap`,
+								`Blankstorm Client-${fullVersion}.dmg.blockmap`,
 							]);
 						}
 					} catch (e) {

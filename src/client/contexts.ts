@@ -7,3 +7,13 @@ export interface PlayerContext extends Account {
 	chat(...msg: string[]): unknown;
 	data(): Player;
 }
+
+export interface CliOptions {
+	'bs-debug': boolean;
+	'bs-open-devtools': boolean;
+}
+
+export interface AppContext {
+	require: typeof require;
+	getCliOptions(): Promise<CliOptions>;
+}
