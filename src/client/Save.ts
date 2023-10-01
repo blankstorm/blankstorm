@@ -10,14 +10,14 @@ import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
 import { ClientLevel } from './ClientLevel';
 import type { SerializedClientLevel } from './ClientLevel';
-import type { ClientContext } from './client';
+import type { Client } from './client';
 
 export class SaveMap extends Map<string, Save> {
 	_map: FolderMap;
 	selected?: string;
 	current?: LiveSave;
 	activePlayer: string;
-	constructor(path: string, public readonly client: ClientContext) {
+	constructor(path: string, public readonly client: Client) {
 		super();
 		this._map = new FolderMap(path, fs, '.json');
 	}
@@ -74,7 +74,7 @@ export class Save {
 	get activePlayer(): string {
 		return this.store.activePlayer;
 	}
-	constructor(data: SerializedClientLevel, public client: ClientContext) {
+	constructor(data: SerializedClientLevel, public client: Client) {
 		this.#data = data;
 		if (client.saves) {
 			client.saves.set(this.id, this);

@@ -3,10 +3,10 @@ import $ from 'jquery';
 import { genericShips, shipTypes } from '../../core/generic/ships';
 import type { ShipType } from '../../core/generic/ships';
 import { locales } from '../locales';
-import type { ClientContext } from '../client';
+import type { Client } from '../client';
 
 export class BerthUI extends HTMLDivElement {
-	constructor(berth: Berth, context: ClientContext) {
+	constructor(berth: Berth, context: Client) {
 		super();
 		$(this).addClass('content bg-transparent');
 		$(`<p></p>`)

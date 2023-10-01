@@ -36,21 +36,8 @@ interface ClientPlayerContext extends PlayerContext {
 	_client: Client;
 }
 
-export interface ClientContext {
-	log: Logger;
-	startPlaying(level: ClientLevel): boolean;
-	stopPlaying(level: ClientLevel): boolean;
-	saves: SaveMap;
-	servers: ServerMap;
-	sendChatMessage(...msg: string[]): unknown;
-	get current(): ClientLevel;
-	set current(current: ClientLevel);
-	player: PlayerContext;
-	ui: ui.Context;
-}
-
-export class Client implements ClientContext {
-	public readonly log: Logger = new Logger();
+export class Client {
+	public readonly logger: Logger = new Logger();
 
 	protected _saves: SaveMap;
 	public get saves(): SaveMap {
@@ -128,7 +115,7 @@ export class Client implements ClientContext {
 	 * @param path The path to the client's data directory
 	 */
 	constructor(public readonly path: string, public readonly app: AppContext) {
-		this.log.attachConsole(appConsole);
+		this.logger.attachConsole(appConsole);
 	}
 
 	public flushSave() {
@@ -184,13 +171,13 @@ export class Client implements ClientContext {
 
 	private _initLog(message: string): void {
 		$('#loading_cover p').text(message);
-		this.log.log('init: ' + message);
+		this.logger.log('init: ' + message);
 	}
 
 	private async _init(): Promise<void> {
 		this._initLog('Initializing...');
 		if (this._isInitialized) {
-			this.log.warn('Tried to initialize context that is already initialized.');
+			this.logger.warn('Tried to initialize context that is already initialized.');
 			return;
 		}
 
@@ -281,7 +268,7 @@ export class Client implements ClientContext {
 			}
 
 			const mods = fs.readdirSync('mods');
-			this.log.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
+			this.logger.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
 		} catch (err) {
 			throw new Error('Failed to load mods: ' + err, { cause: err.stack });
 		}
@@ -297,7 +284,7 @@ export class Client implements ClientContext {
 
 		this._initLog('Authenticating...');
 		if (!navigator.onLine) {
-			this.log.warn('Could not authenitcate (offline)');
+			this.logger.warn('Could not authenitcate (offline)');
 		}
 		if (cookies.has('token') && navigator.onLine) {
 			try {
@@ -319,7 +306,7 @@ export class Client implements ClientContext {
 		ui.update(this);
 		this._initLog('Done!');
 		$('#loading_cover').fadeOut(1000);
-		this.log.log('Client loaded successful');
+		this.logger.log('Client loaded successful');
 		renderer.engine.runRenderLoop(this._loop.bind(this));
 		setInterval(() => {
 			if (this.current instanceof ClientLevel && !this.isPaused) {
@@ -336,7 +323,7 @@ export class Client implements ClientContext {
 			await this._init();
 			return;
 		} catch (e) {
-			this.log.error('Client initialization failed: ' + (e.cause ?? e.stack));
+			this.logger.error('Client initialization failed: ' + (e.cause ?? e.stack));
 			await alert('Client initialization failed: ' + fixPaths(e.cause ?? e.stack));
 			if (!cliOptions?.['bs-debug']) {
 				close();
@@ -430,7 +417,7 @@ export class Client implements ClientContext {
 			}
 		});
 		level.on('player.levelup', async () => {
-			this.log.debug('Triggered player.levelup (unimplemented)');
+			this.logger.debug('Triggered player.levelup (unimplemented)');
 		});
 		level.on('player.death', async () => {
 			renderer.getCamera().reset();
@@ -463,12 +450,12 @@ export class Client implements ClientContext {
 
 	setInitText(text: string): void {
 		$('#loading_cover p').text(text);
-		this.log.log('init: ' + text);
+		this.logger.log('init: ' + text);
 	}
 
 	sendChatMessage(...msg: string[]): void {
 		for (const m of msg) {
-			this.log.log(`(chat) ${m}`);
+			this.logger.log(`(chat) ${m}`);
 			$(`<li bg=none></li>`)
 				.text(m)
 				.appendTo('#chat')

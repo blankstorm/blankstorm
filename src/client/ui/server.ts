@@ -1,15 +1,15 @@
 import $ from 'jquery';
 import { confirm } from '../utils';
 import type { Server } from '../Server';
-import type { ClientContext } from '../client';
+import type { Client } from '../client';
 
-function connectAndStartPlaying(server: Server, context: ClientContext) {
+function connectAndStartPlaying(server: Server, context: Client) {
 	server.connect();
 	context.startPlaying(server.level);
 }
 
 export class ServerListItem extends HTMLLIElement {
-	constructor(server: Server, context: ClientContext) {
+	constructor(server: Server, context: Client) {
 		super();
 		$(this)
 			.css({

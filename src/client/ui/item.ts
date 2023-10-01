@@ -1,10 +1,10 @@
 import $ from 'jquery';
 import type { Item } from '../../core/generic/items';
 import { locales } from '../locales';
-import type { ClientContext } from '../client';
+import type { Client } from '../client';
 
 export class ItemUI extends HTMLDivElement {
-	constructor(item: Item, context: ClientContext) {
+	constructor(item: Item, context: Client) {
 		super();
 
 		$('<span></span>')

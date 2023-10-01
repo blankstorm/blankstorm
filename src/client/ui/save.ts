@@ -2,10 +2,10 @@ import $ from 'jquery';
 import { alert, confirm, download } from '../utils';
 import { versions } from '../../core/metadata';
 import type { Save } from '../Save';
-import type { ClientContext } from '../client';
+import type { Client } from '../client';
 
 export class SaveListItem extends HTMLLIElement {
-	constructor(save: Save, context: ClientContext) {
+	constructor(save: Save, context: Client) {
 		super();
 
 		const loadAndPlay = async () => {

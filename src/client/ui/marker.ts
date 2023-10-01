@@ -4,7 +4,7 @@ import type { Planet } from '../../core/nodes/Planet';
 import type { Ship } from '../../core/nodes/Ship';
 import { toDegrees } from '../../core/utils';
 import type { Waypoint } from '../waypoint';
-import type { ClientContext } from '../client';
+import type { Client } from '../client';
 import { $svg, getColorForBiome } from '../utils';
 import type { ClientLevel } from '../ClientLevel';
 
@@ -29,7 +29,7 @@ export class Marker {
 		}
 	}
 
-	constructor(public readonly target: Node, public context: ClientContext) {
+	constructor(public readonly target: Node, public context: Client) {
 		this.gui.attr('id', this.markerID).addClass('map-marker').appendTo('#map-markers');
 		let internalMarker: JQuery<SVGElement>;
 		switch (target.nodeType) {

@@ -10,12 +10,12 @@ import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
 import { ClientLevel } from './ClientLevel';
 import EventEmitter from 'eventemitter3';
-import type { ClientContext } from './client';
+import type { Client } from './client';
 
 export class ServerMap extends Map<string, Server> {
 	private _map: JSONFileMap;
 	selected?: string;
-	constructor(path: string, context: ClientContext) {
+	constructor(path: string, context: Client) {
 		super();
 		this._map = new JSONFileMap(path, fs);
 		for (const [id, data] of this._map._map) {
@@ -53,7 +53,7 @@ export class Server extends EventEmitter {
 	gui: JQuery<ServerListItem>;
 	pingInfo?: ServerPingInfo;
 
-	constructor(public _url: string, public _name: string, public context: ClientContext) {
+	constructor(public _url: string, public _name: string, public context: Client) {
 		super();
 		this.gui = $<ServerListItem>(new ServerListItem(this, context));
 		this.level.isServer = true;
@@ -203,7 +203,7 @@ export class Server extends EventEmitter {
 		return `${url.protocol.slice(0, -1)}_${url.hostname}_${url.port}`;
 	}
 
-	static FromJSON(data: SerializedServer, context: ClientContext): Server {
+	static FromJSON(data: SerializedServer, context: Client): Server {
 		return new Server(data.url, data.name, context);
 	}
 }

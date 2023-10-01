@@ -1,10 +1,10 @@
 import type { GenericShip } from '../../core/generic/ships';
 import { locales } from '../locales';
 import $ from 'jquery';
-import type { ClientContext } from '../client';
+import type { Client } from '../client';
 
 export class ShipUI extends HTMLDivElement {
-	constructor(ship: GenericShip, context: ClientContext) {
+	constructor(ship: GenericShip, context: Client) {
 		super();
 
 		$(`

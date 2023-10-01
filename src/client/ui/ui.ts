@@ -17,7 +17,7 @@ import { minimize, $svg, upload } from '../utils';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 import { Marker } from './marker';
-import type { Client, ClientContext } from '../client';
+import type { Client } from '../client';
 import { ClientSystem } from '../ClientSystem';
 import { Waypoint } from '../waypoint';
 import { Server } from '../Server';
@@ -39,7 +39,7 @@ export interface Context {
 		rotation: number;
 		scale: number;
 	};
-	client: ClientContext;
+	client: Client;
 }
 
 export const context: Context = {
@@ -62,7 +62,7 @@ export const context: Context = {
 	client: null,
 };
 
-export function init(client: ClientContext) {
+export function init(client: Client) {
 	document.title = 'Blankstorm ' + versions.get(version).text;
 	$('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
 	context.client = client;
@@ -99,7 +99,7 @@ export function init(client: ClientContext) {
 	}
 }
 
-export function update(ctx: ClientContext) {
+export function update(ctx: Client) {
 	if (ctx.player.system instanceof ClientSystem) {
 		const player = ctx.player.system.level.getNodeSystem(ctx.player.id).getNodeByID<Player>(ctx.player.id);
 		$('#waypoint-list div').detach();
@@ -445,7 +445,7 @@ export function registerListeners(client: Client) {
 			locales.load(lang);
 		} else {
 			alert('That locale is not loaded.');
-			client.log.warn(`Failed to load locale ${lang}`);
+			client.logger.warn(`Failed to load locale ${lang}`);
 		}
 	});
 	$('#waypoint-dialog .save').on('click', () => {
