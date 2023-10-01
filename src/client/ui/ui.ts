@@ -547,20 +547,25 @@ export function registerListeners(client: Client) {
 		if (!client.isPaused) {
 			renderer.getCamera().attachControl($('canvas.game'), true);
 		}
-
-		if (client.current instanceof ClientLevel) {
-			renderer.handleCanvasClick(e, renderer.scene.getNodeById(client.player.id));
+		if (!(client.current instanceof ClientLevel)) {
+			client.logger.warn('No active client level');
+			return;
 		}
+		renderer.handleCanvasClick(e, client.player.id);
 		update(client);
 	});
 	$('canvas.game').on('contextmenu', e => {
-		if (client.current instanceof ClientLevel) {
-			const data = renderer.handleCanvasRightClick(e, renderer.scene.getNodeById(client.player.id));
-			for (const { entityRenderer, point } of data) {
-				const entity = client.current.getNodeSystem(client.current.activePlayer).getNodeByID(entityRenderer.id) as Entity;
-				entity.moveTo(point, false);
-			}
+		if (client.player.id != client.current.activePlayer) {
+			client.logger.warn(`Mismatch: The client's player ID is ${client.player.id} but the current active player ID is ${client.current.activePlayer}`);
+			return;
 		}
+		if (!(client.current instanceof ClientLevel)) {
+			client.logger.warn('No active client level');
+			return;
+		}
+		const data = renderer.handleCanvasRightClick(e, client.player.id);
+		const system = client.current.getNodeSystem(client.current.activePlayer);
+		system.tryAction(client.player.id, 'move', data);
 	});
 	$('canvas.game').on('keydown', e => {
 		switch (e.key) {

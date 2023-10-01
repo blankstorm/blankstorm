@@ -15,7 +15,7 @@ export class ShipUI extends HTMLDivElement {
 		$(this)
 			.find('.add')
 			.on('click', async () => {
-				await context.player.system.tryPlayerAction(context.player.id, 'create_ship', { ship });
+				await context.player.system.tryAction(context.player.id, 'create_ship', { ship });
 			});
 		$(this).appendTo('div.shipyard');
 	}

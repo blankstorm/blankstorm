@@ -28,9 +28,14 @@ export class Entity extends Node {
 		return `Entity #${this.id}`;
 	}
 
-	async moveTo(location, isRelative) {
-		if (!(location instanceof Vector3)) throw new TypeError('location must be a Vector3');
-		const path = Path.Find(this.absolutePosition, location.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
+	/**
+	 *
+	 * @param target The position the entity should move to
+	 * @param isRelative Wheter the target is a change to the current position (i.e. a "delta" vector) or absolute
+	 */
+	async moveTo(target: Vector3, isRelative = false) {
+		if (!(target instanceof Vector3)) throw new TypeError('target must be a Vector3');
+		const path = Path.Find(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
 		if (path.path.length > 0) {
 			this.system.emit('entity.follow_path.start', this.id, path.toJSON());
 			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);

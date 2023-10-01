@@ -12,7 +12,7 @@ import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Path } from '../core/Path';
-import type { SerializedSystem } from '../core/System';
+import type { MoveInfo, SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { SerializedStar } from '../core/nodes/Star';
 import type { SerializedPlanet } from '../core/nodes/Planet';
@@ -234,8 +234,18 @@ export function getCamera() {
 	return camera;
 }
 
-export function handleCanvasClick(ev, owner) {
-	owner ??= [...nodes.values()].filter(e => e instanceof PlayerRenderer)[0];
+/**
+ * Since JQuery's `click` event is not assignable to MouseEvent
+ * I don't want to to import JQuery in the renderer, even for types
+ */
+interface ClickEvent {
+	clientX: number;
+	clientY: number;
+	shiftKey: boolean;
+}
+
+export function handleCanvasClick(ev: ClickEvent, ownerID: string) {
+	ownerID ??= [...nodes.values()].find(e => e instanceof PlayerRenderer)?.id;
 	if (!ev.shiftKey) {
 		for (const node of nodes.values()) {
 			if (node instanceof ShipRenderer) {
@@ -258,7 +268,7 @@ export function handleCanvasClick(ev, owner) {
 		while (node.parent && !(node instanceof ShipRenderer)) {
 			node = node.parent as TransformNode;
 		}
-		if (node instanceof ShipRenderer && node.parent == owner) {
+		if (node instanceof ShipRenderer && node.parent?.id == ownerID) {
 			if (node.selected) {
 				node.unselect();
 			} else {
@@ -271,14 +281,14 @@ export function handleCanvasClick(ev, owner) {
 /**
  * @todo simplify returned data?
  */
-export function handleCanvasRightClick(evt, owner) {
-	const returnData = [];
+export function handleCanvasRightClick(evt: ClickEvent, ownerID: string): MoveInfo<Vector3>[] {
+	const returnData: MoveInfo<Vector3>[] = [];
 	for (const renderer of nodes.values()) {
-		if (renderer instanceof EntityRenderer && renderer.selected && renderer.parent == owner) {
+		if (renderer instanceof EntityRenderer && renderer.selected && renderer.parent?.id == ownerID) {
 			xzPlane.position = renderer.absolutePosition.clone();
-			const pickInfo = scene.pick(evt.clientX, evt.clientY, mesh => mesh == xzPlane);
-			if (pickInfo.pickedPoint) {
-				returnData.push({ entityRenderer: renderer, point: pickInfo.pickedPoint });
+			const { pickedPoint: target } = scene.pick(evt.clientX, evt.clientY, mesh => mesh == xzPlane);
+			if (target) {
+				returnData.push({ id: renderer.id, target });
 			}
 		}
 	}

@@ -1,15 +1,13 @@
+import EventEmitter from 'eventemitter3';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
-import { Node, SerializedNode } from './nodes/Node';
-import { Planet } from './nodes/Planet';
-import type { SerializedPlanet } from './nodes/Planet';
-import { Ship } from './nodes/Ship';
-import type { SerializedShip } from './nodes/Ship';
-import { Star } from './nodes/Star';
-import type { SerializedStar } from './nodes/Star';
-import { Player } from './nodes/Player';
-import type { SerializedPlayer } from './nodes/Player';
+import { Node, type SerializedNode } from './nodes/Node';
+import { Planet, type SerializedPlanet } from './nodes/Planet';
+import type { Entity } from './nodes/Entity';
+import { Ship, type SerializedShip } from './nodes/Ship';
+import { Star, type SerializedStar } from './nodes/Star';
+import { Player, type SerializedPlayer } from './nodes/Player';
 import { planetBiomes } from './generic/planets';
 import type { Item } from './generic/items';
 import type { GenericShip, ShipType } from './generic/ships';
@@ -20,7 +18,6 @@ import type { Berth } from './stations/Berth';
 import type { Level } from './Level';
 import { config } from './metadata';
 import { getRandomIntWithRecursiveProbability, greek, random, range } from './utils';
-import EventEmitter from 'eventemitter3';
 
 export type SerializedSystemConnection = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
 
@@ -33,22 +30,20 @@ export interface SerializedSystem {
 	connections: SerializedSystemConnection[];
 }
 
-export interface PlayerActionData {
+export interface MoveInfo<T> {
+	id: string;
+	target: T;
+}
+
+export interface ActionData {
 	create_item: Item;
 	create_ship: {
 		ship: GenericShip;
 		berth?: Berth;
 	};
 	do_research: Research;
-	warp: {
-		target: System;
-		ships: Ship[];
-	};
-}
-
-export interface _SystemConnection {
-	system: System;
-	position: Vector2;
+	warp: MoveInfo<System>[];
+	move: MoveInfo<Vector3>[];
 }
 
 export type SystemConnection = System | Vector2;
@@ -67,11 +62,11 @@ export class System extends EventEmitter {
 		this.level.systems.set(this.id, this);
 	}
 
-	async tryPlayerAction(
+	async tryAction(
 		id: string,
 		...args: {
-			[A in keyof PlayerActionData]: [action: A, data: PlayerActionData[A]];
-		}[keyof PlayerActionData] //see https://stackoverflow.com/a/76335220/21961918
+			[A in keyof ActionData]: [action: A, data: ActionData[A]];
+		}[keyof ActionData] //see https://stackoverflow.com/a/76335220/21961918
 	): Promise<boolean> {
 		const [action, data] = args;
 		const player = this.nodes.get(id) as Player;
@@ -113,8 +108,13 @@ export class System extends EventEmitter {
 				player.xpPoints--;
 				break;
 			case 'warp':
-				for (const ship of data.ships) {
-					ship.jumpTo(data.target);
+				for (const { id, target } of data) {
+					this.getNodeByID<Ship>(id).jumpTo(target);
+				}
+				break;
+			case 'move':
+				for (const { id, target } of data) {
+					this.getNodeByID<Entity>(id).moveTo(target);
 				}
 				break;
 			default: //action does not exist
