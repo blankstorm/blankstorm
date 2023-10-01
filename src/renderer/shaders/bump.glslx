@@ -1,5 +1,5 @@
-#include "utils.glslx"
 precision highp float;
+#include "utils.glslx"
 
 varying vec2 vUV;
 

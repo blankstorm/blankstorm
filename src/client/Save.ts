@@ -17,10 +17,12 @@ export class SaveMap extends Map<string, Save> {
 	selected?: string;
 	current?: LiveSave;
 	activePlayer: string;
-	constructor(path: string, context: ClientContext) {
+	constructor(path: string, public readonly client: ClientContext) {
 		super();
 		this._map = new FolderMap(path, fs, '.json');
+	}
 
+	init() {
 		for (const [id, content] of this._map._map) {
 			if (!isJSON(content)) {
 				continue;
@@ -29,7 +31,7 @@ export class SaveMap extends Map<string, Save> {
 			const data = JSON.parse(content);
 
 			if (!super.has(id)) {
-				new Save(data, context);
+				new Save(data, this.client);
 			}
 		}
 	}
@@ -66,18 +68,18 @@ export class SaveMap extends Map<string, Save> {
 export class Save {
 	#data: SerializedClientLevel;
 	get store(): SaveMap {
-		return this.context.saves;
+		return this.client.saves;
 	}
 	gui: JQuery<SaveListItem>;
 	get activePlayer(): string {
 		return this.store.activePlayer;
 	}
-	constructor(data: SerializedClientLevel, public context: ClientContext) {
+	constructor(data: SerializedClientLevel, public client: ClientContext) {
 		this.#data = data;
-		if (context.saves) {
-			context.saves.set(this.id, this);
+		if (client.saves) {
+			client.saves.set(this.id, this);
 		}
-		this.gui = $(new SaveListItem(this, context));
+		this.gui = $(new SaveListItem(this, client));
 	}
 
 	get id() {
@@ -85,8 +87,8 @@ export class Save {
 	}
 
 	get data(): SerializedClientLevel {
-		if (this.context.saves._map.has(this.id)) {
-			this.#data = JSON.parse(this.context.saves._map.get(this.id));
+		if (this.client.saves._map.has(this.id)) {
+			this.#data = JSON.parse(this.client.saves._map.get(this.id));
 		}
 		return this.#data;
 	}
@@ -101,8 +103,8 @@ export class Save {
 		this.#data.date = date.toJSON();
 		this.gui.find('.date').text(date.toLocaleString());
 
-		this.context.saves._map.set(this.id, JSON.stringify(this.#data));
-		this.context.saves.set(this.id, this);
+		this.client.saves._map.set(this.id, JSON.stringify(this.#data));
+		this.client.saves.set(this.id, this);
 	}
 
 	load(playerID: string): LiveSave {
@@ -115,7 +117,7 @@ export class Save {
 	}
 
 	remove() {
-		if (this.context.saves) this.context.saves.delete(this.id);
+		if (this.client.saves) this.client.saves.delete(this.id);
 		this.gui.remove();
 	}
 }

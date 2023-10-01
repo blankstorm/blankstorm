@@ -1,6 +1,5 @@
-#include "utils.glslx"
-
 precision highp float;
+#include "utils.glslx"
 
 varying vec2 vUV;
 
@@ -15,7 +14,7 @@ uniform vec2 lowerClamp;
 uniform vec3 options;
 uniform vec2 range;
 
-export void fragmentSource() {
+export void noiseFragmentShader() {
 	vec3 sphericalCoord = getSphericalCoord(face, vUV * mapSize, mapSize);
 
 	float luminance = scalarField(sphericalCoord, seed, maxResolution, randomSampler);

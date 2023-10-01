@@ -14,9 +14,9 @@ import type { HardpointProjectileHandlerOptions } from './Hardpoint';
 import { CelestialBodyRenderer } from './CelestialBody';
 import { planetBiomes } from '../../core/generic/planets';
 import type { Renderer } from './Renderer';
-import * as planetShader from '../shaders/planet';
-import * as cloudShader from '../shaders/cloud';
-import * as noiseShader from '../shaders/noise';
+import { fragmentSource, vertexSource } from '../shaders/planet';
+import { cloudFragmentShader } from '../shaders/cloud';
+import { noiseFragmentShader } from '../shaders/noise';
 
 export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
@@ -42,11 +42,16 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	cloudTexture: ProceduralTexture;
 	constructor(options: GenericPlanetRendererMaterial, scene: Scene) {
 		const id = random.hex(8);
-		super('PlanetMaterial.' + id, scene, planetShader, {
-			attributes: ['position', 'normal', 'uv'],
-			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
-			needAlphaBlending: true,
-		});
+		super(
+			'PlanetMaterial.' + id,
+			scene,
+			{ fragmentSource, vertexSource },
+			{
+				attributes: ['position', 'normal', 'uv'],
+				uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
+				needAlphaBlending: true,
+			}
+		);
 		scene.onActiveCameraChanged.add(() => {
 			this.setVector3('cameraPosition', scene.activeCamera.position);
 		});
@@ -57,13 +62,13 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 
 		this.noiseTexture = this.generateTexture(
 			id,
-			noiseShader,
+			'data:text/glsl, ' + noiseFragmentShader,
 			{ ...options, options: new Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y) },
 			scene
 		);
 		this.setTexture('textureSampler', this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, cloudShader, { ...options, options: new Vector3(1.0, 0, 0) }, scene);
+		this.cloudTexture = this.generateTexture(id, 'data:text/glsl, ' + cloudFragmentShader, { ...options, options: new Vector3(1.0, 0, 0) }, scene);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);

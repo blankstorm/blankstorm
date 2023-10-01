@@ -12,7 +12,7 @@ import { execCommandString } from './commands';
 import { Level } from '../core/Level';
 import type { SerializedLevel } from '../core/Level';
 
-import { Log } from '../core/Log';
+import { Logger } from 'logzen';
 import { Client, ClientStore } from './Client';
 import { captureArrayUpdates } from './utils';
 
@@ -59,7 +59,7 @@ export class Server extends EventEmitter {
 	config: ServerConfig;
 	ops: OpsEntry[];
 	clients = new ClientStore();
-	log = new Log();
+	log = new Logger();
 	isStopping = false;
 	io: SocketIOServer;
 	level: Level;

@@ -20,7 +20,7 @@ commands.set('kick', {
 			return 'Player is not online or does not exist';
 		}
 		client.kick(reason.join(' '));
-		server.log.addMessage(`${executor.name} kicked ${player}. Reason: ${reason.join(' ')}`);
+		server.log.log(`${executor.name} kicked ${player}. Reason: ${reason.join(' ')}`);
 		return 'Kicked ' + player;
 	},
 	oplvl: 3,
@@ -32,7 +32,7 @@ commands.set('ban', {
 			return 'Player is not online or does not exist';
 		}
 		client.ban(reason.join(' '));
-		server.log.addMessage(`${executor.name} banned ${player}. Reason: ${reason.join(' ')}`);
+		server.log.log(`${executor.name} banned ${player}. Reason: ${reason.join(' ')}`);
 		return 'Banned ' + player;
 	},
 	oplvl: 4,
@@ -43,7 +43,7 @@ commands.set('unban', {
 			.info('name', player)
 			.then(client => {
 				server.blacklist.splice(server.blacklist.indexOf(client.id), 1);
-				server.log.addMessage(`${executor.name} unbanned ${player}. Reason: ${reason.join(' ')}`);
+				server.log.log(`${executor.name} unbanned ${player}. Reason: ${reason.join(' ')}`);
 				executor.socket.emit('chat', `Unbanned ${player}`);
 			})
 			.catch(() => {
@@ -54,7 +54,7 @@ commands.set('unban', {
 });
 commands.set('log', {
 	exec({ server, executor }, ...message) {
-		server.log.addMessage(`${executor.name} logged ${message.join(' ')}`);
+		server.log.log(`${executor.name} logged ${message.join(' ')}`);
 	},
 	oplvl: 1,
 });
@@ -62,7 +62,7 @@ commands.set('msg', {
 	exec({ server, executor }, player, ...message) {
 		if (server.clients.getByName(player) instanceof Client) {
 			server.clients.getByName(player).socket.emit(`[${executor.name} -> me] ${message.join(' ')}`);
-			server.log.addMessage(`[${executor.name} -> ${player}] ${message.join(' ')}`);
+			server.log.log(`[${executor.name} -> ${player}] ${message.join(' ')}`);
 			server.clients.getByName(player).lastMessager = executor;
 			return `[me -> ${executor.name}] ${message.join(' ')}`;
 		} else {

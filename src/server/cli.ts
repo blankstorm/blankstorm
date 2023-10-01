@@ -3,11 +3,11 @@ import { spawn } from 'node:child_process';
 import * as fs from 'node:fs';
 import { config as coreConfig } from '../core/metadata';
 import { readJSONFile } from './utils';
-import { Log } from '../core/Log';
+import { Logger } from 'logzen';
 import { Server } from './Server';
 import { ServerOptions } from './Server';
 
-const log = new Log();
+const log = new Logger();
 
 //load config and settings and things
 export const options: ServerOptions = {

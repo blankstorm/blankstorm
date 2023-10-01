@@ -1,1 +1,1 @@
-export const fragmentSource: string;
+export const noiseFragmentShader: string;

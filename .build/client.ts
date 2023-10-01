@@ -64,7 +64,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 			main: 'build/client/app.cjs',
 			...electronBuilderVersions,
 		},
-		files: ['build/client/**/*', 'package.json'],
+		files: [_files0, 'package.json'],
 		appId: 'dev.drvortex.blankstorm',
 		productName: 'Blankstorm Client',
 		copyright,
@@ -117,7 +117,8 @@ const esbuildConfig: esbuild.BuildOptions = {
 						for (const f of fs.readdirSync(path.join(dirname, 'assets'))) {
 							console.log('Exporting assets: ' + f);
 							if (f == 'models') {
-								execSync('bash ' + path.join(dirname, 'assets/models/export.sh'), options.verbose ? { stdio: 'inherit' } : null);								continue;
+								execSync('bash ' + path.join(dirname, 'assets/models/export.sh'), options.verbose ? { stdio: 'inherit' } : null);
+								continue;
 							}
 
 							fs.cpSync(path.join(dirname, 'assets', f), path.join(asset_path, f), { recursive: true });

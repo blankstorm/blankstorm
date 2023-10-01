@@ -3,17 +3,14 @@ const { app, shell, nativeTheme, ipcMain, BrowserWindow } = require('electron');
 const path = require('path');
 const { parseArgs } = require('node:util');
 
-const options = {
-		'bs-debug': false,
-		'bs-open-devtools': false,
-		...parseArgs({
-			options: {
-				'bs-debug': { type: 'boolean' },
-				'bs-open-devtools': { type: 'boolean' },
-			},
-			allowPositionals: true,
-		}).values,
-	},
+const { values: options } = parseArgs({
+		options: {
+			'bs-debug': { type: 'boolean', default: false },
+			'bs-open-devtools': { type: 'boolean', default: false },
+			'log-level': { type: 'number', default: 0 },
+		},
+		allowPositionals: true,
+	}),
 	initialScale = 100;
 
 app.whenReady().then(() => {
@@ -34,9 +31,14 @@ app.whenReady().then(() => {
 	window.removeMenu(true);
 	window.loadFile(path.join(__dirname, 'index.html'));
 
-	window.webContents.on('new-window', (e, url) => {
-		e.preventDefault();
+	window.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
+		return { action: 'deny' };
+	});
+
+	window.webContents.on('console-message', (...args) => {
+		//const [event, level, message, line] = args;
+		//console.log(typeof message);
 	});
 
 	const inputHandler = (ev, input) => {

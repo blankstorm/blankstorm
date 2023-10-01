@@ -3,7 +3,7 @@ import { Engine } from '@babylonjs/core/Engines/engine';
 import { Account, account } from '@blankstorm/api';
 import $ from 'jquery';
 import { config, version } from '../core/metadata';
-import { Log } from '../core/Log';
+import { Logger } from 'logzen';
 import type { SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemCollection, ItemID } from '../core/generic/items';
@@ -13,10 +13,10 @@ import { ClientLevel } from './ClientLevel';
 import { SaveMap } from './Save';
 import { ServerMap } from './Server';
 import type { AppContext, PlayerContext } from './contexts';
-import { type Keybind, SettingsMap } from './settings';
+import { type Keybind, settings } from './settings';
 import { alert, cookies, fixPaths, minimize } from './utils';
 import type { ClientSystem } from './ClientSystem';
-import { Locale, LocaleStore } from './locales';
+import { Locale, locales } from './locales';
 import { playsound } from './audio';
 import * as renderer from '../renderer/index';
 import * as ui from './ui/ui';
@@ -26,7 +26,8 @@ import { CliOptions } from './contexts';
 
 import { xpToLevel } from '../core/utils';
 
-const fs = app.require('fs');
+const fs = app.require<typeof import('fs')>('fs');
+const appConsole = app.require<typeof import('console')>('console');
 
 interface ClientPlayerContext extends PlayerContext {
 	/**
@@ -36,7 +37,7 @@ interface ClientPlayerContext extends PlayerContext {
 }
 
 export interface ClientContext {
-	log: Log;
+	log: Logger;
 	startPlaying(level: ClientLevel): boolean;
 	stopPlaying(level: ClientLevel): boolean;
 	saves: SaveMap;
@@ -49,210 +50,7 @@ export interface ClientContext {
 }
 
 export class Client implements ClientContext {
-	public readonly log: Log = new Log();
-
-	public readonly settings: SettingsMap = new SettingsMap('settings', {
-		sections: [
-			{
-				id: 'general',
-				label: 'General',
-				parent: $('#settings div.general'),
-			},
-			{
-				id: 'keybinds',
-				label: 'Keybinds',
-				parent: $('#settings div.keybinds'),
-			},
-			{
-				id: 'debug',
-				label: 'Debug',
-				parent: $('#settings div.debug'),
-			},
-		],
-		items: [
-			{
-				id: 'font_size',
-				section: 'general',
-				type: 'range',
-				label: val => `Font Size (${val}px)`,
-				min: 10,
-				max: 20,
-				step: 1,
-				value: 13,
-			},
-			{
-				id: 'chat_timeout',
-				section: 'general',
-				type: 'range',
-				label: val => `Chat Timeout (${val} seconds)`,
-				min: 5,
-				max: 15,
-				step: 1,
-				value: 10,
-			},
-			{
-				id: 'sensitivity',
-				section: 'general',
-				type: 'range',
-				label: val => `Camera Sensitivity (${((val as number) * 100).toFixed()}%)`,
-				min: 0.1,
-				max: 2,
-				step: 0.05,
-				value: 1,
-			},
-			{
-				id: 'music',
-				section: 'general',
-				type: 'range',
-				label: val => `Music Volume (${((val as number) * 100).toFixed()}%)`,
-				min: 0,
-				max: 1,
-				step: 0.05,
-				value: 1,
-			},
-			{
-				id: 'sfx',
-				section: 'general',
-				type: 'range',
-				label: val => `Sound Effects Volume (${((val as number) * 100).toFixed()}%)`,
-				min: 0,
-				max: 1,
-				step: 0.05,
-				value: 1,
-			},
-			{
-				id: 'locale',
-				section: 'general',
-				type: 'select',
-				label: 'Language',
-			},
-			{
-				id: 'show_path_gizmos',
-				section: 'debug',
-				label: 'Show Path Gizmos',
-				value: false,
-			},
-			{
-				id: 'tooltips',
-				section: 'debug',
-				label: 'Show Advanced Tooltips',
-				value: false,
-			},
-			{
-				id: 'disable_saves',
-				section: 'debug',
-				label: 'Disable Saves',
-				value: false,
-			},
-			{
-				id: 'forward',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Forward',
-				value: { key: 'w' },
-			},
-			{
-				id: 'left',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Strafe Left',
-				value: { key: 'a' },
-			},
-			{
-				id: 'right',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Strafe Right',
-				value: { key: 'd' },
-			},
-			{
-				id: 'back',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Backward',
-				value: { key: 's' },
-			},
-			{
-				id: 'chat',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Toggle Chat',
-				value: { key: 't' },
-			},
-			{
-				id: 'command',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Toggle Command',
-				value: { key: '/' },
-			},
-			{
-				id: 'toggle_temp_menu',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Toggle Temporary Ingame Menu',
-				value: { key: 'Tab' },
-			},
-			{
-				id: 'toggle_menu',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Toggle Ingame Menu',
-				value: { key: 'e' },
-			},
-			{
-				id: 'toggle_map',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Toggle Map',
-				value: { key: 'm' },
-			},
-			{
-				id: 'map_move_left',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Map Move Left',
-				value: { key: 'ArrowLeft' },
-			},
-			{
-				id: 'map_move_down',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Map Move Down',
-				value: { key: 'ArrowDown' },
-			},
-			{
-				id: 'map_move_right',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Map Move Right',
-				value: { key: 'ArrowRight' },
-			},
-			{
-				id: 'map_move_up',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Map Move Up',
-				value: { key: 'ArrowUp' },
-			},
-			{
-				id: 'screenshot',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Take Screenshot',
-				value: { key: 'F2' },
-			},
-			{
-				id: 'save',
-				section: 'keybinds',
-				type: 'keybind',
-				label: 'Save Game',
-				value: { key: 's', ctrl: true },
-			},
-		],
-	});
-
-	public readonly locales = new LocaleStore();
+	public readonly log: Logger = new Logger();
 
 	protected _saves: SaveMap;
 	public get saves(): SaveMap {
@@ -329,7 +127,9 @@ export class Client implements ClientContext {
 	/**
 	 * @param path The path to the client's data directory
 	 */
-	constructor(public readonly path: string, public readonly app: AppContext) {}
+	constructor(public readonly path: string, public readonly app: AppContext) {
+		this.log.attachConsole(appConsole);
+	}
 
 	public flushSave() {
 		if (!(this.current instanceof ClientLevel)) {
@@ -406,39 +206,39 @@ export class Client implements ClientContext {
 		this._servers = new ServerMap(this.path + '/servers.json', this);
 
 		this._initLog('Initializing settings...');
-		this.settings.items.get('forward').addEventListener('trigger', () => {
+		settings.items.get('forward').addEventListener('trigger', () => {
 			renderer.getCamera().addVelocity(Vector3.Forward());
 		});
-		this.settings.items.get('left').addEventListener('trigger', () => {
+		settings.items.get('left').addEventListener('trigger', () => {
 			renderer.getCamera().addVelocity(Vector3.Left());
 		});
-		this.settings.items.get('right').addEventListener('trigger', () => {
+		settings.items.get('right').addEventListener('trigger', () => {
 			renderer.getCamera().addVelocity(Vector3.Right());
 		});
-		this.settings.items.get('back').addEventListener('trigger', () => {
+		settings.items.get('back').addEventListener('trigger', () => {
 			renderer.getCamera().addVelocity(Vector3.Backward());
 		});
-		this.settings.items.get('chat').addEventListener('trigger', e => {
+		settings.items.get('chat').addEventListener('trigger', e => {
 			e.preventDefault();
 			this.toggleChatUI();
 		});
-		this.settings.items.get('command').addEventListener('trigger', e => {
+		settings.items.get('command').addEventListener('trigger', e => {
 			e.preventDefault();
 			this.toggleChatUI(true);
 		});
-		this.settings.items.get('toggle_menu').addEventListener('trigger', () => {
+		settings.items.get('toggle_menu').addEventListener('trigger', () => {
 			// not implemented
 		});
-		this.settings.items.get('toggle_map').addEventListener('trigger', () => {
+		settings.items.get('toggle_map').addEventListener('trigger', () => {
 			this.changeUI('#map');
 		});
-		this.settings.items.get('toggle_temp_menu').addEventListener('trigger', () => {
+		settings.items.get('toggle_temp_menu').addEventListener('trigger', () => {
 			this.changeUI('#ingame-temp-menu');
 		});
-		this.settings.items.get('screenshot').addEventListener('trigger', () => {
+		settings.items.get('screenshot').addEventListener('trigger', () => {
 			new ScreenshotUI(canvas[0].toDataURL('image/png'));
 		});
-		this.settings.items.get('save').addEventListener('trigger', e => {
+		settings.items.get('save').addEventListener('trigger', e => {
 			e.preventDefault();
 			this.flushSave();
 		});
@@ -446,16 +246,16 @@ export class Client implements ClientContext {
 			const speed = e.shiftKey ? 100 : 10,
 				max = config.system_generation.max_size / 2;
 			switch (e.key) {
-				case this.settings.get<Keybind>('map_move_left').key:
+				case settings.get<Keybind>('map_move_left').key:
 					this.ui.map.x = Math.max(this.ui.map.x - speed, -max);
 					break;
-				case this.settings.get<Keybind>('map_move_right').key:
+				case settings.get<Keybind>('map_move_right').key:
 					this.ui.map.x = Math.min(this.ui.map.x + speed, max);
 					break;
-				case this.settings.get<Keybind>('map_move_up').key:
+				case settings.get<Keybind>('map_move_up').key:
 					this.ui.map.y = Math.max(this.ui.map.y - speed, -max);
 					break;
-				case this.settings.get<Keybind>('map_move_down').key:
+				case settings.get<Keybind>('map_move_down').key:
 					this.ui.map.y = Math.min(this.ui.map.y + speed, max);
 					break;
 			}
@@ -467,12 +267,12 @@ export class Client implements ClientContext {
 		});
 
 		this._initLog('Initializing locales...');
-		this.locales.on('fetch', (locale: Locale) => {
-			this.settings.items.get('locale').addOption(locale.language, locale.name);
+		locales.on('fetch', (locale: Locale) => {
+			settings.items.get('locale').addOption(locale.language, locale.name);
 		});
-		await this.locales.init('locales/en.json');
-		for (const [id, section] of this.settings.sections) {
-			section.label = () => this.locales.text('menu.settings_section.' + id);
+		await locales.init('locales/en.json');
+		for (const [id, section] of settings.sections) {
+			section.label = () => locales.text('menu.settings_section.' + id);
 		}
 		this._initLog('Loading Mods...');
 		try {
@@ -520,7 +320,7 @@ export class Client implements ClientContext {
 		this._initLog('Done!');
 		$('#loading_cover').fadeOut(1000);
 		this.log.log('Client loaded successful');
-		renderer.engine.runRenderLoop(this._loop);
+		renderer.engine.runRenderLoop(this._loop.bind(this));
 		setInterval(() => {
 			if (this.current instanceof ClientLevel && !this.isPaused) {
 				this.current.tick();
@@ -536,12 +336,12 @@ export class Client implements ClientContext {
 			await this._init();
 			return;
 		} catch (e) {
-			const message = 'Client initialization failed: ' + fixPaths(e.cause ?? e.stack);
-			this.log.error(message);
-			await alert(message);
+			this.log.error('Client initialization failed: ' + (e.cause ?? e.stack));
+			await alert('Client initialization failed: ' + fixPaths(e.cause ?? e.stack));
 			if (!cliOptions?.['bs-debug']) {
 				close();
 			}
+			throw e;
 		}
 	}
 
@@ -553,14 +353,14 @@ export class Client implements ClientContext {
 		if (this.current instanceof ClientLevel && !this.isPaused) {
 			const camera = renderer.getCamera(),
 				currentSystem = this.current.getNodeSystem(this.current.activePlayer);
-			camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +this.settings.get('sensitivity');
+			camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
 			for (const waypoint of currentSystem.waypoints) {
 				const pos = waypoint.screenPos;
 				waypoint.marker
 					.css({
 						position: 'fixed',
-						left: Math.min(Math.max(pos.x, 0), innerWidth - +this.settings.get('font_size')) + 'px',
-						top: Math.min(Math.max(pos.y, 0), innerHeight - +this.settings.get('font_size')) + 'px',
+						left: Math.min(Math.max(pos.x, 0), innerWidth - +settings.get('font_size')) + 'px',
+						top: Math.min(Math.max(pos.y, 0), innerHeight - +settings.get('font_size')) + 'px',
 						fill: waypoint.color.toHexString(),
 					})
 					.filter('p')
@@ -640,7 +440,7 @@ export class Client implements ClientContext {
 		});
 		level.on('entity.death', async (node: SerializedNode) => {
 			if (node.nodeType == 'ship') {
-				playsound('destroy_ship', +this.settings.get('sfx'));
+				playsound('destroy_ship', +settings.get('sfx'));
 			}
 		});
 		level.on('player.items.change', async (player, items: ItemCollection) => {
@@ -672,7 +472,7 @@ export class Client implements ClientContext {
 			$(`<li bg=none></li>`)
 				.text(m)
 				.appendTo('#chat')
-				.fadeOut(1000 * +this.settings.get('chat_timeout'));
+				.fadeOut(1000 * +settings.get('chat_timeout'));
 			$(`<li bg=none></li>`).text(m).appendTo('#chat-history');
 		}
 	}
