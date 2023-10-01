@@ -38,7 +38,7 @@
 		"@blankstorm/api": "^0.0.7",
 		"eventemitter3": "^5.0.1",
 		"jquery": "^3.6.2",
-		"logzen": "^0.1.2",
+		"logzen": "^0.1.5",
 		"socket.io": "^4.6.1",
 		"socket.io-client": "^4.6.1"
 	},

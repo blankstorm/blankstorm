@@ -7,7 +7,7 @@ const { values: options } = parseArgs({
 		options: {
 			'bs-debug': { type: 'boolean', default: false },
 			'bs-open-devtools': { type: 'boolean', default: false },
-			'log-level': { type: 'number', default: 0 },
+			'log-level': { type: 'string', default: '0' },
 		},
 		allowPositionals: true,
 	}),

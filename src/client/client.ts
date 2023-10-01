@@ -135,11 +135,20 @@ export class Client {
 
 	readonly chatInfo: ChatInfo = { index: 0, currentInput: '', inputs: [], eggCounter: 0 };
 
+	protected _logPath: string;
+
 	/**
 	 * @param path The path to the client's data directory
 	 */
 	constructor(public readonly path: string, public readonly app: AppContext) {
 		this.logger.attachConsole(appConsole);
+		if (!fs.existsSync(path + '/logs/')) {
+			fs.mkdirSync(path + '/logs/', { recursive: true });
+		}
+		this._logPath = `${path}/logs/${new Date().toISOString()}.log`.replaceAll(':', '.');
+		this.logger.on('entry', entry => {
+			fs.appendFileSync(this._logPath, entry + '\n');
+		});
 	}
 
 	public flushSave() {
@@ -331,7 +340,7 @@ export class Client {
 		this._initLog('Done!');
 		$('#loading_cover').fadeOut(1000);
 		this.logger.log('Client loaded successful');
-		renderer.engine.runRenderLoop(this._loop.bind(this));
+		renderer.engine.runRenderLoop(this.update.bind(this));
 		setInterval(() => {
 			if (this.current instanceof ClientLevel && !this.isPaused) {
 				this.current.tick();
@@ -360,67 +369,78 @@ export class Client {
 		ui.update(this);
 	}
 
-	private _loop() {
-		if (this.current instanceof ClientLevel && !this.isPaused) {
-			const camera = renderer.getCamera(),
-				currentSystem = this.current.getNodeSystem(this.current.activePlayer);
-			camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
-			for (const waypoint of currentSystem.waypoints) {
-				const pos = waypoint.screenPos;
-				waypoint.marker
-					.css({
-						position: 'fixed',
-						left: Math.min(Math.max(pos.x, 0), innerWidth - +settings.get('font_size')) + 'px',
-						top: Math.min(Math.max(pos.y, 0), innerHeight - +settings.get('font_size')) + 'px',
-						fill: waypoint.color.toHexString(),
-					})
-					.filter('p')
-					.text(
-						Vector2.Distance(new Vector2(pos.x, pos.y), new Vector2(innerWidth / 2, innerHeight / 2)) < 60 ||
-							waypoint.marker.eq(0).is(':hover') ||
-							waypoint.marker.eq(1).is(':hover')
-							? `${waypoint.name} - ${minimize(Vector3.Distance(this.player.data().position, waypoint.position))} km`
-							: ''
-					);
-				waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
-			}
-			$('#hud p.level').text(Math.floor(xpToLevel(this.player.data().xp)));
-			$('#hud svg.xp rect').attr('width', (xpToLevel(this.player.data().xp) % 1) * 100 + '%');
-			$('#debug .left').html(`
-				<span>${version} ${this._mods.size ? `[${[...this._mods.values()].join(', ')}]` : `(vanilla)`}</span><br>
-				<span>${renderer.engine.getFps().toFixed()} FPS | ${this.current.tps.toFixed()} TPS</span><br>
-				<span>${this.current.id} (${this.current.date.toLocaleString()})</span><br><br>
-				<span>
-					P: (${camera.target
-						.asArray()
-						.map(e => e.toFixed(1))
-						.join(', ')}) 
-					V: (${camera.velocity
-						.asArray()
-						.map(e => e.toFixed(1))
-						.join(', ')}}) 
-					R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
-				</span><br>
-			`);
-			const { usedJSHeapSize: used = 0, jsHeapSizeLimit: limit = 0, totalJSHeapSize: total = 0 } = globalThis.performance?.memory || {},
-				glInfo = renderer.engine.getGlInfo();
-			$('#debug .right').html(`
-				<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
-				<span>${glInfo.version}</span><br>
-				<span>${glInfo.renderer}</span><br>
-				<span>${`${(used / 1000000).toFixed()}MB/${(limit / 1000000).toFixed()}MB (${(total / 1000000).toFixed()}MB Allocated)`}</span><br>
-				<span>${navigator.hardwareConcurrency || 'Unknown'} CPU Threads</span><br><br>
-			`);
+	private _update() {
+		if (!(this.current instanceof ClientLevel) || this.isPaused) {
+			return;
+		}
+		const camera = renderer.getCamera(),
+			currentSystem = this.current.getNodeSystem(this.current.activePlayer);
+		camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
+		for (const waypoint of currentSystem.waypoints) {
+			const pos = waypoint.screenPos;
+			waypoint.marker
+				.css({
+					position: 'fixed',
+					left: Math.min(Math.max(pos.x, 0), innerWidth - +settings.get('font_size')) + 'px',
+					top: Math.min(Math.max(pos.y, 0), innerHeight - +settings.get('font_size')) + 'px',
+					fill: waypoint.color.toHexString(),
+				})
+				.filter('p')
+				.text(
+					Vector2.Distance(new Vector2(pos.x, pos.y), new Vector2(innerWidth / 2, innerHeight / 2)) < 60 ||
+						waypoint.marker.eq(0).is(':hover') ||
+						waypoint.marker.eq(1).is(':hover')
+						? `${waypoint.name} - ${minimize(Vector3.Distance(this.player.data().position, waypoint.position))} km`
+						: ''
+				);
+			waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
+		}
+		$('#hud p.level').text(Math.floor(xpToLevel(this.player.data().xp)));
+		$('#hud svg.xp rect').attr('width', (xpToLevel(this.player.data().xp) % 1) * 100 + '%');
+		$('#debug .left').html(`
+			<span>${version} ${this._mods.size ? `[${[...this._mods.values()].join(', ')}]` : `(vanilla)`}</span><br>
+			<span>${renderer.engine.getFps().toFixed()} FPS | ${this.current.tps.toFixed()} TPS</span><br>
+			<span>${this.current.id} (${this.current.date.toLocaleString()})</span><br><br>
+			<span>
+				P: (${camera.target
+					.asArray()
+					.map(e => e.toFixed(1))
+					.join(', ')}) 
+				V: (${camera.velocity
+					.asArray()
+					.map(e => e.toFixed(1))
+					.join(', ')}}) 
+				R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
+			</span><br>
+		`);
+		const { usedJSHeapSize: used = 0, jsHeapSizeLimit: limit = 0, totalJSHeapSize: total = 0 } = globalThis.performance?.memory || {},
+			glInfo = renderer.engine.getGlInfo();
+		$('#debug .right').html(`
+			<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
+			<span>${glInfo.version}</span><br>
+			<span>${glInfo.renderer}</span><br>
+			<span>${`${(used / 1000000).toFixed()}MB/${(limit / 1000000).toFixed()}MB (${(total / 1000000).toFixed()}MB Allocated)`}</span><br>
+			<span>${navigator.hardwareConcurrency || 'Unknown'} CPU Threads</span><br><br>
+		`);
 
-			renderer.render();
+		renderer.render();
+	}
+
+	public update() {
+		try {
+			this._update();
+		} catch (e) {
+			this.logger.error('Client update failed: ' + (e.cause ?? e.stack));
+			alert('Client update failed: ' + fixPaths(e.cause ?? e.stack));
+			throw e;
 		}
 	}
 
-	pause() {}
+	public pause() {}
 
-	unpause() {}
+	public unpause() {}
 
-	startPlaying(level: ClientLevel): boolean {
+	public startPlaying(level: ClientLevel): boolean {
 		if (level.version != version) {
 			alert('Incompatible version');
 			return false;
@@ -464,7 +484,7 @@ export class Client {
 		return true;
 	}
 
-	stopPlaying(level: ClientLevel): boolean {
+	public stopPlaying(level: ClientLevel): boolean {
 		for (const event of ['projectile.fire', 'level.tick', 'player.levelup', 'player.death', 'entity.follow_path.start', 'entity.death', 'player.items.change']) {
 			level.off(event);
 		}
@@ -472,12 +492,12 @@ export class Client {
 		return true;
 	}
 
-	setInitText(text: string): void {
+	public setInitText(text: string): void {
 		$('#loading_cover p').text(text);
 		this.logger.log('init: ' + text);
 	}
 
-	sendChatMessage(...msg: string[]): void {
+	public sendChatMessage(...msg: string[]): void {
 		for (const m of msg) {
 			this.logger.log(`(chat) ${m}`);
 			$(`<li bg=none></li>`)
