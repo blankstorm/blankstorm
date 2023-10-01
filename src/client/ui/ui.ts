@@ -9,7 +9,6 @@ import { genericShips } from '../../core/generic/ships';
 import type { Player } from '../../core/nodes/Player';
 import { GAME_URL, config, version, versions } from '../../core/metadata';
 import { isHex, isJSON, toDegrees } from '../../core/utils';
-import { Entity } from '../../core/nodes/Entity';
 import { Keybind, settings } from '../settings';
 import { locales } from '../locales';
 import { ItemUI } from './item';
