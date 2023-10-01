@@ -36,6 +36,28 @@ interface ClientPlayerContext extends PlayerContext {
 	_client: Client;
 }
 
+export interface ChatInfo {
+	/**
+	 * The index for which input is being shown
+	 */
+	index: number;
+
+	/**
+	 * The current, uncached input
+	 */
+	currentInput: string;
+
+	/**
+	 * array of previous inputs
+	 */
+	inputs: string[];
+
+	/**
+	 * Easter egg
+	 */
+	eggCounter: number;
+}
+
 export class Client {
 	public readonly logger: Logger = new Logger();
 
@@ -110,6 +132,8 @@ export class Client {
 	public readonly screenshots = [];
 
 	protected _mods = new Map();
+
+	readonly chatInfo: ChatInfo = { index: 0, currentInput: '', inputs: [], eggCounter: 0 };
 
 	/**
 	 * @param path The path to the client's data directory

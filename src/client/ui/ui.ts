@@ -25,6 +25,7 @@ import { Save, LiveSave } from '../Save';
 import { ClientLevel } from '../ClientLevel';
 import { playsound } from '../audio';
 import * as renderer from '../../renderer';
+import { chat_cache_size } from '../config';
 
 export interface Context {
 	items: Map<string, ItemUI>;
@@ -270,7 +271,6 @@ function strobe(rate) {
 }
 
 export function registerListeners(client: Client) {
-	let cli: { [key: string]: any };
 	$('#main .sp').on('click', () => {
 		$('#main').hide();
 		$('#save-list').show();
@@ -493,33 +493,50 @@ export function registerListeners(client: Client) {
 				});
 			});
 		});
-	$('#chat-input').on('keydown', e => {
-		if (cli.line == 0) cli.currentInput = $('#chat-input').val() as string;
+	const $chatInput = $('#chat-input');
+	$chatInput.on('keydown', e => {
+		const chat = client.chatInfo,
+			inputValue = $chatInput.val() as string;
+		if (chat.index == 0) {
+			chat.currentInput = inputValue;
+		}
 		switch (e.key) {
 			case 'Escape':
 				client.toggleChatUI();
 				break;
 			case 'ArrowUp':
-				if (cli.line > -cli.prev.length) $('#chat-input').val(cli.prev.at(--cli.line));
-				if (cli.line == -cli.prev.length) if (++cli.counter == 69) $('#chat-input').val('nice');
+				if (chat.index < chat.inputs.length) {
+					$chatInput.val(++chat.eggCounter == 69 ? 'nice' : chat.inputs[++chat.index]);
+				}
 				break;
 			case 'ArrowDown':
-				cli.counter = 0;
-				if (cli.line < 0) ++cli.line == 0 ? $('#chat-input').val(cli.currentInput) : $('#chat-input').val(cli.prev.at(cli.line));
+				chat.eggCounter = 0;
+				if (chat.index > 0) {
+					$chatInput.val(--chat.index == 0 ? chat.currentInput : chat.inputs[chat.index]);
+				}
 				break;
 			case 'Enter':
-				cli.counter = 0;
-				if (/[^\s/]/.test($('#chat-input').val() as string)) {
-					if (cli.prev.at(-1) != cli.currentInput) cli.prev.push($('#chat-input').val());
-					if ($('#chat-input').val()[0] == '/') client.sendChatMessage(client.runCommand(($('#chat-input').val() as string).slice(1)) as string);
-					else
-						client.current.isServer
-							? client.servers.get(client.servers.selected).socket.emit('chat', $('#chat-input').val())
-							: client.player.chat($('#chat-input').val() as string);
-					$('#chat-input').val('');
-					client.toggleChatUI();
-					cli.line = 0;
+				if (/^\s*$/.test(inputValue)) {
+					// Prevent empty or whitespace-only messages
+					break;
 				}
+				chat.eggCounter = 0;
+				if (chat.inputs[0] != chat.currentInput) {
+					chat.inputs.unshift(inputValue);
+					if (chat.inputs.length > chat_cache_size) {
+						chat.inputs.pop();
+					}
+				}
+				if (inputValue[0] == '/') {
+					client.sendChatMessage(client.runCommand(inputValue.slice(1)) as string);
+				} else if (client.current.isServer) {
+					client.servers.get(client.servers.selected).socket.emit('chat', inputValue);
+				} else {
+					client.player.chat(inputValue);
+				}
+				$chatInput.val('');
+				client.toggleChatUI();
+				chat.index = 0;
 				break;
 		}
 	});
