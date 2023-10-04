@@ -104,7 +104,7 @@ const esbuildConfig: esbuild.BuildOptions = {
 		'.json': 'copy',
 		'.cjs': 'copy',
 	},
-	define: { $build: JSON.stringify(buildOptions) },
+	define: { $build: JSON.stringify(buildOptions), $package: JSON.stringify(pkg) },
 	plugins: [
 		glslPlugin(),
 		replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } }),

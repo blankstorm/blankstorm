@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
 import { Ship } from './nodes/Ship';
-import { SHORT_URL } from './metadata';
+import { game_url } from './metadata';
 import type { Player } from './nodes/Player';
 import { isJSON } from './utils';
 
@@ -18,7 +18,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 	Object.entries({
 		help: {
 			exec() {
-				return `See ${SHORT_URL}/docs/commands for command documentation`;
+				return `See ${game_url}/docs/commands for command documentation`;
 			},
 			oplvl: 0,
 		},

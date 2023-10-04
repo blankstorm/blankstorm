@@ -7,7 +7,7 @@ import { isResearchLocked, priceOfResearch, research } from '../../core/generic/
 import type { ResearchID } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
 import type { Player } from '../../core/nodes/Player';
-import { GAME_URL, config, version, versions } from '../../core/metadata';
+import { game_url, config, version, versions } from '../../core/metadata';
 import { isHex, isJSON, toDegrees } from '../../core/utils';
 import { Keybind, settings } from '../settings';
 import { locales } from '../locales';
@@ -64,7 +64,7 @@ export const context: Context = {
 
 export function init(client: Client) {
 	document.title = 'Blankstorm ' + versions.get(version).text;
-	$('#main .version a').text(versions.get(version).text).attr('href', `${GAME_URL}/versions#${version}`);
+	$('#main .version a').text(versions.get(version).text).attr('href', `${game_url}/versions#${version}`);
 	context.client = client;
 	for (const [id, item] of Object.entries(items)) {
 		context.items.set(id, new ItemUI(item, client));
@@ -474,7 +474,7 @@ export function registerListeners(client: Client) {
 			switch (e.key) {
 				case 'F8':
 					e.preventDefault();
-					open(`${GAME_URL}/bugs/new`, 'target=_blank');
+					open(`${game_url}/bugs/new`, 'target=_blank');
 					break;
 				case 'b':
 					if (e.ctrlKey) strobe(100);

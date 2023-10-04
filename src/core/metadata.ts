@@ -1,5 +1,4 @@
-export const GAME_URL = 'https://blankstorm.drvortex.dev';
-export const SHORT_URL = 'https://bs.drvortex.dev';
+export const game_url = 'https://blankstorm.net';
 
 export const config = {
 	load_remote_manifest: false,
@@ -70,10 +69,11 @@ export interface Version {
 }
 
 export const version: VersionID = 'alpha_1.4.4';
+export const fullVersion: string = $package.version;
 export const versions = new Map(Object.entries(_versions)) as Map<VersionID, Version>;
 
 if (config.load_remote_manifest) {
-	fetch(GAME_URL + '/versions.json')
+	fetch(game_url + '/versions.json')
 		.then(response => response.json())
 		.then(data => {
 			for (const [key, value] of data) {
