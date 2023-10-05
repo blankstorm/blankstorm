@@ -62,13 +62,13 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 
 		this.noiseTexture = this.generateTexture(
 			id,
-			'data:text/glsl, ' + noiseFragmentShader,
+			noiseFragmentShader,
 			{ ...options, options: new Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y) },
 			scene
 		);
 		this.setTexture('textureSampler', this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, 'data:text/glsl, ' + cloudFragmentShader, { ...options, options: new Vector3(1.0, 0, 0) }, scene);
+		this.cloudTexture = this.generateTexture(id, cloudFragmentShader, { ...options, options: new Vector3(1.0, 0, 0) }, scene);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);

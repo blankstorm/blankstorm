@@ -33,8 +33,8 @@
 		"node": ">=18.0.0"
 	},
 	"dependencies": {
-		"@babylonjs/core": "^6.4.1",
-		"@babylonjs/loaders": "^6.4.1",
+		"@babylonjs/core": "^6.23.0",
+		"@babylonjs/loaders": "^6.23.0",
 		"@blankstorm/api": "^0.0.7",
 		"eventemitter3": "^5.0.1",
 		"jquery": "^3.6.2",

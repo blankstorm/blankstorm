@@ -15,24 +15,17 @@ import { execSync } from 'node:child_process';
 const dirname = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
 
-const options = {
-		verbose: false,
-		output: path.join(dirname, 'build/client'),
-		watch: false,
-		'no-app': false,
-		mode: 'dev',
-		debug: false,
-		...parseArgs({
-			options: {
-				verbose: { type: 'boolean', short: 'v', default: false },
-				watch: { type: 'boolean', short: 'w', default: false },
-				output: { type: 'string', short: 'o', default: path.join(dirname, 'build/client') },
-				'no-app': { type: 'boolean', default: false },
-				mode: { type: 'string', short: 'm', default: 'dev' },
-				debug: { type: 'boolean', default: false },
-			},
-		}).values,
-	},
+const options = parseArgs({
+		options: {
+			verbose: { type: 'boolean', short: 'v', default: false },
+			watch: { type: 'boolean', short: 'w', default: false },
+			output: { type: 'string', short: 'o', default: path.join(dirname, 'build/client') },
+			'no-app': { type: 'boolean', default: false },
+			mode: { type: 'string', short: 'm', default: 'dev' },
+			debug: { type: 'boolean', default: false },
+			keep: { type: 'boolean', short: 'k', default: false },
+		},
+	}).values,
 	input = path.join(dirname, 'src/client'),
 	asset_path = path.join(dirname, 'build/assets');
 
@@ -53,6 +46,12 @@ function fromPath(sourcePath: string) {
 	return files;
 }
 
+if(options.keep) {
+	console.warn('WARNING: keeping old build files.');
+} else {
+	fs.rmSync(options.output, { recursive: true, force: true });
+}
+
 const copyright = `Copyright © ${new Date().getFullYear()} ${pkg.author}. All Rights Reserved.`;
 const _files0 = options.output + '/**/*';
 const electronBuilderConfig: electronBuilder.CliOptions = {
@@ -61,7 +60,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 	config: {
 		extends: null,
 		extraMetadata: {
-			main: 'build/client/app.cjs',
+			main: path.join(options.output, 'app.cjs'),
 			...electronBuilderVersions,
 		},
 		files: [_files0, 'package.json'],
@@ -115,6 +114,9 @@ const esbuildConfig: esbuild.BuildOptions = {
 					try {
 						//build assets
 						for (const f of fs.readdirSync(path.join(dirname, 'assets'))) {
+							if (f.startsWith('.')) {
+								continue;
+							}
 							console.log('Exporting assets: ' + f);
 							if (f == 'models') {
 								execSync('bash ' + path.join(dirname, 'assets/models/export.sh'), options.verbose ? { stdio: 'inherit' } : null);
