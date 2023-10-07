@@ -19,17 +19,17 @@ const options = parseArgs({
 		options: {
 			verbose: { type: 'boolean', short: 'v', default: false },
 			watch: { type: 'boolean', short: 'w', default: false },
-			output: { type: 'string', short: 'o', default: path.join(dirname, 'build/client') },
+			output: { type: 'string', short: 'o', default: 'build/client' },
 			'no-app': { type: 'boolean', default: false },
 			mode: { type: 'string', short: 'm', default: 'dev' },
 			debug: { type: 'boolean', default: false },
 			keep: { type: 'boolean', short: 'k', default: false },
 		},
 	}).values,
-	input = path.join(dirname, 'src/client'),
-	asset_path = path.join(dirname, 'build/assets');
+	input = path.posix.join(dirname, 'src/client'),
+	asset_path = path.posix.join(dirname, 'build/assets');
 
-function fromPath(sourcePath: string) {
+function fromPath(sourcePath: string): string[] {
 	if (!fs.statSync(sourcePath).isDirectory()) {
 		return [sourcePath];
 	}
@@ -46,24 +46,23 @@ function fromPath(sourcePath: string) {
 	return files;
 }
 
-if(options.keep) {
+if (options.keep) {
 	console.warn('WARNING: keeping old build files.');
 } else {
 	fs.rmSync(options.output, { recursive: true, force: true });
 }
 
 const copyright = `Copyright © ${new Date().getFullYear()} ${pkg.author}. All Rights Reserved.`;
-const _files0 = options.output + '/**/*';
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
 	projectDir: dirname,
 	config: {
 		extends: null,
 		extraMetadata: {
-			main: path.join(options.output, 'app.cjs'),
+			main: path.posix.join(options.output, '/app.cjs'),
 			...electronBuilderVersions,
 		},
-		files: [_files0, 'package.json'],
+		files: ['package.json', path.posix.join(options.output, '**/*')],
 		appId: 'dev.drvortex.blankstorm',
 		productName: 'Blankstorm Client',
 		copyright,

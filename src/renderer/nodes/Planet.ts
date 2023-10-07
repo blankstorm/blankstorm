@@ -103,7 +103,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	}
 }
 
-const biomes: Record<typeof planetBiomes[number], GenericPlanetRendererMaterial> = {
+const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMaterial> = {
 	earthlike: {
 		clouds: false, //true,
 		upperColor: new Color3(0.2, 2.0, 0.2),

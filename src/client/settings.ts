@@ -23,7 +23,7 @@ export interface Keybind {
 }
 
 export const SettingTypes = ['boolean', 'checkbox', 'string', 'range', 'number', 'hidden', 'color', 'select', 'keybind'];
-export type SettingType = typeof SettingTypes[number];
+export type SettingType = (typeof SettingTypes)[number];
 
 export type SettingValue = boolean | string | string[] | number | Keybind;
 

@@ -65,7 +65,7 @@ export type VersionID = keyof typeof _versions;
 
 export interface Version {
 	text: string;
-	group: typeof _versionGroups[number];
+	group: (typeof _versionGroups)[number];
 }
 
 export const version: VersionID = 'alpha_1.4.4';
