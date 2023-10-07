@@ -16,6 +16,7 @@ export interface CliOptions {
 }
 
 export interface AppContext {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	require: NodeJS.Require & (<M = any>(id: string) => M);
 	getCliOptions(): Promise<CliOptions>;
 }

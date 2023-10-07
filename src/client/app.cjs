@@ -36,11 +36,6 @@ app.whenReady().then(() => {
 		return { action: 'deny' };
 	});
 
-	window.webContents.on('console-message', (...args) => {
-		//const [event, level, message, line] = args;
-		//console.log(typeof message);
-	});
-
 	const inputHandler = (ev, input) => {
 		switch (input.key) {
 			case 'F12':
