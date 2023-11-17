@@ -63,7 +63,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 			...electronBuilderVersions,
 		},
 		files: ['package.json', path.posix.join(options.output, '**/*')],
-		appId: 'dev.drvortex.blankstorm',
+		appId: 'net.blankstorm',
 		productName: 'Blankstorm Client',
 		copyright,
 		icon: './icon.png',
@@ -73,6 +73,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 			removeDefaultUninstallWelcomePage: true,
 			deleteAppDataOnUninstall: true,
 		},
+		executableName: 'blankstorm-client',
 		win: {
 			executableName: 'blankstorm-client',
 		},
