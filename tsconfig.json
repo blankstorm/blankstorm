@@ -11,7 +11,8 @@
 		"paths": {
 			"*.glslx": ["./src/types.d.ts"]
 		},
-		"moduleSuffixes": [".glslx", ""]
+		"moduleSuffixes": [".glslx", ""],
+		"skipLibCheck": true
 	},
 	"files": ["src/index.ts"],
 	"ts-node": {
