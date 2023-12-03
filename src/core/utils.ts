@@ -29,24 +29,27 @@ export const greek = [
 	'Psi',
 	'Omega',
 ];
-export const range = (min, max) => {
+export function range(min: number, max: number): number[] {
 	const a = [];
 	for (let i = min; i < max; i++) {
 		a.push(i);
 	}
 	return a;
-};
+}
 
 //utility functions
-export const isHex = str => /^[0-9a-f-.]+$/.test(str);
-export const isJSON = str => {
+export function isHex(str: string) {
+	return /^[0-9a-f-.]+$/.test(str);
+}
+
+export function isJSON(str: string) {
 	try {
 		JSON.parse(str);
 		return true;
 	} catch (e) {
 		return false;
 	}
-};
+}
 export const random = {
 	float: (min = 0, max = 1) => Math.random() * (max - min) + min,
 	hex: (length = 1) => {
@@ -77,7 +80,9 @@ export const random = {
 		return new Vector3(x, y, z);
 	},
 };
-export const wait = (time: number) => new Promise(resolve => setTimeout(resolve, time));
+export function wait(time: number) {
+	return new Promise(resolve => setTimeout(resolve, time));
+}
 
 export function xpToLevel(xp: number) {
 	return Math.sqrt(xp / 10);
@@ -92,7 +97,11 @@ export type JSONValue = string | number | boolean | { [x: string]: JSONValue } |
 /**
  * A Map overlaying a JSON file
  */
-export class JSONFileMap /* implements Map */ {
+export class JSONFileMap implements Map<string, JSONValue> {
+	get [Symbol.toStringTag](): '[JSONFileMap]' {
+		return '[JSONFileMap]';
+	}
+
 	path: string;
 	#fs: typeof FS;
 	constructor(path: string, fs) {
@@ -129,10 +138,11 @@ export class JSONFileMap /* implements Map */ {
 		this.#fs.writeFileSync(this.path, '{}');
 	}
 
-	delete(key: string) {
+	delete(key: string): boolean {
 		const map = this._map;
-		map.delete(key);
+		const rt = map.delete(key);
 		this._write(map);
+		return rt;
 	}
 
 	get<T = JSONValue>(key: string): T {
@@ -143,10 +153,11 @@ export class JSONFileMap /* implements Map */ {
 		return this._map.has(key);
 	}
 
-	set(key: string, value: JSONValue) {
+	set(key: string, value: JSONValue): this {
 		const map = this._map;
 		map.set(key, value);
 		this._write(map);
+		return this;
 	}
 
 	get size() {
