@@ -75,7 +75,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		this.setColor3('haloColor', options.haloColor);
 	}
 
-	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string, vertexSource: string }>, options: GenericPlanetRendererMaterial, scene: Scene) {
+	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: GenericPlanetRendererMaterial, scene: Scene) {
 		const sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
 		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, config.planet_material_map_size, shader, scene, null, true, true);

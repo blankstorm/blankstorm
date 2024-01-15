@@ -387,8 +387,7 @@ export class Client {
 				})
 				.filter('p')
 				.text(
-					Vector2.Distance(new Vector2(pos.x, pos.y), new Vector2(innerWidth / 2, innerHeight / 2)) < 60 ||
-						waypoint.active
+					Vector2.Distance(new Vector2(pos.x, pos.y), new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.active
 						? `${waypoint.name} - ${minimize(Vector3.Distance(this.player.data().position, waypoint.position))} km`
 						: ''
 				);
