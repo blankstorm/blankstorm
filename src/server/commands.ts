@@ -1,4 +1,4 @@
-import { account } from '@blankstorm/api';
+import { getAccount } from '@blankstorm/api';
 import { Command, CommandExecutionContext, commands as _commands, execCommandString as _execCommandString } from '../core/commands';
 import { Client } from './Client';
 import type { Server } from './Server';
@@ -39,8 +39,7 @@ commands.set('ban', {
 });
 commands.set('unban', {
 	exec({ server, executor }, player, ...reason) {
-		account
-			.info('name', player)
+		getAccount('username', player)
 			.then(client => {
 				server.blacklist.splice(server.blacklist.indexOf(client.id), 1);
 				server.log.log(`${executor.name} unbanned ${player}. Reason: ${reason.join(' ')}`);
