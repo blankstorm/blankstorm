@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { account } from '@blankstorm/api';
+import { login } from '@blankstorm/api';
 import { items } from '../../core/generic/items';
 import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
 import type { ResearchID } from '../../core/generic/research';
@@ -394,7 +394,7 @@ export function registerListeners(client: Client) {
 			try {
 				const email = $('#login').find('input.email').val() as string;
 				const password = $('#login').find('input.password').val() as string;
-				const result = await account.login(email, password);
+				const result = await login(email, password);
 				document.cookie = `token=${result.token}`;
 				$('#login').find('.error').hide().text('');
 				$<HTMLDialogElement>('#login')[0].close();

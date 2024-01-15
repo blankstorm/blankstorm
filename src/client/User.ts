@@ -9,7 +9,7 @@ export class User implements Account {
 	oplvl = 0;
 	lastchange = undefined;
 	created = undefined;
-	disabled = false;
+	is_disabled = false;
 
 	constructor(public client: Client) {}
 

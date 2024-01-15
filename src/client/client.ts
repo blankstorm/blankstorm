@@ -1,6 +1,6 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Engine } from '@babylonjs/core/Engines/engine';
-import { Account, account } from '@blankstorm/api';
+import { Account, getAccount } from '@blankstorm/api';
 import $ from 'jquery';
 import { config, version } from '../core/metadata';
 import { Logger } from 'logzen';
@@ -88,7 +88,7 @@ export class Client {
 		oplvl: 0,
 		lastchange: undefined,
 		created: undefined,
-		disabled: false,
+		is_disabled: false,
 		chat(...msg) {
 			for (const m of msg) {
 				this._client.sendChatMessage(`${this.username} = ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
@@ -321,7 +321,7 @@ export class Client {
 		}
 		if (cookies.has('token') && navigator.onLine) {
 			try {
-				const result: Account = await account.info('token', cookies.get('token'));
+				const result: Account = await getAccount('token', cookies.get('token'));
 				Object.assign(this.player, result);
 				this._isMultiplayerEnabled = true;
 			} catch (e) {
