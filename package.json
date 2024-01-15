@@ -35,7 +35,7 @@
 	"dependencies": {
 		"@babylonjs/core": "^6.38.0",
 		"@babylonjs/loaders": "^6.38.0",
-		"@blankstorm/api": "^0.0.7",
+		"@blankstorm/api": "^0.4.4",
 		"eventemitter3": "^5.0.1",
 		"jquery": "^3.6.2",
 		"logzen": "^0.1.5",
