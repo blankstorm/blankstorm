@@ -32,6 +32,7 @@ export interface GenericPlanetRendererMaterial {
 	lowerClip: Vector2;
 	range: Vector2;
 	maxResolution?: number;
+	options?: Vector3;
 }
 
 export class PlanetRendererMaterial extends ShaderMaterial {
@@ -62,22 +63,22 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 
 		this.noiseTexture = this.generateTexture(
 			id,
-			noiseFragmentShader,
+			{ fragmentSource: noiseFragmentShader },
 			{ ...options, options: new Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y) },
 			scene
 		);
 		this.setTexture('textureSampler', this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, cloudFragmentShader, { ...options, options: new Vector3(1.0, 0, 0) }, scene);
+		this.cloudTexture = this.generateTexture(id, { fragmentSource: cloudFragmentShader }, { ...options, options: new Vector3(1.0, 0, 0) }, scene);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);
 	}
 
-	generateTexture(id: string, path, options, scene: Scene) {
+	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string, vertexSource: string }>, options: GenericPlanetRendererMaterial, scene: Scene) {
 		const sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
-		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, config.planet_material_map_size, path, scene, null, true, true);
+		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, config.planet_material_map_size, shader, scene, null, true, true);
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
 		texture.setFloat('mapSize', config.planet_material_map_size);
