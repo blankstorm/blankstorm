@@ -25,7 +25,7 @@ export class Marker {
 			case 'planet':
 				return getColorForBiome((this.target as unknown as Planet).biome);
 			case 'ship':
-				return this.context.ui.client.current.activePlayer == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
+				return this.context.ui?.client?.current?.activePlayer == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
 		}
 	}
 

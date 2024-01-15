@@ -71,7 +71,7 @@ export class Client {
 		return this._servers;
 	}
 
-	public readonly ui: ui.Context;
+	public readonly ui: ui.Context = ui.context;
 
 	protected _current: ClientLevel;
 	public get current(): ClientLevel {
@@ -388,8 +388,7 @@ export class Client {
 				.filter('p')
 				.text(
 					Vector2.Distance(new Vector2(pos.x, pos.y), new Vector2(innerWidth / 2, innerHeight / 2)) < 60 ||
-						waypoint.marker.eq(0).is(':hover') ||
-						waypoint.marker.eq(1).is(':hover')
+						waypoint.active
 						? `${waypoint.name} - ${minimize(Vector3.Distance(this.player.data().position, waypoint.position))} km`
 						: ''
 				);

@@ -28,13 +28,21 @@ export class Waypoint extends Node {
 
 	declare system: ClientSystem;
 
+	private _active: boolean;
+
+	get active(): boolean {
+		return this._active;
+	}
+
 	constructor(id: string, public readonly readonly = false, public readonly builtin = false, system: ClientSystem) {
 		super(id, system);
 		system.waypoints.push(this);
 		this.gui = $(new WaypointUI(this));
 		this.marker = $<SVGSVGElement>(`<svg><use href="_build.asset_dir/images/icons.svg#location-dot /></svg><p style=justify-self:center></p>`)
-			.addClass('marker "ingame')
+			.addClass('marker ingame')
 			.hide()
+			.on('mouseenter', () => (this._active = true))
+			.on('mouseleave', () => (this._active = false))
 			.appendTo('body');
 		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
 		system.on('active', () => {
