@@ -85,7 +85,7 @@ export class Client {
 		_client: this,
 		id: '_guest_',
 		username: '[guest]',
-		oplvl: 0,
+		type: 0,
 		lastchange: undefined,
 		created: undefined,
 		is_disabled: false,

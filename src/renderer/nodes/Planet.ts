@@ -14,7 +14,7 @@ import type { HardpointProjectileHandlerOptions } from './Hardpoint';
 import { CelestialBodyRenderer } from './CelestialBody';
 import { planetBiomes } from '../../core/generic/planets';
 import type { Renderer } from './Renderer';
-import { fragmentSource, vertexSource } from '../shaders/planet';
+import * as planetShader from '../shaders/planet';
 import { cloudFragmentShader } from '../shaders/cloud';
 import { noiseFragmentShader } from '../shaders/noise';
 
@@ -46,7 +46,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		super(
 			'PlanetMaterial.' + id,
 			scene,
-			{ fragmentSource, vertexSource },
+			planetShader,
 			{
 				attributes: ['position', 'normal', 'uv'],
 				uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],

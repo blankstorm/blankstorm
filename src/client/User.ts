@@ -6,7 +6,7 @@ import { Client } from './client';
 export class User implements Account {
 	id = '_guest_';
 	username = '[guest]';
-	oplvl = 0;
+	type = 0;
 	lastchange = undefined;
 	created = undefined;
 	is_disabled = false;
