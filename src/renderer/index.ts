@@ -55,6 +55,10 @@ export function setHitboxes(value: boolean) {
 
 const nodes: Map<string, Renderer<SerializedNode>> = new Map();
 
+function onCanvasResive() {
+	engine.resize();
+}
+
 export async function init(
 	canvas: HTMLCanvasElement,
 	messageHandler: (msg: string) => unknown = (msg: string) => {
@@ -64,6 +68,8 @@ export async function init(
 	await messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 	engine.resize();
+
+	canvas.addEventListener('resize', onCanvasResive);
 
 	await messageHandler('scene');
 	scene = new Scene(engine);

@@ -15,10 +15,6 @@
 		"skipLibCheck": true
 	},
 	"files": ["src/index.ts"],
-	"ts-node": {
-		"esm": true,
-		"experimentalSpecifierResolution": "node"
-	},
 	"include": ["./src/**/*.ts", "./.build/*.ts", "./src/*.d.ts"],
 	"exclude": ["node_modules"]
 }

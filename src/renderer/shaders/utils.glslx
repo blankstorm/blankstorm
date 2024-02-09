@@ -1,74 +1,81 @@
-float random5(vec2 co) {
-	return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+const float PI = 3.14159265358979;
+
+const vec2 randomMagic = vec2(12.9898, 78.233);
+const float randomMagicA = 43758.5453;
+
+float random(float seed) {
+	return fract(sin(seed * randomMagic.x) * randomMagicA);
 }
 
-float random4(vec3 co, sampler2D sampler) {
-	float rx = random5(vec2(co.x, co.y));
-	float ry = random5(vec2(co.y, co.z));
+float random(vec2 seed) {
+	return fract(sin(dot(seed, randomMagic)) * randomMagicA);
+}
+
+float randomFromSampler(float seedX, float seedY, float seedZ, sampler2D sampler) {
+	float rx = random(vec2(seedX, seedY));
+	float ry = random(vec2(seedY, seedZ));
 
 	return texture2D(sampler, vec2(rx, ry)).g;
 }
 
-float random4(ivec3 co, sampler2D sampler) {
-	return random4(vec3(co), sampler);
+float randomFromSampler(vec3 seed, sampler2D sampler) {
+	return randomFromSampler(seed.x, seed.y, seed.z, sampler);
 }
 
 float interpolation(float a, float b, float x) {
-	float ft = x * 3.1415927;
-	float f = (1.0 - cos(ft)) * 0.5;
-	return a*(1.0 - f) + b*f;
+	float f = (1.0 - cos(x * PI)) * 0.5;
+	return a * (1.0 - f) + b * f;
 }
 
-float tricosine(vec3 coordFloat, sampler2D sampler) {
-	vec3 coord0 = vec3(floor(coordFloat.x), floor(coordFloat.y), floor(coordFloat.z));
-	vec3 coord1 = coord0 + 1.0;
-	float xd = (coordFloat.x - coord0.x) / max(1.0, (coord1.x - coord0.x));
-	float yd = (coordFloat.y - coord0.y) / max(1.0, (coord1.y - coord0.y));
-	float zd = (coordFloat.z - coord0.z) / max(1.0, (coord1.z - coord0.z));
-	float c00 = interpolation(random4(coord0, sampler), random4(vec3(coord1.x, coord0.y, coord0.z), sampler), xd);
-	float c10 = interpolation(random4(coord0, sampler), random4(vec3(coord1.x, coord1.y, coord0.z), sampler), xd);
-	float c01 = interpolation(random4(coord0, sampler), random4(vec3(coord1.x, coord0.y, coord1.z), sampler), xd);
-	float c11 = interpolation(random4(coord0, sampler), random4(vec3(coord1.x, coord1.y, coord1.z), sampler), xd);
-	float c0 = interpolation(c00, c10, yd);
-	float c1 = interpolation(c01, c11, yd);
-	float c = interpolation(c0, c1, zd);
+float interpolation(vec2 a, vec2 b, vec2 d) {
+	float c0 = interpolation(a.x, b.x, d.x);
+	float c1 = interpolation(a.y, b.y, d.x);
+	return interpolation(c0, c1, d.y);
+}
 
-	return c;
+float tricosine(vec3 coords, sampler2D sampler) {
+	vec3 coord0 = vec3(floor(coords));
+	vec3 coord1 = coord0 + 1.0;
+	vec3 d = (coords - coord0) / max(vec3(1.0), coord1 - coord0);
+	float ax = interpolation(randomFromSampler(coord0.x, coord0.y, coord0.z, sampler), randomFromSampler(coord1.x, coord0.y, coord0.z, sampler), d.x);
+	float bx = interpolation(randomFromSampler(coord0.x, coord1.y, coord0.z, sampler), randomFromSampler(coord1.x, coord1.y, coord0.z, sampler), d.x);
+	float ay = interpolation(randomFromSampler(coord0.x, coord0.y, coord1.z, sampler), randomFromSampler(coord1.x, coord0.y, coord1.z, sampler), d.x);
+	float by = interpolation(randomFromSampler(coord0.x, coord1.y, coord1.z, sampler), randomFromSampler(coord1.x, coord1.y, coord1.z, sampler), d.x);
+
+	return interpolation(vec2(ax, ay), vec2(bx, by), d.yz);
 }
 
 float nearestNeighbour(vec3 coordFloat, sampler2D sampler) {
-	return random4(ivec3(coordFloat), sampler);
+	return randomFromSampler(floor(coordFloat), sampler);
 }
 
 float helper(vec3 v, float resolution, sampler2D sampler) {
-	float interpolated = tricosine((v + 1.0) / 2.0 * resolution, sampler);
-	return interpolated * 2.0 - 1.0;
+	return tricosine((v + 1.) / 2. * resolution, sampler) * 2. - 1.;
 }
 
-float scalarField(vec3 v, float seed, float maxResolution, sampler2D sampler) {
-
+float scalarField(vec3 v, float seed, float resolution, sampler2D sampler) {
 	float c = seed;
-	seed *= 1.0 + helper(v, maxResolution / 32.0, sampler) * 0.8;
-	seed *= 1.0 + helper(v, maxResolution / 16.0, sampler) * 0.4;
-	seed *= 1.0 + helper(v, maxResolution / 8.0, sampler) * 0.2;
-	seed *= 1.0 + helper(v, maxResolution / 4.0, sampler) * 0.1;
-	seed *= 1.0 + helper(v, maxResolution / 2.0, sampler) * 0.05;
-	seed *= 1.0 + helper(v, maxResolution, sampler) * (0.025);
-	
-	return clamp(c, 0.0, 1.0);
+	c *= 1. + helper(v, resolution / 32., sampler) * .8;
+	c *= 1. + helper(v, resolution / 16., sampler) * .4;
+	c *= 1. + helper(v, resolution / 8., sampler) * .2;
+	c *= 1. + helper(v, resolution / 4., sampler) * .1;
+	c *= 1. + helper(v, resolution / 2., sampler) * .05;
+	c *= 1. + helper(v, resolution, sampler) * .025;
+
+	return clamp(c, 0., 1.);
 }
 
-vec3 getSphericalCoord(float face, vec2 rect, float width) {
+vec3 sphericalCoord(float face, vec2 uv, float width) {
 	width /= 2.0;
-	rect -= width;
+	uv -= width;
 	vec3 coord = vec3(0.0);
 
-	if (face == 0.0) { coord.x = width; coord.y = -rect.y; coord.z = -rect.x; }
-	else if (face == 1.0) { coord.x = -width; coord.y = -rect.y; coord.z = rect.x; }
-	else if (face == 2.0) { coord.x = rect.x; coord.y = width; coord.z = rect.y; }
-	else if (face == 3.0) { coord.x = rect.x; coord.y = -width; coord.z = -rect.y; }
-	else if (face == 4.0) { coord.x = rect.x; coord.y = -rect.y; coord.z = width; }
-	else { coord.x = -rect.x; coord.y = -rect.y; coord.z = -width; }
+	if (face == 0.0) { coord = vec3(width, -uv.y, -uv.x); }
+	else if (face == 1.0) { coord = vec3(-width, -uv.y, uv.x); }
+	else if (face == 2.0) { coord = vec3(uv.x, width, uv.y); }
+	else if (face == 3.0) { coord = vec3(uv.x, -width, -uv.y); }
+	else if (face == 4.0) { coord = vec3(uv.x, -uv.y, width); }
+	else { coord = vec3(-uv.x, -uv.y, -width); }
 
 	return normalize(coord);
 }

@@ -31,7 +31,7 @@
 		"no-fallthrough": "off",
 		"no-empty": "warn",
 		"@typescript-eslint/no-empty-function": "warn",
-		"no-case-declarations": "off",
+		"no-case-declarations": "warn",
 		"prefer-const": "warn",
 		"@typescript-eslint/adjacent-overload-signatures": "warn",
 		"@typescript-eslint/no-inferrable-types": "warn"

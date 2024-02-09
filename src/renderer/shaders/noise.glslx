@@ -15,9 +15,14 @@ uniform vec3 options;
 uniform vec2 range;
 
 export void noiseFragmentShader() {
-	vec3 sphericalCoord = getSphericalCoord(face, vUV * mapSize, mapSize);
+	vec3 spherical = sphericalCoord(face, vUV * mapSize, mapSize);
 
-	float luminance = scalarField(sphericalCoord, seed, maxResolution, randomSampler);
+	float luminance = scalarField(spherical, seed, maxResolution, randomSampler);
+	if (luminance < options.y)
+	{
+		luminance *= options.z;
+	}
+	luminance = clamp(luminance, 0., 1.);
 
 	if (options.x > 0.)
 	{

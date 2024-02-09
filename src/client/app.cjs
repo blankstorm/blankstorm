@@ -10,6 +10,7 @@ const { values: options } = parseArgs({
 			'log-level': { type: 'string', default: '0' },
 		},
 		allowPositionals: true,
+		strict: false,
 	}),
 	initialScale = 100;
 
@@ -45,6 +46,7 @@ app.whenReady().then(() => {
 				break;
 			case 'F11':
 				window.setFullScreenable(true);
+				window.fullScreen = !!window.fullScreen;
 				break;
 		}
 	};
