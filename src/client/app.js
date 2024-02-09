@@ -1,7 +1,14 @@
 /* eslint-env node */
-const { app, shell, nativeTheme, ipcMain, BrowserWindow } = require('electron');
-const path = require('path');
-const { parseArgs } = require('node:util');
+import { app, shell, nativeTheme, ipcMain, BrowserWindow } from 'electron';
+import path from 'path';
+import { parseArgs } from 'node:util';
+import { fileURLToPath } from 'node:url';
+import { Logger } from 'logzen';
+
+const logger = new Logger();
+logger.log('Initializing');
+
+const __dirname = path.resolve(fileURLToPath(import.meta.url), '..');
 
 const { values: options } = parseArgs({
 		options: {
@@ -22,7 +29,7 @@ app.whenReady().then(() => {
 		center: true,
 		darkTheme: true,
 		webPreferences: {
-			preload: path.join(__dirname, 'preload.cjs'),
+			preload: path.join(__dirname, 'preload.mjs'),
 			nodeIntegration: true,
 		},
 	});
@@ -36,8 +43,12 @@ app.whenReady().then(() => {
 		shell.openExternal(url);
 		return { action: 'deny' };
 	});
+	window.setFullScreenable(true);
 
 	const inputHandler = (ev, input) => {
+		if (input.type == 'keyUp') {
+			return;
+		}
 		switch (input.key) {
 			case 'F12':
 				if (options['bs-debug']) {
@@ -45,8 +56,7 @@ app.whenReady().then(() => {
 				}
 				break;
 			case 'F11':
-				window.setFullScreenable(true);
-				window.fullScreen = !!window.fullScreen;
+				window.fullScreen = !window.fullScreen;
 				break;
 		}
 	};

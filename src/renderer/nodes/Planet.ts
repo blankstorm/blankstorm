@@ -43,16 +43,11 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	cloudTexture: ProceduralTexture;
 	constructor(options: GenericPlanetRendererMaterial, scene: Scene) {
 		const id = random.hex(8);
-		super(
-			'PlanetMaterial.' + id,
-			scene,
-			planetShader,
-			{
-				attributes: ['position', 'normal', 'uv'],
-				uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
-				needAlphaBlending: true,
-			}
-		);
+		super('PlanetMaterial.' + id, scene, planetShader, {
+			attributes: ['position', 'normal', 'uv'],
+			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
+			needAlphaBlending: true,
+		});
 		scene.onActiveCameraChanged.add(() => {
 			this.setVector3('cameraPosition', scene.activeCamera.position);
 		});
