@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild';
 import * as fs from 'node:fs';
-import path from 'node:path/posix';
+import path from 'node:path';
 import pkg from '../package.json' assert { type: 'json' };
 import * as electronBuilder from 'electron-builder';
 import { fileURLToPath } from 'node:url';
@@ -26,8 +26,8 @@ const options = parseArgs({
 			keep: { type: 'boolean', short: 'k', default: false },
 		},
 	}).values,
-	input = path.join(dirname, 'src/client'),
-	asset_path = path.join(dirname, 'build/assets');
+	input = path.posix.join(dirname, 'src/client'),
+	asset_path = path.posix.join(dirname, 'build/assets');
 
 function fromPath(sourcePath: string): string[] {
 	if (!fs.statSync(sourcePath).isDirectory()) {
