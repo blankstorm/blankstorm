@@ -8,4 +8,7 @@ contextBridge.exposeInMainWorld('app', {
 	getCliOptions() {
 		return ipcRenderer.invoke('cli_flags');
 	},
+	log(entry) {
+		return ipcRenderer.invoke('log', entry);
+	},
 });

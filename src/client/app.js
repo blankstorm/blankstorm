@@ -23,6 +23,9 @@ const { values: options } = parseArgs({
 
 app.whenReady().then(() => {
 	ipcMain.handle('cli_flags', () => options);
+	ipcMain.handle('log', (ev, msg) => {
+		logger.send({ ...msg, prefix: 'Client', computed: null });
+	});
 	const window = new BrowserWindow({
 		width: 16 * initialScale,
 		height: 9 * initialScale,

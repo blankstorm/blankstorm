@@ -6,7 +6,7 @@ import { toDegrees } from '../../core/utils';
 import type { Waypoint } from '../waypoint';
 import type { Client } from '../client';
 import { $svg, getColorForBiome } from '../utils';
-import type { ClientLevel } from '../ClientLevel';
+import type { ClientLevel } from '../level';
 
 export const supportedMarkerNodeTypes = ['planet', 'star', 'ship', 'waypoint'];
 

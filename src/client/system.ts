@@ -5,7 +5,7 @@ import { SerializedWaypoint, Waypoint } from './waypoint';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { SerializedCelestialBody } from '../core/nodes/CelestialBody';
 import { getIconForNode } from './utils';
-import type { ClientLevel } from './ClientLevel';
+import type { ClientLevel } from './level';
 
 export interface SerializedClientSystem extends SerializedSystem {
 	waypoints: SerializedWaypoint[];

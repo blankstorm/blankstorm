@@ -1,6 +1,6 @@
 import type { Account } from '@blankstorm/api';
 import type { Player } from '../core/nodes/Player';
-import { ClientSystem } from './ClientSystem';
+import { ClientSystem } from './system';
 import { Client } from './client';
 
 export class User implements Account {

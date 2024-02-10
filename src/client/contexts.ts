@@ -1,7 +1,7 @@
 import type { Account } from '@blankstorm/api';
-import type { ClientSystem } from './ClientSystem';
+import type { ClientSystem } from './system';
 import type { Player } from '../core/nodes/Player';
-import type { LogLevel } from 'logzen';
+import type { IOMessage, LogLevel } from 'logzen';
 
 export interface PlayerContext extends Account {
 	system: ClientSystem;
@@ -19,4 +19,5 @@ export interface AppContext {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	require: NodeJS.Require & (<M = any>(id: string) => M);
 	getCliOptions(): Promise<CliOptions>;
+	log(message: IOMessage): Promise<void>;
 }

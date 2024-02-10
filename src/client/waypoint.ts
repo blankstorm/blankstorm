@@ -7,7 +7,7 @@ import $ from 'jquery';
 
 import { scene } from '../renderer/index';
 import { WaypointUI } from './ui/waypoint';
-import type { ClientSystem } from './ClientSystem';
+import type { ClientSystem } from './system';
 
 export interface SerializedWaypoint extends SerializedNode {
 	color: number[];

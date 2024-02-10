@@ -8,8 +8,8 @@ import { Player } from '../core/nodes/Player';
 const fs = app.require('fs');
 import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
-import { ClientLevel } from './ClientLevel';
-import type { SerializedClientLevel } from './ClientLevel';
+import { ClientLevel } from './level';
+import type { SerializedClientLevel } from './level';
 import type { Client } from './client';
 
 export class SaveMap extends Map<string, Save> {

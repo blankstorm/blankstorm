@@ -9,13 +9,13 @@ import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemCollection, ItemID } from '../core/generic/items';
 import type { SerializedNode } from '../core/nodes/Node';
 import type { Player } from '../core/nodes/Player';
-import { ClientLevel } from './ClientLevel';
+import { ClientLevel } from './level';
 import { SaveMap } from './Save';
 import { ServerMap } from './Server';
 import type { AppContext, PlayerContext } from './contexts';
 import { type Keybind, settings } from './settings';
 import { alert, cookies, fixPaths, minimize } from './utils';
-import type { ClientSystem } from './ClientSystem';
+import type { ClientSystem } from './system';
 import { Locale, locales } from './locales';
 import { playsound } from './audio';
 import * as renderer from '../renderer/index';
@@ -141,7 +141,7 @@ export class Client {
 	 * @param path The path to the client's data directory
 	 */
 	constructor(public readonly path: string, public readonly app: AppContext) {
-		this.logger.attachConsole(appConsole);
+		this.logger.attach(appConsole);
 		if (!fs.existsSync(path + '/logs/')) {
 			fs.mkdirSync(path + '/logs/', { recursive: true });
 		}
@@ -149,6 +149,7 @@ export class Client {
 		this.logger.on('entry', entry => {
 			fs.appendFileSync(this._logPath, entry + '\n');
 		});
+		this.logger.on('send', msg => app.log(msg));
 	}
 
 	public flushSave() {
@@ -318,6 +319,9 @@ export class Client {
 		this._initLog('Authenticating...');
 		if (!navigator.onLine) {
 			this.logger.warn('Could not authenitcate (offline)');
+		}
+		if (!cookies.has('token')) {
+			this.logger.warn('Could not authenitcate (no token)');
 		}
 		if (cookies.has('token') && navigator.onLine) {
 			try {

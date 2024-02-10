@@ -8,7 +8,7 @@ import { ServerListItem } from './ui/server';
 import { config, versions } from '../core/metadata';
 import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
-import { ClientLevel } from './ClientLevel';
+import { ClientLevel } from './level';
 import EventEmitter from 'eventemitter3';
 import type { Client } from './client';
 
