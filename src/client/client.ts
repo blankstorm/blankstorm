@@ -1,6 +1,6 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Engine } from '@babylonjs/core/Engines/engine';
-import { Account, getAccount } from '@blankstorm/api';
+import { type Account, getAccount } from '@blankstorm/api';
 import $ from 'jquery';
 import { config, version } from '../core/metadata';
 import { Logger } from 'logzen';
@@ -12,7 +12,6 @@ import type { Player } from '../core/nodes/Player';
 import { ClientLevel } from './level';
 import { SaveMap } from './Save';
 import { ServerMap } from './Server';
-import type { AppContext, PlayerContext } from './contexts';
 import { type Keybind, settings } from './settings';
 import { alert, cookies, fixPaths, minimize } from './utils';
 import type { ClientSystem } from './system';
@@ -22,14 +21,16 @@ import * as renderer from '../renderer/index';
 import * as ui from './ui/ui';
 import { ScreenshotUI } from './ui/screenshot';
 import { execCommandString } from '../core/commands';
-import { CliOptions } from './contexts';
+import type { WithOptional } from '../types';
 
 import { xpToLevel } from '../core/utils';
 
-const fs = app.require<typeof import('fs')>('fs');
-const appConsole = app.require<typeof import('console')>('console');
+const fs = $app.require<typeof import('fs')>('fs');
 
-interface ClientPlayerContext extends PlayerContext {
+export interface PlayerContext extends Account {
+	system: ClientSystem;
+	chat(...msg: string[]): unknown;
+	data(): Player;
 	/**
 	 * @internal
 	 */
@@ -58,7 +59,19 @@ export interface ChatInfo {
 	eggCounter: number;
 }
 
-export class Client {
+export interface ClientOptions {
+	/**
+	 * The directory to use for client data
+	 */
+	path: string;
+
+	/**
+	 * Whether debugging is enabled
+	 */
+	debug: boolean;
+}
+
+export class Client implements Readonly<ClientOptions> {
 	public readonly logger: Logger = new Logger();
 
 	protected _saves: SaveMap;
@@ -81,7 +94,7 @@ export class Client {
 		this._current = value;
 	}
 
-	protected _player: ClientPlayerContext = {
+	protected _player: PlayerContext = {
 		_client: this,
 		id: '_guest_',
 		username: '[guest]',
@@ -107,9 +120,8 @@ export class Client {
 		this._player._client = this;
 		return this._player;
 	}
-	public set player(value: PlayerContext) {
-		const player = value as ClientPlayerContext;
-		this._player = player;
+	public set player(value: WithOptional<PlayerContext, '_client'>) {
+		this._player = value as PlayerContext;
 	}
 
 	protected _isPaused: boolean;
@@ -135,21 +147,18 @@ export class Client {
 
 	readonly chatInfo: ChatInfo = { index: 0, currentInput: '', inputs: [], eggCounter: 0 };
 
-	protected _logPath: string;
+	protected _options: ClientOptions;
 
-	/**
-	 * @param path The path to the client's data directory
-	 */
-	constructor(public readonly path: string, public readonly app: AppContext) {
-		this.logger.attach(appConsole);
-		if (!fs.existsSync(path + '/logs/')) {
-			fs.mkdirSync(path + '/logs/', { recursive: true });
-		}
-		this._logPath = `${path}/logs/${new Date().toISOString()}.log`.replaceAll(':', '.');
-		this.logger.on('entry', entry => {
-			fs.appendFileSync(this._logPath, entry + '\n');
-		});
-		this.logger.on('send', msg => app.log(msg));
+	public get path(): string {
+		return this._options.path;
+	}
+
+	public get debug(): boolean {
+		return this._options.debug;
+	}
+
+	constructor() {
+		this.logger.on('send', $app.log);
 	}
 
 	public flushSave() {
@@ -353,16 +362,19 @@ export class Client {
 		this._isInitialized = true;
 	}
 
-	public async init(): Promise<void> {
-		let cliOptions: CliOptions;
+	public async init({ path = '.', debug = false }: Partial<ClientOptions> = {}): Promise<void> {
+		if (this._isInitialized) {
+			this.logger.warn('Attempted to initialize client that was already initialized. (Options ignored)');
+			return;
+		}
 		try {
-			cliOptions = await this.app.getCliOptions();
+			this._options = { path, debug };
 			await this._init();
 			return;
 		} catch (e) {
 			this.logger.error('Client initialization failed: ' + (e.cause ?? e.stack));
 			await alert('Client initialization failed: ' + fixPaths(e.cause ?? e.stack));
-			if (!cliOptions?.['bs-debug']) {
+			if (!debug) {
 				close();
 			}
 			throw e;

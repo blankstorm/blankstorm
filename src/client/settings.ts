@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { JSONFileMap } from '../core/utils';
-const fs = app.require('fs');
+const fs = $app.require('fs');
 
 export class SettingsError extends Error {
 	target: SettingsItem;

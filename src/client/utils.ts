@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import type { SerializedNode } from '../core/nodes/Node';
 import type { PlanetBiome } from '../core/generic/planets';
-const { fileURLToPath } = app.require('node:url');
-const path = app.require('node:path');
+const { fileURLToPath } = $app.require('node:url');
+const path = $app.require('node:path');
 
 export const upload = (type, multiple = false) =>
 		new Promise(res =>

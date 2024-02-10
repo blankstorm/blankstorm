@@ -1,4 +1,6 @@
 import $ from 'jquery';
+import { Client } from './client';
+
 $.ajaxSetup({ timeout: 3000 });
 $.event.special.wheel = {
 	setup: function (_, ns, handle) {
@@ -6,8 +8,6 @@ $.event.special.wheel = {
 	},
 };
 
-import { Client } from './client';
-
-const client = new Client('.', app);
-
-await client.init();
+const client = new Client();
+const options = await $app.options();
+await client.init(options);

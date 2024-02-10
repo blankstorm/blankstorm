@@ -4,11 +4,18 @@ import path from 'path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { Logger } from 'logzen';
-
-const logger = new Logger();
-logger.log('Initializing');
+import { existsSync, mkdirSync, appendFileSync } from 'fs';
 
 const __dirname = path.resolve(fileURLToPath(import.meta.url), '..');
+
+const logger = new Logger({ prefix: 'main' });
+const logDir = path.join(__dirname, 'logs/');
+if (!existsSync(logDir)) {
+	mkdirSync(logDir, { recursive: true });
+}
+const logPath = `${logDir}/${new Date().toISOString().replaceAll(':', '.')}.log`;
+logger.on('entry', entry => appendFileSync(logPath, entry + '\n'));
+logger.log('Initializing...');
 
 const { values: options } = parseArgs({
 		options: {
@@ -21,11 +28,13 @@ const { values: options } = parseArgs({
 	}),
 	initialScale = 100;
 
+if (options['log-level']) {
+	logger.warn('CLI flag "log-level" ignored (unsupported)');
+}
+
 app.whenReady().then(() => {
-	ipcMain.handle('cli_flags', () => options);
-	ipcMain.handle('log', (ev, msg) => {
-		logger.send({ ...msg, prefix: 'Client', computed: null });
-	});
+	ipcMain.handle('options', () => ({ path: __dirname, debug: options['bs-debug'] }));
+	ipcMain.handle('log', (ev, msg) => logger.send({ ...msg, prefix: 'client', computed: null }));
 	const window = new BrowserWindow({
 		width: 16 * initialScale,
 		height: 9 * initialScale,

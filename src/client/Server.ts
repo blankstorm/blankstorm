@@ -2,7 +2,7 @@ import $ from 'jquery';
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { cookies } from './utils';
-const fs = app.require('fs');
+const fs = $app.require('fs');
 import { JSONFileMap } from '../core/utils';
 import { ServerListItem } from './ui/server';
 import { config, versions } from '../core/metadata';
