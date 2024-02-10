@@ -407,7 +407,7 @@ export class Client {
 				V: (${camera.velocity
 					.asArray()
 					.map(e => e.toFixed(1))
-					.join(', ')}}) 
+					.join(', ')}) 
 				R: (${camera.alpha.toFixed(2)}, ${camera.beta.toFixed(2)})
 			</span><br>
 		`);
