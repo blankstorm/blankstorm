@@ -11,6 +11,7 @@ import { Engine } from '@babylonjs/core/Engines/engine';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import '@babylonjs/core/Culling'; // For Ray side effects
 import { Path } from '../core/Path';
 import type { MoveInfo, SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
