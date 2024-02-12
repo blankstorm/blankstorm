@@ -18,7 +18,7 @@ Any Mods you create for the Game from scratch belong to you (including pre-run M
 
 ## Fair Use and Asset Usage
 
-The licensed material and derivatives may NOT be used for any commercial purposes. Within reason, you're free to do whatever you want with records media of the Game (like screenshots and videos). "Within reason" means that you can't make any commercial use of them or do things that are unfair or adversely affect our rights unless we have specifically said it's okay in this document or provided for it in a specific agreement with you. If you upload videos of the game to video sharing and streaming sites, you are, however, allowed to put ads on them.
+The licensed material and derivatives may NOT be used for any commercial purposes. You may not distribute or publicly display the licensed material without our permission. Within reason, you're free to do whatever you want with records media of the Game (like screenshots and videos). "Within reason" means that you can't make any commercial use of them or do things that are unfair or adversely affect our rights unless we have specifically said it's okay in this document or provided for it in a specific agreement with you. If you upload videos of the game to video sharing and streaming sites, you are, however, allowed to put ads on them.
 
 In order to ensure the integrity of the Game, all Game downloads and updates must come from an authorized source. It's also important that 3rd-party tools/services don't seem "official" as their quality can't be guaranteed.
 
