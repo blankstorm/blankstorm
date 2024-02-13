@@ -86,7 +86,6 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 	},
 };
 
-const entryPoints = ['index.ts', 'index.html', 'locales', 'styles'];
 const buildOptions = getOptions(options.mode);
 
 function onBuildStart() {
@@ -105,11 +104,6 @@ function onBuildStart() {
 			fs.cpSync(path.join(dirname, 'assets', f), path.join(asset_path, f), { recursive: true });
 		}
 		fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
-		for (const name of fs.readdirSync(input)) {
-			if (name.endsWith('js')) {
-				fs.cpSync(path.join(input, name), path.join(options.output, name), { recursive: true });
-			}
-		}
 	} catch (e) {
 		if (!('status' in e)) {
 			console.error(e);
@@ -119,6 +113,7 @@ function onBuildStart() {
 
 async function onBuildEnd() {
 	try {
+		fs.renameSync(path.join(options.output, 'preload.js'), path.join(options.output, 'preload.mjs'));
 		if (!options['no-app']) {
 			await electronBuilder.build(electronBuilderConfig);
 			for (const platform of ['win', 'linux']) {
@@ -161,7 +156,7 @@ async function onBuildEnd() {
 }
 
 const esbuildConfig: esbuild.BuildOptions = {
-	entryPoints: entryPoints.flatMap(p => fromPath(path.join(input, p))),
+	entryPoints: ['index.ts', 'index.html', 'locales', 'styles'].flatMap(p => fromPath(path.join(input, p))),
 	assetNames: '[dir]/[name]',
 	outdir: options.output,
 	bundle: true,
@@ -174,9 +169,15 @@ const esbuildConfig: esbuild.BuildOptions = {
 		'.json': 'copy',
 	},
 	define: { $build: JSON.stringify(buildOptions), $package: JSON.stringify(pkg) },
+	plugins: [glslPlugin(), replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } }), counterPlugin(options.watch)],
+};
+
+const esbuildAppConfig: esbuild.BuildOptions = {
+	...esbuildConfig,
+	entryPoints: ['app.ts', 'preload.ts'].map(p => path.join(input, p)),
+	packages: 'external',
 	plugins: [
-		glslPlugin(),
-		replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } }),
+		...esbuildConfig.plugins,
 		{
 			name: 'app-builder-client',
 			setup(build: esbuild.PluginBuild) {
@@ -184,7 +185,6 @@ const esbuildConfig: esbuild.BuildOptions = {
 				build.onEnd(onBuildEnd);
 			},
 		},
-		counterPlugin(options.watch),
 	],
 };
 
@@ -210,9 +210,11 @@ try {
 if (options.watch) {
 	console.log('Watching...');
 	const ctx = await esbuild.context(esbuildConfig);
-	await ctx.watch();
+	const appCtx = await esbuild.context(esbuildAppConfig);
+	await Promise.all([ctx.watch(), appCtx.watch()]);
 } else {
 	await esbuild.build(esbuildConfig);
+	await esbuild.build(esbuildAppConfig);
 }
 if (fs.statSync(symlinkPath).isDirectory()) {
 	fs.rmSync(symlinkPath, { recursive: true, force: true });

@@ -2,7 +2,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('$app', {
-	require(pkg) {
+	require(pkg: string) {
 		return require(pkg);
 	},
 	options() {

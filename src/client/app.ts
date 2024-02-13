@@ -1,9 +1,9 @@
 /* eslint-env node */
 import { app, shell, nativeTheme, ipcMain, BrowserWindow } from 'electron';
-import path from 'path';
+import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { Logger } from 'logzen';
+import { LogLevel, Logger } from 'logzen';
 import { existsSync, mkdirSync, appendFileSync } from 'fs';
 
 const __dirname = path.resolve(fileURLToPath(import.meta.url), '..');
@@ -15,18 +15,26 @@ if (!existsSync(logDir)) {
 }
 const logPath = `${logDir}/${new Date().toISOString().replaceAll(':', '.')}.log`;
 logger.on('entry', entry => appendFileSync(logPath, entry + '\n'));
-logger.log('Initializing...');
 
 const { values: options } = parseArgs({
-		options: {
-			'bs-debug': { type: 'boolean', default: false },
-			'bs-open-devtools': { type: 'boolean', default: false },
-			'log-level': { type: 'string', default: '0' },
-		},
-		allowPositionals: true,
-		strict: false,
-	}),
-	initialScale = 100;
+	options: {
+		'bs-debug': { type: 'boolean', default: false },
+		'bs-open-devtools': { type: 'boolean', default: false },
+		'log-level': { type: 'string' },
+		quiet: { type: 'boolean', default: false },
+		'window-scale': { type: 'string', default: '100' },
+	},
+	allowPositionals: true,
+	strict: false,
+});
+let initialScale = parseInt(options['window-scale'].toString());
+initialScale = isNaN(initialScale) ? 100 : initialScale;
+
+if (options.quiet) {
+	logger.detach(console, [LogLevel.DEBUG, LogLevel.LOG, LogLevel.INFO]);
+}
+
+logger.log('Initializing...');
 
 if (options['log-level']) {
 	logger.warn('CLI flag "log-level" ignored (unsupported)');
@@ -48,7 +56,7 @@ app.whenReady().then(() => {
 
 	nativeTheme.themeSource = 'dark';
 
-	window.removeMenu(true);
+	window.removeMenu();
 	window.loadFile(path.join(__dirname, 'index.html'));
 
 	window.webContents.setWindowOpenHandler(({ url }) => {
