@@ -6,8 +6,9 @@ declare global {
 	const $build: BuildOptions;
 	const $package: typeof package;
 	const $app: {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		require: NodeJS.Require & (<M = any>(id: string) => M);
+		require: NodeJS.Require & {
+			<const T extends 'fs' | 'node:url' | 'node:path'>(id: T): typeof import(T);
+		};
 		options(): Promise<ClientOptions>;
 		log(message: IOMessage): Promise<void>;
 	};

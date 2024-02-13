@@ -25,7 +25,7 @@ import type { WithOptional } from '../types';
 
 import { xpToLevel } from '../core/utils';
 
-const fs = $app.require<typeof import('fs')>('fs');
+const fs = $app.require('fs');
 
 export interface PlayerContext extends Account {
 	system: ClientSystem;

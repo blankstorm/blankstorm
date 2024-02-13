@@ -1,15 +1,16 @@
 /* eslint-env node */
-import { app, shell, nativeTheme, ipcMain, BrowserWindow } from 'electron';
+import { app, shell, nativeTheme, ipcMain, BrowserWindow, Input } from 'electron';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { LogLevel, Logger } from 'logzen';
+import { type IOMessage, LogLevel, Logger } from 'logzen';
 import { existsSync, mkdirSync, appendFileSync } from 'fs';
+import type { ClientOptions } from './client';
 
-const __dirname = path.resolve(fileURLToPath(import.meta.url), '..');
+const __dirname: string = path.resolve(fileURLToPath(import.meta.url), '..');
 
 const logger = new Logger({ prefix: 'main' });
-const logDir = path.join(__dirname, 'logs/');
+const logDir: string = path.join(__dirname, 'logs/');
 if (!existsSync(logDir)) {
 	mkdirSync(logDir, { recursive: true });
 }
@@ -27,7 +28,7 @@ const { values: options } = parseArgs({
 	allowPositionals: true,
 	strict: false,
 });
-let initialScale = parseInt(options['window-scale'].toString());
+let initialScale: number = parseInt(options['window-scale'].toString());
 initialScale = isNaN(initialScale) ? 100 : initialScale;
 
 if (options.quiet) {
@@ -41,9 +42,9 @@ if (options['log-level']) {
 }
 
 app.whenReady().then(() => {
-	ipcMain.handle('options', () => ({ path: __dirname, debug: options['bs-debug'] }));
-	ipcMain.handle('log', (ev, msg) => logger.send({ ...msg, prefix: 'client', computed: null }));
-	const window = new BrowserWindow({
+	ipcMain.handle('options', (): ClientOptions => ({ path: __dirname, debug: !!options['bs-debug'] }));
+	ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, prefix: 'client', computed: null }));
+	const window: BrowserWindow = new BrowserWindow({
 		width: 16 * initialScale,
 		height: 9 * initialScale,
 		center: true,
@@ -65,7 +66,7 @@ app.whenReady().then(() => {
 	});
 	window.setFullScreenable(true);
 
-	const inputHandler = (ev, input) => {
+	const inputHandler = (ev, input: Input) => {
 		if (input.type == 'keyUp') {
 			return;
 		}

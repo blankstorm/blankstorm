@@ -2,7 +2,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { config } from './metadata';
 import type * as FS from 'fs';
 
-export const filterObject = (object, ...keys) => Object.fromEntries(Object.entries(object).filter(([key]) => keys.includes(key)));
+export const filterObject = (object: object, ...keys: string[]) => Object.fromEntries(Object.entries(object).filter(([key]) => keys.includes(key)));
 export const greek = [
 	'Alpha',
 	'Beta',
@@ -194,14 +194,7 @@ export class JSONFileMap implements Map<string, JSONValue> {
  * A Map overlaying a folder
  */
 export class FolderMap /* implements Map */ {
-	_path;
-	_fs;
-	_suffix;
-	constructor(path, fs, suffix = '') {
-		this._path = path;
-		this._fs = fs;
-		this._suffix = suffix;
-	}
+	constructor(protected _path: string, protected _fs: typeof FS, protected _suffix = '') {}
 
 	get _names(): string[] {
 		return this._fs
@@ -279,7 +272,7 @@ export class FolderMap /* implements Map */ {
 	}
 }
 
-export function resolveConstructors(object): string[] {
+export function resolveConstructors(object: object): string[] {
 	const constructors = [];
 	let prototype = object;
 	while (prototype && !['Function', 'Object'].includes(prototype.constructor.name)) {
