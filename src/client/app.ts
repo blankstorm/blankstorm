@@ -5,7 +5,7 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { type IOMessage, LogLevel, Logger } from 'logzen';
 import { existsSync, mkdirSync, appendFileSync } from 'fs';
-import type { ClientOptions } from './client';
+import type { ClientInit } from './client';
 
 const __dirname: string = path.resolve(fileURLToPath(import.meta.url), '..');
 
@@ -42,7 +42,7 @@ if (options['log-level']) {
 }
 
 app.whenReady().then(() => {
-	ipcMain.handle('options', (): ClientOptions => ({ path: __dirname, debug: !!options['bs-debug'] }));
+	ipcMain.handle('options', (): ClientInit => ({ path: __dirname, debug: !!options['bs-debug'] }));
 	ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, prefix: 'client', computed: null }));
 	const window: BrowserWindow = new BrowserWindow({
 		width: 16 * initialScale,

@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import { alert, confirm, download } from '../utils';
 import { versions } from '../../core/metadata';
-import type { Save } from '../Save';
+import type { Save } from '../saves';
 import type { Client } from '../client';
 
 export class SaveListItem extends HTMLLIElement {

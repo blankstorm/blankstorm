@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { confirm } from '../utils';
-import type { Server } from '../Server';
+import type { Server } from '../server';
 import type { Client } from '../client';
 
 function connectAndStartPlaying(server: Server, context: Client) {

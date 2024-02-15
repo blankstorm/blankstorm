@@ -10,7 +10,7 @@ import type { ClientLevel } from '../level';
 
 export const supportedMarkerNodeTypes = ['planet', 'star', 'ship', 'waypoint'];
 
-export class Marker {
+export class MapMarker {
 	gui = $svg<SVGGElement>('g');
 
 	get markerID(): string {
@@ -25,7 +25,7 @@ export class Marker {
 			case 'planet':
 				return getColorForBiome((this.target as unknown as Planet).biome);
 			case 'ship':
-				return this.context.ui?.client?.current?.activePlayer == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
+				return this.context.ui?.client?.currentLevel?.activePlayer == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
 		}
 	}
 

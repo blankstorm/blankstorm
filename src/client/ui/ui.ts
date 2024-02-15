@@ -15,12 +15,12 @@ import { ItemUI } from './item';
 import { minimize, $svg, upload } from '../utils';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
-import { Marker } from './marker';
+import { MapMarker } from './map-marker';
 import type { Client } from '../client';
 import { ClientSystem } from '../system';
 import { Waypoint } from '../waypoint';
-import { Server } from '../Server';
-import { Save, LiveSave } from '../Save';
+import { Server } from '../server';
+import { Save, LiveSave } from '../saves';
 import { ClientLevel } from '../level';
 import { playsound } from '../audio';
 import * as renderer from '../../renderer';
@@ -30,7 +30,6 @@ export interface Context {
 	items: Map<string, ItemUI>;
 	research: Map<string, ResearchUI>;
 	ships: Map<string, ShipUI>;
-	markers: Map<string, Marker>;
 	map: {
 		x: number;
 		y: number;
@@ -38,6 +37,7 @@ export interface Context {
 		get svgY(): number;
 		rotation: number;
 		scale: number;
+		markers: Map<string, MapMarker>;
 	};
 	client: Client;
 }
@@ -46,7 +46,6 @@ export const context: Context = {
 	items: new Map(),
 	ships: new Map(),
 	research: new Map(),
-	markers: new Map(),
 	map: {
 		x: 0,
 		y: 0,
@@ -58,6 +57,7 @@ export const context: Context = {
 		get svgY() {
 			return this.y * -this.scale;
 		},
+		markers: new Map(),
 	},
 	client: null,
 };
@@ -179,20 +179,20 @@ export function update(ctx: Client) {
 			<span>${ctx.player.system.connections.length} hyperspace connection(s)</span>
 		`);
 		for (const [id, node] of ctx.player.system.nodes) {
-			if (!context.markers.has(id) && Marker.supportsNodeType(node.nodeType)) {
+			if (!context.map.markers.has(id) && MapMarker.supportsNodeType(node.nodeType)) {
 				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
 					continue;
 				}
-				const marker = new Marker(node, ctx);
-				context.markers.set(id, marker);
+				const marker = new MapMarker(node, ctx);
+				context.map.markers.set(id, marker);
 			}
 		}
 
-		for (const marker of context.markers.values()) {
+		for (const marker of context.map.markers.values()) {
 			marker.update();
 		}
 
-		if (ctx.current.isServer) {
+		if (ctx.currentLevel.isServer) {
 			$('#pause .quit').text('Disconnect');
 			$('#pause .save').hide();
 		} else {
@@ -373,7 +373,7 @@ export function registerListeners(client: Client) {
 	$('#pause .quit').on('click', () => {
 		client.pause();
 		$('.ingame').hide();
-		if (client.current.isServer) {
+		if (client.currentLevel.isServer) {
 			client.servers.get(client.servers.selected).disconnect();
 		} else {
 			client.saves.selected = null;
@@ -459,7 +459,8 @@ export function registerListeners(client: Client) {
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 			alert(locales.text`error.waypoint.range`);
 		} else {
-			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, client.current.getNodeSystem(client.current.activePlayer));
+			const waypoint =
+				wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, client.currentLevel.getNodeSystem(client.currentLevel.activePlayer));
 			waypoint.name = name;
 			waypoint.color = Color3.FromHexString(color);
 			waypoint.position = new Vector3(x, y, z);
@@ -528,7 +529,7 @@ export function registerListeners(client: Client) {
 				}
 				if (inputValue[0] == '/') {
 					client.sendChatMessage(client.runCommand(inputValue.slice(1)) as string);
-				} else if (client.current.isServer) {
+				} else if (client.currentLevel.isServer) {
 					client.servers.get(client.servers.selected).socket.emit('chat', inputValue);
 				} else {
 					client.player.chat(inputValue);
@@ -546,7 +547,7 @@ export function registerListeners(client: Client) {
 		if (!client.isPaused) {
 			renderer.getCamera().attachControl($('canvas.game'), true);
 		}
-		if (!(client.current instanceof ClientLevel)) {
+		if (!(client.currentLevel instanceof ClientLevel)) {
 			client.logger.warn('No active client level');
 			return;
 		}
@@ -554,16 +555,16 @@ export function registerListeners(client: Client) {
 		update(client);
 	});
 	$('canvas.game').on('contextmenu', e => {
-		if (client.player.id != client.current.activePlayer) {
-			client.logger.warn(`Mismatch: The client's player ID is ${client.player.id} but the current active player ID is ${client.current.activePlayer}`);
+		if (client.player.id != client.currentLevel.activePlayer) {
+			client.logger.warn(`Mismatch: The client's player ID is ${client.player.id} but the current active player ID is ${client.currentLevel.activePlayer}`);
 			return;
 		}
-		if (!(client.current instanceof ClientLevel)) {
+		if (!(client.currentLevel instanceof ClientLevel)) {
 			client.logger.warn('No active client level');
 			return;
 		}
 		const data = renderer.handleCanvasRightClick(e, client.player.id);
-		const system = client.current.getNodeSystem(client.current.activePlayer);
+		const system = client.currentLevel.getNodeSystem(client.currentLevel.activePlayer);
 		system.tryAction(client.player.id, 'move', data);
 	});
 	$('canvas.game').on('keydown', e => {
@@ -581,7 +582,7 @@ export function registerListeners(client: Client) {
 				break;
 			case 'Tab':
 				e.preventDefault();
-				if (client.current.isServer) $('#tablist').show();
+				if (client.currentLevel.isServer) $('#tablist').show();
 				break;
 		}
 	});
@@ -595,7 +596,7 @@ export function registerListeners(client: Client) {
 		switch (e.key) {
 			case 'Tab':
 				e.preventDefault();
-				if (client.current.isServer) $('#tablist').hide();
+				if (client.currentLevel.isServer) $('#tablist').hide();
 				break;
 		}
 	});

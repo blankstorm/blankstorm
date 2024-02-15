@@ -10,4 +10,8 @@ $.event.special.wheel = {
 
 const client = new Client();
 const options = await $app.options();
+if (options.debug) {
+	client.logger.info('Debug mode enabled');
+	globalThis.client = client;
+}
 await client.init(options);

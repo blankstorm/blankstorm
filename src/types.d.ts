@@ -1,6 +1,6 @@
 import type { BuildOptions } from '../.build/options';
 import type package from '../package.json';
-import type { ClientOptions } from './client/client';
+import type { ClientInit } from './client/client';
 
 declare global {
 	const $build: BuildOptions;
@@ -9,7 +9,7 @@ declare global {
 		require: NodeJS.Require & {
 			<const T extends 'fs' | 'node:url' | 'node:path'>(id: T): typeof import(T);
 		};
-		options(): Promise<ClientOptions>;
+		options(): Promise<ClientInit>;
 		log(message: IOMessage): Promise<void>;
 	};
 	interface Performance {

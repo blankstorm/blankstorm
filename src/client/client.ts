@@ -8,13 +8,11 @@ import type { SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemCollection, ItemID } from '../core/generic/items';
 import type { SerializedNode } from '../core/nodes/Node';
-import type { Player } from '../core/nodes/Player';
 import { ClientLevel } from './level';
-import { SaveMap } from './Save';
-import { ServerMap } from './Server';
+import { SaveMap } from './saves';
+import { ServerMap } from './server';
 import { type Keybind, settings } from './settings';
 import { alert, cookies, fixPaths, minimize } from './utils';
-import type { ClientSystem } from './system';
 import { Locale, locales } from './locales';
 import { playsound } from './audio';
 import * as renderer from '../renderer/index';
@@ -22,20 +20,10 @@ import * as ui from './ui/ui';
 import { ScreenshotUI } from './ui/screenshot';
 import { execCommandString } from '../core/commands';
 import type { WithOptional } from '../types';
-
 import { xpToLevel } from '../core/utils';
+import { User } from './user';
 
 const fs = $app.require('fs');
-
-export interface PlayerContext extends Account {
-	system: ClientSystem;
-	chat(...msg: string[]): unknown;
-	data(): Player;
-	/**
-	 * @internal
-	 */
-	_client: Client;
-}
 
 export interface ChatInfo {
 	/**
@@ -59,7 +47,7 @@ export interface ChatInfo {
 	eggCounter: number;
 }
 
-export interface ClientOptions {
+export interface ClientInit {
 	/**
 	 * The directory to use for client data
 	 */
@@ -71,7 +59,7 @@ export interface ClientOptions {
 	debug: boolean;
 }
 
-export class Client implements Readonly<ClientOptions> {
+export class Client implements Readonly<ClientInit> {
 	public readonly logger: Logger = new Logger();
 
 	protected _saves: SaveMap;
@@ -87,41 +75,20 @@ export class Client implements Readonly<ClientOptions> {
 	public readonly ui: ui.Context = ui.context;
 
 	protected _current: ClientLevel;
-	public get current(): ClientLevel {
+	public get currentLevel(): ClientLevel {
 		return this._current;
 	}
-	public set current(value: ClientLevel) {
+	public set currentLevel(value: ClientLevel) {
 		this._current = value;
 	}
 
-	protected _player: PlayerContext = {
-		_client: this,
-		id: '_guest_',
-		username: '[guest]',
-		type: 0,
-		lastchange: undefined,
-		created: undefined,
-		is_disabled: false,
-		chat(...msg) {
-			for (const m of msg) {
-				this._client.sendChatMessage(`${this.username} = ${m}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
-			}
-		},
-		data() {
-			const level = this._client.current.isServer ? this._client.servers.get(this._client.servers.selected).level : this._client.current;
-			const player = level?.getNodeSystem(this.id)?.nodes?.get(this.id);
-			return player as unknown as Player;
-		},
-		get system(): ClientSystem {
-			return this._client.current?.getNodeSystem(this._client.current.activePlayer);
-		},
-	};
-	public get player(): PlayerContext {
-		this._player._client = this;
+	protected _player: User = new User(this);
+	public get player(): User {
+		this._player.client = this;
 		return this._player;
 	}
-	public set player(value: WithOptional<PlayerContext, '_client'>) {
-		this._player = value as PlayerContext;
+	public set player(value: WithOptional<User, 'client'>) {
+		this._player = value as User;
 	}
 
 	protected _isPaused: boolean;
@@ -147,7 +114,7 @@ export class Client implements Readonly<ClientOptions> {
 
 	readonly chatInfo: ChatInfo = { index: 0, currentInput: '', inputs: [], eggCounter: 0 };
 
-	protected _options: ClientOptions;
+	protected _options: ClientInit;
 
 	public get path(): string {
 		return this._options.path;
@@ -162,14 +129,14 @@ export class Client implements Readonly<ClientOptions> {
 	}
 
 	public flushSave() {
-		if (!(this.current instanceof ClientLevel)) {
+		if (!(this.currentLevel instanceof ClientLevel)) {
 			throw 'Save Error: you must have a valid save selected.';
 		}
 		$('#pause .save').text('Saving...');
 		try {
-			const save = this.saves.get(this.current.id);
-			save.data = this.current.toJSON();
-			this.saves.set(this.current.id, save);
+			const save = this.saves.get(this.currentLevel.id);
+			save.data = this.currentLevel.toJSON();
+			this.saves.set(this.currentLevel.id, save);
 			this.sendChatMessage('Game saved.');
 		} catch (err) {
 			this.sendChatMessage('Failed to save game.');
@@ -205,7 +172,7 @@ export class Client implements Readonly<ClientOptions> {
 	}
 
 	public runCommand(command: string): string | void {
-		if (this.current.isServer) {
+		if (this.currentLevel.isServer) {
 			this.servers.get(this.servers.selected).socket.emit('command', command);
 		} else {
 			return execCommandString(command, { executor: this.player.data() }, true);
@@ -355,14 +322,14 @@ export class Client implements Readonly<ClientOptions> {
 		this.logger.log('Client loaded successful');
 		renderer.engine.runRenderLoop(this.update.bind(this));
 		setInterval(() => {
-			if (this.current instanceof ClientLevel && !this.isPaused) {
-				this.current.tick();
+			if (this.currentLevel instanceof ClientLevel && !this.isPaused) {
+				this.currentLevel.tick();
 			}
 		}, 1000 / config.tick_rate);
 		this._isInitialized = true;
 	}
 
-	public async init({ path = '.', debug = false }: Partial<ClientOptions> = {}): Promise<void> {
+	public async init({ path = '.', debug = false }: Partial<ClientInit> = {}): Promise<void> {
 		if (this._isInitialized) {
 			this.logger.warn('Attempted to initialize client that was already initialized. (Options ignored)');
 			return;
@@ -386,11 +353,11 @@ export class Client implements Readonly<ClientOptions> {
 	}
 
 	private _update() {
-		if (!(this.current instanceof ClientLevel) || this.isPaused) {
+		if (!(this.currentLevel instanceof ClientLevel) || this.isPaused) {
 			return;
 		}
 		const camera = renderer.getCamera(),
-			currentSystem = this.current.getNodeSystem(this.current.activePlayer);
+			currentSystem = this.currentLevel.getNodeSystem(this.currentLevel.activePlayer);
 		camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
 		for (const waypoint of currentSystem.waypoints) {
 			const pos = waypoint.screenPos;
@@ -413,8 +380,8 @@ export class Client implements Readonly<ClientOptions> {
 		$('#hud svg.xp rect').attr('width', (xpToLevel(this.player.data().xp) % 1) * 100 + '%');
 		$('#debug .left').html(`
 			<span>${version} ${this._mods.size ? `[${[...this._mods.values()].join(', ')}]` : `(vanilla)`}</span><br>
-			<span>${renderer.engine.getFps().toFixed()} FPS | ${this.current.tps.toFixed()} TPS</span><br>
-			<span>${this.current.id} (${this.current.date.toLocaleString()})</span><br><br>
+			<span>${renderer.engine.getFps().toFixed()} FPS | ${this.currentLevel.tps.toFixed()} TPS</span><br>
+			<span>${this.currentLevel.id} (${this.currentLevel.date.toLocaleString()})</span><br><br>
 			<span>
 				P: (${camera.target
 					.asArray()
@@ -463,9 +430,10 @@ export class Client implements Readonly<ClientOptions> {
 		$('#save-list,#server-list').hide();
 		$('canvas.game').show().trigger('focus');
 		$('#hud').show();
-		this.current = level;
+		this.currentLevel = level;
 		renderer.clear();
 		renderer.update(this.player.system.toJSON());
+		level.isActive = true;
 		level.on('projectile.fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
 			renderer.fireProjectile(hardpointID, targetID, projectile);
 		});
