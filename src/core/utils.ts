@@ -193,7 +193,11 @@ export class JSONFileMap implements Map<string, JSONValue> {
 /**
  * A Map overlaying a folder
  */
-export class FolderMap /* implements Map */ {
+export class FolderMap implements Map<string, string> {
+	get [Symbol.toStringTag](): '[FolderMap]' {
+		return '[FolderMap]';
+	}
+
 	constructor(protected _path: string, protected _fs: typeof FS, protected _suffix = '') {}
 
 	get _names(): string[] {
@@ -222,10 +226,13 @@ export class FolderMap /* implements Map */ {
 		}
 	}
 
-	delete(key: string) {
-		if (this.has(key)) {
-			this._fs.unlinkSync(this._join(key));
+	delete(key: string): boolean {
+		if (!this.has(key)) {
+			return false;
 		}
+
+		this._fs.unlinkSync(this._join(key));
+		return true;
 	}
 
 	get(key: string): string {
@@ -238,8 +245,9 @@ export class FolderMap /* implements Map */ {
 		return this._names.includes(key);
 	}
 
-	set(key: string, value: string): void {
+	set(key: string, value: string): this {
 		this._fs.writeFileSync(this._join(key), value);
+		return this;
 	}
 
 	get size() {

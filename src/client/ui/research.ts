@@ -1,10 +1,10 @@
 import type { Research } from '../../core/generic/research';
 import { locales } from '../locales';
 import $ from 'jquery';
-import type { Client } from '../client';
+import { system, account } from '../user';
 
 export class ResearchUI extends HTMLDivElement {
-	constructor(research: Research, context: Client) {
+	constructor(research: Research) {
 		super();
 
 		$(`<span class="locked locked-icon"><svg style=font-size:1.5em><use href="_build.asset_dir/images/icons.svg#lock"/></svg></span>
@@ -15,7 +15,7 @@ export class ResearchUI extends HTMLDivElement {
 		$(this)
 			.find('.upgrade')
 			.on('click', async () => {
-				await context.player.system.tryAction(context.player.id, 'do_research', research);
+				await system().tryAction(account.id, 'do_research', research);
 			});
 
 		$(this).appendTo('div.lab');

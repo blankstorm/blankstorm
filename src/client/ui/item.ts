@@ -1,10 +1,10 @@
 import $ from 'jquery';
 import type { Item } from '../../core/generic/items';
 import { locales } from '../locales';
-import type { Client } from '../client';
+import { account, system } from '../user';
 
 export class ItemUI extends HTMLDivElement {
-	constructor(item: Item, context: Client) {
+	constructor(item: Item) {
 		super();
 
 		$('<span></span>')
@@ -15,7 +15,7 @@ export class ItemUI extends HTMLDivElement {
 
 		$(this)
 			.on('click', async () => {
-				await context.player.system.tryAction(context.player.id, 'create_item', item);
+				await system().tryAction(account.id, 'create_item', item);
 			})
 			.addClass('ui-item')
 			.appendTo('div.inventory');

@@ -3,10 +3,10 @@ import $ from 'jquery';
 import { genericShips, shipTypes } from '../../core/generic/ships';
 import type { ShipType } from '../../core/generic/ships';
 import { locales } from '../locales';
-import type { Client } from '../client';
+import { account, system } from '../user';
 
 export class BerthUI extends HTMLDivElement {
-	constructor(berth: Berth, context: Client) {
+	constructor(berth: Berth) {
 		super();
 		$(this).addClass('content bg-transparent');
 		$(`<p></p>`)
@@ -23,7 +23,7 @@ export class BerthUI extends HTMLDivElement {
 		$(`<p><tool-tip></tool-tip><svg style=font-size:1.5em><use href="_build.asset_dir/images/icons.svg#circle-plus"/></svg></p>`)
 			.addClass('non-active add add-or-upgrade-icon')
 			.on('click', async () => {
-				await context.player.system.tryAction(context.player.id, 'create_ship', { ship: genericShips[select.val() as ShipType], berth });
+				await system().tryAction(account.id, 'create_ship', { ship: genericShips[select.val() as ShipType], berth });
 			})
 			.appendTo(this);
 

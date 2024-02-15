@@ -1,30 +1,50 @@
-import $ from 'jquery';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { login } from '@blankstorm/api';
+import $ from 'jquery';
 import { items } from '../../core/generic/items';
-import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
 import type { ResearchID } from '../../core/generic/research';
+import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
+import { config, game_url, version, versions } from '../../core/metadata';
 import type { Player } from '../../core/nodes/Player';
-import { game_url, config, version, versions } from '../../core/metadata';
 import { isHex, isJSON, toDegrees } from '../../core/utils';
-import { Keybind, settings } from '../settings';
+import * as renderer from '../../renderer';
+import { playsound } from '../audio';
+import {
+	changeUI,
+	chatInfo,
+	currentLevel,
+	flushSave,
+	hitboxesEnabled,
+	isMultiplayerEnabled,
+	isPaused,
+	logger,
+	pause,
+	runCommand,
+	sendChatMessage,
+	startPlaying,
+	toggleChatUI,
+	toggleHitboxes,
+	unpause,
+} from '../client';
+import { chat_cache_size } from '../config';
+import { ClientLevel } from '../level';
 import { locales } from '../locales';
+import * as saves from '../saves';
+import { LiveSave, Save } from '../saves';
+import * as servers from '../servers';
+import { Server } from '../servers';
+import { Keybind, settings } from '../settings';
+import { ClientSystem } from '../system';
+import { account, chat, player, system } from '../user';
+import { $svg, minimize, upload } from '../utils';
+import { Waypoint } from '../waypoint';
 import { ItemUI } from './item';
-import { minimize, $svg, upload } from '../utils';
+import { MapMarker } from './map-marker';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
-import { MapMarker } from './map-marker';
-import type { Client } from '../client';
-import { ClientSystem } from '../system';
-import { Waypoint } from '../waypoint';
-import { Server } from '../server';
-import { Save, LiveSave } from '../saves';
-import { ClientLevel } from '../level';
-import { playsound } from '../audio';
-import * as renderer from '../../renderer';
-import { chat_cache_size } from '../config';
+import { client } from '../..';
 
 export interface Context {
 	items: Map<string, ItemUI>;
@@ -39,7 +59,6 @@ export interface Context {
 		scale: number;
 		markers: Map<string, MapMarker>;
 	};
-	client: Client;
 }
 
 export const context: Context = {
@@ -59,21 +78,20 @@ export const context: Context = {
 		},
 		markers: new Map(),
 	},
-	client: null,
 };
 
-export function init(client: Client) {
+export function init() {
 	document.title = 'Blankstorm ' + versions.get(version).text;
 	$('#main .version a').text(versions.get(version).text).attr('href', `${game_url}/versions#${version}`);
-	context.client = client;
+
 	for (const [id, item] of Object.entries(items)) {
-		context.items.set(id, new ItemUI(item, client));
+		context.items.set(id, new ItemUI(item));
 	}
 	for (const [id, _research] of Object.entries(research)) {
-		context.research.set(id, new ResearchUI(_research, client));
+		context.research.set(id, new ResearchUI(_research));
 	}
 	for (const [type, genericShip] of Object.entries(genericShips)) {
-		context.ships.set(type, new ShipUI(genericShip, client));
+		context.ships.set(type, new ShipUI(genericShip));
 	}
 	const size = config.system_generation.max_size;
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
@@ -99,9 +117,9 @@ export function init(client: Client) {
 	}
 }
 
-export function update(ctx: Client) {
-	if (ctx.player.system instanceof ClientSystem) {
-		const player = ctx.player.system.level.getNodeSystem(ctx.player.id).getNodeByID<Player>(ctx.player.id);
+export function update() {
+	if (system() instanceof ClientSystem) {
+		const player = system().level.getNodeSystem(account.id).getNodeByID<Player>(account.id);
 		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
@@ -161,7 +179,7 @@ export function update(ctx: Client) {
 			$(context.ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
 		}
 
-		for (const waypoint of ctx.player.system.waypoints) {
+		for (const waypoint of system().waypoints) {
 			waypoint.updateVisibility();
 		}
 		$('#map-markers').attr(
@@ -175,15 +193,15 @@ export function update(ctx: Client) {
 			<span>${context.map.scale.toFixed(1)}x</span>
 		`);
 		$('#system-info').html(`
-			<span><strong>${ctx.player.system.name}</strong></span><br>
-			<span>${ctx.player.system.connections.length} hyperspace connection(s)</span>
+			<span><strong>${system().name}</strong></span><br>
+			<span>${system().connections.length} hyperspace connection(s)</span>
 		`);
-		for (const [id, node] of ctx.player.system.nodes) {
+		for (const [id, node] of system().nodes) {
 			if (!context.map.markers.has(id) && MapMarker.supportsNodeType(node.nodeType)) {
 				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
 					continue;
 				}
-				const marker = new MapMarker(node, ctx);
+				const marker = new MapMarker(node);
 				context.map.markers.set(id, marker);
 			}
 		}
@@ -192,7 +210,7 @@ export function update(ctx: Client) {
 			marker.update();
 		}
 
-		if (ctx.currentLevel.isServer) {
+		if (currentLevel.isServer) {
 			$('#pause .quit').text('Disconnect');
 			$('#pause .save').hide();
 		} else {
@@ -269,16 +287,16 @@ function strobe(rate) {
 	}
 }
 
-export function registerListeners(client: Client) {
+export function registerListeners() {
 	$('#main .sp').on('click', () => {
 		$('#main').hide();
 		$('#save-list').show();
 	});
 	$('#main .mp').on('click', () => {
-		if (client.isMultiplayerEnabled) {
+		if (isMultiplayerEnabled) {
 			$('#main').hide();
 			$('#server-list').show();
-			for (const server of client.servers.values()) {
+			for (const server of servers.servers()) {
 				server.ping();
 			}
 		} else {
@@ -288,7 +306,7 @@ export function registerListeners(client: Client) {
 	$('#main .options').on('click', () => {
 		setLast('#main');
 		$('#settings').show();
-		update(client);
+		update();
 	});
 	$('#main .exit').on('click', () => {
 		close();
@@ -308,13 +326,13 @@ export function registerListeners(client: Client) {
 	$('#server-dialog .save').on('click', () => {
 		const name = $('#server-dialog .name').val() as string,
 			url = $('#server-dialog .url').val() as string,
-			id = Server.GetID(url);
-		const server = client.servers.has(id) ? client.servers.get(id) : new Server(url, name, client);
-		if (client.servers.has(id)) {
+			id = servers.getServerID(url);
+		const server = servers.has(id) ? servers.get(id) : new Server(url, name);
+		if (servers.has(id)) {
 			server.name = name;
 			server._url = url;
 		}
-		update(client);
+		update();
 		$<HTMLDialogElement>('#server-dialog')[0].close();
 	});
 	$('#server-dialog .cancel').on('click', () => {
@@ -323,11 +341,11 @@ export function registerListeners(client: Client) {
 	$('#save-edit .save').on('click', () => {
 		const id = $('#save-edit .id').val() as string,
 			name = $('#save-edit .name').val() as string;
-		const save = client.saves.get(id);
-		if (client.saves.has(id)) {
+		const save = saves.get(id);
+		if (saves.has(id)) {
 			save.data.name = name;
 		}
-		update(client);
+		update();
 		$<HTMLDialogElement>('#save-edit')[0].close();
 	});
 	$('#save-edit .cancel').on('click', () => {
@@ -337,13 +355,15 @@ export function registerListeners(client: Client) {
 		const files = await upload('.json');
 		const text = await files[0].text();
 		if (isJSON(text)) {
-			new Save(JSON.parse(text), client);
+			new Save(JSON.parse(text));
 		} else {
 			alert(`Can't load save: not JSON.`);
 		}
 	});
 	$('#server-list button.refresh').on('click', () => {
-		client.servers.forEach(server => server.ping());
+		for (const server of servers.servers()) {
+			server.ping();
+		}
 	});
 	$('#connect button.back').on('click', () => {
 		$('#server-list').show();
@@ -355,28 +375,28 @@ export function registerListeners(client: Client) {
 	$('#save-new .new').on('click', async () => {
 		$<HTMLDialogElement>('#save-new')[0].close();
 		const name = $('#save-new .name').val() as string;
-		const live = await LiveSave.CreateDefault(name, client.player.id, client.player.username);
-		new Save(live.toJSON(), client);
-		client.startPlaying(live);
+		const live = await LiveSave.CreateDefault(name, account.id, account.username);
+		new Save(live.toJSON());
+		startPlaying(live);
 	});
 	$('#pause .resume').on('click', () => {
 		$('#pause').hide();
 		$('canvas.game').trigger('focus');
-		client.unpause();
+		unpause();
 	});
-	$('#pause .save').on('click', client.flushSave.bind(client));
+	$('#pause .save').on('click', flushSave);
 	$('#pause .options').on('click', () => {
 		setLast('#pause');
 		$('#pause').hide();
 		$('#settings').show();
 	});
 	$('#pause .quit').on('click', () => {
-		client.pause();
+		pause();
 		$('.ingame').hide();
-		if (client.currentLevel.isServer) {
-			client.servers.get(client.servers.selected).disconnect();
+		if (currentLevel.isServer) {
+			servers.get(servers.selected).disconnect();
 		} else {
-			client.saves.selected = null;
+			saves.select(null);
 			$('#main').show();
 		}
 	});
@@ -435,16 +455,16 @@ export function registerListeners(client: Client) {
 	$('#settings button.back').on('click', () => {
 		$('#settings').hide();
 		$(getLast()).show();
-		update(client);
+		update();
 	});
-	$('#settings div.general input').on('change', () => update(client));
+	$('#settings div.general input').on('change', update);
 	$<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
 		const lang = e.target.value;
 		if (locales.has(lang)) {
 			locales.load(lang);
 		} else {
 			alert('That locale is not loaded.');
-			client.logger.warn(`Failed to load locale ${lang}`);
+			logger.warn(`Failed to load locale ${lang}`);
 		}
 	});
 	$('#waypoint-dialog .save').on('click', () => {
@@ -459,8 +479,7 @@ export function registerListeners(client: Client) {
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 			alert(locales.text`error.waypoint.range`);
 		} else {
-			const waypoint =
-				wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, client.currentLevel.getNodeSystem(client.currentLevel.activePlayer));
+			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, currentLevel.getNodeSystem(currentLevel.activePlayer));
 			waypoint.name = name;
 			waypoint.color = Color3.FromHexString(color);
 			waypoint.position = new Vector3(x, y, z);
@@ -495,24 +514,23 @@ export function registerListeners(client: Client) {
 		});
 	const $chatInput = $('#chat-input');
 	$chatInput.on('keydown', e => {
-		const chat = client.chatInfo,
-			inputValue = $chatInput.val() as string;
-		if (chat.index == 0) {
-			chat.currentInput = inputValue;
+		const inputValue = $chatInput.val() as string;
+		if (chatInfo.index == 0) {
+			chatInfo.currentInput = inputValue;
 		}
 		switch (e.key) {
 			case 'Escape':
-				client.toggleChatUI();
+				toggleChatUI();
 				break;
 			case 'ArrowUp':
-				if (chat.index < chat.inputs.length) {
-					$chatInput.val(++chat.eggCounter == 69 ? 'nice' : chat.inputs[++chat.index]);
+				if (chatInfo.index < chatInfo.inputs.length) {
+					$chatInput.val(++chatInfo.eggCounter == 69 ? 'nice' : chatInfo.inputs[++chatInfo.index]);
 				}
 				break;
 			case 'ArrowDown':
-				chat.eggCounter = 0;
-				if (chat.index > 0) {
-					$chatInput.val(--chat.index == 0 ? chat.currentInput : chat.inputs[chat.index]);
+				chatInfo.eggCounter = 0;
+				if (chatInfo.index > 0) {
+					$chatInput.val(--chatInfo.index == 0 ? chatInfo.currentInput : chatInfo.inputs[chatInfo.index]);
 				}
 				break;
 			case 'Enter':
@@ -520,23 +538,23 @@ export function registerListeners(client: Client) {
 					// Prevent empty or whitespace-only messages
 					break;
 				}
-				chat.eggCounter = 0;
-				if (chat.inputs[0] != chat.currentInput) {
-					chat.inputs.unshift(inputValue);
-					if (chat.inputs.length > chat_cache_size) {
-						chat.inputs.pop();
+				chatInfo.eggCounter = 0;
+				if (chatInfo.inputs[0] != chatInfo.currentInput) {
+					chatInfo.inputs.unshift(inputValue);
+					if (chatInfo.inputs.length > chat_cache_size) {
+						chatInfo.inputs.pop();
 					}
 				}
 				if (inputValue[0] == '/') {
-					client.sendChatMessage(client.runCommand(inputValue.slice(1)) as string);
-				} else if (client.currentLevel.isServer) {
-					client.servers.get(client.servers.selected).socket.emit('chat', inputValue);
+					sendChatMessage(runCommand(inputValue.slice(1)) as string);
+				} else if (currentLevel.isServer) {
+					servers.get(servers.selected).socket.emit('chat', inputValue);
 				} else {
-					client.player.chat(inputValue);
+					chat(inputValue);
 				}
 				$chatInput.val('');
-				client.toggleChatUI();
-				chat.index = 0;
+				toggleChatUI();
+				chatInfo.index = 0;
 				break;
 		}
 	});
@@ -544,28 +562,28 @@ export function registerListeners(client: Client) {
 		renderer.getCamera().attachControl($('canvas.game'), true);
 	});
 	$('canvas.game').on('click', e => {
-		if (!client.isPaused) {
+		if (!isPaused) {
 			renderer.getCamera().attachControl($('canvas.game'), true);
 		}
-		if (!(client.currentLevel instanceof ClientLevel)) {
-			client.logger.warn('No active client level');
+		if (!(currentLevel instanceof ClientLevel)) {
+			logger.warn('No active client level');
 			return;
 		}
-		renderer.handleCanvasClick(e, client.player.id);
-		update(client);
+		renderer.handleCanvasClick(e, account.id);
+		update();
 	});
 	$('canvas.game').on('contextmenu', e => {
-		if (client.player.id != client.currentLevel.activePlayer) {
-			client.logger.warn(`Mismatch: The client's player ID is ${client.player.id} but the current active player ID is ${client.currentLevel.activePlayer}`);
+		if (account.id != currentLevel.activePlayer) {
+			logger.warn(`Mismatch: The client's player ID is ${account.id} but the current active player ID is ${currentLevel.activePlayer}`);
 			return;
 		}
-		if (!(client.currentLevel instanceof ClientLevel)) {
-			client.logger.warn('No active client level');
+		if (!(currentLevel instanceof ClientLevel)) {
+			logger.warn('No active client level');
 			return;
 		}
-		const data = renderer.handleCanvasRightClick(e, client.player.id);
-		const system = client.currentLevel.getNodeSystem(client.currentLevel.activePlayer);
-		system.tryAction(client.player.id, 'move', data);
+		const data = renderer.handleCanvasRightClick(e, account.id);
+		const system = currentLevel.getNodeSystem(currentLevel.activePlayer);
+		system.tryAction(account.id, 'move', data);
 	});
 	$('canvas.game').on('keydown', e => {
 		switch (e.key) {
@@ -577,12 +595,12 @@ export function registerListeners(client: Client) {
 				break;
 			case 'F4':
 				e.preventDefault();
-				client.hitboxesEnabled = !client.hitboxesEnabled;
-				renderer.setHitboxes(client.hitboxesEnabled);
+				toggleHitboxes();
+				renderer.setHitboxes(hitboxesEnabled);
 				break;
 			case 'Tab':
 				e.preventDefault();
-				if (client.currentLevel.isServer) $('#tablist').show();
+				if (currentLevel.isServer) $('#tablist').show();
 				break;
 		}
 	});
@@ -596,7 +614,7 @@ export function registerListeners(client: Client) {
 		switch (e.key) {
 			case 'Tab':
 				e.preventDefault();
-				if (client.currentLevel.isServer) $('#tablist').hide();
+				if (currentLevel.isServer) $('#tablist').hide();
 				break;
 		}
 	});
@@ -604,16 +622,16 @@ export function registerListeners(client: Client) {
 	$('#ingame-temp-menu')
 		.on('keydown', e => {
 			if (e.key == settings.get('toggle_temp_menu') || e.key == 'Escape') {
-				client.changeUI('#ingame-temp-menu');
+				changeUI('#ingame-temp-menu');
 			}
 		})
-		.on('click', () => update(client));
+		.on('click', update);
 	$('canvas.game,#pause,#hud').on('keydown', e => {
 		if (e.key == 'Escape') {
-			client.changeUI('#pause', true);
-			client.isPaused ? client.unpause() : client.pause();
+			changeUI('#pause', true);
+			isPaused ? unpause() : pause();
 		}
-		update(client);
+		update();
 	});
 	$('button').on('click', () => {
 		playsound('ui', +settings.get('sfx'));

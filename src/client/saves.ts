@@ -10,76 +10,21 @@ import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
 import { ClientLevel } from './level';
 import type { SerializedClientLevel } from './level';
-import type { Client } from './client';
-
-export class SaveMap extends Map<string, Save> {
-	_map: FolderMap;
-	selected?: string;
-	current?: LiveSave;
-	activePlayer: string;
-	constructor(path: string, public readonly client: Client) {
-		super();
-		this._map = new FolderMap(path, fs, '.json');
-	}
-
-	init() {
-		for (const [id, content] of this._map._map) {
-			if (!isJSON(content)) {
-				continue;
-			}
-
-			const data = JSON.parse(content);
-
-			if (!super.has(id)) {
-				new Save(data, this.client);
-			}
-		}
-	}
-
-	get(id: string): Save {
-		const data = this._map.get(id);
-		if (isJSON(data) && super.has(id)) {
-			const save = super.get(id);
-			save.data = JSON.parse(data);
-		}
-		return super.get(id);
-	}
-
-	set(key: string, save: Save): this {
-		this._map.set(key, JSON.stringify(save.data));
-		return super.set(key, save);
-	}
-
-	has(key: string): boolean {
-		return this._map.has(key);
-	}
-
-	clear(): void {
-		this._map.clear();
-		return super.clear();
-	}
-
-	delete(key: string): boolean {
-		this._map.delete(key);
-		return super.delete(key);
-	}
-}
+import { path } from './client';
 
 export class Save {
 	#data: SerializedClientLevel;
-	get store(): SaveMap {
-		return this.client.saves;
-	}
+
 	gui: JQuery<SaveListItem>;
 	get activePlayer(): string {
-		return this.store.activePlayer;
+		return activePlayer;
 	}
-	constructor(data: SerializedClientLevel, public client: Client) {
+	constructor(data: SerializedClientLevel) {
 		this.#data = data;
-		if (client.saves) {
-			client.saves.set(this.id, this);
-		}
-		this.gui = $(new SaveListItem(this, client));
+
+		set(this.id, this);
+
+		this.gui = $(new SaveListItem(this));
 	}
 
 	get id() {
@@ -87,8 +32,8 @@ export class Save {
 	}
 
 	get data(): SerializedClientLevel {
-		if (this.client.saves._map.has(this.id)) {
-			this.#data = JSON.parse(this.client.saves._map.get(this.id));
+		if (folder.has(this.id)) {
+			this.#data = JSON.parse(folder.get(this.id));
 		}
 		return this.#data;
 	}
@@ -103,8 +48,8 @@ export class Save {
 		this.#data.date = date.toJSON();
 		this.gui.find('.date').text(date.toLocaleString());
 
-		this.client.saves._map.set(this.id, JSON.stringify(this.#data));
-		this.client.saves.set(this.id, this);
+		folder.set(this.id, JSON.stringify(this.#data));
+		set(this.id, this);
 	}
 
 	load(playerID: string): LiveSave {
@@ -117,7 +62,7 @@ export class Save {
 	}
 
 	remove() {
-		if (this.client.saves) this.client.saves.delete(this.id);
+		remove(this.id);
 		this.gui.remove();
 	}
 }
@@ -148,3 +93,59 @@ export class LiveSave extends ClientLevel {
 		return level;
 	}
 }
+
+export let selected: string;
+export function select(id: string): void {
+	selected = id;
+}
+
+export let current: LiveSave;
+export let activePlayer: string;
+
+let folder: FolderMap;
+const map: Map<string, Save> = new Map();
+
+export function init() {
+	folder = new FolderMap(path + '/saves', fs, '.json');
+	for (const [id, content] of folder._map) {
+		if (!isJSON(content)) {
+			continue;
+		}
+
+		const data = JSON.parse(content);
+
+		if (!map.has(id)) {
+			new Save(data);
+		}
+	}
+}
+
+export function get(id: string): Save {
+	const data = folder.get(id);
+	if (isJSON(data) && map.has(id)) {
+		const save = map.get(id);
+		save.data = JSON.parse(data);
+	}
+	return map.get(id);
+}
+
+export function set(key: string, save: Save): void {
+	folder.set(key, JSON.stringify(save.data));
+	map.set(key, save);
+}
+
+export function has(key: string): boolean {
+	return folder.has(key);
+}
+
+export function clear(): void {
+	folder.clear();
+	return map.clear();
+}
+
+function remove(key: string): boolean {
+	folder.delete(key);
+	return map.delete(key);
+}
+
+export { remove as delete };

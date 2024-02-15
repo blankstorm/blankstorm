@@ -1,15 +1,15 @@
 import $ from 'jquery';
 import { confirm } from '../utils';
-import type { Server } from '../server';
-import type { Client } from '../client';
+import { select, type Server } from '../servers';
+import { startPlaying } from '../client';
 
-function connectAndStartPlaying(server: Server, context: Client) {
+function connectAndStartPlaying(server: Server) {
 	server.connect();
-	context.startPlaying(server.level);
+	startPlaying(server.level);
 }
 
 export class ServerListItem extends HTMLLIElement {
-	constructor(server: Server, context: Client) {
+	constructor(server: Server) {
 		super();
 		$(this)
 			.css({
@@ -21,9 +21,9 @@ export class ServerListItem extends HTMLLIElement {
 			.on('click', () => {
 				$('.selected').removeClass('selected');
 				$(this).addClass('selected');
-				context.servers.selected = server.id;
+				select(server.id);
 			})
-			.on('dblclick', () => connectAndStartPlaying(server, context))
+			.on('dblclick', () => connectAndStartPlaying(server))
 			.prependTo('#server-list');
 		$(`<p class="delete" style=position:absolute;left:15%><svg><use href="_build.asset_dir/images/icons.svg#trash"/></svg></p>`).appendTo(this);
 		$(`<p class="play" style=position:absolute;left:20%><svg><use href="_build.asset_dir/images/icons.svg#play"/></svg></p>`).appendTo(this);
@@ -39,7 +39,7 @@ export class ServerListItem extends HTMLLIElement {
 			});
 		$(this)
 			.find('.play')
-			.on('click', () => connectAndStartPlaying(server, context));
+			.on('click', () => connectAndStartPlaying(server));
 		$(this)
 			.find('.edit')
 			.on('click', () => {

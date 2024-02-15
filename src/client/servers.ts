@@ -10,35 +10,7 @@ import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
 import { ClientLevel } from './level';
 import EventEmitter from 'eventemitter3';
-import type { Client } from './client';
-
-export class ServerMap extends Map<string, Server> {
-	private _map: JSONFileMap;
-	selected?: string;
-	constructor(path: string, context: Client) {
-		super();
-		this._map = new JSONFileMap(path, fs);
-		for (const [id, data] of this._map._map) {
-			if (!super.has(id)) {
-				Server.FromJSON(data as SerializedServer, context);
-			}
-		}
-	}
-
-	get(id: string): Server {
-		return super.get(id);
-	}
-
-	set(id: string, server: Server): this {
-		this._map.set(id, server.toJSON());
-		return super.set(id, server);
-	}
-
-	delete(id: string): boolean {
-		this._map.delete(id);
-		return super.delete(id);
-	}
-}
+import { path, sendChatMessage } from './client';
 
 export type SerializedServer = JSONValue & {
 	id: string;
@@ -53,9 +25,9 @@ export class Server extends EventEmitter {
 	gui: JQuery<ServerListItem>;
 	pingInfo?: ServerPingInfo;
 
-	constructor(public _url: string, public _name: string, public context: Client) {
+	constructor(public _url: string, public _name: string) {
 		super();
-		this.gui = $<ServerListItem>(new ServerListItem(this, context));
+		this.gui = $<ServerListItem>(new ServerListItem(this));
 		this.level.isServer = true;
 		this.socket = io(this.url.href, { reconnection: false, autoConnect: false, auth: { token: cookies.get('token'), session: cookies.get('session') } });
 		this.socket.on('connect', () => {
@@ -76,7 +48,7 @@ export class Server extends EventEmitter {
 			this.kickMessage = 'Kicked from server: ' + message;
 		});
 		this.socket.on('chat', message => {
-			this.context.sendChatMessage(message);
+			sendChatMessage(message);
 		});
 		this.socket.on('event', (type: string, ...data) => {
 			if (type == 'level.tick') {
@@ -104,11 +76,11 @@ export class Server extends EventEmitter {
 			$('[ingame]').hide();
 			$(reason == 'io client disconnect' ? '#server-list' : '#connect').show();
 		});
-		this.context.servers.set(this.id, this);
+		set(this.id, this);
 	}
 
 	get id() {
-		return Server.GetID(this._url);
+		return getServerID(this._url);
 	}
 
 	get name() {
@@ -118,16 +90,16 @@ export class Server extends EventEmitter {
 	set name(val) {
 		this.gui.find('.name').text(val);
 		this._name = val;
-		this.context.servers.set(this.id, this);
+		set(this.id, this);
 	}
 
 	get url() {
-		return Server.ParseURL(this._url);
+		return parseServerURL(this._url);
 	}
 
 	set url(val) {
 		this._url = val instanceof URL ? val.href : val;
-		this.context.servers.set(this.id, this);
+		set(this.id, this);
 	}
 
 	connect() {
@@ -145,8 +117,8 @@ export class Server extends EventEmitter {
 		if (this.socket.connected) {
 			this.socket.disconnect();
 		}
-		this.context.servers.selected = null;
-		for (const server of this.context.servers.values()) {
+		selected = null;
+		for (const server of map.values()) {
 			server.ping();
 		}
 	}
@@ -175,7 +147,7 @@ export class Server extends EventEmitter {
 
 	toJSON(): SerializedServer {
 		return {
-			id: Server.GetID(this.url),
+			id: getServerID(this.url),
 			url: this._url,
 			name: this.name,
 		};
@@ -185,25 +157,60 @@ export class Server extends EventEmitter {
 		this.gui.remove();
 	}
 
-	static ParseURL(url: string | URL): URL {
-		if (url instanceof URL) {
-			return url;
-		}
-		if (!/^(http|ws)s?:\/\//.test(url)) {
-			url = location.protocol + '//' + url;
-		}
-		if (!/^(http|ws)s?:\/\/[\w.]+:\d+/.test(url)) {
-			url += ':' + config.default_port;
-		}
-		return new URL(url);
-	}
-
-	static GetID(rawUrl: string | URL): string {
-		const url = this.ParseURL(rawUrl);
-		return `${url.protocol.slice(0, -1)}_${url.hostname}_${url.port}`;
-	}
-
-	static FromJSON(data: SerializedServer, context: Client): Server {
-		return new Server(data.url, data.name, context);
+	static FromJSON(data: SerializedServer): Server {
+		return new Server(data.url, data.name);
 	}
 }
+
+export function parseServerURL(url: string | URL): URL {
+	if (url instanceof URL) {
+		return url;
+	}
+	if (!/^(http|ws)s?:\/\//.test(url)) {
+		url = location.protocol + '//' + url;
+	}
+	if (!/^(http|ws)s?:\/\/[\w.]+:\d+/.test(url)) {
+		url += ':' + config.default_port;
+	}
+	return new URL(url);
+}
+
+export function getServerID(rawUrl: string | URL): string {
+	const url = parseServerURL(rawUrl);
+	return `${url.protocol.slice(0, -1)}_${url.hostname}_${url.port}`;
+}
+
+export let file: JSONFileMap;
+export let selected: string;
+export function select(id: string): void {
+	selected = id;
+}
+const map: Map<string, Server> = new Map();
+
+export function init() {
+	file = new JSONFileMap(path + '/servers.json', fs);
+	for (const [id, data] of file._map) {
+		if (!map.has(id)) {
+			Server.FromJSON(data as SerializedServer);
+		}
+	}
+}
+
+export const get = (id: string): Server => map.get(id);
+export const has = (id: string): boolean => map.has(id);
+export const ids = () => map.keys();
+export const entries = () => map.entries();
+export const servers = () => map.values();
+
+export function set(id: string, server: Server): void {
+	file.set(id, server.toJSON());
+	map.set(id, server);
+	return;
+}
+
+export function remove(id: string): boolean {
+	const fremoved = file.delete(id);
+	return map.delete(id) && fremoved;
+}
+
+export { remove as delete };
