@@ -1,3 +1,4 @@
 [submodule "assets"]
 	path = assets
 	url = https://github.com/blankstorm/assets.git
+	branch = main
