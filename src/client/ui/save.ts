@@ -17,7 +17,7 @@ export class SaveListItem extends HTMLLIElement {
 				startPlaying(live);
 				$('#loading_cover').hide();
 			} catch (e) {
-				alert(`Failed to load save: ${e}`);
+				alert('Failed to load save: ' + e);
 				throw e;
 			}
 		};

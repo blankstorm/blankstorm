@@ -11,9 +11,9 @@ import type { SerializedNode } from '../core/nodes/Node';
 import { ClientLevel } from './level';
 import * as saves from './saves';
 import * as servers from './servers';
-import { type Keybind, settings } from './settings';
+import * as settings from './settings';
 import { alert, cookies, fixPaths, minimize } from './utils';
-import { Locale, locales } from './locales';
+import * as locales from './locales';
 import { playsound } from './audio';
 import * as renderer from '../renderer/index';
 import { context as ui, update as updateUI, init as initUI, registerListeners as registerUIListeners } from './ui/ui';
@@ -137,7 +137,7 @@ export function runCommand(command: string): string | void {
 
 function _initLog(message: string): void {
 	$('#loading_cover p').text(message);
-	logger.log('init: ' + message);
+	logger.log(message);
 }
 
 async function _init(): Promise<void> {
@@ -159,6 +159,216 @@ async function _init(): Promise<void> {
 	servers.init();
 
 	_initLog('Initializing settings...');
+	settings.init();
+	_initLog('Loading settings...');
+	settings.load({
+		sections: [
+			{
+				id: 'general',
+				label: 'General',
+				parent: $('#settings div.general'),
+			},
+			{
+				id: 'keybinds',
+				label: 'Keybinds',
+				parent: $('#settings div.keybinds'),
+			},
+			{
+				id: 'debug',
+				label: 'Debug',
+				parent: $('#settings div.debug'),
+			},
+		],
+		items: [
+			{
+				id: 'font_size',
+				section: 'general',
+				type: 'number',
+				kind: 'range',
+				label: val => `Font Size (${val}px)`,
+				min: 10,
+				max: 20,
+				step: 1,
+				value: 13,
+			},
+			{
+				id: 'chat_timeout',
+				section: 'general',
+				type: 'number',
+				kind: 'range',
+				label: val => `Chat Timeout (${val} seconds)`,
+				min: 5,
+				max: 15,
+				step: 1,
+				value: 10,
+			},
+			{
+				id: 'sensitivity',
+				section: 'general',
+				type: 'number',
+				kind: 'range',
+				label: val => `Camera Sensitivity (${((val as number) * 100).toFixed()}%)`,
+				min: 0.1,
+				max: 2,
+				step: 0.05,
+				value: 1,
+			},
+			{
+				id: 'music',
+				section: 'general',
+				type: 'number',
+				kind: 'range',
+				label: val => `Music Volume (${((val as number) * 100).toFixed()}%)`,
+				min: 0,
+				max: 1,
+				step: 0.05,
+				value: 1,
+			},
+			{
+				id: 'sfx',
+				section: 'general',
+				type: 'number',
+				kind: 'range',
+				label: val => `Sound Effects Volume (${((val as number) * 100).toFixed()}%)`,
+				min: 0,
+				max: 1,
+				step: 0.05,
+				value: 1,
+			},
+			{
+				id: 'locale',
+				section: 'general',
+				type: 'select',
+				label: 'Language',
+			},
+			{
+				id: 'show_path_gizmos',
+				section: 'debug',
+				type: 'boolean',
+				label: 'Show Path Gizmos',
+				value: false,
+			},
+			{
+				id: 'tooltips',
+				section: 'debug',
+				type: 'boolean',
+				label: 'Show Advanced Tooltips',
+				value: false,
+			},
+			{
+				id: 'disable_saves',
+				section: 'debug',
+				type: 'boolean',
+				label: 'Disable Saves',
+				value: false,
+			},
+			<settings.ItemOptions>{
+				id: 'forward',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Forward',
+				value: { key: 'w' },
+			},
+			{
+				id: 'left',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Strafe Left',
+				value: { key: 'a' },
+			},
+			{
+				id: 'right',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Strafe Right',
+				value: { key: 'd' },
+			},
+			{
+				id: 'back',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Backward',
+				value: { key: 's' },
+			},
+			{
+				id: 'chat',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Toggle Chat',
+				value: { key: 't' },
+			},
+			{
+				id: 'command',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Toggle Command',
+				value: { key: '/' },
+			},
+			{
+				id: 'toggle_temp_menu',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Toggle Temporary Ingame Menu',
+				value: { key: 'Tab' },
+			},
+			{
+				id: 'toggle_menu',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Toggle Ingame Menu',
+				value: { key: 'e' },
+			},
+			{
+				id: 'toggle_map',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Toggle Map',
+				value: { key: 'm' },
+			},
+			{
+				id: 'map_move_left',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Map Move Left',
+				value: { key: 'ArrowLeft' },
+			},
+			{
+				id: 'map_move_down',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Map Move Down',
+				value: { key: 'ArrowDown' },
+			},
+			{
+				id: 'map_move_right',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Map Move Right',
+				value: { key: 'ArrowRight' },
+			},
+			{
+				id: 'map_move_up',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Map Move Up',
+				value: { key: 'ArrowUp' },
+			},
+			{
+				id: 'screenshot',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Take Screenshot',
+				value: { key: 'F2' },
+			},
+			{
+				id: 'save',
+				section: 'keybinds',
+				type: 'keybind',
+				label: 'Save Game',
+				value: { key: 's', ctrl: true },
+			},
+		],
+	});
 	settings.items.get('forward').addEventListener('trigger', () => {
 		renderer.getCamera().addVelocity(Vector3.Forward());
 	});
@@ -195,20 +405,21 @@ async function _init(): Promise<void> {
 		e.preventDefault();
 		flushSave();
 	});
+
 	$('#map,#map-markers').on('keydown', e => {
 		const speed = e.shiftKey ? 100 : 10,
 			max = config.system_generation.max_size / 2;
 		switch (e.key) {
-			case settings.get<Keybind>('map_move_left').key:
+			case settings.get<settings.Keybind>('map_move_left').key:
 				ui.map.x = Math.max(ui.map.x - speed, -max);
 				break;
-			case settings.get<Keybind>('map_move_right').key:
+			case settings.get<settings.Keybind>('map_move_right').key:
 				ui.map.x = Math.min(ui.map.x + speed, max);
 				break;
-			case settings.get<Keybind>('map_move_up').key:
+			case settings.get<settings.Keybind>('map_move_up').key:
 				ui.map.y = Math.max(ui.map.y - speed, -max);
 				break;
-			case settings.get<Keybind>('map_move_down').key:
+			case settings.get<settings.Keybind>('map_move_down').key:
 				ui.map.y = Math.min(ui.map.y + speed, max);
 				break;
 		}
@@ -220,8 +431,11 @@ async function _init(): Promise<void> {
 	});
 
 	_initLog('Initializing locales...');
-	locales.on('fetch', (locale: Locale) => {
-		settings.items.get('locale').addOption(locale.language, locale.name);
+	locales.on('fetch', ({ language, name }: locales.Locale) => {
+		settings.items.get('locale').addOption(language, name);
+	});
+	locales.on('load', ({ language, name }: locales.Locale) => {
+		logger.debug(`Loaded locale "${name}" (${language})`);
 	});
 	await locales.init('locales/en.json');
 	for (const [id, section] of settings.sections) {
@@ -271,6 +485,7 @@ async function _init(): Promise<void> {
 	_initLog('Registering event listeners...');
 	registerUIListeners();
 
+	_initLog('Updating UI...');
 	updateUI();
 	_initLog('Done!');
 	$('#loading_cover').fadeOut(1000);
@@ -373,12 +588,17 @@ export function update() {
 	}
 }
 
-export function pause() {}
+export function pause() {
+	isPaused = true;
+}
 
-export function unpause() {}
+export function unpause() {
+	isPaused = false;
+}
 
 export function startPlaying(level: ClientLevel): boolean {
 	if (level.version != version) {
+		logger.warn(`Can not play level #${level.id}: `);
 		alert('Incompatible version');
 		return false;
 	}
@@ -417,17 +637,16 @@ export function startPlaying(level: ClientLevel): boolean {
 			$(ui.items.get(id)).find('.count').text(minimize(amount));
 		}
 	});
-	isPaused = false;
+	unpause();
 
 	return true;
 }
 
-export function stopPlaying(level: ClientLevel): boolean {
+export function stopPlaying(level: ClientLevel): void {
 	for (const event of ['projectile.fire', 'level.tick', 'player.levelup', 'player.death', 'entity.follow_path.start', 'entity.death', 'player.items.change']) {
 		level.off(event);
 	}
-	isPaused = true;
-	return true;
+	pause();
 }
 
 export function setInitText(text: string): void {
@@ -437,7 +656,7 @@ export function setInitText(text: string): void {
 
 export function sendChatMessage(...msg: string[]): void {
 	for (const m of msg) {
-		logger.log(`(chat) ${m}`);
+		logger.log('CHAT: ' + m);
 		$(`<li bg=none></li>`)
 			.text(m)
 			.appendTo('#chat')

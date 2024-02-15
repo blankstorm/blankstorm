@@ -92,7 +92,9 @@ export function levelToXp(level: number) {
 	return 10 * level ** 2;
 }
 
-export type JSONValue = string | number | boolean | { [x: string]: JSONValue } | Array<JSONValue>;
+export type JSONObject<Key extends string | number | symbol = string> = { [K in Key]: JSONValue };
+
+export type JSONValue<Key extends string | number | symbol = string> = string | number | boolean | JSONObject<Key> | Array<JSONValue>;
 
 /**
  * A Map overlaying a JSON file

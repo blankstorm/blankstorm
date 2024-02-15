@@ -30,21 +30,20 @@ import {
 } from '../client';
 import { chat_cache_size } from '../config';
 import { ClientLevel } from '../level';
-import { locales } from '../locales';
+import * as locales from '../locales';
 import * as saves from '../saves';
 import { LiveSave, Save } from '../saves';
 import * as servers from '../servers';
 import { Server } from '../servers';
-import { Keybind, settings } from '../settings';
+import * as settings from '../settings';
 import { ClientSystem } from '../system';
-import { account, chat, player, system } from '../user';
+import { account, chat, system } from '../user';
 import { $svg, minimize, upload } from '../utils';
 import { Waypoint } from '../waypoint';
 import { ItemUI } from './item';
 import { MapMarker } from './map-marker';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
-import { client } from '../..';
 
 export interface Context {
 	items: Map<string, ItemUI>;
@@ -606,8 +605,8 @@ export function registerListeners() {
 	});
 	$('canvas.game,.game-ui,#hud,#tablist').on('keydown', e => {
 		for (const setting of [...settings.items.values()].filter(item => item.type == 'keybind')) {
-			const bind = setting.value as Keybind;
-			if (e.key == bind.key && (!bind.alt || e.altKey) && (!bind.ctrl || e.ctrlKey)) setting.emit('trigger');
+			const { key, alt, ctrl } = <settings.Keybind>setting.value;
+			if (e.key == key && (!alt || e.altKey) && (!ctrl || e.ctrlKey)) setting.emit('trigger');
 		}
 	});
 	$('canvas.game').on('keyup', e => {

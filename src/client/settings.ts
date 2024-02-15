@@ -1,57 +1,77 @@
 import $ from 'jquery';
-import { JSONFileMap } from '../core/utils';
+import { JSONFileMap, type JSONObject } from '../core/utils';
+import { path } from './client';
+
 const fs = $app.require('fs');
 
 export class SettingsError extends Error {
-	target: SettingsItem;
-	constructor(message: string, settingsEntry?: SettingsItem) {
+	target: Item;
+	constructor(message: string, settingsEntry?: Item) {
 		super(message);
 		this.target = settingsEntry;
 	}
 }
 
 export class SettingsEvent extends Event {
-	constructor(type: string, public item: SettingsItem) {
+	constructor(type: string, public item: Item) {
 		super(type);
 	}
 }
 
-export interface Keybind {
+export interface Keybind extends JSONObject<string> {
 	alt: boolean;
 	ctrl: boolean;
 	key: string;
 }
 
-export const SettingTypes = ['boolean', 'checkbox', 'string', 'range', 'number', 'hidden', 'color', 'select', 'keybind'];
-export type SettingType = (typeof SettingTypes)[number];
+interface _Values {
+	boolean: boolean;
+	string: string;
+	number: number;
+	color: string;
+	select: string | string[];
+	keybind: Keybind;
+}
 
-export type SettingValue = boolean | string | string[] | number | Keybind;
+export type Type = keyof _Values;
+export type Value<T extends Type = Type> = _Values[T];
 
-export type SettingLabel<T = SettingValue> = string | ((value?: T) => string);
+export type Kind<T extends Type = Type> = {
+	boolean: undefined;
+	string: undefined;
+	number: 'number' | 'range';
+	color: undefined;
+	select: undefined;
+	keybind: undefined;
+}[T];
 
-export interface SettingsItemOptions {
+export type Label<T extends Type = Type> = string | ((value?: Value<T>) => string);
+
+export const settingTypes: Type[] = ['boolean', 'string', 'number', 'color', 'select', 'keybind'];
+
+export interface ItemOptions<T extends Type = Type> {
 	id: string;
-	section: SettingsSection | string;
-	label: SettingLabel;
-	type: SettingType;
-	options: {
+	section: Section | string;
+	label: Label<T>;
+	type: T;
+	kind?: Kind<T>;
+	options?: {
 		name: string;
 		label: string;
 	}[];
-	value;
-	onTrigger(evt: Event | JQuery.KeyDownEvent): unknown;
-	min: number;
-	max: number;
-	step: number;
+	value?: Partial<Value<T>>;
+	onTrigger?(evt: Event | JQuery.KeyDownEvent): unknown;
+	min?: number;
+	max?: number;
+	step?: number;
 }
 
-export class SettingsItem extends HTMLDivElement {
+export class Item<T extends Type = Type> extends HTMLDivElement {
 	#id: string;
-	#type: SettingType;
-	label: SettingLabel;
+	#type: T;
+	label: Label<T>;
 
-	#section: SettingsSection;
-	#store: SettingsMap;
+	#section: Section;
 
 	#ui_label = $('<label></label>').addClass('settings-label').css('text-align', 'right').appendTo(this);
 	#ui_input: JQuery<HTMLInputElement>;
@@ -65,44 +85,39 @@ export class SettingsItem extends HTMLDivElement {
 	};
 
 	//Used by keybind
-	constructor(id: string, options: Partial<SettingsItemOptions>, store) {
+	constructor(id: string, options: Partial<ItemOptions<T>>) {
 		super();
 		options ||= {};
 		this.#id = id;
 		this.label = options.label;
-		this.#store = store;
 
-		if (options.section instanceof SettingsSection) {
+		if (options.section instanceof Section) {
 			this.#section = options.section;
-		} else if (store.sections.has(options.section)) {
-			const section = store.sections.get(options.section);
+		} else if (sections.has(options.section)) {
+			const section = sections.get(options.section);
 			this.#section = section;
 		} else if (options.section) {
 			throw new SettingsError(`Settings section "${options.section}" does not exist`);
 		}
 
 		switch (options.type) {
-			case 'checkbox':
 			case 'boolean':
 				this.#ui_input = $('<input></input>');
 				this.#ui_input.attr('type', 'checkbox');
-				options.type = 'boolean';
 				break;
 			case 'string':
 				this.#ui_input = $('<input></input>');
 				this.#ui_input.attr('type', 'text');
 				break;
-			case 'range':
 			case 'number':
-			case 'hidden':
 			case 'color':
 				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', options.type);
-				options.type = options.type == 'color' ? 'color' : 'number';
+				this.#ui_input.attr('type', options.kind);
+				options.type = <T>(options.type == 'color' ? 'color' : 'number');
 				break;
 			case 'select':
 				this.#ui_input = $('<select></select>');
-				this.#ui_input.text(options.value);
+				this.#ui_input.text(options.value?.toString());
 				for (const option of options.options || []) {
 					this.addOption(option.name, option.label);
 				}
@@ -116,7 +131,7 @@ export class SettingsItem extends HTMLDivElement {
 					})
 					.on('keydown', e => {
 						e.preventDefault();
-						this.value = {
+						this.value = <Value<T>>{
 							alt: e.altKey,
 							ctrl: e.ctrlKey,
 							key: e.key,
@@ -138,20 +153,25 @@ export class SettingsItem extends HTMLDivElement {
 
 		this.update(options);
 		this.#ui_input.on('change', e => {
-			this.value = this.type == 'boolean' ? e.target.checked : e.target.value;
-			this.#store.set(this.id, this.value);
+			this.value = <Value<T>>(this.type == 'boolean' ? e.target.checked : e.target.value);
+			set(this.id, this.value);
 		});
 
-		if (options.value) {
-			this.value = options.value;
+		if ([null, undefined].includes(options.value)) {
+			return;
 		}
+
+		this.value = <Value<T>>options.value;
 	}
 
 	get id() {
 		return this.#id;
 	}
 
-	get value(): SettingValue {
+	get value(): Value<Type> {
+		if (this.type == 'keybind') {
+			return this.#value;
+		}
 		switch (this.#type) {
 			case 'keybind':
 				return this.#value;
@@ -164,10 +184,10 @@ export class SettingsItem extends HTMLDivElement {
 		}
 	}
 
-	set value(val: SettingValue) {
+	set value(val: Value<T>) {
 		switch (this.#type) {
 			case 'keybind':
-				this.#value = val as Keybind;
+				this.#value = <Value<T> & Keybind>val;
 				this.#ui_input.text((this.#value.ctrl ? 'Ctrl + ' : '') + (this.#value.alt ? 'Alt + ' : '') + this.#value.key);
 				break;
 			case 'boolean':
@@ -190,7 +210,7 @@ export class SettingsItem extends HTMLDivElement {
 		this.emit('update');
 	}
 
-	get type() {
+	get type(): T {
 		return this.#type;
 	}
 
@@ -262,23 +282,22 @@ export class SettingsItem extends HTMLDivElement {
 
 	dispose() {
 		this.#ui_input.detach();
-		this.#store.items.delete(this.#id);
+		items.delete(this.#id);
 	}
 }
-customElements.define('settings-item', SettingsItem, { extends: 'div' });
+customElements.define('settings-item', Item, { extends: 'div' });
 
 export interface SettingsSectionOptions {
 	id: string;
-	label: SettingLabel;
+	label: Label;
 	parent: JQuery;
 }
 
-export class SettingsSection extends HTMLFormElement {
+export class Section extends HTMLFormElement {
 	#parent: JQuery;
-	#store: SettingsMap;
-	#label: SettingLabel;
+	#label: Label;
 
-	constructor(public readonly id: string, label: SettingLabel, parent: JQuery, store: SettingsMap) {
+	constructor(public readonly id: string, label: Label, parent: JQuery) {
 		super();
 
 		$(this).addClass('settings-section center-flex').append('<h2 class="settings-name"></h2>');
@@ -289,17 +308,14 @@ export class SettingsSection extends HTMLFormElement {
 			$(parent).append(this);
 		}
 
-		if (store) {
-			this.#store = store;
-			store.sections.set(id, this);
-		}
+		sections.set(id, this);
 	}
 
 	get label(): string {
 		return typeof this.#label == 'function' ? this.#label() : this.#label;
 	}
 
-	set label(value: SettingLabel) {
+	set label(value: Label) {
 		this.#label = value;
 		$(this).find('h2.settings-name').text(`Settings - ${this.label}`);
 	}
@@ -310,7 +326,7 @@ export class SettingsSection extends HTMLFormElement {
 
 	dispose(disposeItems?: boolean) {
 		if (disposeItems) {
-			for (const item of this.#store.items.values()) {
+			for (const item of items.values()) {
 				if (item.section == this) {
 					item.dispose();
 				}
@@ -318,242 +334,44 @@ export class SettingsSection extends HTMLFormElement {
 		}
 
 		$(this).detach();
-		this.#store.sections.delete(this.id);
+		sections.delete(this.id);
 	}
 }
-customElements.define('settings-section', SettingsSection, { extends: 'form' });
+customElements.define('settings-section', Section, { extends: 'form' });
 
-export class SettingsMap extends JSONFileMap {
-	sections: Map<string, SettingsSection> = new Map();
-	items: Map<string, SettingsItem> = new Map();
+export const sections: Map<string, Section> = new Map();
+export const items: Map<string, Item> = new Map();
 
-	constructor(
-		public readonly id: string = 'settings',
-		{
-			sections = [],
-			items = [],
-		}: {
-			sections: (SettingsSection | Partial<SettingsSectionOptions>)[];
-			items: (SettingsItem | Partial<SettingsItemOptions>)[];
-		}
-	) {
-		super(id + '.json', fs);
+let file: JSONFileMap;
 
-		for (const _section of sections) {
-			const section = _section instanceof SettingsSection ? _section : new SettingsSection(_section.id, _section.label, _section.parent, this);
-			this.sections.set(section.id, section);
-		}
+let initialized: boolean = false;
 
-		for (const _item of items) {
-			const item =
-				_item instanceof SettingsItem
-					? _item
-					: new SettingsItem(_item.id, { type: SettingTypes.includes(typeof _item.value) ? typeof _item.value : 'string', ..._item }, this);
-			this.items.set(item.id, item);
-			const value = this.has(item.id) ? this.get(item.id) : _item.value;
-			item.value = value;
-			this.set(item.id, value);
-		}
+export function init(): void {
+	file = new JSONFileMap(path + '/settings.json', fs);
+	initialized = true;
+}
+
+export function load({ sections: _sections = [], items: _items = [] }: { sections: (Section | Partial<SettingsSectionOptions>)[]; items: (Item | ItemOptions)[] }): void {
+	if (!initialized) {
+		throw new Error('Can not load settings before initialization');
+	}
+	for (const _section of _sections) {
+		const section = _section instanceof Section ? _section : new Section(_section.id, _section.label, _section.parent);
+		sections.set(section.id, section);
+	}
+
+	for (const _item of _items) {
+		const item = _item instanceof Item ? _item : new Item(_item.id, _item);
+		items.set(item.id, item);
+		const value: Value = file.has(item.id) ? file.get<Value>(item.id) : <Value>_item.value;
+		item.value = value;
+		file.set(item.id, value);
 	}
 }
 
-export const settings = new SettingsMap('settings', {
-	sections: [
-		{
-			id: 'general',
-			label: 'General',
-			parent: $('#settings div.general'),
-		},
-		{
-			id: 'keybinds',
-			label: 'Keybinds',
-			parent: $('#settings div.keybinds'),
-		},
-		{
-			id: 'debug',
-			label: 'Debug',
-			parent: $('#settings div.debug'),
-		},
-	],
-	items: [
-		{
-			id: 'font_size',
-			section: 'general',
-			type: 'range',
-			label: val => `Font Size (${val}px)`,
-			min: 10,
-			max: 20,
-			step: 1,
-			value: 13,
-		},
-		{
-			id: 'chat_timeout',
-			section: 'general',
-			type: 'range',
-			label: val => `Chat Timeout (${val} seconds)`,
-			min: 5,
-			max: 15,
-			step: 1,
-			value: 10,
-		},
-		{
-			id: 'sensitivity',
-			section: 'general',
-			type: 'range',
-			label: val => `Camera Sensitivity (${((val as number) * 100).toFixed()}%)`,
-			min: 0.1,
-			max: 2,
-			step: 0.05,
-			value: 1,
-		},
-		{
-			id: 'music',
-			section: 'general',
-			type: 'range',
-			label: val => `Music Volume (${((val as number) * 100).toFixed()}%)`,
-			min: 0,
-			max: 1,
-			step: 0.05,
-			value: 1,
-		},
-		{
-			id: 'sfx',
-			section: 'general',
-			type: 'range',
-			label: val => `Sound Effects Volume (${((val as number) * 100).toFixed()}%)`,
-			min: 0,
-			max: 1,
-			step: 0.05,
-			value: 1,
-		},
-		{
-			id: 'locale',
-			section: 'general',
-			type: 'select',
-			label: 'Language',
-		},
-		{
-			id: 'show_path_gizmos',
-			section: 'debug',
-			label: 'Show Path Gizmos',
-			value: false,
-		},
-		{
-			id: 'tooltips',
-			section: 'debug',
-			label: 'Show Advanced Tooltips',
-			value: false,
-		},
-		{
-			id: 'disable_saves',
-			section: 'debug',
-			label: 'Disable Saves',
-			value: false,
-		},
-		{
-			id: 'forward',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Forward',
-			value: { key: 'w' },
-		},
-		{
-			id: 'left',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Strafe Left',
-			value: { key: 'a' },
-		},
-		{
-			id: 'right',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Strafe Right',
-			value: { key: 'd' },
-		},
-		{
-			id: 'back',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Backward',
-			value: { key: 's' },
-		},
-		{
-			id: 'chat',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Chat',
-			value: { key: 't' },
-		},
-		{
-			id: 'command',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Command',
-			value: { key: '/' },
-		},
-		{
-			id: 'toggle_temp_menu',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Temporary Ingame Menu',
-			value: { key: 'Tab' },
-		},
-		{
-			id: 'toggle_menu',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Ingame Menu',
-			value: { key: 'e' },
-		},
-		{
-			id: 'toggle_map',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Toggle Map',
-			value: { key: 'm' },
-		},
-		{
-			id: 'map_move_left',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Map Move Left',
-			value: { key: 'ArrowLeft' },
-		},
-		{
-			id: 'map_move_down',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Map Move Down',
-			value: { key: 'ArrowDown' },
-		},
-		{
-			id: 'map_move_right',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Map Move Right',
-			value: { key: 'ArrowRight' },
-		},
-		{
-			id: 'map_move_up',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Map Move Up',
-			value: { key: 'ArrowUp' },
-		},
-		{
-			id: 'screenshot',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Take Screenshot',
-			value: { key: 'F2' },
-		},
-		{
-			id: 'save',
-			section: 'keybinds',
-			type: 'keybind',
-			label: 'Save Game',
-			value: { key: 's', ctrl: true },
-		},
-	],
-});
+export const get: (typeof file)['get'] = key => file.get(key);
+export const has: (typeof file)['has'] = key => file.has(key);
+export const set: (typeof file)['set'] = (key, val) => file.set(key, val);
+export const ids: (typeof file)['keys'] = () => file.keys();
+export const entries: (typeof file)['entries'] = () => file.entries();
+export const servers: (typeof file)['values'] = () => file.values();

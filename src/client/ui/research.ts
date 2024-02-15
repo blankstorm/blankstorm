@@ -1,5 +1,5 @@
 import type { Research } from '../../core/generic/research';
-import { locales } from '../locales';
+import * as locales from '../locales';
 import $ from 'jquery';
 import { system, account } from '../user';
 

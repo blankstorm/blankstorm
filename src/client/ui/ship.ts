@@ -1,5 +1,5 @@
 import type { GenericShip } from '../../core/generic/ships';
-import { locales } from '../locales';
+import * as locales from '../locales';
 import $ from 'jquery';
 import { account, system } from '../user';
 

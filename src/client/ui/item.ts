@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import type { Item } from '../../core/generic/items';
-import { locales } from '../locales';
+import * as locales from '../locales';
 import { account, system } from '../user';
 
 export class ItemUI extends HTMLDivElement {

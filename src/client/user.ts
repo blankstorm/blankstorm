@@ -13,9 +13,9 @@ export const account: Account = {
 	is_disabled: false,
 };
 
-export function chat(...message: string[]) {
-	for (const chunk of message) {
-		sendChatMessage(`${account.username} = ${chunk}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+export function chat(...messages: string[]) {
+	for (const message of messages) {
+		sendChatMessage(`${account.username}: ${message}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 	}
 }
 
