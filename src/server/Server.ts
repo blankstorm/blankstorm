@@ -29,7 +29,7 @@ export interface ServerConfig {
 	blacklist: boolean;
 	max_clients: number;
 	message: string;
-	debug_mode: boolean;
+	debug: boolean;
 	port: number;
 	public_uptime: boolean;
 	public_log: boolean;

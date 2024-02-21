@@ -3,7 +3,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 
 export interface BuildOptions {
-	debug_mode: boolean;
+	debug: boolean;
 	asset_dir: string;
 }
 

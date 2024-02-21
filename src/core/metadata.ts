@@ -2,7 +2,7 @@ export const game_url = 'https://blankstorm.net';
 
 export const config = {
 	load_remote_manifest: false,
-	debug_mode: $build.debug_mode,
+	debug: $build.debug,
 	overwrite_invalid_json: true,
 	default_port: 1123,
 	region_size: 1e5,

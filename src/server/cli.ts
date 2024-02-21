@@ -16,7 +16,7 @@ export const options: ServerOptions = {
 		blacklist: true,
 		max_clients: 10,
 		message: '',
-		debug_mode: false,
+		debug: false,
 		public_log: false,
 		public_uptime: false,
 		port: coreConfig.default_port,
