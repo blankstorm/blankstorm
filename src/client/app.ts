@@ -34,13 +34,11 @@ if (!existsSync(logDir)) {
 const logFile = join(logDir, new Date().toISOString().replaceAll(':', '.') + '.log');
 logger.on('entry', entry => appendFileSync(logFile, entry + '\n'));
 
-if (options.quiet) {
+if (options.quiet || !options['bs-debug']) {
 	logger.detach(console, [LogLevel.DEBUG, LogLevel.LOG, LogLevel.INFO]);
 }
 
-if (options['bs-debug']) {
-	logger.debug('Options: ' + JSON.stringify(options));
-}
+logger.debug('Options: ' + JSON.stringify(options));
 
 if (options['log-level']) {
 	logger.warn('CLI flag "log-level" ignored (unsupported)');
