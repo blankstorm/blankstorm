@@ -9,28 +9,30 @@ import type { ClientInit } from './client';
 
 const __dirname: string = path.resolve(fileURLToPath(import.meta.url), '..');
 
+const options = parseArgs({
+	options: {
+		'bs-debug': { type: 'boolean', default: false },
+		'log-level': { type: 'string' },
+		quiet: { type: 'boolean', default: false },
+		'initial-scale': { type: 'string', default: '100' },
+		path: { type: 'string', default: __dirname },
+	},
+	allowPositionals: true,
+}).values;
+
+let initialScale: number = parseInt(options['initial-scale'].toString());
+initialScale = isNaN(initialScale) ? 100 : initialScale;
+
 const logger = new Logger({ prefix: 'main' });
-const logDir: string = path.join(__dirname, 'logs/');
+const logDir: string = path.join(options.path, 'logs/');
 if (!existsSync(logDir)) {
 	mkdirSync(logDir, { recursive: true });
 }
 const logPath = `${logDir}/${new Date().toISOString().replaceAll(':', '.')}.log`;
 logger.on('entry', entry => appendFileSync(logPath, entry + '\n'));
-
-const { values: options } = parseArgs({
-	options: {
-		'bs-debug': { type: 'boolean', default: false },
-		'bs-open-devtools': { type: 'boolean', default: false },
-		'log-level': { type: 'string' },
-		quiet: { type: 'boolean', default: false },
-		'window-scale': { type: 'string', default: '100' },
-	},
-	allowPositionals: true,
-	strict: false,
-});
-let initialScale: number = parseInt(options['window-scale'].toString());
-initialScale = isNaN(initialScale) ? 100 : initialScale;
-
+if (options['bs-debug']) {
+	logger.debug('Options: ' + JSON.stringify(options));
+}
 if (options.quiet) {
 	logger.detach(console, [LogLevel.DEBUG, LogLevel.LOG, LogLevel.INFO]);
 }
@@ -42,7 +44,7 @@ if (options['log-level']) {
 }
 
 app.whenReady().then(() => {
-	ipcMain.handle('options', (): ClientInit => ({ path: __dirname, debug: !!options['bs-debug'] }));
+	ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options['bs-debug'] }));
 	ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, prefix: 'client', computed: null }));
 	const window: BrowserWindow = new BrowserWindow({
 		width: 16 * initialScale,
@@ -86,10 +88,6 @@ app.whenReady().then(() => {
 	window.webContents.on('devtools-opened', () => {
 		window.webContents.devToolsWebContents.on('before-input-event', inputHandler);
 	});
-
-	if (options['bs-open-devtools']) {
-		window.webContents.toggleDevTools();
-	}
 });
 
 app.on('window-all-closed', () => {
