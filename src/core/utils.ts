@@ -171,22 +171,22 @@ export class JSONFileMap implements Map<string, JSONValue> {
 		return map[Symbol.iterator].bind(map);
 	}
 
-	get keys() {
+	get keys(): typeof this._map.keys {
 		const map = this._map;
 		return map.keys.bind(map);
 	}
 
-	get values() {
+	get values(): typeof this._map.values {
 		const map = this._map;
 		return map.values.bind(map);
 	}
 
-	get entries() {
+	get entries(): typeof this._map.entries {
 		const map = this._map;
 		return map.entries.bind(map);
 	}
 
-	get forEach() {
+	get forEach(): typeof this._map.forEach {
 		const map = this._map;
 		return map.forEach.bind(map);
 	}

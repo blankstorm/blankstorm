@@ -67,11 +67,11 @@ export interface ItemOptions<T extends Type = Type> {
 }
 
 export class Item<T extends Type = Type> extends HTMLDivElement {
-	#id: string;
-	#type: T;
-	label: Label<T>;
+	public readonly id: string;
+	public readonly type: T;
+	public readonly section: Section;
 
-	#section: Section;
+	public label: Label<T>;
 
 	#ui_label = $('<label></label>').addClass('settings-label').css('text-align', 'right').appendTo(this);
 	#ui_input: JQuery<HTMLInputElement>;
@@ -85,17 +85,16 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 	};
 
 	//Used by keybind
-	constructor(id: string, options: Partial<ItemOptions<T>>) {
+	constructor(options: Partial<ItemOptions<T>>) {
 		super();
-		options ||= {};
-		this.#id = id;
+		this.id = options.id;
+		this.type = options.type;
 		this.label = options.label;
 
 		if (options.section instanceof Section) {
-			this.#section = options.section;
+			this.section = options.section;
 		} else if (sections.has(options.section)) {
-			const section = sections.get(options.section);
-			this.#section = section;
+			this.section = sections.get(options.section);
 		} else if (options.section) {
 			throw new SettingsError(`Settings section "${options.section}" does not exist`);
 		}
@@ -142,13 +141,11 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 				throw new SettingsError(`Invalid type: ${options.type}`, this);
 		}
 
-		this.#type = options.type;
-
-		this.#ui_input.attr('name', id).addClass('setting-input');
+		this.#ui_input.attr('name', this.id).addClass('setting-input');
 		$('<div></div>').append(this.#ui_input).appendTo(this);
 		$(this).addClass('settings-item');
-		if (this.#section) {
-			$(this).appendTo(this.#section);
+		if (this.section) {
+			$(this).appendTo(this.section);
 		}
 
 		this.update(options);
@@ -164,15 +161,11 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 		this.value = <Value<T>>options.value;
 	}
 
-	get id() {
-		return this.#id;
-	}
-
 	get value(): Value<Type> {
 		if (this.type == 'keybind') {
 			return this.#value;
 		}
-		switch (this.#type) {
+		switch (this.type) {
 			case 'keybind':
 				return this.#value;
 			case 'boolean':
@@ -185,7 +178,7 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 	}
 
 	set value(val: Value<T>) {
-		switch (this.#type) {
+		switch (this.type) {
 			case 'keybind':
 				this.#value = <Value<T> & Keybind>val;
 				this.#ui_input.text((this.#value.ctrl ? 'Ctrl + ' : '') + (this.#value.alt ? 'Alt + ' : '') + this.#value.key);
@@ -210,16 +203,8 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 		this.emit('update');
 	}
 
-	get type(): T {
-		return this.#type;
-	}
-
 	get ui() {
 		return $(this);
-	}
-
-	get section() {
-		return this.#section;
 	}
 
 	get metadata() {
@@ -282,7 +267,7 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 
 	dispose() {
 		this.#ui_input.detach();
-		items.delete(this.#id);
+		items.delete(this.id);
 	}
 }
 customElements.define('settings-item', Item, { extends: 'div' });
@@ -294,17 +279,19 @@ export interface SettingsSectionOptions {
 }
 
 export class Section extends HTMLFormElement {
-	#parent: JQuery;
+	public readonly parent: JQuery;
 	#label: Label;
 
-	constructor(public readonly id: string, label: Label, parent: JQuery) {
-		super();
+	public readonly id: string;
 
+	constructor({ id, label, parent }: SettingsSectionOptions) {
+		super();
+		this.id = id;
+		this.parent = parent;
 		$(this).addClass('settings-section center-flex').append('<h2 class="settings-name"></h2>');
 		this.#label = label;
 
 		if (parent) {
-			this.#parent = parent;
 			$(parent).append(this);
 		}
 
@@ -318,10 +305,6 @@ export class Section extends HTMLFormElement {
 	set label(value: Label) {
 		this.#label = value;
 		$(this).find('h2.settings-name').text(`Settings - ${this.label}`);
-	}
-
-	get parent() {
-		return this.#parent;
 	}
 
 	dispose(disposeItems?: boolean) {
@@ -351,19 +334,19 @@ export function init(): void {
 	initialized = true;
 }
 
-export function load({ sections: _sections = [], items: _items = [] }: { sections: (Section | Partial<SettingsSectionOptions>)[]; items: (Item | ItemOptions)[] }): void {
+export function load({ sections: _sections = [], items: _items = [] }: { sections: SettingsSectionOptions[]; items: ItemOptions[] }): void {
 	if (!initialized) {
 		throw new Error('Can not load settings before initialization');
 	}
 	for (const _section of _sections) {
-		const section = _section instanceof Section ? _section : new Section(_section.id, _section.label, _section.parent);
+		const section = new Section(_section);
 		sections.set(section.id, section);
 	}
 
 	for (const _item of _items) {
-		const item = _item instanceof Item ? _item : new Item(_item.id, _item);
+		const item = new Item(_item);
 		items.set(item.id, item);
-		const value: Value = file.has(item.id) ? file.get<Value>(item.id) : <Value>_item.value;
+		const value: Value = <Value>(file.has(item.id) ? file.get(item.id) : _item.value);
 		item.value = value;
 		file.set(item.id, value);
 	}
