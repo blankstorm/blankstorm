@@ -150,9 +150,6 @@ async function _init(): Promise<void> {
 	const canvas = $<HTMLCanvasElement>('canvas.game');
 
 	_initLog('Loading saves...');
-	if (!fs.existsSync(path + '/saves')) {
-		fs.mkdirSync(path + '/saves');
-	}
 	saves.init();
 
 	_initLog('Loading servers...');

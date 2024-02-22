@@ -1,6 +1,6 @@
 import $ from 'jquery';
-import { JSONFileMap, type JSONObject } from '../core/utils';
-import { path } from './client';
+import { JSONFileMap, isJSON, type JSONObject } from '../core/utils';
+import { logger, path } from './client';
 
 const fs = $app.require('fs');
 
@@ -330,7 +330,19 @@ let file: JSONFileMap;
 let initialized: boolean = false;
 
 export function init(): void {
-	file = new JSONFileMap(path + '/settings.json', fs);
+	if (initialized) {
+		logger.warn('Already initialized settings');
+	}
+	const filePath = path + '/settings.json',
+		exists = fs.existsSync(filePath);
+	if (!exists) {
+		logger.warn('Settings file does not exist, will be created');
+	}
+	if (exists && !isJSON(fs.readFileSync(filePath, 'utf8'))) {
+		logger.warn('Invalid settings file (overwriting)');
+		fs.rmSync(filePath);
+	}
+	file = new JSONFileMap(filePath, fs);
 	initialized = true;
 }
 

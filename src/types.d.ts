@@ -6,9 +6,14 @@ declare global {
 	const $build: BuildOptions;
 	const $package: typeof package;
 	const $app: {
-		require: NodeJS.Require & {
-			<const T extends 'fs' | 'node:url' | 'node:path'>(id: T): typeof import(T);
-		};
+		require<const T extends 'fs' | 'node:url' | 'node:path'>(
+			id: T
+		): {
+			fs: typeof import('fs');
+			'node:url': typeof import('node:url');
+			'node:path': typeof import('node:path');
+			[K: string]: typeof import(K);
+		}[T];
 		options(): Promise<ClientInit>;
 		log(message: IOMessage): Promise<void>;
 	};

@@ -3,14 +3,14 @@ import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { cookies } from './utils';
 const fs = $app.require('fs');
-import { JSONFileMap } from '../core/utils';
+import { JSONFileMap, isJSON } from '../core/utils';
 import { ServerListItem } from './ui/server';
 import { config, versions } from '../core/metadata';
 import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
 import { ClientLevel } from './level';
 import EventEmitter from 'eventemitter3';
-import { path, sendChatMessage } from './client';
+import { logger, path, sendChatMessage } from './client';
 
 export type SerializedServer = JSONValue & {
 	id: string;
@@ -188,7 +188,16 @@ export function select(id: string): void {
 const map: Map<string, Server> = new Map();
 
 export function init() {
-	file = new JSONFileMap(path + '/servers.json', fs);
+	const filePath = path + '/servers.json',
+		exists = fs.existsSync(filePath);
+	if (!exists) {
+		logger.warn('Servers file does not exist, will be created');
+	}
+	if (exists && !isJSON(fs.readFileSync(filePath, 'utf8'))) {
+		logger.warn('Invalid servers file (overwriting)');
+		fs.rmSync(filePath);
+	}
+	file = new JSONFileMap(filePath, fs);
 	for (const [id, data] of file._map) {
 		if (!map.has(id)) {
 			Server.FromJSON(data as SerializedServer);

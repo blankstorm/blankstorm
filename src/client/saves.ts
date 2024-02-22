@@ -106,7 +106,11 @@ let folder: FolderMap;
 const map: Map<string, Save> = new Map();
 
 export function init() {
-	folder = new FolderMap(path + '/saves', fs, '.json');
+	const folderPath = path + '/saves';
+	if (!fs.existsSync(folderPath)) {
+		fs.mkdirSync(folderPath);
+	}
+	folder = new FolderMap(folderPath, fs, '.json');
 	for (const [id, content] of folder._map) {
 		if (!isJSON(content)) {
 			continue;
