@@ -603,8 +603,3 @@ export function stopPlaying(level: ClientLevel): void {
 	}
 	pause();
 }
-
-export function setInitText(text: string): void {
-	$('#loading_cover p').text(text);
-	logger.log('init: ' + text);
-}
