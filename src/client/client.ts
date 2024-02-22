@@ -54,23 +54,6 @@ export const screenshots = [];
 
 const mods = new Map();
 
-export function flushSave() {
-	if (!(currentLevel instanceof ClientLevel)) {
-		throw 'Save Error: you must have a valid save selected.';
-	}
-	$('#pause .save').text('Saving...');
-	try {
-		const save = saves.get(currentLevel.id);
-		save.data = currentLevel.toJSON();
-		saves.set(currentLevel.id, save);
-		chat.sendMessage('Game saved.');
-	} catch (err) {
-		chat.sendMessage('Failed to save game.');
-		throw err;
-	}
-	$('#pause .save').text('Save Game');
-}
-
 export function changeUI(selector: string, hideAll?: boolean) {
 	if ($(selector).is(':visible')) {
 		$('canvas.game').trigger('focus');
@@ -114,6 +97,7 @@ async function _init(): Promise<void> {
 
 	_initLog('Initializing settings...');
 	settings.init();
+
 	_initLog('Loading settings...');
 	settings.load({
 		sections: [
@@ -357,7 +341,7 @@ async function _init(): Promise<void> {
 	});
 	settings.items.get('save').addEventListener('trigger', e => {
 		e.preventDefault();
-		flushSave();
+		saves.flush();
 	});
 
 	$('#map,#map-markers').on('keydown', e => {
@@ -384,17 +368,9 @@ async function _init(): Promise<void> {
 		ui.update();
 	});
 
-	_initLog('Initializing locales...');
-	locales.on('fetch', ({ language, name }: locales.Locale) => {
-		settings.items.get('locale').addOption(language, name);
-	});
-	locales.on('load', ({ language, name }: locales.Locale) => {
-		logger.debug(`Loaded locale "${name}" (${language})`);
-	});
-	await locales.init('locales/en.json');
-	for (const [id, section] of settings.sections) {
-		section.label = () => locales.text('menu.settings_section.' + id);
-	}
+	_initLog('Loading locales...');
+	await locales.init();
+
 	_initLog('Loading Mods...');
 	try {
 		if (!fs.existsSync('mods')) {

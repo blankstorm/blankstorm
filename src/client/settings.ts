@@ -328,7 +328,7 @@ export const items: Map<string, Item> = new Map();
 
 let file: JSONFileMap;
 
-let initialized: boolean = false;
+export let initialized: boolean = false;
 
 export function init(): void {
 	if (initialized) {

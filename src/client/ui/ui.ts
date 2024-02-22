@@ -11,7 +11,7 @@ import type { Player } from '../../core/nodes/Player';
 import { isHex, isJSON, toDegrees } from '../../core/utils';
 import * as renderer from '../../renderer';
 import { playsound } from '../audio';
-import { changeUI, currentLevel, flushSave, hitboxesEnabled, isMultiplayerEnabled, isPaused, pause, startPlaying, toggleHitboxes, unpause } from '../client';
+import { changeUI, currentLevel, hitboxesEnabled, isMultiplayerEnabled, isPaused, pause, startPlaying, toggleHitboxes, unpause } from '../client';
 import { ClientLevel } from '../level';
 import * as locales from '../locales';
 import * as saves from '../saves';
@@ -27,6 +27,7 @@ import { ItemUI } from './item';
 import { MapMarker } from './map-marker';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
+import { alert } from '../utils';
 
 export const items: Map<string, ItemUI> = new Map();
 
@@ -360,7 +361,7 @@ export function registerListeners() {
 		$('canvas.game').trigger('focus');
 		unpause();
 	});
-	$('#pause .save').on('click', flushSave);
+	$('#pause .save').on('click', saves.flush);
 	$('#pause .options').on('click', () => {
 		setLast('#pause');
 		$('#pause').hide();
@@ -437,7 +438,7 @@ export function registerListeners() {
 	$<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
 		const lang = e.target.value;
 		if (locales.has(lang)) {
-			locales.load(lang);
+			locales.use(lang);
 		} else {
 			alert('That locale is not loaded.');
 			logger.warn(`Failed to load locale ${lang}`);

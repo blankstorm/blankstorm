@@ -11,6 +11,8 @@ import type { ShipType } from '../core/generic/ships';
 import { ClientLevel } from './level';
 import type { SerializedClientLevel } from './level';
 import { path } from './config';
+import * as chat from './chat';
+import { currentLevel } from './client';
 
 export class Save {
 	#data: SerializedClientLevel;
@@ -153,3 +155,20 @@ function remove(key: string): boolean {
 }
 
 export { remove as delete };
+
+export function flush(): void {
+	if (!(currentLevel instanceof ClientLevel)) {
+		throw 'You must have a valid save selected.';
+	}
+	$('#pause .save').text('Saving...');
+	try {
+		const save = get(currentLevel.id);
+		save.data = currentLevel.toJSON();
+		set(currentLevel.id, save);
+		chat.sendMessage('Game saved.');
+	} catch (err) {
+		chat.sendMessage('Failed to save game.');
+		throw err;
+	}
+	$('#pause .save').text('Save Game');
+}
