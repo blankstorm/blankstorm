@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import type { SerializedNode } from '../core/nodes/Node';
 import type { PlanetBiome } from '../core/generic/planets';
+import { Logger } from 'logzen';
 const { fileURLToPath } = $app.require('node:url');
 const path = $app.require('node:path');
 
@@ -149,3 +150,6 @@ export function $svg<TElement extends SVGElement>(tag: string): JQuery<TElement>
 	const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
 	return $<TElement>(<TElement>element);
 }
+
+export const logger = new Logger();
+logger.on('send', $app.log);

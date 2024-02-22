@@ -2,33 +2,16 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { login } from '@blankstorm/api';
 import $ from 'jquery';
-import { items } from '../../core/generic/items';
+import { items as itemsData } from '../../core/generic/items';
 import type { ResearchID } from '../../core/generic/research';
-import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
+import { isResearchLocked, priceOfResearch, research as researchData } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
 import { config, game_url, version, versions } from '../../core/metadata';
 import type { Player } from '../../core/nodes/Player';
 import { isHex, isJSON, toDegrees } from '../../core/utils';
 import * as renderer from '../../renderer';
 import { playsound } from '../audio';
-import {
-	changeUI,
-	chatInfo,
-	currentLevel,
-	flushSave,
-	hitboxesEnabled,
-	isMultiplayerEnabled,
-	isPaused,
-	logger,
-	pause,
-	runCommand,
-	sendChatMessage,
-	startPlaying,
-	toggleChatUI,
-	toggleHitboxes,
-	unpause,
-} from '../client';
-import { chat_cache_size } from '../config';
+import { changeUI, currentLevel, flushSave, hitboxesEnabled, isMultiplayerEnabled, isPaused, pause, startPlaying, toggleHitboxes, unpause } from '../client';
 import { ClientLevel } from '../level';
 import * as locales from '../locales';
 import * as saves from '../saves';
@@ -37,60 +20,54 @@ import * as servers from '../servers';
 import { Server } from '../servers';
 import * as settings from '../settings';
 import { ClientSystem } from '../system';
-import { account, chat, system } from '../user';
-import { $svg, minimize, upload } from '../utils';
+import { account, system } from '../user';
+import { $svg, logger, minimize, upload } from '../utils';
 import { Waypoint } from '../waypoint';
 import { ItemUI } from './item';
 import { MapMarker } from './map-marker';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 
-export interface Context {
-	items: Map<string, ItemUI>;
-	research: Map<string, ResearchUI>;
-	ships: Map<string, ShipUI>;
-	map: {
-		x: number;
-		y: number;
-		get svgX(): number;
-		get svgY(): number;
-		rotation: number;
-		scale: number;
-		markers: Map<string, MapMarker>;
-	};
-}
+export const items: Map<string, ItemUI> = new Map();
 
-export const context: Context = {
-	items: new Map(),
-	ships: new Map(),
-	research: new Map(),
-	map: {
-		x: 0,
-		y: 0,
-		scale: 1,
-		rotation: 0,
-		get svgX() {
-			return this.x * -this.scale;
-		},
-		get svgY() {
-			return this.y * -this.scale;
-		},
-		markers: new Map(),
+export const ships: Map<string, ShipUI> = new Map();
+
+export const research: Map<string, ResearchUI> = new Map();
+
+export const map: {
+	x: number;
+	y: number;
+	get svgX(): number;
+	get svgY(): number;
+	rotation: number;
+	scale: number;
+	markers: Map<string, MapMarker>;
+} = {
+	x: 0,
+	y: 0,
+	scale: 1,
+	rotation: 0,
+	get svgX() {
+		return this.x * -this.scale;
 	},
+	get svgY() {
+		return this.y * -this.scale;
+	},
+	markers: new Map(),
 };
 
 export function init() {
 	document.title = 'Blankstorm ' + versions.get(version).text;
 	$('#main .version a').text(versions.get(version).text).attr('href', `${game_url}/versions#${version}`);
 
-	for (const [id, item] of Object.entries(items)) {
-		context.items.set(id, new ItemUI(item));
+	for (const [id, item] of Object.entries(itemsData)) {
+		items.set(id, new ItemUI(item));
 	}
-	for (const [id, _research] of Object.entries(research)) {
-		context.research.set(id, new ResearchUI(_research));
+	for (const [id, _research] of Object.entries(researchData)) {
+		research.set(id, new ResearchUI(_research));
 	}
 	for (const [type, genericShip] of Object.entries(genericShips)) {
-		context.ships.set(type, new ShipUI(genericShip));
+		ships.set(type, new ShipUI(genericShip));
 	}
 	const size = config.system_generation.max_size;
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
@@ -124,11 +101,11 @@ export function update() {
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
 
 		for (const [id, amount] of Object.entries(player.items)) {
-			$(context.items.get(id)).find('.count').text(minimize(amount));
+			$(items.get(id)).find('.count').text(minimize(amount));
 		}
 
 		//update tech info
-		for (const [id, t] of Object.entries(research)) {
+		for (const [id, t] of Object.entries(researchData)) {
 			const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
 				(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.items[id])}/${minimize(amount)}`,
 				''
@@ -138,7 +115,7 @@ export function update() {
 					result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 				''
 			);
-			$(context.research.get(id))
+			$(research.get(id))
 				.find('.upgrade tool-tip')
 				.html(
 					`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
@@ -149,7 +126,7 @@ export function update() {
 						settings.get('tooltips') ? '<br>type: ' + id : ''
 					}`
 				);
-			$(context.research.get(id)).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
+			$(research.get(id)).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
 		}
 
 		//update ship info
@@ -163,7 +140,7 @@ export function update() {
 					`${result}<br>${tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${tech}`}`,
 				''
 			);
-			$(context.ships.get(id))
+			$(ships.get(id))
 				.find('.add tool-tip')
 				.html(
 					`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
@@ -175,7 +152,7 @@ export function update() {
 			for (const t in ship.requires) {
 				if (isResearchLocked(t as ResearchID, player)) locked = true;
 			}
-			$(context.ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
+			$(ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
 		}
 
 		for (const waypoint of system().waypoints) {
@@ -183,29 +160,29 @@ export function update() {
 		}
 		$('#map-markers').attr(
 			'transform',
-			`translate(${context.map.svgX} ${context.map.svgY}) \
-			rotate(${toDegrees(context.map.rotation)}) \
-			scale(${context.map.scale})`
+			`translate(${map.svgX} ${map.svgY}) \
+			rotate(${toDegrees(map.rotation)}) \
+			scale(${map.scale})`
 		);
 		$('#map-info').html(`
-			<span>(${context.map.x.toFixed(0)}, ${context.map.y.toFixed(0)}) ${toDegrees(context.map.rotation)}°</span><br>
-			<span>${context.map.scale.toFixed(1)}x</span>
+			<span>(${map.x.toFixed(0)}, ${map.y.toFixed(0)}) ${toDegrees(map.rotation)}°</span><br>
+			<span>${map.scale.toFixed(1)}x</span>
 		`);
 		$('#system-info').html(`
 			<span><strong>${system().name}</strong></span><br>
 			<span>${system().connections.length} hyperspace connection(s)</span>
 		`);
 		for (const [id, node] of system().nodes) {
-			if (!context.map.markers.has(id) && MapMarker.supportsNodeType(node.nodeType)) {
+			if (!map.markers.has(id) && MapMarker.supportsNodeType(node.nodeType)) {
 				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
 					continue;
 				}
 				const marker = new MapMarker(node);
-				context.map.markers.set(id, marker);
+				map.markers.set(id, marker);
 			}
 		}
 
-		for (const marker of context.map.markers.values()) {
+		for (const marker of map.markers.values()) {
 			marker.update();
 		}
 
@@ -511,52 +488,6 @@ export function registerListeners() {
 				});
 			});
 		});
-	const $chatInput = $('#chat-input');
-	$chatInput.on('keydown', e => {
-		const inputValue = $chatInput.val() as string;
-		if (chatInfo.index == 0) {
-			chatInfo.currentInput = inputValue;
-		}
-		switch (e.key) {
-			case 'Escape':
-				toggleChatUI();
-				break;
-			case 'ArrowUp':
-				if (chatInfo.index < chatInfo.inputs.length) {
-					$chatInput.val(++chatInfo.eggCounter == 69 ? 'nice' : chatInfo.inputs[++chatInfo.index]);
-				}
-				break;
-			case 'ArrowDown':
-				chatInfo.eggCounter = 0;
-				if (chatInfo.index > 0) {
-					$chatInput.val(--chatInfo.index == 0 ? chatInfo.currentInput : chatInfo.inputs[chatInfo.index]);
-				}
-				break;
-			case 'Enter':
-				if (/^\s*$/.test(inputValue)) {
-					// Prevent empty or whitespace-only messages
-					break;
-				}
-				chatInfo.eggCounter = 0;
-				if (chatInfo.inputs[0] != chatInfo.currentInput) {
-					chatInfo.inputs.unshift(inputValue);
-					if (chatInfo.inputs.length > chat_cache_size) {
-						chatInfo.inputs.pop();
-					}
-				}
-				if (inputValue[0] == '/') {
-					sendChatMessage(runCommand(inputValue.slice(1)) as string);
-				} else if (currentLevel.isServer) {
-					servers.get(servers.selected).socket.emit('chat', inputValue);
-				} else {
-					chat(inputValue);
-				}
-				$chatInput.val('');
-				toggleChatUI();
-				chatInfo.index = 0;
-				break;
-		}
-	});
 	$('canvas.game').on('focus', () => {
 		renderer.getCamera().attachControl($('canvas.game'), true);
 	});

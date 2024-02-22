@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
-import { cookies } from './utils';
+import { cookies, logger } from './utils';
 const fs = $app.require('fs');
 import { JSONFileMap, isJSON } from '../core/utils';
 import { ServerListItem } from './ui/server';
@@ -10,7 +10,8 @@ import type { ServerPingInfo } from '../server/Server';
 import type { JSONValue } from '../core/utils';
 import { ClientLevel } from './level';
 import EventEmitter from 'eventemitter3';
-import { logger, path, sendChatMessage } from './client';
+import { sendMessage } from './chat';
+import { path } from './config';
 
 export type SerializedServer = JSONValue & {
 	id: string;
@@ -48,7 +49,7 @@ export class Server extends EventEmitter {
 			this.kickMessage = 'Kicked from server: ' + message;
 		});
 		this.socket.on('chat', message => {
-			sendChatMessage(message);
+			sendMessage(message);
 		});
 		this.socket.on('event', (type: string, ...data) => {
 			if (type == 'level.tick') {

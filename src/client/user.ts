@@ -1,7 +1,8 @@
 import type { Account } from '@blankstorm/api';
 import type { Player } from '../core/nodes/Player';
 import { ClientSystem } from './system';
-import { currentLevel, sendChatMessage } from './client';
+import { currentLevel } from './client';
+import { sendMessage } from './chat';
 import * as servers from './servers';
 
 export const account: Account = {
@@ -15,7 +16,7 @@ export const account: Account = {
 
 export function chat(...messages: string[]) {
 	for (const message of messages) {
-		sendChatMessage(`${account.username}: ${message}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+		sendMessage(`${account.username}: ${message}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
 	}
 }
 

@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import * as client from './client';
+import { logger } from './utils';
 
 $.ajaxSetup({ timeout: 3000 });
 $.event.special.wheel = {
@@ -10,7 +11,7 @@ $.event.special.wheel = {
 
 const options = await $app.options();
 if (options.debug) {
-	client.logger.info('Debug mode enabled');
+	logger.info('Debug mode enabled');
 	globalThis.client = client;
 }
 await client.init(options);

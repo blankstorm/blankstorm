@@ -10,7 +10,7 @@ import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
 import { ClientLevel } from './level';
 import type { SerializedClientLevel } from './level';
-import { path } from './client';
+import { path } from './config';
 
 export class Save {
 	#data: SerializedClientLevel;

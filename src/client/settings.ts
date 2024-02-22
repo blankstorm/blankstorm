@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import { JSONFileMap, isJSON, type JSONObject } from '../core/utils';
-import { logger, path } from './client';
+import { path } from './config';
+import { logger } from './utils';
 
 const fs = $app.require('fs');
 
@@ -351,11 +352,13 @@ export function load({ sections: _sections = [], items: _items = [] }: { section
 		throw new Error('Can not load settings before initialization');
 	}
 	for (const _section of _sections) {
+		logger.debug(`Loading settings section: "${_section.id}"`);
 		const section = new Section(_section);
 		sections.set(section.id, section);
 	}
 
 	for (const _item of _items) {
+		logger.debug(`Loading setting: "${_item.id}"`);
 		const item = new Item(_item);
 		items.set(item.id, item);
 		const value: Value = <Value>(file.has(item.id) ? file.get(item.id) : _item.value);
