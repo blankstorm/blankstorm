@@ -1,4 +1,4 @@
-import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { type Account, getAccount } from '@blankstorm/api';
 import $ from 'jquery';
@@ -7,7 +7,6 @@ import type { SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemCollection, ItemID } from '../core/generic/items';
 import type { SerializedNode } from '../core/nodes/Node';
-import { ClientLevel } from './level';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
@@ -17,13 +16,14 @@ import { playsound } from './audio';
 import * as renderer from '../renderer/index';
 import * as ui from './ui/ui';
 import { ScreenshotUI } from './ui/screenshot';
-import { execCommandString } from '../core/commands';
 import { xpToLevel } from '../core/utils';
 import * as user from './user';
-import { setDebug, setPath } from './config';
+import { isServer, setDebug, setPath } from './config';
 import * as chat from './chat';
-
-const fs = $app.require('fs');
+import { Level } from '../core/Level';
+import { waypoints } from './waypoints';
+import * as mods from './mods';
+import { execCommandString } from '../core/commands';
 
 export interface ClientInit {
 	/**
@@ -37,7 +37,11 @@ export interface ClientInit {
 	debug: boolean;
 }
 
-export let currentLevel: ClientLevel;
+export let currentLevel: Level;
+
+export function clearLevel(): void {
+	currentLevel = null;
+}
 
 export let isPaused: boolean;
 
@@ -52,8 +56,6 @@ export function toggleHitboxes() {
 
 export const screenshots = [];
 
-const mods = new Map();
-
 export function changeUI(selector: string, hideAll?: boolean) {
 	if ($(selector).is(':visible')) {
 		$('canvas.game').trigger('focus');
@@ -64,14 +66,6 @@ export function changeUI(selector: string, hideAll?: boolean) {
 	} else if (!$('.game-ui').is(':visible')) {
 		renderer.getCamera().detachControl();
 		$(selector).show().trigger('focus');
-	}
-}
-
-export function runCommand(command: string): string | void {
-	if (currentLevel.isServer) {
-		servers.get(servers.selected).socket.emit('command', command);
-	} else {
-		return execCommandString(command, { executor: user.player() }, true);
 	}
 }
 
@@ -372,16 +366,7 @@ async function _init(): Promise<void> {
 	await locales.init();
 
 	_initLog('Loading Mods...');
-	try {
-		if (!fs.existsSync('mods')) {
-			fs.mkdirSync('mods');
-		}
-
-		const mods = fs.readdirSync('mods');
-		logger.log('Loaded mods: ' + (mods.join('\n') || '(none)'));
-	} catch (err) {
-		throw new Error('Failed to load mods: ' + err, { cause: err.stack });
-	}
+	await mods.init();
 
 	_initLog('Initializing renderer...');
 	try {
@@ -423,7 +408,7 @@ async function _init(): Promise<void> {
 	logger.log('Client loaded successful');
 	renderer.engine.runRenderLoop(update);
 	setInterval(() => {
-		if (currentLevel instanceof ClientLevel && !isPaused) {
+		if (!isPaused && !isServer && currentLevel instanceof Level) {
 			currentLevel.tick();
 		}
 	}, 1000 / config.tick_rate);
@@ -455,33 +440,16 @@ export async function reload() {
 }
 
 function _update() {
-	if (!(currentLevel instanceof ClientLevel) || isPaused) {
+	if (!(currentLevel instanceof Level) || isPaused) {
 		return;
 	}
-	const camera = renderer.getCamera(),
-		currentSystem = currentLevel.getNodeSystem(currentLevel.activePlayer);
+	const camera = renderer.getCamera();
 	camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
-	for (const waypoint of currentSystem.waypoints) {
-		const pos = waypoint.screenPos;
-		waypoint.marker
-			.css({
-				position: 'fixed',
-				left: Math.min(Math.max(pos.x, 0), innerWidth - +settings.get('font_size')) + 'px',
-				top: Math.min(Math.max(pos.y, 0), innerHeight - +settings.get('font_size')) + 'px',
-				fill: waypoint.color.toHexString(),
-			})
-			.filter('p')
-			.text(
-				Vector2.Distance(new Vector2(pos.x, pos.y), new Vector2(innerWidth / 2, innerHeight / 2)) < 60 || waypoint.active
-					? `${waypoint.name} - ${minimize(Vector3.Distance(user.player().position, waypoint.position))} km`
-					: ''
-			);
-		waypoint.marker[pos.z > 1 && pos.z < 1.15 ? 'hide' : 'show']();
-	}
+	waypoints;
 	$('#hud p.level').text(Math.floor(xpToLevel(user.player().xp)));
 	$('#hud svg.xp rect').attr('width', (xpToLevel(user.player().xp) % 1) * 100 + '%');
 	$('#debug .left').html(`
-			<span>${version} ${mods.size ? `[${[...mods.values()].join(', ')}]` : `(vanilla)`}</span><br>
+			<span>${version} ${mods.size ? `[${[...mods.ids()].join(', ')}]` : `(vanilla)`}</span><br>
 			<span>${renderer.engine.getFps().toFixed()} FPS | ${currentLevel.tps.toFixed()} TPS</span><br>
 			<span>${currentLevel.id} (${currentLevel.date.toLocaleString()})</span><br><br>
 			<span>
@@ -527,7 +495,12 @@ export function unpause() {
 	isPaused = false;
 }
 
-export function startPlaying(level: ClientLevel): boolean {
+export function load(level: Level): boolean {
+	if (!level) {
+		logger.warn('No level loaded');
+		alert('No level loaded');
+		return false;
+	}
 	if (level.version != version) {
 		logger.warn(`Can not play level #${level.id}: `);
 		alert('Incompatible version');
@@ -540,7 +513,6 @@ export function startPlaying(level: ClientLevel): boolean {
 	currentLevel = level;
 	renderer.clear();
 	renderer.update(user.system().toJSON());
-	level.isActive = true;
 	level.on('projectile.fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
 		renderer.fireProjectile(hardpointID, targetID, projectile);
 	});
@@ -573,9 +545,32 @@ export function startPlaying(level: ClientLevel): boolean {
 	return true;
 }
 
-export function stopPlaying(level: ClientLevel): void {
+export function unload(): void {
 	for (const event of ['projectile.fire', 'level.tick', 'player.levelup', 'player.death', 'entity.follow_path.start', 'entity.death', 'player.items.change']) {
-		level.off(event);
+		currentLevel.off(event);
 	}
 	pause();
+	$('.ingame').hide();
+	if (isServer) {
+		servers.disconnect();
+	} else {
+		$('#main').show();
+	}
+	clearLevel();
+}
+
+export type RPCCommand = 'chat' | 'command';
+
+export function send(command: RPCCommand, ...data): void {
+	if (isServer) {
+		servers.socket.emit(command, data);
+		return;
+	}
+
+	switch (command) {
+		case 'chat':
+			chat.sendMessage(...data);
+		case 'command':
+			execCommandString(command, { executor: user.player() }, true);
+	}
 }

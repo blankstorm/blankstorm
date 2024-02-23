@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { JSONFileMap, isJSON, type JSONObject } from '../core/utils';
+import { FileMap, isJSON, type JSONObject } from '../core/utils';
 import { path } from './config';
 import { logger } from './utils';
 
@@ -326,7 +326,7 @@ customElements.define('settings-section', Section, { extends: 'form' });
 export const sections: Map<string, Section> = new Map();
 export const items: Map<string, Item> = new Map();
 
-let file: JSONFileMap;
+let file: FileMap;
 
 export let initialized: boolean = false;
 
@@ -343,7 +343,7 @@ export function init(): void {
 		logger.warn('Invalid settings file (overwriting)');
 		fs.rmSync(filePath);
 	}
-	file = new JSONFileMap(filePath, fs);
+	file = new FileMap(filePath, fs);
 	initialized = true;
 }
 

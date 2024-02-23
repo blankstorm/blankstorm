@@ -12,3 +12,9 @@ export let debug: boolean = false;
 export function setDebug(value: boolean) {
 	debug = value;
 }
+
+export let isServer: boolean = false;
+
+export function setServer(value: boolean): void {
+	isServer = value;
+}

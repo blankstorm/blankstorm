@@ -1,14 +1,12 @@
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
-
-import { random } from './utils';
-import { version, versions, config } from './metadata';
-import type { VersionID } from './metadata';
-
-import { System } from './System';
-import type { SerializedSystem } from './System';
-import type { SystemGenerationOptions } from './generic/system';
 import { EventEmitter } from 'eventemitter3';
+import type { SerializedSystem } from './System';
+import { System } from './System';
+import type { SystemGenerationOptions } from './generic/system';
+import type { VersionID } from './metadata';
+import { config, version, versions } from './metadata';
+import { random } from './utils';
 
 export interface SerializedLevel<S extends SerializedSystem = SerializedSystem> {
 	date: string;
@@ -20,7 +18,8 @@ export interface SerializedLevel<S extends SerializedSystem = SerializedSystem> 
 }
 
 export class Level<S extends System = System> extends EventEmitter {
-	id = random.hex(16);
+	id: string = random.hex(16);
+	name: string = '';
 	version = version;
 	date = new Date();
 	difficulty = 1;
@@ -29,7 +28,7 @@ export class Level<S extends System = System> extends EventEmitter {
 	#initPromise: Promise<Level>;
 	#performanceMonitor = new PerformanceMonitor(60);
 
-	constructor(public name: string = '') {
+	constructor() {
 		super();
 
 		this.#initPromise = this.init();
@@ -121,8 +120,9 @@ export class Level<S extends System = System> extends EventEmitter {
 			throw new Error(`Can't load level data: wrong version`);
 		}
 
-		level ??= new Level(levelData.name);
+		level ??= new Level();
 		level.id = levelData.id;
+		level.name = levelData.name;
 		level.date = new Date(levelData.date);
 		level.version = levelData.version;
 

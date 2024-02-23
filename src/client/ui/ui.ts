@@ -11,23 +11,23 @@ import type { Player } from '../../core/nodes/Player';
 import { isHex, isJSON, toDegrees } from '../../core/utils';
 import * as renderer from '../../renderer';
 import { playsound } from '../audio';
-import { changeUI, currentLevel, hitboxesEnabled, isMultiplayerEnabled, isPaused, pause, startPlaying, toggleHitboxes, unpause } from '../client';
-import { ClientLevel } from '../level';
+import * as client from '../client';
 import * as locales from '../locales';
 import * as saves from '../saves';
-import { LiveSave, Save } from '../saves';
+import { Save } from '../saves';
 import * as servers from '../servers';
-import { Server } from '../servers';
 import * as settings from '../settings';
-import { ClientSystem } from '../system';
 import { account, system } from '../user';
 import { $svg, logger, minimize, upload } from '../utils';
-import { Waypoint } from '../waypoint';
+import { Waypoint, updateAll as updateAllWaypoints } from '../waypoints';
 import { ItemUI } from './item';
 import { MapMarker } from './map-marker';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 import { alert } from '../utils';
+import { System } from '../../core/System';
+import { Level } from '../../core/Level';
+import { isServer } from '../config';
 
 export const items: Map<string, ItemUI> = new Map();
 
@@ -95,7 +95,7 @@ export function init() {
 }
 
 export function update() {
-	if (system() instanceof ClientSystem) {
+	if (system() instanceof System) {
 		const player = system().level.getNodeSystem(account.id).getNodeByID<Player>(account.id);
 		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
@@ -156,9 +156,7 @@ export function update() {
 			$(ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
 		}
 
-		for (const waypoint of system().waypoints) {
-			waypoint.updateVisibility();
-		}
+		updateAllWaypoints();
 		$('#map-markers').attr(
 			'transform',
 			`translate(${map.svgX} ${map.svgY}) \
@@ -187,7 +185,7 @@ export function update() {
 			marker.update();
 		}
 
-		if (currentLevel.isServer) {
+		if (isServer) {
 			$('#pause .quit').text('Disconnect');
 			$('#pause .save').hide();
 		} else {
@@ -270,12 +268,10 @@ export function registerListeners() {
 		$('#save-list').show();
 	});
 	$('#main .mp').on('click', () => {
-		if (isMultiplayerEnabled) {
+		if (client.isMultiplayerEnabled) {
 			$('#main').hide();
 			$('#server-list').show();
-			for (const server of servers.servers()) {
-				server.ping();
-			}
+			servers.pingAll();
 		} else {
 			$<HTMLDialogElement>('#login')[0].showModal();
 		}
@@ -303,12 +299,15 @@ export function registerListeners() {
 	$('#server-dialog .save').on('click', () => {
 		const name = $('#server-dialog .name').val() as string,
 			url = $('#server-dialog .url').val() as string,
-			id = servers.getServerID(url);
-		const server = servers.has(id) ? servers.get(id) : new Server(url, name);
-		if (servers.has(id)) {
-			server.name = name;
-			server._url = url;
+			id = servers.getID(url);
+		if (!servers.has(id)) {
+			servers.add(name, url);
+			return;
 		}
+		const server = servers.get(id);
+		server.name = name;
+		server.url = url;
+
 		update();
 		$<HTMLDialogElement>('#server-dialog')[0].close();
 	});
@@ -337,11 +336,7 @@ export function registerListeners() {
 			alert(`Can't load save: not JSON.`);
 		}
 	});
-	$('#server-list button.refresh').on('click', () => {
-		for (const server of servers.servers()) {
-			server.ping();
-		}
-	});
+	$('#server-list button.refresh').on('click', servers.pingAll);
 	$('#connect button.back').on('click', () => {
 		$('#server-list').show();
 		$('#connect').hide();
@@ -352,14 +347,14 @@ export function registerListeners() {
 	$('#save-new .new').on('click', async () => {
 		$<HTMLDialogElement>('#save-new')[0].close();
 		const name = $('#save-new .name').val() as string;
-		const live = await LiveSave.CreateDefault(name, account.id, account.username);
+		const live = await saves.createDefault(name);
 		new Save(live.toJSON());
-		startPlaying(live);
+		client.load(live);
 	});
 	$('#pause .resume').on('click', () => {
 		$('#pause').hide();
 		$('canvas.game').trigger('focus');
-		unpause();
+		client.unpause();
 	});
 	$('#pause .save').on('click', saves.flush);
 	$('#pause .options').on('click', () => {
@@ -367,16 +362,7 @@ export function registerListeners() {
 		$('#pause').hide();
 		$('#settings').show();
 	});
-	$('#pause .quit').on('click', () => {
-		pause();
-		$('.ingame').hide();
-		if (currentLevel.isServer) {
-			servers.get(servers.selected).disconnect();
-		} else {
-			saves.select(null);
-			$('#main').show();
-		}
-	});
+	$('#pause .quit').on('click', client.unload);
 	$('#login')
 		.find('.cancel')
 		.on('click', e => {
@@ -456,7 +442,7 @@ export function registerListeners() {
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 			alert(locales.text`error.waypoint.range`);
 		} else {
-			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, currentLevel.getNodeSystem(currentLevel.activePlayer));
+			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, system());
 			waypoint.name = name;
 			waypoint.color = Color3.FromHexString(color);
 			waypoint.position = new Vector3(x, y, z);
@@ -493,10 +479,10 @@ export function registerListeners() {
 		renderer.getCamera().attachControl($('canvas.game'), true);
 	});
 	$('canvas.game').on('click', e => {
-		if (!isPaused) {
+		if (!client.isPaused) {
 			renderer.getCamera().attachControl($('canvas.game'), true);
 		}
-		if (!(currentLevel instanceof ClientLevel)) {
+		if (!(client.currentLevel instanceof Level)) {
 			logger.warn('No active client level');
 			return;
 		}
@@ -504,17 +490,16 @@ export function registerListeners() {
 		update();
 	});
 	$('canvas.game').on('contextmenu', e => {
-		if (account.id != currentLevel.activePlayer) {
-			logger.warn(`Mismatch: The client's player ID is ${account.id} but the current active player ID is ${currentLevel.activePlayer}`);
+		if (account.id != account.id) {
+			logger.warn(`Mismatch: The client's player ID is ${account.id} but the current active player ID is ${account.id}`);
 			return;
 		}
-		if (!(currentLevel instanceof ClientLevel)) {
+		if (!(client.currentLevel instanceof Level)) {
 			logger.warn('No active client level');
 			return;
 		}
 		const data = renderer.handleCanvasRightClick(e, account.id);
-		const system = currentLevel.getNodeSystem(currentLevel.activePlayer);
-		system.tryAction(account.id, 'move', data);
+		system().tryAction(account.id, 'move', data);
 	});
 	$('canvas.game').on('keydown', e => {
 		switch (e.key) {
@@ -526,12 +511,12 @@ export function registerListeners() {
 				break;
 			case 'F4':
 				e.preventDefault();
-				toggleHitboxes();
-				renderer.setHitboxes(hitboxesEnabled);
+				client.toggleHitboxes();
+				renderer.setHitboxes(client.hitboxesEnabled);
 				break;
 			case 'Tab':
 				e.preventDefault();
-				if (currentLevel.isServer) $('#tablist').show();
+				if (isServer) $('#tablist').show();
 				break;
 		}
 	});
@@ -545,7 +530,7 @@ export function registerListeners() {
 		switch (e.key) {
 			case 'Tab':
 				e.preventDefault();
-				if (currentLevel.isServer) $('#tablist').hide();
+				if (isServer) $('#tablist').hide();
 				break;
 		}
 	});
@@ -553,14 +538,14 @@ export function registerListeners() {
 	$('#ingame-temp-menu')
 		.on('keydown', e => {
 			if (e.key == settings.get('toggle_temp_menu') || e.key == 'Escape') {
-				changeUI('#ingame-temp-menu');
+				client.changeUI('#ingame-temp-menu');
 			}
 		})
 		.on('click', update);
 	$('canvas.game,#pause,#hud').on('keydown', e => {
 		if (e.key == 'Escape') {
-			changeUI('#pause', true);
-			isPaused ? unpause() : pause();
+			client.changeUI('#pause', true);
+			client.isPaused ? client.unpause() : client.pause();
 		}
 		update();
 	});

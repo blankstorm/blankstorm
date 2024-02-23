@@ -2,8 +2,7 @@ import $ from 'jquery';
 import { alert, confirm, download } from '../utils';
 import { versions } from '../../core/metadata';
 import type { Save } from '../saves';
-import { startPlaying } from '../client';
-import { select } from '../saves';
+import { load } from '../client';
 
 export class SaveListItem extends HTMLLIElement {
 	constructor(save: Save) {
@@ -12,9 +11,9 @@ export class SaveListItem extends HTMLLIElement {
 		const loadAndPlay = async () => {
 			$('#loading_cover').show();
 			try {
-				const live = save.load(save.activePlayer);
+				const live = save.load();
 				await live.ready();
-				startPlaying(live);
+				load(live);
 				$('#loading_cover').hide();
 			} catch (e) {
 				alert('Failed to load save: ' + e);
@@ -27,7 +26,6 @@ export class SaveListItem extends HTMLLIElement {
 			.addClass('bg-normal clickable')
 			.on('click', () => {
 				$('.selected').removeClass('selected');
-				select(save.id);
 				$(this).addClass('selected');
 			})
 			.on('dblclick', loadAndPlay)

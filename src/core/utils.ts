@@ -99,7 +99,7 @@ export type JSONValue<Key extends string | number | symbol = string> = string | 
 /**
  * A Map overlaying a JSON file
  */
-export class JSONFileMap implements Map<string, JSONValue> {
+export class FileMap<T extends JSONValue = JSONValue> implements Map<string, T> {
 	get [Symbol.toStringTag](): '[JSONFileMap]' {
 		return '[JSONFileMap]';
 	}
@@ -115,7 +115,7 @@ export class JSONFileMap implements Map<string, JSONValue> {
 		}
 	}
 
-	get _map(): Map<string, JSONValue> {
+	get _map(): Map<string, T> {
 		const content = this.#fs.readFileSync(this.path, 'utf8');
 		if (!isJSON(content)) {
 			if (!config.overwrite_invalid_json) {
@@ -128,7 +128,7 @@ export class JSONFileMap implements Map<string, JSONValue> {
 		return new Map(Object.entries(JSON.parse(content)));
 	}
 
-	_write(map: Map<string, JSONValue>) {
+	_write(map: Map<string, T>) {
 		if (!this.#fs.existsSync(this.path)) {
 			this.#fs.writeFileSync(this.path, '{}');
 		}
@@ -147,15 +147,15 @@ export class JSONFileMap implements Map<string, JSONValue> {
 		return rt;
 	}
 
-	get<T = JSONValue>(key: string): T {
-		return this._map.get(key) as T;
+	get<U extends T>(key: string): U {
+		return this._map.get(key) as U;
 	}
 
 	has(key: string): boolean {
 		return this._map.has(key);
 	}
 
-	set(key: string, value: JSONValue): this {
+	set(key: string, value: T): this {
 		const map = this._map;
 		map.set(key, value);
 		this._write(map);
@@ -167,28 +167,23 @@ export class JSONFileMap implements Map<string, JSONValue> {
 	}
 
 	get [Symbol.iterator]() {
-		const map = this._map;
-		return map[Symbol.iterator].bind(map);
+		return this._map[Symbol.iterator].bind(this._map);
 	}
 
 	get keys(): typeof this._map.keys {
-		const map = this._map;
-		return map.keys.bind(map);
+		return this._map.keys.bind(this._map);
 	}
 
 	get values(): typeof this._map.values {
-		const map = this._map;
-		return map.values.bind(map);
+		return this._map.values.bind(this._map);
 	}
 
 	get entries(): typeof this._map.entries {
-		const map = this._map;
-		return map.entries.bind(map);
+		return this._map.entries.bind(this._map);
 	}
 
 	get forEach(): typeof this._map.forEach {
-		const map = this._map;
-		return map.forEach.bind(map);
+		return this._map.forEach.bind(this._map);
 	}
 }
 
@@ -257,28 +252,23 @@ export class FolderMap implements Map<string, string> {
 	}
 
 	get [Symbol.iterator]() {
-		const map = this._map;
-		return map[Symbol.iterator].bind(map);
+		return this._map[Symbol.iterator].bind(this._map);
 	}
 
 	get keys() {
-		const map = this._map;
-		return map.keys.bind(map);
+		return this._map.keys.bind(this._map);
 	}
 
 	get values() {
-		const map = this._map;
-		return map.values.bind(map);
+		return this._map.values.bind(this._map);
 	}
 
 	get entries() {
-		const map = this._map;
-		return map.entries.bind(map);
+		return this._map.entries.bind(this._map);
 	}
 
 	get forEach() {
-		const map = this._map;
-		return map.forEach.bind(map);
+		return this._map.forEach.bind(this._map);
 	}
 }
 

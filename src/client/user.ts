@@ -1,9 +1,8 @@
 import type { Account } from '@blankstorm/api';
 import type { Player } from '../core/nodes/Player';
-import { ClientSystem } from './system';
 import { currentLevel } from './client';
 import { sendMessage } from './chat';
-import * as servers from './servers';
+import type { System } from '../core/System';
 
 export const account: Account = {
 	id: '_guest_',
@@ -21,10 +20,9 @@ export function chat(...messages: string[]) {
 }
 
 export function player(): Player {
-	const level = currentLevel.isServer ? servers.get(servers.selected).level : currentLevel;
-	return <Player>level?.getNodeSystem(account.id)?.nodes?.get(account.id);
+	return <Player>system()?.nodes?.get(account.id);
 }
 
-export function system(): ClientSystem {
-	return currentLevel?.getNodeSystem(currentLevel.activePlayer);
+export function system(): System {
+	return currentLevel?.getNodeSystem(account.id);
 }

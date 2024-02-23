@@ -3,11 +3,9 @@ import type { Star } from '../../core/nodes/Star';
 import type { Planet } from '../../core/nodes/Planet';
 import type { Ship } from '../../core/nodes/Ship';
 import { toDegrees } from '../../core/utils';
-import type { Waypoint } from '../waypoint';
-
+import type { Waypoint } from '../waypoints';
 import { $svg, getColorForBiome } from '../utils';
-import type { ClientLevel } from '../level';
-import { currentLevel } from '../client';
+import { account, system } from '../user';
 
 export const supportedMarkerNodeTypes = ['planet', 'star', 'ship', 'waypoint'];
 
@@ -26,7 +24,7 @@ export class MapMarker {
 			case 'planet':
 				return getColorForBiome((this.target as unknown as Planet).biome);
 			case 'ship':
-				return currentLevel?.activePlayer == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
+				return account.id == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
 		}
 	}
 
@@ -69,7 +67,7 @@ export class MapMarker {
 			marker.attr('r', this.target.radius as number);
 		}
 		(<JQuery>(marker.is('svg') ? marker : this.gui)).attr('transform', `rotate(${toDegrees(this.target.absoluteRotation.y)})`).css('fill', this.color);
-		(<ClientLevel>this.target.system.level).isActive ? this.gui.show() : this.gui.hide();
+		this.target.system.id == system().id ? this.gui.show() : this.gui.hide();
 	}
 
 	static supportsNodeType(nodeType: string): boolean {

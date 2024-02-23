@@ -8,20 +8,18 @@ import { Player } from '../core/nodes/Player';
 const fs = $app.require('fs');
 import { SaveListItem } from './ui/save';
 import type { ShipType } from '../core/generic/ships';
-import { ClientLevel } from './level';
-import type { SerializedClientLevel } from './level';
 import { path } from './config';
 import * as chat from './chat';
 import { currentLevel } from './client';
+import { Level, SerializedLevel } from '../core/Level';
+import { account } from './user';
 
 export class Save {
-	#data: SerializedClientLevel;
+	#data: SerializedLevel;
 
 	gui: JQuery<SaveListItem>;
-	get activePlayer(): string {
-		return activePlayer;
-	}
-	constructor(data: SerializedClientLevel) {
+
+	constructor(data: SerializedLevel) {
 		this.#data = data;
 
 		set(this.id, this);
@@ -33,14 +31,14 @@ export class Save {
 		return this.#data?.id;
 	}
 
-	get data(): SerializedClientLevel {
+	get data(): SerializedLevel {
 		if (folder.has(this.id)) {
 			this.#data = JSON.parse(folder.get(this.id));
 		}
 		return this.#data;
 	}
 
-	set data(data: SerializedClientLevel) {
+	set data(data: SerializedLevel) {
 		this.#data = data;
 		this.updateData();
 	}
@@ -54,13 +52,9 @@ export class Save {
 		set(this.id, this);
 	}
 
-	load(playerID: string): LiveSave {
-		if (this.#data.activePlayer != playerID) {
-			this.#data.systems.find(system => system.nodes.some(node => node.id == this.#data.activePlayer)).nodes.find(node => node.id == this.#data.activePlayer).id = playerID;
-			this.#data.activePlayer = playerID;
-		}
+	load(): Level {
 		this.updateData();
-		return LiveSave.FromJSON(this.data);
+		return Level.FromJSON(this.data);
 	}
 
 	remove() {
@@ -69,40 +63,20 @@ export class Save {
 	}
 }
 
-export class LiveSave extends ClientLevel {
-	constructor(name: string) {
-		super(name);
-	}
-
-	static FromJSON(saveData: SerializedClientLevel) {
-		const save = new LiveSave(saveData.name);
-		ClientLevel.FromJSON(saveData, save);
-		return save;
-	}
-
-	static async CreateDefault(name: string, playerID: string, playerName: string) {
-		const level = new LiveSave(name);
-		await level.ready();
-		const system = await level.generateSystem('Crash Site', Vector2.Zero());
-		const fleet = ['mosquito', 'cillus'].map((type: ShipType) => new Ship(null, system, { type }));
-		fleet[0].position.z += 4;
-		const player = new Player(playerID, system, { fleet });
-		player.name = playerName;
-		player.position = new Vector3(0, 0, -1000).add(random.cords(50, true));
-		player.rotation = new Vector3(0, 0, 0);
-		level.activePlayer = player.id;
-		level.rootSystem = system;
-		return level;
-	}
+export async function createDefault(name: string): Promise<Level> {
+	const level = new Level();
+	level.name = name;
+	await level.ready();
+	const system = await level.generateSystem('Crash Site', Vector2.Zero());
+	const fleet = ['mosquito', 'cillus'].map((type: ShipType) => new Ship(null, system, { type }));
+	fleet[0].position.z += 4;
+	const player = new Player(account.id, system, { fleet });
+	player.name = account.username;
+	player.position = new Vector3(0, 0, -1000).add(random.cords(50, true));
+	player.rotation = Vector3.Zero();
+	level.rootSystem = system;
+	return level;
 }
-
-export let selected: string;
-export function select(id: string): void {
-	selected = id;
-}
-
-export let current: LiveSave;
-export let activePlayer: string;
 
 let folder: FolderMap;
 const map: Map<string, Save> = new Map();
@@ -113,7 +87,7 @@ export function init() {
 		fs.mkdirSync(folderPath);
 	}
 	folder = new FolderMap(folderPath, fs, '.json');
-	for (const [id, content] of folder._map) {
+	for (const [id, content] of folder) {
 		if (!isJSON(content)) {
 			continue;
 		}
@@ -157,7 +131,7 @@ function remove(key: string): boolean {
 export { remove as delete };
 
 export function flush(): void {
-	if (!(currentLevel instanceof ClientLevel)) {
+	if (!(currentLevel instanceof Level)) {
 		throw 'You must have a valid save selected.';
 	}
 	$('#pause .save').text('Saving...');

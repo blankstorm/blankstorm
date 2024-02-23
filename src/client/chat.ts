@@ -1,10 +1,8 @@
 import $ from 'jquery';
 import * as settings from './settings';
 import { logger } from './utils';
-import { runCommand, currentLevel } from './client';
-import { chat } from './user';
-import * as servers from './servers';
 import { getCamera } from '../renderer';
+import { send } from './client';
 
 /**
  * How many previous chat messages to cache
@@ -76,11 +74,9 @@ export function handleInput(event: JQuery.KeyDownEvent): void {
 				}
 			}
 			if (inputValue[0] == '/') {
-				sendMessage(runCommand(inputValue.slice(1)) as string);
-			} else if (currentLevel.isServer) {
-				servers.get(servers.selected).socket.emit('chat', inputValue);
+				send('command', inputValue.slice(1));
 			} else {
-				chat(inputValue);
+				send('chat', inputValue);
 			}
 			inputElement.val('');
 			toggleUI();

@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type { Waypoint } from '../waypoint';
+import type { Waypoint } from '../waypoints';
 import { confirm } from '../utils';
 
 export class WaypointUI extends HTMLDivElement {

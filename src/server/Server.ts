@@ -16,7 +16,7 @@ import { Logger } from 'logzen';
 import { Client, ClientStore } from './Client';
 import { captureArrayUpdates } from './utils';
 
-export interface ServerPingInfo {
+export interface PingInfo {
 	current_clients: number;
 	max_clients: number;
 	message: string;
@@ -86,7 +86,7 @@ export class Server extends EventEmitter {
 			res.setHeader('Access-Control-Allow-Origin', '*');
 			switch (req.url) {
 				case '/ping':
-					const data: ServerPingInfo = {
+					const data: PingInfo = {
 						current_clients: this.io.sockets.sockets.size,
 						max_clients: serverConfig.max_clients,
 						message: serverConfig.message,
@@ -135,7 +135,7 @@ export class Server extends EventEmitter {
 			this.level = Level.FromJSON(levelData);
 		} else {
 			this.log.log('No level detected. Generating...');
-			this.level = new Level('server_level');
+			this.level = new Level();
 		}
 
 		for (const type of ['projectile.fire', 'level.tick', 'player.death', 'entity.follow_path.start']) {

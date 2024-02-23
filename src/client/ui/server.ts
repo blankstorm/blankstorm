@@ -1,17 +1,16 @@
 import $ from 'jquery';
 import { confirm } from '../utils';
-import { select, type Server } from '../servers';
-import { startPlaying } from '../client';
+import { connect, remove, type ServerData } from '../servers';
 
-function connectAndStartPlaying(server: Server) {
-	server.connect();
-	startPlaying(server.level);
+function connectAndStartPlaying(server: ServerData) {
+	connect(server.id);
 }
 
 export class ServerListItem extends HTMLLIElement {
-	constructor(server: Server) {
+	constructor(server: ServerData) {
 		super();
 		$(this)
+			.attr('id', server.id)
 			.css({
 				overflow: 'none',
 				'align-items': 'center',
@@ -21,7 +20,6 @@ export class ServerListItem extends HTMLLIElement {
 			.on('click', () => {
 				$('.selected').removeClass('selected');
 				$(this).addClass('selected');
-				select(server.id);
 			})
 			.on('dblclick', () => connectAndStartPlaying(server))
 			.prependTo('#server-list');
@@ -34,7 +32,7 @@ export class ServerListItem extends HTMLLIElement {
 			.find('.delete')
 			.on('click', async e => {
 				if (e.shiftKey || (await confirm('Are you sure?'))) {
-					server.remove();
+					remove(server.id);
 				}
 			});
 		$(this)
@@ -44,7 +42,7 @@ export class ServerListItem extends HTMLLIElement {
 			.find('.edit')
 			.on('click', () => {
 				$('#server-dialog').find('.name').val(server.name);
-				$('#server-dialog').find('.url').val(server._url);
+				$('#server-dialog').find('.url').val(server.url);
 				$<HTMLDialogElement>('#server-dialog')[0].showModal();
 			});
 	}
