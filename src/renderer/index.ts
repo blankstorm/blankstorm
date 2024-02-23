@@ -227,17 +227,7 @@ export function getCamera() {
 	return camera;
 }
 
-/**
- * Since JQuery's `click` event is not assignable to MouseEvent
- * I don't want to to import JQuery in the renderer, even for types
- */
-interface ClickEvent {
-	clientX: number;
-	clientY: number;
-	shiftKey: boolean;
-}
-
-export function handleCanvasClick(ev: ClickEvent, ownerID: string) {
+export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
 	ownerID ??= [...nodes.values()].find(e => e instanceof PlayerRenderer)?.id;
 	if (!ev.shiftKey) {
 		for (const node of nodes.values()) {
@@ -274,7 +264,7 @@ export function handleCanvasClick(ev: ClickEvent, ownerID: string) {
 /**
  * @todo simplify returned data?
  */
-export function handleCanvasRightClick(evt: ClickEvent, ownerID: string): MoveInfo<Vector3>[] {
+export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: string): MoveInfo<Vector3>[] {
 	const returnData: MoveInfo<Vector3>[] = [];
 	for (const renderer of nodes.values()) {
 		if (renderer instanceof EntityRenderer && renderer.selected && renderer.parent?.id == ownerID) {
