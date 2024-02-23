@@ -15,10 +15,6 @@ import '@babylonjs/core/Culling'; // For Ray side effects
 import { Path } from '../core/Path';
 import type { MoveInfo, SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
-import type { SerializedStar } from '../core/nodes/Star';
-import type { SerializedPlanet } from '../core/nodes/Planet';
-import type { SerializedPlayer } from '../core/nodes/Player';
-import type { SerializedShip } from '../core/nodes/Ship';
 import type { SerializedNode } from '../core/nodes/Node';
 import config from './config';
 import { Camera } from './camera';
@@ -29,7 +25,7 @@ import { StarRenderer } from './nodes/Star';
 import { ShipRenderer } from './nodes/Ship';
 import { EntityRenderer } from './nodes/Entity';
 import type { HardpointRenderer } from './nodes/Hardpoint';
-import type { Renderer } from './nodes/Renderer';
+import { createAndUpdate, nodeMap, type Renderer } from './nodes/renderer';
 
 function createEmptyCache(): SerializedSystem {
 	return {
@@ -169,29 +165,19 @@ export async function load(serializedNodes: SerializedNode[]) {
 	}
 
 	for (const data of serializedNodes) {
-		let node;
-		switch (data.nodeType) {
-			case 'star':
-				node = await StarRenderer.FromJSON(data as SerializedStar, scene);
-				break;
-			case 'planet':
-				node = await PlanetRenderer.FromJSON(data as SerializedPlanet, scene);
-				break;
-			case 'player':
-			case 'client':
-				node = await PlayerRenderer.FromJSON(data as SerializedPlayer, scene);
-				/**
-				 * @todo change this
-				 */
-				camera.target = node.position;
-				break;
-			case 'ship':
-				node = await ShipRenderer.FromJSON(data as SerializedShip, scene);
-				break;
-			default:
-				throw new ReferenceError(`rendering for node type "${data.nodeType}" is not supported`);
+		const type: string = data.nodeType;
+		if (!nodeMap.has(type)) {
+			throw new ReferenceError(`rendering for node type "${data.nodeType}" is not supported`);
+		}
+		const node: Renderer = await createAndUpdate(nodeMap.get(data.nodeType), data, scene);
+		if (['Player', 'Client'].includes(type)) {
+			/**
+			 * @todo change this
+			 */
+			camera.target = node.position;
 		}
 
+		await node.update(data);
 		nodes.set(data.id, node);
 	}
 }

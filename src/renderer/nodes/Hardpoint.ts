@@ -5,7 +5,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { random, wait } from '../../core/utils';
 import { ModelRenderer } from '../models';
-import type { Renderer, RendererStatic } from './Renderer';
+import { nodeMap, type Renderer, type RendererStatic } from './renderer';
 import type { SerializedHardpoint } from '../../core/nodes/Hardpoint';
 import type { GenericProjectile } from '../../core/generic/hardpoints';
 
@@ -51,12 +51,6 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Seriali
 		}
 	}
 
-	static async FromJSON(data: SerializedHardpoint, scene: Scene) {
-		const hardpoint = new this(data.id, scene);
-		await hardpoint.update(data);
-		return hardpoint;
-	}
-
 	static projectiles: Map<string, HardpointProjectileHandler> = new Map(
 		Object.entries({
 			async laser(target, { material, speed, id: modelID }) {
@@ -93,4 +87,5 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Seriali
 		})
 	);
 }
-HardpointRenderer satisfies RendererStatic<SerializedHardpoint>;
+HardpointRenderer satisfies RendererStatic<HardpointRenderer>;
+nodeMap.set('Hardpoint', HardpointRenderer);

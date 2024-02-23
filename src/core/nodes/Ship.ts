@@ -9,15 +9,16 @@ import { Storage } from '../Storage';
 import type { System } from '../System';
 import { genericShips } from '../generic/ships';
 import type { ShipType, GenericShip, HardpointInfo } from '../generic/ships';
-import type { ItemCollection } from '../generic/items';
+
 import type { CelestialBody } from '../nodes/CelestialBody';
 import type { Player } from './Player';
 import type { HardpointType } from '../generic/hardpoints';
+import { ItemID } from '../generic/items';
 
 export interface SerializedShip extends SerializedEntity {
 	type: ShipType;
 	hp: number;
-	storage: ItemCollection;
+	storage: Record<ItemID, number>;
 	jumpCooldown: number;
 	hardpoints: SerializedHardpoint[];
 }
@@ -111,7 +112,7 @@ export class Ship extends Entity {
 
 	static FromJSON(data: SerializedShip, system: System): Ship {
 		const max = this.generic[data.type].storage;
-		const ship = super.FromJSON(data, system, data) as Ship;
+		const ship = <Ship>super.FromJSON(data, system, data);
 		ship.hp = data.hp;
 		ship.jumpCooldown = data.jumpCooldown;
 		ship.storage = Storage.FromJSON({ ...data.storage, max });

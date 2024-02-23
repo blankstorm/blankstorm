@@ -4,7 +4,7 @@ import type { Scene } from '@babylonjs/core/scene';
 
 import { StationComponentRenderer } from './StationComponent';
 import type { SerializedStation } from '../../core';
-import type { Renderer, RendererStatic } from './Renderer';
+import { nodeMap, type Renderer, type RendererStatic } from './renderer';
 
 export class StationRenderer extends TransformNode implements Renderer<SerializedStation> {
 	components: StationComponentRenderer[] = [];
@@ -23,11 +23,6 @@ export class StationRenderer extends TransformNode implements Renderer<Serialize
 			this.parent = _parent;
 		}
 	}
-
-	static async FromJSON(data: SerializedStation, scene: Scene) {
-		const station = new this(data.id, scene);
-		await station.update(data);
-		return station;
-	}
 }
-StationRenderer satisfies RendererStatic<SerializedStation>;
+StationRenderer satisfies RendererStatic<StationRenderer>;
+nodeMap.set('Station', StationRenderer);

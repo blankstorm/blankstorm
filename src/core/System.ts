@@ -14,7 +14,7 @@ import type { GenericShip, ShipType } from './generic/ships';
 import type { Research, ResearchID } from './generic/research';
 import { priceOfResearch, isResearchLocked } from './generic/research';
 import type { SystemGenerationOptions } from './generic/system';
-import type { Berth } from './stations/Berth';
+import { Berth } from './stations/Berth';
 import type { Level } from './Level';
 import { config } from './metadata';
 import { getRandomIntWithRecursiveProbability, greek, random, range } from './utils';
@@ -69,9 +69,9 @@ export class System extends EventEmitter {
 		}[keyof ActionData] //see https://stackoverflow.com/a/76335220/21961918
 	): Promise<boolean> {
 		const [action, data] = args;
-		const player = this.nodes.get(id) as Player;
+		const player = this.nodes.get(id);
 
-		if (player?.nodeType != 'player') {
+		if (!(player instanceof Player)) {
 			return false;
 		}
 
@@ -193,23 +193,22 @@ export class System extends EventEmitter {
 			node.position.addInPlace(node.velocity);
 			node.velocity.scaleInPlace(0.9);
 
-			if (node.nodeTypes.includes('ship')) {
-				const ship = node as Ship;
-				if (ship.hp <= 0) {
-					ship.remove();
-					this.emit('entity.death', ship.toJSON());
+			if (node instanceof Ship) {
+				if (node.hp <= 0) {
+					node.remove();
+					this.emit('entity.death', node.toJSON());
 					continue;
 				}
-				for (const hardpoint of ship.hardpoints) {
+				for (const hardpoint of node.hardpoints) {
 					hardpoint.reload = Math.max(--hardpoint.reload, 0);
 
 					const targets = [...this.nodes.values()].filter(e => {
-						const distance = Vector3.Distance(e.absolutePosition, ship.absolutePosition);
-						return e.isTargetable && e.owner != ship.owner && distance < hardpoint.generic.range;
+						const distance = Vector3.Distance(e.absolutePosition, node.absolutePosition);
+						return e.isTargetable && e.owner != node.owner && distance < hardpoint.generic.range;
 					}, null);
 					const target = targets.reduce((previous, current) => {
-						const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), ship.absolutePosition);
-						const currentDistance = Vector3.Distance(current.absolutePosition, ship.absolutePosition);
+						const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), node.absolutePosition);
+						const currentDistance = Vector3.Distance(current.absolutePosition, node.absolutePosition);
 						return previousDistance < currentDistance ? previous : current;
 					}, null);
 
@@ -236,18 +235,17 @@ export class System extends EventEmitter {
 						}
 					}
 				}
-				ship.jumpCooldown = Math.max(--ship.jumpCooldown, 0);
+				node.jumpCooldown = Math.max(--node.jumpCooldown, 0);
 			}
 
-			if (node.nodeTypes.includes('berth')) {
-				const berth = node as Berth;
-				berth.productionTime = Math.max(berth.productionTime - 1, 0);
-				if (berth.productionTime == 0 && berth.productionID) {
-					const ship = new Ship(null, this, { type: berth.productionID });
-					ship.position = berth.absolutePosition;
-					ship.owner = berth.station.owner;
-					berth.productionID = null;
-					this.emit('ship.created', berth.toJSON(), { ship });
+			if (node instanceof Berth) {
+				node.productionTime = Math.max(node.productionTime - 1, 0);
+				if (node.productionTime == 0 && node.productionID) {
+					const ship = new Ship(null, this, { type: node.productionID });
+					ship.position = node.absolutePosition;
+					ship.owner = node.station.owner;
+					node.productionID = null;
+					this.emit('ship.created', node.toJSON(), { ship });
 				}
 			}
 		}
@@ -278,7 +276,7 @@ export class System extends EventEmitter {
 		}
 
 		for (const node of this.nodes.values()) {
-			if (!node.nodeTypes.includes('entity') && !node.nodeTypes.includes('celestialbody')) {
+			if (!node.nodeTypes.includes('Entity') && !node.nodeTypes.includes('CelestialBody')) {
 				continue;
 			}
 
@@ -314,21 +312,21 @@ export class System extends EventEmitter {
 		 */
 		const nodes = systemData.nodes;
 		nodes.sort((node1, node2) => {
-			const priority = ['star', 'planet', 'ship', 'player'];
+			const priority = ['Star', 'Planet', 'Ship', 'Player'];
 			return priority.findIndex(t => t == node1.nodeType) < priority.findIndex(t => t == node2.nodeType) ? -1 : 1;
 		});
 		for (const data of nodes) {
 			switch (data.nodeType) {
-				case 'player':
+				case 'Player':
 					Player.FromJSON(data as SerializedPlayer, system);
 					break;
-				case 'ship':
+				case 'Ship':
 					Ship.FromJSON(data as SerializedShip, system);
 					break;
-				case 'star':
+				case 'Star':
 					Star.FromJSON(data as SerializedStar, system);
 					break;
-				case 'planet':
+				case 'Planet':
 					Planet.FromJSON(data as SerializedPlanet, system);
 					break;
 				default:

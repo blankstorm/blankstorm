@@ -159,12 +159,6 @@ export class ModelRenderer extends TransformNode {
 			this.parent = _parent;
 		}
 	}
-
-	static async FromJSON(data: SerializedNode, scene: Scene) {
-		const model = new this(data.id, scene);
-		model.update(data);
-		return model;
-	}
 }
 
 export const genericMeshes: Map<string, AssetContainer> = new Map();

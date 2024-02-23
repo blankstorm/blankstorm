@@ -5,13 +5,13 @@ import { Ship } from './Ship';
 import { Node } from './Node';
 import type { SerializedNode } from './Node';
 import { Storage } from '../Storage';
-import type { ItemCollection } from '../generic/items';
+import { ItemID } from '../generic/items';
 
 export interface SerializedCelestialBody extends SerializedNode {
 	fleetPosition: number[];
 	fleet: string[];
 	radius: number;
-	rewards: ItemCollection;
+	rewards: Record<ItemID, number>;
 }
 
 export class CelestialBody extends Node {
@@ -59,11 +59,11 @@ export class CelestialBody extends Node {
 	}
 
 	static FromJSON(data: SerializedCelestialBody, system: System, constructorOptions): CelestialBody {
-		return super.FromJSON(data, system, {
+		return <CelestialBody>super.FromJSON(data, system, {
 			...constructorOptions,
 			radius: data.radius,
 			rewards: data.rewards,
 			fleetPosition: Vector3.FromArray(data.fleetPosition || [0, 0, 0]),
-		}) as CelestialBody;
+		});
 	}
 }

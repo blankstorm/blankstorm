@@ -1,9 +1,8 @@
-import type { Scene } from '@babylonjs/core/scene';
 import { HardpointRenderer } from './Hardpoint';
 import { ModelRenderer } from '../models';
 import { ShipType, genericShips } from '../../core/generic/ships';
 import type { SerializedShip } from '../../core/nodes/Ship';
-import type { Renderer, RendererStatic } from './Renderer';
+import { createAndUpdate, nodeMap, type Renderer, type RendererStatic } from './renderer';
 
 export class ShipRenderer extends ModelRenderer implements Renderer<SerializedShip> {
 	hardpoints: Map<string, HardpointRenderer> = new Map();
@@ -22,17 +21,12 @@ export class ShipRenderer extends ModelRenderer implements Renderer<SerializedSh
 			if (this.hardpoints.has(hardpointData.id)) {
 				this.hardpoints.get(hardpointData.id).update(hardpointData);
 			} else {
-				const hardpoint = await HardpointRenderer.FromJSON(hardpointData, this.getScene());
+				const hardpoint = await createAndUpdate(HardpointRenderer, hardpointData, this.getScene());
 				hardpoint.parent = this;
 				this.hardpoints.set(hardpoint.id, hardpoint);
 			}
 		}
 	}
-
-	static async FromJSON(data: SerializedShip, scene: Scene) {
-		const ship = new this(data.id, scene);
-		await ship.update(data);
-		return ship;
-	}
 }
-ShipRenderer satisfies RendererStatic<SerializedShip>;
+ShipRenderer satisfies RendererStatic<ShipRenderer>;
+nodeMap.set('Ship', ShipRenderer);

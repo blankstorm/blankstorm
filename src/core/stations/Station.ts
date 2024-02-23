@@ -37,6 +37,6 @@ export class Station extends CelestialBody {
 	 * @todo actually implement
 	 */
 	static FromJSON(data: SerializedStation, system: System): Station {
-		return super.FromJSON(data, system, {}) as Station;
+		return <Station>super.FromJSON(data, system, {});
 	}
 }

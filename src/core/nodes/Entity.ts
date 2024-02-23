@@ -52,7 +52,7 @@ export class Entity extends Node {
 		});
 	}
 
-	static FromJSON(data: SerializedEntity, system: System, constructorOptions: object) {
-		return super.FromJSON(data, system, constructorOptions);
+	static FromJSON(data: SerializedEntity, system: System, constructorOptions: object): Entity {
+		return <Entity>super.FromJSON(data, system, constructorOptions);
 	}
 }

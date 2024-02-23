@@ -6,35 +6,30 @@ import type { Scene } from '@babylonjs/core/scene';
 import config from '../config';
 import type { SerializedStar } from '../../core';
 import { CelestialBodyRenderer } from './CelestialBody';
-import type { Renderer, RendererStatic } from './Renderer';
+import { nodeMap, type Renderer, type RendererStatic } from './renderer';
 
 export class StarRenderer extends CelestialBodyRenderer implements Renderer<SerializedStar> {
-	__material: StandardMaterial;
 	light: PointLight;
+	//get material(): StandardMaterial { return super.material as StandardMaterial }
 	constructor(id: string, scene: Scene) {
 		super(id, scene);
 		this.light = new PointLight(id + '.light', this.position, scene);
 		Object.assign(this.light, config.star_light);
-		this.__material = this.material = new StandardMaterial(id + '.mat', scene);
-		this.__material.disableLighting = true;
+		const material = (this.material = new StandardMaterial(id + '.mat', scene));
+		material.disableLighting = true;
 
 		/*maybe in the future:
-		this.__material.emissiveTexture = new NoiseProceduralTexture(id + ".texture", config.mesh_segments, scene);
-		Object.assign(this.__material.emissiveTexture, {animationSpeedFactor: 0.1, octaves: 8, persistence:0.8});
-		this.__material.Fragment_Before_FragColor(`color = vec4(vec3(color.xyz),1.0);`);
+		material.emissiveTexture = new NoiseProceduralTexture(id + ".texture", config.mesh_segments, scene);
+		Object.assign(material.emissiveTexture, {animationSpeedFactor: 0.1, octaves: 8, persistence:0.8});
+		material.Fragment_Before_FragColor(`color = vec4(vec3(color.xyz),1.0);`);
 		*/
 	}
 
 	async update(data: SerializedStar) {
 		await super.update(data);
-		this.__material.emissiveColor = Color3.FromArray(data.color);
-	}
-
-	static async FromJSON(data: SerializedStar, scene: Scene) {
-		const star = new this(data.id, scene);
-		await star.update(data);
-		return star;
+		(<StandardMaterial>this.material).emissiveColor = Color3.FromArray(data.color);
 	}
 }
 
-StarRenderer satisfies RendererStatic<SerializedStar>;
+StarRenderer satisfies RendererStatic<StarRenderer>;
+nodeMap.set('Star', StarRenderer);

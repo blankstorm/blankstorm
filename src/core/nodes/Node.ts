@@ -30,11 +30,11 @@ export class Node extends EventEmitter {
 	}
 
 	get nodeType(): string {
-		return this.constructor.name.toLowerCase();
+		return this.constructor.name;
 	}
 
 	get nodeTypes(): string[] {
-		return resolveConstructors(this).map(c => c.toLowerCase());
+		return resolveConstructors(this);
 	}
 
 	system: System;

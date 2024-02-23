@@ -19,8 +19,8 @@ export class Planet extends CelestialBody {
 		});
 	}
 
-	static FromJSON(data: SerializedPlanet, system: System) {
-		const planet = super.FromJSON(data, system, {}) as Planet;
+	static FromJSON(data: SerializedPlanet, system: System): Planet {
+		const planet = <Planet>super.FromJSON(data, system, {});
 		planet.biome = data.biome;
 		return planet;
 	}

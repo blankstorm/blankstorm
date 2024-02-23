@@ -74,7 +74,7 @@ export class StationComponent extends CelestialBody {
 	}
 
 	static FromJSON(data: SerializedStationComponent, system: System): StationComponent {
-		return super.FromJSON(data, system, data) as StationComponent;
+		return <StationComponent>super.FromJSON(data, system, data);
 	}
 
 	static generic = stationComponents;

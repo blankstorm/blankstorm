@@ -5,7 +5,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
 import type { SerializedPlayer } from '../../core';
 import type { CustomHardpointProjectileMaterial } from './Hardpoint';
-import type { Renderer, RendererStatic } from './Renderer';
+import { nodeMap, type Renderer, type RendererStatic } from './renderer';
 
 export class PlayerRenderer extends TransformNode implements Renderer<SerializedPlayer> {
 	velocity = Vector3.Zero();
@@ -33,11 +33,6 @@ export class PlayerRenderer extends TransformNode implements Renderer<Serialized
 			this.parent = _parent;
 		}
 	}
-
-	static async FromJSON(data: SerializedPlayer, scene: Scene) {
-		const player = new this(data.id, scene);
-		await player.update(data);
-		return player;
-	}
 }
-PlayerRenderer satisfies RendererStatic<SerializedPlayer>;
+PlayerRenderer satisfies RendererStatic<PlayerRenderer>;
+nodeMap.set('Player', PlayerRenderer);

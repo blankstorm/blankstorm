@@ -1,7 +1,7 @@
 import type { Player } from '../nodes/Player';
 import { config } from '../metadata';
-import type { ItemCollection } from './items';
 import type { Producible } from './production';
+import { ItemID } from './items';
 
 export interface Research extends Producible {
 	xp: number;
@@ -9,7 +9,7 @@ export interface Research extends Producible {
 	max: number;
 }
 
-const research = {
+export const research = {
 	armor: { id: 'armor', productionTime: config.tick_rate, recipe: { titanium: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {} },
 	laser: { id: 'laser', productionTime: config.tick_rate, recipe: { quartz: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {} },
 	reload: { id: 'reload', productionTime: config.tick_rate, recipe: { titanium: 4000, quartz: 1500 }, xp: 1, scale: 1.2, max: 10, requires: {} },
@@ -38,14 +38,11 @@ const research = {
 		requires: { build: 5 },
 	},
 } as const;
+research satisfies Record<ResearchID, Research>;
 
 export type ResearchID = keyof typeof research;
-export type ResearchCollection<T = number> = Record<ResearchID, T>;
 
-const _research: ResearchCollection<Research> = research;
-export { _research as research };
-
-export function priceOfResearch(id: ResearchID, level: number): Partial<ItemCollection> {
+export function priceOfResearch(id: ResearchID, level: number): Partial<Record<ItemID, number>> {
 	const recipe = { ...research[id].recipe },
 		scale = research[id].scale ** level;
 	for (const item in recipe) {

@@ -25,7 +25,7 @@ export class Client extends Player {
 	}
 
 	toJSON(): SerializedPlayer {
-		return Object.assign(super.toJSON(), { nodeType: 'player' });
+		return Object.assign(super.toJSON(), { nodeType: 'Player' });
 	}
 
 	static GetDisconnectReason(reason: string): string {

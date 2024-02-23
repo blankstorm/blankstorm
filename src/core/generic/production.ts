@@ -1,6 +1,6 @@
-import type { ResearchCollection, ResearchID } from './research';
+import type { ResearchID } from './research';
 import { research } from './research';
-import type { ItemCollection, ItemID } from './items';
+import type { ItemID } from './items';
 import { items } from './items';
 import type { ShipType } from './ships';
 
@@ -9,8 +9,8 @@ export type ProducibleID = ItemID | ResearchID | ShipType;
 export interface Producible {
 	id: ProducibleID;
 	productionTime: number;
-	recipe?: Partial<ItemCollection<number>>;
-	requires?: Partial<ResearchCollection<number>>;
+	recipe?: Partial<Record<ItemID, number>>;
+	requires?: Partial<Record<ResearchID, number>>;
 }
 
 export interface Producer {

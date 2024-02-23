@@ -13,7 +13,7 @@ import type { SerializedPlanet } from '../../core';
 import type { HardpointProjectileHandlerOptions } from './Hardpoint';
 import { CelestialBodyRenderer } from './CelestialBody';
 import { planetBiomes } from '../../core/generic/planets';
-import type { Renderer, RendererStatic } from './Renderer';
+import { nodeMap, type Renderer, type RendererStatic } from './renderer';
 import * as planetShader from '../shaders/planet';
 import { cloudFragmentShader } from '../shaders/cloud';
 import { noiseFragmentShader } from '../shaders/noise';
@@ -229,11 +229,6 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Se
 			}
 		}
 	}
-
-	static async FromJSON(data: SerializedPlanet, scene: Scene) {
-		const planet = new this(data.id, scene);
-		await planet.update(data);
-		return planet;
-	}
 }
-PlanetRenderer satisfies RendererStatic<SerializedPlanet>;
+PlanetRenderer satisfies RendererStatic<PlanetRenderer>;
+nodeMap.set('Planet', PlanetRenderer);

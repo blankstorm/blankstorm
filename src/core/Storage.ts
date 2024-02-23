@@ -1,9 +1,9 @@
 import { ItemID, items } from './generic/items';
-import type { ItemCollection, SerializedItemCollection } from './generic/items';
+import type { ItemContainer } from './generic/items';
 
 export class Storage extends Map {
 	#max = 1;
-	constructor(max = 1, initalItems?: ItemCollection) {
+	constructor(max = 1, initalItems?: Record<ItemID, number>) {
 		super();
 		for (const id of Object.keys(items)) {
 			this.set(id, typeof initalItems?.[id] == 'number' ? initalItems[id] : 0);
@@ -25,7 +25,7 @@ export class Storage extends Map {
 		}
 	}
 
-	toJSON(): SerializedItemCollection {
+	toJSON(): ItemContainer {
 		return { items: Object.fromEntries([...this]), max: this.#max };
 	}
 
@@ -33,7 +33,7 @@ export class Storage extends Map {
 		this.set(item, this.get(item) + amount);
 	}
 
-	addItems(items: Partial<ItemCollection>) {
+	addItems(items: Partial<Record<ItemID, number>>) {
 		for (const [id, amount] of Object.entries(items)) {
 			this.add(id as ItemID, amount);
 		}

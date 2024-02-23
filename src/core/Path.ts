@@ -89,7 +89,7 @@ export class Path {
 			);
 			for (const neighbor of neighbors) {
 				for (const node of system.nodes.values()) {
-					if (Vector3.Distance(node.absolutePosition, neighbor.position) <= (node.nodeTypes.includes('celestialbody') ? (<CelestialBody>node).radius : 1) + 1)
+					if (Vector3.Distance(node.absolutePosition, neighbor.position) <= (node.nodeTypes.includes('CelestialBody') ? (<CelestialBody>node).radius : 1) + 1)
 						neighbor.intersects.push(node);
 				}
 				if (!neighbor.intersects.length && !path.closedNodes.some(node => node.equals(neighbor))) {

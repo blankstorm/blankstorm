@@ -173,7 +173,7 @@ export function update() {
 		`);
 		for (const [id, node] of system().nodes) {
 			if (!map.markers.has(id) && MapMarker.supportsNodeType(node.nodeType)) {
-				if (node.nodeType == 'waypoint' && (<Waypoint>node).builtin) {
+				if (node instanceof Waypoint && node.builtin) {
 					continue;
 				}
 				const marker = new MapMarker(node);

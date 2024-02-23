@@ -117,11 +117,11 @@ export const cookies: Map<string, string> & { get _map(): Map<string, string> } 
 
 export function getIconForNode(node: SerializedNode): string {
 	switch (node.nodeType) {
-		case 'planet':
+		case 'Planet':
 			return 'earth-americas';
-		case 'star':
+		case 'Star':
 			return 'sun-bright';
-		case 'ship':
+		case 'Ship':
 			return 'triangle';
 		default:
 			return 'planet-ringed';

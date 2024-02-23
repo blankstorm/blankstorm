@@ -19,8 +19,8 @@ export class Star extends CelestialBody {
 		});
 	}
 
-	static FromJSON(data: SerializedStar, system: System) {
-		const star = super.FromJSON(data, system, {}) as Star;
+	static FromJSON(data: SerializedStar, system: System): Star {
+		const star = <Star>super.FromJSON(data, system, {});
 		star.color = Color3.FromArray(data.color) || Color3.Random();
 		return star;
 	}

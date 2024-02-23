@@ -19,14 +19,14 @@ export interface GenericHardpoint {
 	projectile: GenericProjectile;
 }
 
-const genericHardpoints = {
+export const genericHardpoints = {
 	laser: {
 		damage: 1,
 		reload: 10,
 		range: 200,
 		critChance: 0.05,
 		critFactor: 1.5,
-		targets: ['ship', 'station'],
+		targets: ['Ship', 'Station'],
 		projectile: {
 			id: 'laser_projectile',
 			count: 1,
@@ -38,7 +38,4 @@ const genericHardpoints = {
 
 export type HardpointType = keyof typeof genericHardpoints;
 
-export type GenericHardpointCollection<T = number> = Record<HardpointType, T>;
-
-const _genericHardpoints: GenericHardpointCollection<GenericHardpoint> = genericHardpoints;
-export { _genericHardpoints as genericHardpoints };
+genericHardpoints satisfies Record<HardpointType, GenericHardpoint>;

@@ -31,7 +31,7 @@ export class Berth extends StationComponent implements Producer {
 	}
 
 	static FromJSON(data: SerializedBerth, system: System): Berth {
-		const berth = super.FromJSON(data, system) as Berth;
+		const berth = <Berth>super.FromJSON(data, system);
 		berth.productionID = data.productionID;
 		berth.productionTime = data.productionTime;
 		return berth;

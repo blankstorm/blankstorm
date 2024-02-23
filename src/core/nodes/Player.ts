@@ -1,7 +1,7 @@
 import { items as Items } from '../generic/items';
-import type { ItemCollection, ItemID } from '../generic/items';
+import type { ItemID } from '../generic/items';
 import { research } from '../generic/research';
-import type { ResearchCollection } from '../generic/research';
+import type { ResearchID } from '../generic/research';
 import { Entity } from './Entity';
 import type { SerializedEntity } from './Entity';
 import { Ship } from './Ship';
@@ -10,14 +10,14 @@ import type { System } from '../System';
 import type { ShipType } from '../generic/ships';
 
 export interface SerializedPlayer extends SerializedEntity {
-	research: ResearchCollection<number>;
+	research: Record<ResearchID, number>;
 	fleet: string[];
 	xp: number;
 	xpPoints: number;
 }
 
 export class Player extends Entity {
-	research: ResearchCollection<number> = Object.fromEntries(Object.keys(research).map(k => [k, 0])) as ResearchCollection<number>;
+	research = <Record<ResearchID, number>>Object.fromEntries(Object.keys(research).map((k: ResearchID) => [k, 0]));
 	fleet: Ship[] = [];
 	xp = 0;
 	xpPoints = 0;
@@ -38,8 +38,8 @@ export class Player extends Entity {
 		setTimeout(() => system.emit('player.created', this.toJSON()));
 	}
 
-	get items(): ItemCollection {
-		const items = Object.fromEntries(Object.keys(Items).map(i => [i, 0])) as ItemCollection;
+	get items(): Record<ItemID, number> {
+		const items = Object.fromEntries(Object.keys(Items).map(i => [i, 0])) as Record<ItemID, number>;
 		for (const ship of this.fleet) {
 			for (const [name, amount] of Object.entries(items)) {
 				items[name] = +ship.storage.get(name) + amount;
@@ -48,7 +48,7 @@ export class Player extends Entity {
 		return items;
 	}
 
-	set items(value: ItemCollection) {
+	set items(value: Record<ItemID, number>) {
 		for (const ship of this.fleet) {
 			ship.storage.empty(Object.keys(value) as ItemID[]);
 		}
@@ -67,7 +67,7 @@ export class Player extends Entity {
 		return this.fleet.reduce((total, ship) => total + +(ship.type == type), 0);
 	}
 
-	addItems(items: Partial<ItemCollection>) {
+	addItems(items: Partial<Record<ItemID, number>>) {
 		for (const ship of this.fleet) {
 			let space = ship.storage.max * (1 + this.research.storage / 20) - ship.storage.total;
 			if (space > 0) {
@@ -86,7 +86,7 @@ export class Player extends Entity {
 		this.system.emit('player.items.change', this.toJSON(), this.items);
 	}
 
-	removeItems(items: Partial<ItemCollection>) {
+	removeItems(items: Partial<Record<ItemID, number>>) {
 		items = { ...items };
 		for (const ship of this.fleet) {
 			for (const [item, amount] of Object.entries(items)) {
@@ -99,10 +99,10 @@ export class Player extends Entity {
 	}
 
 	removeAllItems() {
-		this.removeItems(Object.fromEntries(Object.keys(Items).map(i => [i, Infinity])) as ItemCollection);
+		this.removeItems(Object.fromEntries(Object.keys(Items).map(i => [i, Infinity])) as Record<ItemID, number>);
 	}
 
-	hasItems(items: Partial<ItemCollection>) {
+	hasItems(items: Partial<Record<ItemID, number>>) {
 		items = { ...items };
 		for (const ship of this.fleet) {
 			for (const [item, amount] of Object.entries(items)) {
@@ -139,6 +139,6 @@ export class Player extends Entity {
 	}
 
 	static FromJSON(data: SerializedPlayer, system: System): Player {
-		return super.FromJSON(data, system, data) as Player;
+		return <Player>super.FromJSON(data, system, data);
 	}
 }

@@ -5,7 +5,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import type { SerializedCelestialBody } from '../../core';
 import config from '../config';
-import type { Renderer, RendererStatic } from './Renderer';
+import { nodeMap, type Renderer, type RendererStatic } from './renderer';
 
 export class CelestialBodyRenderer extends Mesh implements Renderer<SerializedCelestialBody> {
 	radius = 0;
@@ -27,11 +27,6 @@ export class CelestialBodyRenderer extends Mesh implements Renderer<SerializedCe
 			this.parent = _parent;
 		}
 	}
-
-	static async FromJSON(data: SerializedCelestialBody, scene: Scene) {
-		const star = new this(data.id, scene);
-		await star.update(data);
-		return star;
-	}
 }
-CelestialBodyRenderer satisfies RendererStatic<SerializedCelestialBody>;
+CelestialBodyRenderer satisfies RendererStatic<CelestialBodyRenderer>;
+nodeMap.set('CelestialBody', CelestialBodyRenderer);

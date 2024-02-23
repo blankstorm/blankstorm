@@ -5,7 +5,7 @@ import $ from 'jquery';
 import { config, version } from '../core/metadata';
 import type { SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
-import type { ItemCollection, ItemID } from '../core/generic/items';
+import type { ItemID } from '../core/generic/items';
 import type { SerializedNode } from '../core/nodes/Node';
 import * as saves from './saves';
 import * as servers from './servers';
@@ -531,11 +531,11 @@ export function load(level: Level): boolean {
 		renderer.startFollowingPath(entityID, path);
 	});
 	level.on('entity.death', async (node: SerializedNode) => {
-		if (node.nodeType == 'ship') {
+		if (node.nodeType == 'Ship') {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}
 	});
-	level.on('player.items.change', async (player, items: ItemCollection) => {
+	level.on('player.items.change', async (player, items: Record<ItemID, number>) => {
 		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
 			$(ui.items.get(id)).find('.count').text(minimize(amount));
 		}

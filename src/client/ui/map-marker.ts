@@ -2,12 +2,12 @@ import type { Node } from '../../core/nodes/Node';
 import type { Star } from '../../core/nodes/Star';
 import type { Planet } from '../../core/nodes/Planet';
 import type { Ship } from '../../core/nodes/Ship';
-import { toDegrees } from '../../core/utils';
 import type { Waypoint } from '../waypoints';
+import { toDegrees } from '../../core/utils';
 import { $svg, getColorForBiome } from '../utils';
 import { account, system } from '../user';
 
-export const supportedMarkerNodeTypes = ['planet', 'star', 'ship', 'waypoint'];
+export const supportedMarkerNodeTypes = ['Planet', 'Star', 'Ship', 'Waypoint'];
 
 export class MapMarker {
 	gui = $svg<SVGGElement>('g');
@@ -18,13 +18,13 @@ export class MapMarker {
 
 	get color(): string {
 		switch (this.target.nodeType) {
-			case 'star':
-			case 'waypoint':
-				return (this.target as unknown as Star | Waypoint).color.toHexString();
-			case 'planet':
-				return getColorForBiome((this.target as unknown as Planet).biome);
-			case 'ship':
-				return account.id == (this.target as unknown as Ship).owner.id ? '#0f0' : '#f00';
+			case 'Star':
+			case 'Waypoint':
+				return (<Star | Waypoint>this.target).color.toHexString();
+			case 'Planet':
+				return getColorForBiome((<Planet>this.target).biome);
+			case 'Ship':
+				return account.id == (<Ship>this.target).owner.id ? '#0f0' : '#f00';
 		}
 	}
 
@@ -32,14 +32,14 @@ export class MapMarker {
 		this.gui.attr('id', this.markerID).addClass('map-marker').appendTo('#map-markers');
 		let internalMarker: JQuery<SVGElement>;
 		switch (target.nodeType) {
-			case 'star':
-			case 'planet':
+			case 'Star':
+			case 'Planet':
 				internalMarker = $svg('circle');
 				break;
-			case 'ship':
+			case 'Ship':
 				internalMarker = $svg('svg').append($svg<SVGPolygonElement>(`polygon`).attr('points', `0,0 10,0 5,15`));
 				break;
-			case 'waypoint':
+			case 'Waypoint':
 				internalMarker = $svg('svg').append($svg('use'));
 				break;
 			default:
@@ -51,7 +51,7 @@ export class MapMarker {
 	}
 
 	update() {
-		if (this.target.nodeType == 'waypoint') {
+		if (this.target.nodeType == 'Waypoint') {
 			this.gui.find('.internal-marker use').attr({
 				href: '_build.asset_dir/images/icons.svg#' + ('icon' in this.target ? this.target.icon : 'location-dot'),
 				transform: 'scale(.025)',

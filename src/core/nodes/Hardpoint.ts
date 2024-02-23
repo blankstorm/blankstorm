@@ -92,8 +92,7 @@ export class Hardpoint extends Node {
 	}
 
 	static FromJSON(data: SerializedHardpoint, system: System): Hardpoint {
-		const hardpoint = super.FromJSON(data, system, data) as Hardpoint;
-		return hardpoint;
+		return <Hardpoint>super.FromJSON(data, system, data);
 	}
 
 	static generic = genericHardpoints;
