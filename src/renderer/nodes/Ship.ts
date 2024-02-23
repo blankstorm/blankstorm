@@ -3,7 +3,7 @@ import { HardpointRenderer } from './Hardpoint';
 import { ModelRenderer } from '../models';
 import { ShipType, genericShips } from '../../core/generic/ships';
 import type { SerializedShip } from '../../core/nodes/Ship';
-import type { Renderer } from './Renderer';
+import type { Renderer, RendererStatic } from './Renderer';
 
 export class ShipRenderer extends ModelRenderer implements Renderer<SerializedShip> {
 	hardpoints: Map<string, HardpointRenderer> = new Map();
@@ -35,3 +35,4 @@ export class ShipRenderer extends ModelRenderer implements Renderer<SerializedSh
 		return ship;
 	}
 }
+ShipRenderer satisfies RendererStatic<SerializedShip>;

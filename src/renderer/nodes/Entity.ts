@@ -1,7 +1,7 @@
 import type { Scene } from '@babylonjs/core/scene';
 import type { SerializedEntity } from '../../core';
 import { ModelRenderer } from '../models';
-import type { Renderer } from './Renderer';
+import type { Renderer, RendererStatic } from './Renderer';
 
 export class EntityRenderer extends ModelRenderer implements Renderer<SerializedEntity> {
 	constructor(id: string, scene: Scene) {
@@ -14,3 +14,4 @@ export class EntityRenderer extends ModelRenderer implements Renderer<Serialized
 		return entity;
 	}
 }
+EntityRenderer satisfies RendererStatic<SerializedEntity>;

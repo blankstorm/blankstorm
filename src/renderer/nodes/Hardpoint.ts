@@ -5,7 +5,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { random, wait } from '../../core/utils';
 import { ModelRenderer } from '../models';
-import type { Renderer } from './Renderer';
+import type { Renderer, RendererStatic } from './Renderer';
 import type { SerializedHardpoint } from '../../core/nodes/Hardpoint';
 import type { GenericProjectile } from '../../core/generic/hardpoints';
 
@@ -93,3 +93,4 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Seriali
 		})
 	);
 }
+HardpointRenderer satisfies RendererStatic<SerializedHardpoint>;

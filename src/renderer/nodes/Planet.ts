@@ -13,7 +13,7 @@ import type { SerializedPlanet } from '../../core';
 import type { HardpointProjectileHandlerOptions } from './Hardpoint';
 import { CelestialBodyRenderer } from './CelestialBody';
 import { planetBiomes } from '../../core/generic/planets';
-import type { Renderer } from './Renderer';
+import type { Renderer, RendererStatic } from './Renderer';
 import * as planetShader from '../shaders/planet';
 import { cloudFragmentShader } from '../shaders/cloud';
 import { noiseFragmentShader } from '../shaders/noise';
@@ -236,3 +236,4 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Se
 		return planet;
 	}
 }
+PlanetRenderer satisfies RendererStatic<SerializedPlanet>;
