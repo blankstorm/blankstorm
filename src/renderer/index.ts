@@ -21,7 +21,7 @@ import type { SerializedPlayer } from '../core/nodes/Player';
 import type { SerializedShip } from '../core/nodes/Ship';
 import type { SerializedNode } from '../core/nodes/Node';
 import config from './config';
-import { Camera } from './Camera';
+import { Camera } from './camera';
 import { initModels } from './models';
 import { PlayerRenderer } from './nodes/Player';
 import { PlanetRenderer, PlanetRendererMaterial } from './nodes/Planet';
