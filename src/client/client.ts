@@ -338,30 +338,6 @@ async function _init(): Promise<void> {
 		saves.flush();
 	});
 
-	$('#map,#map-markers').on('keydown', e => {
-		const speed = e.shiftKey ? 100 : 10,
-			max = config.system_generation.max_size / 2;
-		switch (e.key) {
-			case settings.get<settings.Keybind>('map_move_left').key:
-				ui.map.x = Math.max(ui.map.x - speed, -max);
-				break;
-			case settings.get<settings.Keybind>('map_move_right').key:
-				ui.map.x = Math.min(ui.map.x + speed, max);
-				break;
-			case settings.get<settings.Keybind>('map_move_up').key:
-				ui.map.y = Math.max(ui.map.y - speed, -max);
-				break;
-			case settings.get<settings.Keybind>('map_move_down').key:
-				ui.map.y = Math.min(ui.map.y + speed, max);
-				break;
-		}
-		ui.update();
-	});
-	$('#map,#map-markers').on('wheel', ({ originalEvent: evt }: JQuery.TriggeredEvent & { originalEvent: WheelEvent }) => {
-		ui.map.scale = Math.min(Math.max(ui.map.scale - Math.sign(evt.deltaY) * 0.1, 0.5), 5);
-		ui.update();
-	});
-
 	_initLog('Loading locales...');
 	await locales.init();
 

@@ -66,7 +66,7 @@ export async function init(
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 	engine.resize();
 
-	canvas.addEventListener('resize', onCanvasResive);
+	addEventListener('resize', onCanvasResive);
 
 	await messageHandler('scene');
 	scene = new Scene(engine);
@@ -292,4 +292,8 @@ export function fireProjectile(hardpointID: string, targetID: string, options: G
 		parent = hardpointRenderer?.parent?.parent as PlayerRenderer | PlanetRenderer,
 		targetRenderer = scene.getTransformNodeById(targetID);
 	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials: parent.customHardpointProjectileMaterials });
+}
+
+export function attachControl(): void {
+	getCamera().attachControl($('canvas.game'), true);
 }

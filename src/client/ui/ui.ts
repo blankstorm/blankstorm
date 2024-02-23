@@ -8,7 +8,7 @@ import { isResearchLocked, priceOfResearch, research as researchData } from '../
 import { genericShips } from '../../core/generic/ships';
 import { config, game_url, version, versions } from '../../core/metadata';
 import type { Player } from '../../core/nodes/Player';
-import { isHex, isJSON, toDegrees } from '../../core/utils';
+import { isHex, isJSON } from '../../core/utils';
 import * as renderer from '../../renderer';
 import { playsound } from '../audio';
 import * as client from '../client';
@@ -21,7 +21,7 @@ import { account, system } from '../user';
 import { $svg, logger, minimize, upload } from '../utils';
 import { Waypoint, updateAll as updateAllWaypoints } from '../waypoints';
 import { ItemUI } from './item';
-import { MapMarker } from './map-marker';
+import * as map from './map';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 import { alert } from '../utils';
@@ -34,28 +34,6 @@ export const items: Map<string, ItemUI> = new Map();
 export const ships: Map<string, ShipUI> = new Map();
 
 export const research: Map<string, ResearchUI> = new Map();
-
-export const map: {
-	x: number;
-	y: number;
-	get svgX(): number;
-	get svgY(): number;
-	rotation: number;
-	scale: number;
-	markers: Map<string, MapMarker>;
-} = {
-	x: 0,
-	y: 0,
-	scale: 1,
-	rotation: 0,
-	get svgX() {
-		return this.x * -this.scale;
-	},
-	get svgY() {
-		return this.y * -this.scale;
-	},
-	markers: new Map(),
-};
 
 export function init() {
 	document.title = 'Blankstorm ' + versions.get(version).text;
@@ -157,33 +135,7 @@ export function update() {
 		}
 
 		updateAllWaypoints();
-		$('#map-markers').attr(
-			'transform',
-			`translate(${map.svgX} ${map.svgY}) \
-			rotate(${toDegrees(map.rotation)}) \
-			scale(${map.scale})`
-		);
-		$('#map-info').html(`
-			<span>(${map.x.toFixed(0)}, ${map.y.toFixed(0)}) ${toDegrees(map.rotation)}°</span><br>
-			<span>${map.scale.toFixed(1)}x</span>
-		`);
-		$('#system-info').html(`
-			<span><strong>${system().name}</strong></span><br>
-			<span>${system().connections.length} hyperspace connection(s)</span>
-		`);
-		for (const [id, node] of system().nodes) {
-			if (!map.markers.has(id) && MapMarker.supportsNodeType(node.nodeType)) {
-				if (node instanceof Waypoint && node.builtin) {
-					continue;
-				}
-				const marker = new MapMarker(node);
-				map.markers.set(id, marker);
-			}
-		}
-
-		for (const marker of map.markers.values()) {
-			marker.update();
-		}
+		map.update();
 
 		if (isServer) {
 			$('#pause .quit').text('Disconnect');
@@ -452,6 +404,7 @@ export function registerListeners() {
 	$('#waypoint-dialog .cancel').on('click', () => {
 		$<HTMLDialogElement>('#waypoint-dialog')[0].close();
 	});
+	map.registerListeners();
 	$('html')
 		.on('keydown', e => {
 			switch (e.key) {
@@ -475,12 +428,10 @@ export function registerListeners() {
 				});
 			});
 		});
-	$('canvas.game').on('focus', () => {
-		renderer.getCamera().attachControl($('canvas.game'), true);
-	});
+	$('canvas.game').on('focus', renderer.attachControl);
 	$('canvas.game').on('click', e => {
 		if (!client.isPaused) {
-			renderer.getCamera().attachControl($('canvas.game'), true);
+			renderer.attachControl();
 		}
 		if (!(client.currentLevel instanceof Level)) {
 			logger.warn('No active client level');
