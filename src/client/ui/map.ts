@@ -8,6 +8,7 @@ import { account, system } from '../user';
 import { $svg, getColorForBiome } from '../utils';
 import { Waypoint } from '../waypoints';
 import * as settings from '../settings';
+import $ from 'jquery';
 
 export class MapMarker {
 	gui = $svg<SVGGElement>('g');
