@@ -295,5 +295,5 @@ export function fireProjectile(hardpointID: string, targetID: string, options: G
 }
 
 export function attachControl(): void {
-	getCamera().attachControl($('canvas.game'), true);
+	getCamera().attachControl(true);
 }
