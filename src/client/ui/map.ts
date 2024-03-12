@@ -78,10 +78,10 @@ export function supportsMarkerType(nodeType: string): boolean {
 	return supportedMarkerNodeTypes.includes(nodeType);
 }
 
-export let x: number;
-export let y: number;
-export let scale: number;
-export let rotation: number;
+export let x: number = 0;
+export let y: number = 0;
+export let scale: number = 1;
+export let rotation: number = 0;
 
 export function svgX(): number {
 	return x * -scale;
@@ -93,12 +93,11 @@ export function svgY(): number {
 export const markers: Map<string, MapMarker> = new Map();
 
 export function update(): void {
-	$('#map-markers').attr(
-		'transform',
-		`translate(${svgX()} ${svgY()}) \
-		rotate(${toDegrees(rotation)}) \
-		scale(${scale})`
-	);
+	$('#map-markers').css({
+		translate: `${svgX()}px ${svgY()}px`,
+		rotate: rotation + 'rad',
+		scale,
+	});
 	$('#map-info').html(`
 		<span>(${x.toFixed(0)}, ${y.toFixed(0)}) ${toDegrees(rotation)}°</span><br>
 		<span>${scale.toFixed(1)}x</span>

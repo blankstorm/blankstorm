@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import * as client from './client';
-import * as renderer from '../renderer';
 import { logger } from './utils';
 
 $.ajaxSetup({ timeout: 3000 });
@@ -15,7 +14,10 @@ if (options.debug) {
 	logger.info('Debug mode enabled');
 	Object.assign(globalThis, {
 		client,
-		renderer,
+		renderer: await import('../renderer'),
+		ui: await import('./ui'),
+		map: await import('./ui/map'),
+		$,
 	});
 }
 await client.init(options);
