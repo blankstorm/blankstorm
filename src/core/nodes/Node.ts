@@ -37,7 +37,21 @@ export class Node extends EventEmitter {
 		return resolveConstructors(this);
 	}
 
-	system: System;
+	protected _system: System;
+	public get system(): System {
+		return this._system;
+	}
+	public set system(value: System) {
+		if (this._system) {
+			this._system.nodes.delete(this.id);
+			this._system.emit('node.removed', this.toJSON());
+		}
+		this._system = value;
+		if (value) {
+			value.nodes.set(this.id, this);
+			setTimeout(() => value.emit('node.added', this.toJSON()));
+		}
+	}
 	parent?: Node;
 	owner?: Node;
 
@@ -64,21 +78,19 @@ export class Node extends EventEmitter {
 		return this.parent instanceof Node ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
-	constructor(id: string, level: System, constructorOptions?: object) {
+	constructor(id: string, system: System, constructorOptions?: object) {
 		id ||= random.hex(32);
 		super();
 		if (constructorOptions) {
 			console.warn(`constructorOptions should not be passed to Node constructor`);
 		}
 		this.id = id;
-		this.system = level;
-		level.nodes.set(id, this);
-		setTimeout(() => level.emit('node.created', this.toJSON()));
+		this.system = system;
+		setTimeout(() => system.emit('node.created', this.toJSON()));
 	}
 
 	remove() {
-		this.system.emit('node.removed', this.toJSON());
-		this.system.nodes.delete(this.id);
+		this.system = null;
 	}
 
 	toJSON(): SerializedNode {

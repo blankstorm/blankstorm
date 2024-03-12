@@ -133,11 +133,15 @@ export async function render() {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	scene.meshes.forEach(mesh => {
+	for (const mesh of scene.meshes) {
 		if (mesh instanceof PlanetRenderer || mesh instanceof StarRenderer) mesh.showBoundingBox = hitboxes;
-		if (mesh.parent instanceof EntityRenderer) mesh.getChildMeshes().forEach(child => (child.showBoundingBox = hitboxes));
+		if (mesh.parent instanceof EntityRenderer) {
+			for (const child of mesh.getChildMeshes()) {
+				child.showBoundingBox = hitboxes;
+			}
+		}
 		//if (mesh != skybox && isHex(mesh.id)) mesh.showBoundingBox = hitboxes;
-	});
+	}
 
 	scene.render();
 }

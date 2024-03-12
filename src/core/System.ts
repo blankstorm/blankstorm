@@ -90,15 +90,15 @@ export class System extends EventEmitter {
 				}
 
 				player.removeItems(data.ship.recipe);
-				const ship = new Ship(null, player.system, { type: data.ship.id as ShipType, power: player.power });
+				const ship = new Ship(null, player.system, { type: <ShipType>data.ship.id, power: player.power });
 				ship.parent = ship.owner = player;
 				player.fleet.push(ship);
 				break;
 			case 'do_research':
-				if (player.research[id] >= data.max || isResearchLocked(data.id as ResearchID, player) || player.xpPoints < 1) {
+				if (player.research[id] >= data.max || isResearchLocked(<ResearchID>data.id, player) || player.xpPoints < 1) {
 					return false;
 				}
-				const neededItems = priceOfResearch(data.id as ResearchID, player.research[data.id]);
+				const neededItems = priceOfResearch(<ResearchID>data.id, player.research[data.id]);
 				if (!player.hasItems(neededItems)) {
 					return false;
 				}
@@ -147,18 +147,12 @@ export class System extends EventEmitter {
 				return [...this.nodes.values()].filter(node => node.id == selector.substring(1));
 			case '.':
 				return [...this.nodes.values()].filter(node => {
-					let proto = node;
-					while (proto) {
-						if (proto.constructor?.name == 'Function' || proto.constructor?.name == 'Object') {
-							return false;
-						}
-
-						if (new RegExp(proto.constructor.name, 'i').test(selector.substring(1))) {
+					for (const type of node.nodeTypes) {
+						if (type.toLowerCase().includes(selector.substring(1).toLowerCase())) {
 							return true;
 						}
-
-						proto = Object.getPrototypeOf(proto);
 					}
+					return false;
 				});
 			default:
 				throw 'Invalid selector';
@@ -169,8 +163,8 @@ export class System extends EventEmitter {
 		return selectors.flatMap(selector => this.getNodesBySelector(selector));
 	}
 
-	getNodeBySelector(selector: string): Node {
-		return this.getNodesBySelector(selector)[0];
+	getNodeBySelector<T extends Node = Node>(selector: string): T {
+		return <T>this.getNodesBySelector(selector)[0];
 	}
 
 	//events and ticking

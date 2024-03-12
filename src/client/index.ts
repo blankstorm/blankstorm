@@ -17,6 +17,7 @@ if (options.debug) {
 		renderer: await import('../renderer'),
 		ui: await import('./ui'),
 		map: await import('./ui/map'),
+		user: await import('./user'),
 		$,
 	});
 }
