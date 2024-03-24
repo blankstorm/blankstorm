@@ -28,7 +28,7 @@ export class PlayerRenderer extends TransformNode implements Renderer<Serialized
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
 		this.velocity = Vector3.FromArray(velocity);
-		const _parent = this.getScene().getNodeById(parent);
+		const _parent = this.getScene().getEntityByID(parent);
 		if (_parent != this.parent) {
 			this.parent = _parent;
 		}

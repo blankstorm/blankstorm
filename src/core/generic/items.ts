@@ -23,6 +23,11 @@ export interface ItemContainer {
 	items: Record<ItemID, number>;
 }
 
+export interface PartialItemContainer {
+	max: number;
+	items?: Partial<Record<ItemID, number>>;
+}
+
 export interface LootTableEntry {
 	rolls: number;
 	items: Record<ItemID, number>;

@@ -8,6 +8,7 @@
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
 		"noImplicitThis": true,
+		"experimentalDecorators": true,
 		"paths": {
 			"*.glslx": ["./src/types.d.ts"]
 		},

@@ -1,8 +1,8 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-import { Ship } from './nodes/Ship';
+import { Ship } from './entities/Ship';
 import { game_url } from './metadata';
-import type { Player } from './nodes/Player';
+import type { Player } from './entities/Player';
 import { isJSON } from './utils';
 
 export interface CommandExecutionContext {
@@ -22,18 +22,20 @@ export const commands: Map<string, Partial<Command>> = new Map(
 			},
 			oplvl: 0,
 		},
-		kill: {
+		remove: {
 			exec({ executor }, selector) {
-				const entities = executor.system.getNodesBySelector(selector).filter(node => node.nodeTypes.includes('Entitiy'));
-				entities.forEach(e => e.remove());
-				return `killed ${entities.length} entities`;
+				const entities = executor.level.selectEntities(selector);
+				for(const entity of entities) {
+					entity.remove();
+				}
+				return `Removed ${entities.length} entities`;
 			},
 			oplvl: 3,
 		},
 		spawn: {
 			exec({ executor }, type, selector, extra) {
-				const parent = executor.system.getNodeBySelector(selector);
-				const spawned = new Ship(null, executor.system, { type, power: executor.power });
+				const parent = executor.level.selectEntity(selector);
+				const spawned = new Ship(null, executor.level, { type, power: executor.power });
 				spawned.parent = spawned.owner = parent as Player;
 				if (isJSON(extra)) {
 					//spawned.update(JSON.parse(extra));
@@ -44,7 +46,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		},
 		'data get': {
 			/*exec({ executor }, selector, path = '') {
-				const node = executor.level.getNodeBySelector(selector);
+				const node = executor.level.selectEntity(selector);
 				const data = node.getByString(path),
 					output = data;
 				if (typeof data == 'object' || typeof data == 'function') {
@@ -60,7 +62,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		'data set': {
 			/*exec({ executor }, selector, path, value) {
 				return 'This command is not implemented';
-				let node = executor.level.getNodeBySelector(selector);
+				let node = executor.level.selectEntity(selector);
 				node.setByString(path, eval?.(value));
 			},*/
 			oplvl: 3,
@@ -70,7 +72,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		 */
 		tp: {
 			exec({ executor }, selector, x, y, z) {
-				const nodes = executor.system.getNodesBySelector(selector),
+				const nodes = executor.level.selectEntities(selector),
 					location = new Vector3(+x || 0, +y || 0, +z || 0);
 				nodes.forEach(entity => {
 					entity.position = location;

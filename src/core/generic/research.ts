@@ -1,9 +1,9 @@
-import type { Player } from '../nodes/Player';
+import type { Player } from '../entities/Player';
 import { config } from '../metadata';
 import type { Producible } from './production';
 import { ItemID } from './items';
 
-export interface Research extends Producible {
+export interface Researchable extends Producible {
 	xp: number;
 	scale: number;
 	max: number;
@@ -38,7 +38,7 @@ export const research = {
 		requires: { build: 5 },
 	},
 } as const;
-research satisfies Record<ResearchID, Research>;
+research satisfies Record<ResearchID, Researchable>;
 
 export type ResearchID = keyof typeof research;
 

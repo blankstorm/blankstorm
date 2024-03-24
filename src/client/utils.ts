@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type { SerializedNode } from '../core/nodes/Node';
+import type { SerializedNode } from '../core/entities/Node.glslx';
 import type { PlanetBiome } from '../core/generic/planets';
 import { Logger } from 'logzen';
 const { fileURLToPath } = $app.require('node:url');

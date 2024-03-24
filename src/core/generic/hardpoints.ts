@@ -11,11 +11,6 @@ export interface GenericHardpoint {
 	range: number;
 	critChance: number;
 	critFactor: number;
-
-	/**
-	 * The different nodeTypes's that the hardpoint can target
-	 */
-	targets: string[];
 	projectile: GenericProjectile;
 }
 
@@ -26,7 +21,6 @@ export const genericHardpoints = {
 		range: 200,
 		critChance: 0.05,
 		critFactor: 1.5,
-		targets: ['Ship', 'Station'],
 		projectile: {
 			id: 'laser_projectile',
 			count: 1,

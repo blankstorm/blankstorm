@@ -1,5 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
-import type { SerializedNode } from '../../core/nodes/Node';
+import type { SerializedNode } from '../../core/entities/Node.glslx';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 
 export interface Renderer<S extends SerializedNode = SerializedNode> extends TransformNode {

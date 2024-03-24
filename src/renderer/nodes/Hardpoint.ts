@@ -6,7 +6,7 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import { random, wait } from '../../core/utils';
 import { ModelRenderer } from '../models';
 import { nodeMap, type Renderer, type RendererStatic } from './renderer';
-import type { SerializedHardpoint } from '../../core/nodes/Hardpoint';
+import type { SerializedHardpoint } from '../../core/entities/Hardpoint';
 import type { GenericProjectile } from '../../core/generic/hardpoints';
 
 export interface CustomHardpointProjectileMaterial {
@@ -54,13 +54,13 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Seriali
 	static projectiles: Map<string, HardpointProjectileHandler> = new Map(
 		Object.entries({
 			async laser(target, { material, speed, id: modelID }) {
-				await wait(random.int(4, 40));
-				const laser = new ModelRenderer(random.hex(32), this.getScene());
+				await wait(randomInt(4, 40));
+				const laser = new ModelRenderer(randomHex(32), this.getScene());
 				await laser.createInstance(modelID);
 				const bounding = this.getHierarchyBoundingVectors(),
 					targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),
 					startPos = this.getAbsolutePosition(),
-					endPos = target.getAbsolutePosition().add(random.cords(targetOffset)),
+					endPos = target.getAbsolutePosition().add(randomCords(targetOffset)),
 					frameFactor = Vector3.Distance(startPos, endPos) / speed;
 				this.projectiles.push(laser);
 				for (const child of laser.getChildMeshes()) {

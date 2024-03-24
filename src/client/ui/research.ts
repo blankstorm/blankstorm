@@ -1,10 +1,10 @@
-import type { Research } from '../../core/generic/research';
+import type { Researchable } from '../../core/generic/research';
 import * as locales from '../locales';
 import $ from 'jquery';
 import { system, account } from '../user';
 
 export class ResearchUI extends HTMLDivElement {
-	constructor(research: Research) {
+	constructor(research: Researchable) {
 		super();
 
 		$(`<span class="locked locked-icon"><svg style=font-size:1.5em><use href="_build.asset_dir/images/icons.svg#lock"/></svg></span>

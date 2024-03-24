@@ -7,7 +7,7 @@ import type { ResearchID } from '../../core/generic/research';
 import { isResearchLocked, priceOfResearch, research as researchData } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
 import { config, game_url, version, versions } from '../../core/metadata';
-import type { Player } from '../../core/nodes/Player';
+import type { Player } from '../../core/entities/Player';
 import { isHex, isJSON } from '../../core/utils';
 import * as renderer from '../../renderer';
 import { playsound } from '../audio';
@@ -74,7 +74,7 @@ export function init() {
 
 export function update() {
 	if (system() instanceof System) {
-		const player = system().level.getNodeSystem(account.id).getNodeByID<Player>(account.id);
+		const player = system().level.getEntitySystem(account.id).getEntityByID<Player>(account.id);
 		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);

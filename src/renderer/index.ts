@@ -15,7 +15,7 @@ import '@babylonjs/core/Culling'; // For Ray side effects
 import { Path } from '../core/Path';
 import type { MoveInfo, SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
-import type { SerializedNode } from '../core/nodes/Node';
+import type { SerializedNode } from '../core/entities/Node.glslx';
 import config from './config';
 import { Camera } from './camera';
 import { initModels } from './models';

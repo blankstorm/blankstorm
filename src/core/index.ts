@@ -5,18 +5,17 @@ export * from './generic/ships';
 export * from './generic/hardpoints';
 export * from './generic/stationComponents';
 export * from './Path';
-export * from './Storage';
+export * from './components/storage';
 
-export * from './nodes/Entity';
-export * from './nodes/Player';
-export * from './nodes/Hardpoint';
-export * from './nodes/Ship';
-export * from './nodes/CelestialBody';
-export * from './nodes/Planet';
-export * from './nodes/Star';
+export * from './entities/Entity';
+export * from './entities/Player';
+export * from './entities/Hardpoint';
+export * from './entities/Ship';
+export * from './entities/Planet';
+export * from './entities/Star';
 
-export * from './stations/StationComponent';
-export * from './stations/Station';
+export * from './entities/StationPart';
+export * from './entities/Station';
 
 export * from './Level';
 

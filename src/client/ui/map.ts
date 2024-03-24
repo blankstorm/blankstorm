@@ -1,8 +1,8 @@
 import { config } from '../../core/metadata';
-import { Node } from '../../core/nodes/Node';
-import { Planet } from '../../core/nodes/Planet';
-import { Ship } from '../../core/nodes/Ship';
-import { Star } from '../../core/nodes/Star';
+import { Node } from '../../core/entities/Node.glslx';
+import { Planet } from '../../core/entities/Planet';
+import { Ship } from '../../core/entities/Ship';
+import { Star } from '../../core/entities/Star';
 import { toDegrees } from '../../core/utils';
 import { account, system } from '../user';
 import { $svg, getColorForBiome } from '../utils';
@@ -23,7 +23,7 @@ export class MapMarker {
 
 	get color(): string {
 		if (this.target instanceof System) {
-			return this.target.getNodeBySelector<Star>('.Star').color.toHexString();
+			return this.target.selectEntity<Star>('.Star').color.toHexString();
 		}
 		switch (this.target.nodeType) {
 			case 'Star':

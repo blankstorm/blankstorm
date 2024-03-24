@@ -15,7 +15,7 @@ import config from './config';
 import { Path } from '../core/Path';
 import * as settings from '../client/settings';
 import { random } from '../core/utils';
-import type { SerializedNode } from '../core/nodes/Node';
+import type { SerializedNode } from '../core/entities/Node.glslx';
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
@@ -82,7 +82,7 @@ export class ModelRenderer extends TransformNode {
 		if (this.#pathGizmo) {
 			console.warn('Path gizmo was already drawn and not disposed');
 		} else if (settings.get('show_path_gizmos')) {
-			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + random.hex(16), { points: path.path.map(node => node.position) }, this.getScene());
+			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + randomHex(16), { points: path.path.map(node => node.position) }, this.getScene());
 			this.#pathGizmo.color = Color3.Green();
 		}
 
@@ -154,7 +154,7 @@ export class ModelRenderer extends TransformNode {
 			this.rendererType = _type;
 			await this.createInstance(_type);
 		}
-		const _parent = this.getScene().getNodeById(parent);
+		const _parent = this.getScene().getEntityByID(parent);
 		if (_parent != this.parent) {
 			this.parent = _parent;
 		}

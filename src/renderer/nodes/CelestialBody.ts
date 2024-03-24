@@ -22,7 +22,7 @@ export class CelestialBodyRenderer extends Mesh implements Renderer<SerializedCe
 		}
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
-		const _parent = this.getScene().getNodeById(parent);
+		const _parent = this.getScene().getEntityByID(parent);
 		if (_parent != this.parent) {
 			this.parent = _parent;
 		}

@@ -1,4 +1,4 @@
-import type { Berth } from '../../core/stations/Berth';
+import type { Berth } from '../../core/entities/Berth';
 import $ from 'jquery';
 import { genericShips, shipTypes } from '../../core/generic/ships';
 import type { ShipType } from '../../core/generic/ships';

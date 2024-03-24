@@ -42,7 +42,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	noiseTexture: ProceduralTexture;
 	cloudTexture: ProceduralTexture;
 	constructor(options: GenericPlanetRendererMaterial, scene: Scene) {
-		const id = random.hex(8);
+		const id = randomHex(8);
 		super('PlanetMaterial.' + id, scene, planetShader, {
 			attributes: ['position', 'normal', 'uv'],
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
