@@ -11,7 +11,7 @@ export class Planet extends Entity<{
 	rewards: Storage;
 	radius: JSONValue<number>;
 	biome: JSONValue<PlanetBiome>;
-	capture: BooleanValue
+	capture: BooleanValue;
 }> {
 	constructor(id?: string, level?: Level) {
 		super(id, level);

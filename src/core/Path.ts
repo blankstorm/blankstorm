@@ -90,8 +90,7 @@ export function findPath(start: Vector3, end: Vector3, system: System): Path {
 		for (const neighbor of neighbors) {
 			for (const entity of system.entities) {
 				const distance = Vector3.Distance(entity.absolutePosition, neighbor.position);
-				if (distance <= (entity.has('radius') ? (entity).radius : 1) + 1)
-					neighbor.intersects.push(entity);
+				if (distance <= (entity.has('radius') ? entity.radius : 1) + 1) neighbor.intersects.push(entity);
 			}
 			if (!neighbor.intersects.length && !path.closedNodes.some(node => node.equals(neighbor))) {
 				const costToNeighbor = currentNode.gCost + nodeDistance(currentNode, neighbor);

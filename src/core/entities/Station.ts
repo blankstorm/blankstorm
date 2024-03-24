@@ -2,9 +2,7 @@ import { StationPart } from './StationPart';
 import { Entity } from './Entity';
 import type { Level } from '../Level';
 
-export class Station extends Entity<{
-	
-}> {
+export class Station extends Entity<{}> {
 	components: StationPart[] = [];
 	#core: StationPart;
 
@@ -20,5 +18,4 @@ export class Station extends Entity<{
 	get core() {
 		return this.#core;
 	}
-
 }

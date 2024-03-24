@@ -25,7 +25,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		remove: {
 			exec({ executor }, selector) {
 				const entities = executor.level.selectEntities(selector);
-				for(const entity of entities) {
+				for (const entity of entities) {
 					entity.remove();
 				}
 				return `Removed ${entities.length} entities`;

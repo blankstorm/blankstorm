@@ -8,12 +8,14 @@ import type { Fleet } from '../components/fleet';
 import type { Experience } from '../components/xp';
 import type { Combatant } from '../components/combat';
 
-
-export class Player extends Entity<{
-	research: Research;
-	fleet: Fleet;
-	xp: Experience;
-}> implements Combatant {
+export class Player
+	extends Entity<{
+		research: Research;
+		fleet: Fleet;
+		xp: Experience;
+	}>
+	implements Combatant
+{
 	speed = 1;
 	oplvl?: number;
 	get power(): number {
@@ -46,5 +48,4 @@ export class Player extends Entity<{
 		this.level.emit('player.removed', this.toJSON());
 		super.remove();
 	}
-
 }

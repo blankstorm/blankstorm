@@ -16,7 +16,6 @@ import { Entity, type EntityData } from './Entity';
 import type { Hardpoints } from '../components/hardpoints';
 import type { JSONValue } from '../components/json';
 
-
 export class Ship extends Entity<{
 	combat: Combat;
 	jump: Jump;
@@ -25,7 +24,6 @@ export class Ship extends Entity<{
 	hardpoints: Hardpoints;
 	type: JSONValue<ShipType>;
 }> {
-
 	/**
 	 * @todo move distance related stuff to ship creation
 	 */

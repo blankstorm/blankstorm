@@ -27,7 +27,6 @@ export interface EntityData<TEntity extends Entity = Entity> {
 }
 
 export class Entity<TComponents extends Record<string, Component> = Record<string, Component>> extends EventEmitter {
-
 	public name?: string;
 
 	protected _level: Level;

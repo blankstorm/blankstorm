@@ -123,7 +123,7 @@ export class Fleet extends Component<Data> implements Combatant {
 		for (const id of ships) {
 			const ship = this._.level.getEntityByID<Ship>(id);
 			ship.position.addInPlace(this.position);
-			
+
 			ship.parent = this._;
 			ship.get('owner').owner = this._;
 			this.ships.add(ship);

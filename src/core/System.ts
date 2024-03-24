@@ -54,9 +54,7 @@ export class System extends EventEmitter {
 	public position: Vector2;
 	public connections: SystemConnection[] = [];
 
-	public get entities(): Set<Entity> {
-		
-	}
+	public get entities(): Set<Entity> {}
 
 	constructor(public id: string, public level: Level) {
 		super();
@@ -142,7 +140,6 @@ export class System extends EventEmitter {
 	tick() {
 		this.sampleTick();
 		this.emit('system.tick', this.toJSON());
-		
 	}
 
 	toJSON(): SerializedSystem {

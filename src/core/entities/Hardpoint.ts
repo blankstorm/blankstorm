@@ -16,7 +16,6 @@ export class Hardpoint extends Entity<{
 	type: JSONValue<HardpointType>;
 	info: JSONValue<HardpointInfo>;
 }> {
-
 	constructor(id: string, level: Level, { type, reload }: { type?: HardpointType; reload?: number } = {}) {
 		super(id, level);
 
@@ -49,5 +48,4 @@ export class Hardpoint extends Entity<{
 		await wait(time);
 		target.combat.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
 	}
-
 }

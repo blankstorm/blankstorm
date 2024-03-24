@@ -11,9 +11,7 @@ export class StationPart extends Entity<{
 	connections: StationPart[] = [];
 	type: GenericStationComponentID;
 	constructor(id: string, level: Level, { type }: StationComponentOptions) {
-		super(id, level, { radius: 1,
-		combat: { hp: this.generic.hp, power }
-	});
+		super(id, level, { radius: 1, combat: { hp: this.generic.hp, power } });
 
 		this.type = type;
 		this.hp = this.generic.hp;

@@ -12,7 +12,7 @@ export interface Combatant {
 }
 
 export interface Target<TComponents extends { combat: Combat } = { combat: Combat }> {
-	combatant: Entity<TComponents>
+	combatant: Entity<TComponents>;
 }
 
 @register()

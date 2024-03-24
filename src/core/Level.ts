@@ -111,7 +111,7 @@ export class Level<S extends System = System> extends EventEmitter {
 			entity.position.addInPlace(entity.velocity);
 			entity.velocity.scaleInPlace(0.9);
 
-			if(entity.has('combat')) {
+			if (entity.has('combat')) {
 				const combat = entity.get<Combat>('combat');
 				if (combat.hp <= 0) {
 					/* Pseudo-code from Hardpoint.fire on handling entity death
@@ -135,7 +135,7 @@ export class Level<S extends System = System> extends EventEmitter {
 				}
 			}
 
-			if(entity.has('hardpoints')) {
+			if (entity.has('hardpoints')) {
 				for (const hardpoint of entity.get('hardpoints').points) {
 					hardpoint.get('reload').value = Math.max(--hardpoint.get('reload').value, 0);
 
@@ -173,9 +173,8 @@ export class Level<S extends System = System> extends EventEmitter {
 					}
 				}
 			}
-				
-				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
-			
+
+			entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
 
 			if (entity instanceof Berth) {
 				entity.productionTime = Math.max(entity.productionTime - 1, 0);
