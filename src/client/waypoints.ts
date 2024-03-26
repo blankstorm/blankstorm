@@ -11,7 +11,7 @@ import { currentLevel } from './client';
 import * as settings from './settings';
 import { WaypointUI } from './ui/waypoint';
 import * as user from './user';
-import { getIconForNode, minimize } from './utils';
+import { getEntityIcon, minimize } from './utils';
 
 export interface SerializedWaypoint extends SerializedEntity {
 	color: number[];
@@ -135,7 +135,7 @@ export class Waypoint extends Entity {
 		waypoint.name = body.name;
 		waypoint.position = Vector3.FromArray(body.position);
 		waypoint.color = Color3.FromHexString('#88ddff');
-		waypoint.icon = getIconForNode(body);
+		waypoint.icon = getEntityIcon(body);
 	}
 }
 

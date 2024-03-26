@@ -502,8 +502,8 @@ export function load(level: Level): boolean {
 	level.on('entity.follow_path.start', async (entityID: string, path: IVector3Like[]) => {
 		renderer.startFollowingPath(entityID, path);
 	});
-	level.on('entity.death', async (node: SerializedEntity) => {
-		if (node.nodeType == 'Ship') {
+	level.on('entity.death', async (entity: SerializedEntity) => {
+		if (entity.nodeType == 'Ship') {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}
 	});

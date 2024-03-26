@@ -79,10 +79,10 @@ export class System extends EventEmitter {
 			case '@':
 				return [...this.entities].filter(entity => entity.name == selector.substring(1));
 			case '#':
-				return [...this.entities].filter(node => node.id == selector.substring(1));
+				return [...this.entities].filter(entity => entity.id == selector.substring(1));
 			case '.':
-				return [...this.entities].filter(node => {
-					for (const type of node.nodeTypes) {
+				return [...this.entities].filter(entity => {
+					for (const type of entity.nodeTypes) {
 						if (type.toLowerCase().includes(selector.substring(1).toLowerCase())) {
 							return true;
 						}

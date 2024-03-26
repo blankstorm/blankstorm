@@ -24,7 +24,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		},
 		kill: {
 			exec({ executor }, selector) {
-				const entities = executor.level.selectEntities(selector).filter(node => node.nodeTypes.includes('Entitiy'));
+				const entities = executor.level.selectEntities(selector).filter(entity => entity.nodeTypes.includes('Entitiy'));
 				entities.forEach(e => e.remove());
 				return `killed ${entities.length} entities`;
 			},

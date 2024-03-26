@@ -25,7 +25,7 @@ export function player(): Player {
 }
 
 export function system(): System {
-	return player().system;
+	return player()?.system;
 }
 
 export function action(...args: ActionArgs): Promise<boolean> {

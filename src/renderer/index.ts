@@ -77,14 +77,19 @@ export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: stri
 
 	scene.registerBeforeRender(() => {
 		const ratio = scene.getAnimationRatio();
-		for (const node of entities.values()) {
-			if (node instanceof PlanetRenderer && node.material instanceof PlanetRendererMaterial) {
-				node.rotation.y += 0.0001 * ratio * node.material.rotationFactor;
-				node.material.setMatrix('rotation', Matrix.RotationY(node.material.matrixAngle));
-				node.material.matrixAngle -= 0.0004 * ratio;
-				const options = node.material.generationOptions;
-				node.material.setVector3('options', new Vector3(+options.clouds, options.groundAlbedo, options.cloudAlbedo));
+		for (const entity of entities.values()) {
+			if (!(entity instanceof PlanetRenderer)) {
+				continue;
 			}
+			if (!(entity?.material instanceof PlanetRendererMaterial)) {
+				continue;
+			}
+
+			entity.rotation.y += 0.0001 * ratio * entity.material.rotationFactor;
+			entity.material.setMatrix('rotation', Matrix.RotationY(entity.material.matrixAngle));
+			entity.material.matrixAngle -= 0.0004 * ratio;
+			const options = entity.material.generationOptions;
+			entity.material.setVector3('options', new Vector3(+options.clouds, options.groundAlbedo, options.cloudAlbedo));
 		}
 	});
 
@@ -155,8 +160,8 @@ export async function clear() {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	for (const [id, node] of entities) {
-		node.dispose();
+	for (const [id, entity] of entities) {
+		entity.dispose();
 		entities.delete(id);
 	}
 
@@ -174,16 +179,16 @@ export async function load(serializedNodes: SerializedEntity[]) {
 		if (!nodeMap.has(type)) {
 			throw new ReferenceError(`rendering for node type "${data.nodeType}" is not supported`);
 		}
-		const node: Renderer = await createAndUpdate(nodeMap.get(data.nodeType), data, scene);
+		const entity: Renderer = await createAndUpdate(nodeMap.get(data.nodeType), data, scene);
 		if (['Player', 'Client'].includes(type)) {
 			/**
 			 * @todo change this
 			 */
-			camera.target = node.position;
+			camera.target = entity.position;
 		}
 
-		await node.update(data);
-		entities.set(data.id, node);
+		await entity.update(data);
+		entities.set(data.id, entity);
 	}
 }
 
@@ -235,32 +240,32 @@ export function getCamera() {
 export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
 	ownerID ??= [...entities.values()].find(e => e instanceof PlayerRenderer)?.id;
 	if (!ev.shiftKey) {
-		for (const node of entities.values()) {
-			if (node instanceof ShipRenderer) {
-				node.unselect();
+		for (const entity of entities.values()) {
+			if (entity instanceof ShipRenderer) {
+				entity.unselect();
 			}
 		}
 	}
 	const pickInfo = scene.pick(ev.clientX, ev.clientY, mesh => {
-		let node: TransformNode = mesh;
-		while (node.parent) {
-			node = node.parent as TransformNode;
-			if (node instanceof ShipRenderer) {
+		let entity: TransformNode = mesh;
+		while (entity.parent) {
+			entity = entity.parent as TransformNode;
+			if (entity instanceof ShipRenderer) {
 				return true;
 			}
 		}
 		return false;
 	});
 	if (pickInfo.pickedMesh) {
-		let node: TransformNode = pickInfo.pickedMesh;
-		while (node.parent && !(node instanceof ShipRenderer)) {
-			node = node.parent as TransformNode;
+		let entity: TransformNode = pickInfo.pickedMesh;
+		while (entity.parent && !(entity instanceof ShipRenderer)) {
+			entity = entity.parent as TransformNode;
 		}
-		if (node instanceof ShipRenderer && node.parent?.id == ownerID) {
-			if (node.selected) {
-				node.unselect();
+		if (entity instanceof ShipRenderer && entity.parent?.id == ownerID) {
+			if (entity.selected) {
+				entity.unselect();
 			} else {
-				node.select();
+				entity.select();
 			}
 		}
 	}

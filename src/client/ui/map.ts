@@ -5,7 +5,7 @@ import { Ship } from '../../core/entities/Ship';
 import { Star } from '../../core/entities/Star';
 import { toDegrees } from '../../core/utils';
 import { account, system } from '../user';
-import { $svg, getColorForBiome } from '../utils';
+import { $svg, biomeColor } from '../utils';
 import { Waypoint } from '../waypoints';
 import * as settings from '../settings';
 import $ from 'jquery';
@@ -30,7 +30,7 @@ export class MapMarker {
 			case 'Waypoint':
 				return (<Star | Waypoint>this.target).color.toHexString();
 			case 'Planet':
-				return getColorForBiome((<Planet>this.target).biome);
+				return biomeColor((<Planet>this.target).biome);
 			case 'Ship':
 				return account.id == (<Ship>this.target).owner.id ? '#0f0' : '#f00';
 		}

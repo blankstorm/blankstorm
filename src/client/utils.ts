@@ -115,8 +115,8 @@ export const cookies: Map<string, string> & { get _map(): Map<string, string> } 
 	},
 };
 
-export function getIconForNode(node: SerializedEntity): string {
-	switch (node.nodeType) {
+export function getEntityIcon(entity: SerializedEntity): string {
+	switch (entity.nodeType) {
 		case 'Planet':
 			return 'earth-americas';
 		case 'Star':
@@ -128,7 +128,7 @@ export function getIconForNode(node: SerializedEntity): string {
 	}
 }
 
-export function getColorForBiome(biome: PlanetBiome): string {
+export function biomeColor(biome: PlanetBiome): string {
 	switch (biome) {
 		case 'earthlike':
 		case 'jungle':

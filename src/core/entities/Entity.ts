@@ -48,12 +48,12 @@ export class Entity extends EventEmitter {
 	public set level(value: Level) {
 		if (this._level) {
 			this._level.entities.delete(this);
-			this._level.emit('node.removed', this.toJSON());
+			this._level.emit('entity.removed', this.toJSON());
 		}
 		this._level = value;
 		if (value) {
 			value.entities.add(this);
-			setTimeout(() => value.emit('node.added', this.toJSON()));
+			setTimeout(() => value.emit('entity.added', this.toJSON()));
 		}
 	}
 
@@ -95,7 +95,7 @@ export class Entity extends EventEmitter {
 		}
 		this.id = id;
 		this.level = level;
-		setTimeout(() => level.emit('node.created', this.toJSON()));
+		setTimeout(() => level.emit('entity.created', this.toJSON()));
 	}
 
 	public remove() {
@@ -139,13 +139,13 @@ export class Entity extends EventEmitter {
 	}
 
 	public static FromJSON(data: SerializedEntity, level: Level, constructorOptions: object): Entity {
-		const node = new this(data.id, level, constructorOptions);
-		node.position = Vector3.FromArray(data.position || [0, 0, 0]);
-		node.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);
-		node.velocity = Vector3.FromArray(data.velocity || [0, 0, 0]);
-		node.parent = level.getEntityByID(data.parent);
-		node.owner = level.getEntityByID(data.owner);
-		node.name = data.name;
-		return node;
+		const entity = new this(data.id, level, constructorOptions);
+		entity.position = Vector3.FromArray(data.position || [0, 0, 0]);
+		entity.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);
+		entity.velocity = Vector3.FromArray(data.velocity || [0, 0, 0]);
+		entity.parent = level.getEntityByID(data.parent);
+		entity.owner = level.getEntityByID(data.owner);
+		entity.name = data.name;
+		return entity;
 	}
 }
