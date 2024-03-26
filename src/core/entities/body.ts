@@ -1,4 +1,3 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Fleet, type FleetData } from '../fleet';
 import { ItemID } from '../generic/items';
 import type { Level } from '../level';
@@ -18,29 +17,29 @@ export class CelestialBody extends Entity {
 	fleet: Fleet;
 	rewards: Storage;
 	radius = 0;
-	fleetPosition: Vector3;
 	option?: JQuery<HTMLElement>;
 
 	get power(): number {
 		return this.fleet.power;
 	}
 
-	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleetPosition = randomCords(randomInt(radius + 5, radius * 1.2), true), fleet = [] }) {
+	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleet = { ships: [] } }) {
 		super(id, level);
 		this.radius = radius;
 		this.rewards = Storage.FromJSON({ items: rewards, max: 1e10 });
-		this.fleetPosition = fleetPosition;
-		for (const shipOrType of fleet) {
+		
+		for (const shipOrType of fleet.ships) {
 			let ship: Ship;
 			if (shipOrType instanceof Ship) {
 				ship = shipOrType;
 			} else {
 				ship = new Ship(null, level, { type: shipOrType });
-				ship.position.addInPlace(this.fleetPosition);
+				ship.position.addInPlace(this.fleet.position);
 			}
 			ship.parent = ship.owner = this;
 			this.fleet.add(ship);
 		}
+		this.fleet.position ||= randomCords(randomInt(radius + 5, radius * 1.2), true);
 		setTimeout(() => level.emit('body_created', this.toJSON()));
 	}
 

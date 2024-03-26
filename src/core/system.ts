@@ -179,7 +179,7 @@ export class System extends EventEmitter<{
 			const radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			const planet = new Planet(null, level, {
 				radius,
-				fleet: Ship.GenerateFleetFromPower((options.difficulty * (i + 1)) ** 2),
+				fleet: { ships: Ship.GenerateFleetFromPower((options.difficulty * (i + 1)) ** 2) },
 				rewards: {},
 			});
 
