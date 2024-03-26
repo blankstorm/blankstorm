@@ -1,17 +1,17 @@
-import { Vector3, Matrix, Vector2 } from '@babylonjs/core/Maths/math.vector';
-import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Entity } from '../core/entities/Entity';
-import type { SerializedEntity } from '../core/entities/Entity';
+import { Matrix, Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import $ from 'jquery';
-import { scene } from '../renderer/index';
-import { WaypointUI } from './ui/waypoint';
-import type { System } from '../core/System';
-import * as user from './user';
-import { SerializedCelestialBody } from '../core/entities/CelestialBody';
-import { getIconForNode, minimize } from './utils';
-import * as settings from './settings';
 import type { Level } from '../core';
+import { SerializedCelestialBody } from '../core/entities/CelestialBody';
+import type { SerializedEntity } from '../core/entities/Entity';
+import { Entity } from '../core/entities/Entity';
+import { scene } from '../renderer/index';
+import { currentLevel } from './client';
+import * as settings from './settings';
+import { WaypointUI } from './ui/waypoint';
+import * as user from './user';
+import { getIconForNode, minimize } from './utils';
 
 export interface SerializedWaypoint extends SerializedEntity {
 	color: number[];
@@ -130,8 +130,8 @@ export class Waypoint extends Entity {
 		return waypoint;
 	}
 
-	static FromBody(this: System, body: SerializedCelestialBody): void {
-		const waypoint = new Waypoint(null, true, true, this);
+	static FromBody(body: SerializedCelestialBody): void {
+		const waypoint = new Waypoint(null, true, true, currentLevel);
 		waypoint.name = body.name;
 		waypoint.position = Vector3.FromArray(body.position);
 		waypoint.color = Color3.FromHexString('#88ddff');
