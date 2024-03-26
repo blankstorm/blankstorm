@@ -12,7 +12,6 @@ import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import '@babylonjs/core/Culling'; // For Ray side effects
-import { Path } from '../core/path';
 import type { MoveInfo, SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { SerializedNode } from '../core/nodes/Node';
@@ -26,6 +25,7 @@ import { ShipRenderer } from './nodes/Ship';
 import { EntityRenderer } from './nodes/Entity';
 import type { HardpointRenderer } from './nodes/Hardpoint';
 import { createAndUpdate, nodeMap, type Renderer } from './nodes/renderer';
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 
 function createEmptyCache(): SerializedSystem {
 	return {
@@ -283,12 +283,12 @@ export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: st
 	return returnData;
 }
 
-export async function startFollowingPath(entityID: string, path: number[][]) {
+export async function startFollowingPath(entityID: string, path: IVector3Like[]) {
 	const renderer = nodes.get(entityID);
 	if (!(renderer instanceof EntityRenderer)) {
 		throw new TypeError(`Node ${entityID} is not an entity`);
 	}
-	await renderer.followPath(Path.FromJSON(path));
+	await renderer.followPath(path.map(({ x, y, z }) => new Vector3(x, y, z)));
 }
 
 export function fireProjectile(hardpointID: string, targetID: string, options: GenericProjectile) {

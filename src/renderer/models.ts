@@ -12,7 +12,6 @@ import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/loaders/glTF/index';
 
 import config from './config';
-import { Path } from '../core/path';
 import * as settings from '../client/settings';
 import { random } from '../core/utils';
 import type { SerializedNode } from '../core/nodes/Node';
@@ -69,8 +68,8 @@ export class ModelRenderer extends TransformNode {
 		return this.#currentPath;
 	}
 
-	async followPath(path: Path) {
-		if (!(path instanceof Path)) throw new TypeError('path must be a Path');
+	async followPath(path: Vector3[]) {
+		if (!Array.isArray(path)) throw new TypeError('path must be a Path');
 		if (path.length == 0) {
 			return;
 		}
@@ -82,18 +81,18 @@ export class ModelRenderer extends TransformNode {
 		if (this.#pathGizmo) {
 			console.warn('Path gizmo was already drawn and not disposed');
 		} else if (settings.get('show_path_gizmos')) {
-			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + random.hex(16), { points: path.map(node => node.position) }, this.getScene());
+			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + random.hex(16), { points: path }, this.getScene());
 			this.#pathGizmo.color = Color3.Green();
 		}
 
 		const animation = new Animation('pathFollow', 'position', 60 * this.generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
 			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this.generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.position.subtract((this.parent as TransformNode).absolutePosition) })));
+		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.subtract((this.parent as TransformNode).absolutePosition) })));
 		rotateAnimation.setKeys(
 			path.flatMap((node, i) => {
 				if (i != 0) {
-					const value = Vector3.PitchYawRollToMoveBetweenPoints(path[i - 1].position, node.position);
+					const value = Vector3.PitchYawRollToMoveBetweenPoints(path[i - 1], node);
 					value.x -= Math.PI / 2;
 					return [
 						{ frame: i * 60 * this.generic.agility - 30, value },

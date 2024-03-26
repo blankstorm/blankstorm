@@ -3,35 +3,23 @@ import type { System } from './System';
 import type { CelestialBody } from './nodes/CelestialBody';
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 
-class PathNode {
+function roundVector({ x, y, z }: IVector3Like) {
+	return new Vector3(Math.round(x), Math.round(y), Math.round(z));
+}
+
+export class PathNode {
 	public position = Vector3.Zero();
-	public constructor({ x, y, z }: IVector3Like, public parent?: PathNode) {
-		this.position = PathNode.Round(new Vector3(x, y, z));
+	public constructor(position: IVector3Like, public parent?: PathNode) {
+		this.position = roundVector(position);
 	}
 	public gCost = 0;
 	public hCost = 0;
-	public heapIndex = null;
 	public get fCost() {
 		return this.gCost + this.hCost;
 	}
 
 	public get id(): string {
 		return this.position.asArray().toString();
-	}
-	public static Round(vector: Vector3) {
-		return new Vector3(Math.round(vector.x), Math.round(vector.y), Math.round(vector.z));
-	}
-}
-
-export class Path extends Array<PathNode> {
-	public gizmo = null;
-
-	toJSON(): number[][] {
-		return this.map(node => node.position.asArray());
-	}
-
-	static FromJSON(path: number[][]) {
-		return new this(...path.map(vector => new PathNode(Vector3.FromArray(vector))));
 	}
 }
 
@@ -52,7 +40,7 @@ function trace(startNode: PathNode, endNode: PathNode): PathNode[] {
 	return path.reverse();
 }
 
-export function findPath(start: Vector3, end: Vector3, system: System): PathNode[] {
+export function findPath(start: Vector3, end: Vector3, system: System): Vector3[] {
 	if (!(start instanceof Vector3)) throw new TypeError('Start must be a Vector');
 	if (!(end instanceof Vector3)) throw new TypeError('End must be a Vector');
 	const openNodes: Map<string, PathNode> = new Map();
@@ -70,7 +58,7 @@ export function findPath(start: Vector3, end: Vector3, system: System): PathNode
 		if (currentNode.id == endNode.id) {
 			endNode = currentNode;
 			const path = trace(startNode, endNode);
-			return new Path(...path);
+			return path.map(node => node.position);
 		}
 		const neighbors = [0, 1, -1]
 			.flatMap(x => [0, 1, -1].map(y => new Vector3(x, 0, y)))

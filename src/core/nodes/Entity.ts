@@ -40,10 +40,10 @@ export class Entity extends Node {
 			this.system.emit(
 				'entity.follow_path.start',
 				this.id,
-				path.map(node => node.position.asArray())
+				path.map(node => node.asArray())
 			);
-			this.position = path.at(-1).position.subtract(this.parent.absolutePosition);
-			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.at(-2).position, path.at(-1).position);
+			this.position = path.at(-1).subtract(this.parent.absolutePosition);
+			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.at(-2), path.at(-1));
 			rotation.x -= Math.PI / 2;
 			this.rotation = rotation;
 		}
