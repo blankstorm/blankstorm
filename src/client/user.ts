@@ -1,5 +1,5 @@
 import type { Account } from '@blankstorm/api';
-import type { Player } from '../core/nodes/Player';
+import type { Player } from '../core/entities/Player';
 import { currentLevel } from './client';
 import { sendMessage } from './chat';
 import type { System } from '../core/System';

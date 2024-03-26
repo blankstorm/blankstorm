@@ -1,8 +1,8 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-import { Ship } from './nodes/Ship';
+import { Ship } from './entities/Ship';
 import { game_url } from './metadata';
-import type { Player } from './nodes/Player';
+import type { Player } from './entities/Player';
 import { isJSON } from './utils';
 
 export interface CommandExecutionContext {

@@ -7,7 +7,7 @@ import type { ResearchID } from '../../core/generic/research';
 import { isResearchLocked, priceOfResearch, research as researchData } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
 import { config, game_url, version, versions } from '../../core/metadata';
-import type { Player } from '../../core/nodes/Player';
+import type { Player } from '../../core/entities/Player';
 import { isHex, isJSON } from '../../core/utils';
 import * as renderer from '../../renderer';
 import { playsound } from '../audio';

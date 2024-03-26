@@ -1,8 +1,8 @@
 import type { Server } from './Server';
-import { Player } from '../core/nodes/Player';
-import type { SerializedPlayer } from '../core/nodes/Player';
+import { Player } from '../core/entities/Player';
+import type { SerializedPlayer } from '../core/entities/Player';
 import type { Socket } from 'socket.io';
-import type { Ship } from '../core/nodes/Ship';
+import type { Ship } from '../core/entities/Ship';
 
 export class Client extends Player {
 	socket: Socket;

@@ -1,14 +1,14 @@
 import { Vector3, Matrix, Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Entity } from '../core/nodes/Node';
-import type { SerializedEntity } from '../core/nodes/Node';
+import { Entity } from '../core/entities/Entity';
+import type { SerializedEntity } from '../core/entities/Entity';
 import $ from 'jquery';
 import { scene } from '../renderer/index';
 import { WaypointUI } from './ui/waypoint';
 import type { System } from '../core/System';
 import * as user from './user';
-import { SerializedCelestialBody } from '../core/nodes/CelestialBody';
+import { SerializedCelestialBody } from '../core/entities/CelestialBody';
 import { getIconForNode, minimize } from './utils';
 import * as settings from './settings';
 

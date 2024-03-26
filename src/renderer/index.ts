@@ -14,7 +14,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import '@babylonjs/core/Culling'; // For Ray side effects
 import type { MoveInfo, SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
-import type { SerializedEntity } from '../core/nodes/Node';
+import type { SerializedEntity } from '../core/entities/Entity';
 import config from './config';
 import { Camera } from './camera';
 import { initModels } from './models';

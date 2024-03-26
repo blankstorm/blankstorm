@@ -2,8 +2,8 @@ import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
 
 import { FolderMap, random, isJSON } from '../core/utils';
-import { Ship } from '../core/nodes/Ship';
-import { Player } from '../core/nodes/Player';
+import { Ship } from '../core/entities/Ship';
+import { Player } from '../core/entities/Player';
 
 const fs = $app.require('fs');
 import { SaveListItem } from './ui/save';

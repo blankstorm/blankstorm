@@ -1,5 +1,5 @@
-import { CelestialBody } from '../nodes/CelestialBody';
-import type { SerializedCelestialBody } from '../nodes/CelestialBody';
+import { CelestialBody } from '../entities/CelestialBody';
+import type { SerializedCelestialBody } from '../entities/CelestialBody';
 import type { System } from '../System';
 import type { Station } from './Station';
 import { GenericStationComponentID, stationComponents } from '../generic/stationComponents';

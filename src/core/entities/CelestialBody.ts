@@ -2,8 +2,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { System } from '../System';
 import { random } from '../utils';
 import { Ship } from './Ship';
-import { Entity } from './Node';
-import type { SerializedEntity } from './Node';
+import { Entity } from './Entity';
+import type { SerializedEntity } from './Entity';
 import { Storage } from '../Storage';
 import { ItemID } from '../generic/items';
 

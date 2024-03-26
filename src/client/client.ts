@@ -6,7 +6,7 @@ import { config, version } from '../core/metadata';
 import type { SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemID } from '../core/generic/items';
-import type { SerializedEntity } from '../core/nodes/Node';
+import type { SerializedEntity } from '../core/entities/Entity';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';

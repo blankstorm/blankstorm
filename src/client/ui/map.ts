@@ -1,8 +1,8 @@
 import { config } from '../../core/metadata';
-import { Entity } from '../../core/nodes/Node';
-import { Planet } from '../../core/nodes/Planet';
-import { Ship } from '../../core/nodes/Ship';
-import { Star } from '../../core/nodes/Star';
+import { Entity } from '../../core/entities/Entity';
+import { Planet } from '../../core/entities/Planet';
+import { Ship } from '../../core/entities/Ship';
+import { Star } from '../../core/entities/Star';
 import { toDegrees } from '../../core/utils';
 import { account, system } from '../user';
 import { $svg, getColorForBiome } from '../utils';

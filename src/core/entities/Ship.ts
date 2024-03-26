@@ -1,8 +1,8 @@
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 
 import { random } from '../utils';
-import { Entity } from './Node';
-import type { SerializedEntity } from './Node';
+import { Entity } from './Entity';
+import type { SerializedEntity } from './Entity';
 import { Hardpoint } from './Hardpoint';
 import type { SerializedHardpoint } from './Hardpoint';
 import { Storage } from '../Storage';
@@ -10,7 +10,7 @@ import type { System } from '../System';
 import { genericShips } from '../generic/ships';
 import type { ShipType, GenericShip, HardpointInfo } from '../generic/ships';
 
-import type { CelestialBody } from '../nodes/CelestialBody';
+import type { CelestialBody } from './CelestialBody';
 import type { Player } from './Player';
 import type { HardpointType } from '../generic/hardpoints';
 import { ItemID } from '../generic/items';
