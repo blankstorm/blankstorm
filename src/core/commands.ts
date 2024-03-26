@@ -1,12 +1,12 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-
+import type { Entity } from './entities/Entity';
+import type { Player } from './entities/Player';
 import { Ship } from './entities/Ship';
 import { game_url } from './metadata';
-import type { Player } from './entities/Player';
 import { isJSON } from './utils';
 
 export interface CommandExecutionContext {
-	executor: Player;
+	executor: Entity & { oplvl?: number };
 }
 
 export interface Command {
@@ -22,19 +22,19 @@ export const commands: Map<string, Partial<Command>> = new Map(
 			},
 			oplvl: 0,
 		},
-		kill: {
+		removed: {
 			exec({ executor }, selector) {
 				const entities = executor.level.selectEntities(selector).filter(entity => entity.nodeTypes.includes('Entitiy'));
 				entities.forEach(e => e.remove());
-				return `killed ${entities.length} entities`;
+				return `Removed ${entities.length} entities`;
 			},
 			oplvl: 3,
 		},
 		spawn: {
 			exec({ executor }, type, selector, extra) {
-				const parent = executor.level.selectEntity(selector);
-				const spawned = new Ship(null, executor.level, { type, power: executor.power });
-				spawned.parent = spawned.owner = parent as Player;
+				const parent: Player = executor.level.selectEntity(selector);
+				const spawned = new Ship(null, executor.level, { type });
+				spawned.parent = spawned.owner = parent;
 				if (isJSON(extra)) {
 					//spawned.update(JSON.parse(extra));
 				}
