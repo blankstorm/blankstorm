@@ -1,30 +1,29 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Engine } from '@babylonjs/core/Engines/engine';
-import { type Account, getAccount } from '@blankstorm/api';
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { getAccount, type Account } from '@blankstorm/api';
 import $ from 'jquery';
-import { config, version } from '../core/metadata';
-import type { SerializedSystem } from '../core/System';
+import { Level } from '../core/Level';
+import { execCommandString } from '../core/commands';
+import type { SerializedEntity } from '../core/entities/Entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemID } from '../core/generic/items';
-import type { SerializedEntity } from '../core/entities/Entity';
+import { config, version } from '../core/metadata';
+import { xpToLevel } from '../core/utils';
+import * as renderer from '../renderer/index';
+import { playsound } from './audio';
+import * as chat from './chat';
+import { isServer, setDebug, setPath } from './config';
+import * as locales from './locales';
+import * as mods from './mods';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
-import { alert, cookies, fixPaths, logger, minimize } from './utils';
-import * as locales from './locales';
-import { playsound } from './audio';
-import * as renderer from '../renderer/index';
-import * as ui from './ui/ui';
 import { ScreenshotUI } from './ui/screenshot';
-import { xpToLevel } from '../core/utils';
+import * as ui from './ui/ui';
 import * as user from './user';
-import { isServer, setDebug, setPath } from './config';
-import * as chat from './chat';
-import { Level } from '../core/Level';
+import { alert, cookies, fixPaths, logger, minimize } from './utils';
 import { waypoints } from './waypoints';
-import * as mods from './mods';
-import { execCommandString } from '../core/commands';
-import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 
 export interface ClientInit {
 	/**
@@ -489,14 +488,9 @@ export function load(level: Level): boolean {
 	$('#hud').show();
 	currentLevel = level;
 	renderer.clear();
-	renderer.update(user.system().toJSON());
+	renderer.update(currentLevel.toJSON());
 	level.on('projectile.fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
 		renderer.fireProjectile(hardpointID, targetID, projectile);
-	});
-	level.on('system.tick', async (system: SerializedSystem) => {
-		if (user.system().id == system.id) {
-			renderer.update(system);
-		}
 	});
 	level.on('player.levelup', async () => {
 		logger.debug('Triggered player.levelup (unimplemented)');

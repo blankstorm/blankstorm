@@ -1,9 +1,9 @@
-import type { Berth } from '../../core/stations/Berth';
 import $ from 'jquery';
-import { genericShips, shipTypes } from '../../core/generic/ships';
 import type { ShipType } from '../../core/generic/ships';
+import { genericShips, shipTypes } from '../../core/generic/ships';
+import type { Berth } from '../../core/stations/Berth';
 import * as locales from '../locales';
-import { account, system } from '../user';
+import { action } from '../user';
 
 export class BerthUI extends HTMLDivElement {
 	constructor(berth: Berth) {
@@ -23,7 +23,7 @@ export class BerthUI extends HTMLDivElement {
 		$(`<p><tool-tip></tool-tip><svg style=font-size:1.5em><use href="_build.asset_dir/images/icons.svg#circle-plus"/></svg></p>`)
 			.addClass('non-active add add-or-upgrade-icon')
 			.on('click', async () => {
-				await system().tryAction(account.id, 'create_ship', { ship: genericShips[select.val() as ShipType], berth });
+				await action('create_ship', { ship: genericShips[select.val() as ShipType], berth });
 			})
 			.appendTo(this);
 

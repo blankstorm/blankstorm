@@ -1,15 +1,15 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-import { resolveConstructors, wait, xpToLevel } from '../utils';
-import { Entity } from './Entity';
-import type { SerializedEntity } from './Entity';
+import type { Level } from '../Level';
+import type { GenericHardpoint, HardpointType } from '../generic/hardpoints';
 import { genericHardpoints } from '../generic/hardpoints';
-import type { HardpointType, GenericHardpoint } from '../generic/hardpoints';
-import type { Ship } from './Ship';
-import type { System } from '../System';
-import type { Player } from './Player';
-import type { CelestialBody } from './CelestialBody';
 import type { HardpointInfo, SerializedHardpointInfo } from '../generic/ships';
+import { resolveConstructors, wait, xpToLevel } from '../utils';
+import type { CelestialBody } from './CelestialBody';
+import type { SerializedEntity } from './Entity';
+import { Entity } from './Entity';
+import type { Player } from './Player';
+import type { Ship } from './Ship';
 
 export interface SerializedHardpoint extends SerializedEntity {
 	info: SerializedHardpointInfo;
@@ -22,8 +22,8 @@ export class Hardpoint extends Entity {
 	type: HardpointType;
 	reload: number;
 	declare owner: Ship;
-	constructor(id: string, system: System, { type, reload }: { type?: HardpointType; reload?: number } = {}) {
-		super(id, system);
+	constructor(id: string, level: Level, { type, reload }: { type?: HardpointType; reload?: number } = {}) {
+		super(id, level);
 
 		this.type = type;
 		this.reload = reload ?? this.generic.reload;
@@ -62,21 +62,21 @@ export class Hardpoint extends Entity {
 		// this is so we don't have a circular dependency by importing Ship
 		const targetConstructors = resolveConstructors(target);
 
-		this.system.emit('projectile.fire', this.id, target.id, this.generic.projectile);
+		this.level.emit('projectile.fire', this.id, target.id, this.generic.projectile);
 		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
 		this.reload = this.generic.reload;
 		await wait(time);
 		const targetShip = (targetConstructors.includes('Ship') ? target : target.owner) as Ship;
 		targetShip.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
 		if (targetShip.hp <= 0) {
-			this.system.emit('entity.death', targetShip.toJSON());
+			this.level.emit('entity.death', targetShip.toJSON());
 			let owner;
 			switch (this.owner.owner.constructor.name) {
 				case 'Player':
 					owner = this.owner.owner as Player;
 					owner.addItems(targetShip.generic.recipe);
 					if (Math.floor(xpToLevel(owner.xp + targetShip.generic.xp)) > Math.floor(xpToLevel(owner.xp))) {
-						this.system.emit('player.levelup', owner.toJSON());
+						this.level.emit('player.levelup', owner.toJSON());
 						owner.xpPoints++;
 					}
 					owner.xp += targetShip.generic.xp;
@@ -91,8 +91,8 @@ export class Hardpoint extends Entity {
 		}
 	}
 
-	static FromJSON(data: SerializedHardpoint, system: System): Hardpoint {
-		return <Hardpoint>super.FromJSON(data, system, data);
+	static FromJSON(data: SerializedHardpoint, level: Level): Hardpoint {
+		return <Hardpoint>super.FromJSON(data, level, data);
 	}
 
 	static generic = genericHardpoints;

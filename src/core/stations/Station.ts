@@ -1,8 +1,8 @@
-import { CelestialBody } from '../entities/CelestialBody';
-import { SerializedStationComponent, StationComponent } from './StationComponent';
+import type { Level } from '../Level';
 import type { SerializedCelestialBody } from '../entities/CelestialBody';
-import type { System } from '../System';
+import { CelestialBody } from '../entities/CelestialBody';
 import type { Player } from '../entities/Player';
+import { SerializedStationComponent, StationComponent } from './StationComponent';
 
 export interface SerializedStation extends SerializedCelestialBody {
 	type: string;
@@ -15,10 +15,10 @@ export class Station extends CelestialBody {
 
 	isTargetable = true;
 	declare owner?: CelestialBody | Player;
-	constructor(id: string, system: System, options: ConstructorParameters<typeof CelestialBody>[2]) {
-		super(id, system, options);
+	constructor(id: string, level: Level, options: ConstructorParameters<typeof CelestialBody>[2]) {
+		super(id, level, options);
 
-		this.#core = new StationComponent(null, system, { type: 'core' });
+		this.#core = new StationComponent(null, level, { type: 'core' });
 		this.#core.station = this.#core.parent = this;
 	}
 
@@ -36,7 +36,7 @@ export class Station extends CelestialBody {
 	/**
 	 * @todo actually implement
 	 */
-	static FromJSON(data: SerializedStation, system: System): Station {
-		return <Station>super.FromJSON(data, system, {});
+	static FromJSON(data: SerializedStation, level: Level): Station {
+		return <Station>super.FromJSON(data, level, {});
 	}
 }

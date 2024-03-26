@@ -41,27 +41,32 @@ export class Entity extends EventEmitter {
 		return resolveConstructors(this);
 	}
 
-	protected _system: System;
-	public get system(): System {
-		return this._system;
+	protected _level: Level;
+	public get level(): Level {
+		return this._level;
 	}
-	public set system(value: System) {
-		if (this._system) {
-			this._system.nodes.delete(this.id);
-			this._system.emit('node.removed', this.toJSON());
+	public set level(value: Level) {
+		if (this._level) {
+			this._level.entities.delete(this);
+			this._level.emit('node.removed', this.toJSON());
 		}
-		this._system = value;
+		this._level = value;
 		if (value) {
-			value.nodes.set(this.id, this);
+			value.entities.add(this);
 			setTimeout(() => value.emit('node.added', this.toJSON()));
 		}
 	}
+
+	protected _system: string;
+	public get system(): System {
+		return this.level.systems.get(this._system);
+	}
+	public set system(value: System | string) {
+		this._system = typeof value == 'object' ? value?.id : value;
+	}
+
 	public parent?: Entity;
 	public owner?: Entity;
-
-	public get level(): Level {
-		return this.system.level;
-	}
 
 	public selected = false;
 	public isTargetable = false;
@@ -82,19 +87,19 @@ export class Entity extends EventEmitter {
 		return this.parent instanceof Entity ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
-	public constructor(id: string, system: System, constructorOptions?: object) {
+	public constructor(id: string, level: Level, constructorOptions?: object) {
 		id ||= random.hex(32);
 		super();
 		if (constructorOptions) {
 			console.warn(`constructorOptions should not be passed to Node constructor`);
 		}
 		this.id = id;
-		this.system = system;
-		setTimeout(() => system.emit('node.created', this.toJSON()));
+		this.level = level;
+		setTimeout(() => level.emit('node.created', this.toJSON()));
 	}
 
 	public remove() {
-		this.system = null;
+		this.level = null;
 	}
 
 	/**
@@ -106,7 +111,7 @@ export class Entity extends EventEmitter {
 		if (!(target instanceof Vector3)) throw new TypeError('target must be a Vector3');
 		const path = findPath(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
 		if (path.length > 0) {
-			this.system.emit(
+			this.level.emit(
 				'entity.follow_path.start',
 				this.id,
 				path.map(({ x, y, z }) => ({ x, y, z }))
@@ -133,13 +138,13 @@ export class Entity extends EventEmitter {
 		};
 	}
 
-	public static FromJSON(data: SerializedEntity, level: System, constructorOptions: object): Entity {
+	public static FromJSON(data: SerializedEntity, level: Level, constructorOptions: object): Entity {
 		const node = new this(data.id, level, constructorOptions);
 		node.position = Vector3.FromArray(data.position || [0, 0, 0]);
 		node.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);
 		node.velocity = Vector3.FromArray(data.velocity || [0, 0, 0]);
-		node.parent = level.getNodeByID(data.parent);
-		node.owner = level.getNodeByID(data.owner);
+		node.parent = level.getEntityByID(data.parent);
+		node.owner = level.getEntityByID(data.owner);
 		node.name = data.name;
 		return node;
 	}

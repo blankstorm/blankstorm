@@ -1,9 +1,9 @@
+import type { Level } from '../Level';
+import { Producer } from '../generic/production';
 import type { ShipType } from '../generic/ships';
-import type { System } from '../System';
+import { genericShips, shipTypes } from '../generic/ships';
 import type { SerializedStationComponent, StationComponentOptions } from './StationComponent';
 import { StationComponent } from './StationComponent';
-import { genericShips, shipTypes } from '../generic/ships';
-import { Producer } from '../generic/production';
 
 export interface SerializedBerth extends SerializedStationComponent {
 	productionID: ShipType;
@@ -14,8 +14,8 @@ export class Berth extends StationComponent implements Producer {
 	productionID: ShipType;
 	productionTime: number;
 	canProduce = shipTypes;
-	constructor(id: string, system: System, options: StationComponentOptions) {
-		super(id, system, options);
+	constructor(id: string, level: Level, options: StationComponentOptions) {
+		super(id, level, options);
 	}
 
 	build(type: ShipType) {
@@ -30,8 +30,8 @@ export class Berth extends StationComponent implements Producer {
 		});
 	}
 
-	static FromJSON(data: SerializedBerth, system: System): Berth {
-		const berth = <Berth>super.FromJSON(data, system);
+	static FromJSON(data: SerializedBerth, level: Level): Berth {
+		const berth = <Berth>super.FromJSON(data, level);
 		berth.productionID = data.productionID;
 		berth.productionTime = data.productionTime;
 		return berth;

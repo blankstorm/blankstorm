@@ -1,7 +1,7 @@
+import $ from 'jquery';
 import type { GenericShip } from '../../core/generic/ships';
 import * as locales from '../locales';
-import $ from 'jquery';
-import { account, system } from '../user';
+import { action } from '../user';
 
 export class ShipUI extends HTMLDivElement {
 	constructor(ship: GenericShip) {
@@ -15,7 +15,7 @@ export class ShipUI extends HTMLDivElement {
 		$(this)
 			.find('.add')
 			.on('click', async () => {
-				await system().tryAction(account.id, 'create_ship', { ship });
+				await action('create_ship', { ship });
 			});
 		$(this).appendTo('div.shipyard');
 	}

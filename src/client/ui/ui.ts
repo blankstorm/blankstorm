@@ -17,7 +17,7 @@ import * as saves from '../saves';
 import { Save } from '../saves';
 import * as servers from '../servers';
 import * as settings from '../settings';
-import { account, system } from '../user';
+import { account, action, player as getPlayer, system } from '../user';
 import { $svg, logger, minimize, upload } from '../utils';
 import { Waypoint, updateAll as updateAllWaypoints } from '../waypoints';
 import { ItemUI } from './item';
@@ -74,7 +74,7 @@ export function init() {
 
 export function update() {
 	if (system() instanceof System) {
-		const player = system().level.getNodeSystem(account.id).getNodeByID<Player>(account.id);
+		const player: Player = getPlayer();
 		$('#waypoint-list div').detach();
 		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
 		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
@@ -394,7 +394,7 @@ export function registerListeners() {
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 			alert(locales.text`error.waypoint.range`);
 		} else {
-			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, system());
+			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, client.currentLevel);
 			waypoint.name = name;
 			waypoint.color = Color3.FromHexString(color);
 			waypoint.position = new Vector3(x, y, z);
@@ -450,7 +450,7 @@ export function registerListeners() {
 			return;
 		}
 		const data = renderer.handleCanvasRightClick(e, account.id);
-		system().tryAction(account.id, 'move', data);
+		action('move', data);
 	});
 	$('canvas.game').on('keydown', e => {
 		switch (e.key) {

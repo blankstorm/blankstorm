@@ -1,47 +1,60 @@
-import { Vector3, Matrix } from '@babylonjs/core/Maths/math.vector';
-import { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/core/Animations/animatable';
-import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
+import '@babylonjs/core/Culling'; // For Ray side effects
+import { Engine } from '@babylonjs/core/Engines/engine';
 import { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
 import { HighlightLayer } from '@babylonjs/core/Layers/highlightLayer';
-import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture';
-import { Engine } from '@babylonjs/core/Engines/engine';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import '@babylonjs/core/Culling'; // For Ray side effects
+import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
+import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
+import { Scene } from '@babylonjs/core/scene';
+import type { SerializedLevel } from '../core/Level';
 import type { MoveInfo, SerializedSystem } from '../core/System';
-import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { SerializedEntity } from '../core/entities/Entity';
-import config from './config';
+import type { GenericProjectile } from '../core/generic/hardpoints';
+import { version } from '../core/metadata';
 import { Camera } from './camera';
+import config from './config';
 import { initModels } from './models';
-import { PlayerRenderer } from './nodes/Player';
-import { PlanetRenderer, PlanetRendererMaterial } from './nodes/Planet';
-import { StarRenderer } from './nodes/Star';
-import { ShipRenderer } from './nodes/Ship';
 import { EntityRenderer } from './nodes/Entity';
 import type { HardpointRenderer } from './nodes/Hardpoint';
+import { PlanetRenderer, PlanetRendererMaterial } from './nodes/Planet';
+import { PlayerRenderer } from './nodes/Player';
+import { ShipRenderer } from './nodes/Ship';
+import { StarRenderer } from './nodes/Star';
 import { createAndUpdate, nodeMap, type Renderer } from './nodes/renderer';
-import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 
-function createEmptyCache(): SerializedSystem {
+function _createEmptyCache(): SerializedSystem {
 	return {
 		id: null,
 		difficulty: null,
 		name: null,
-		nodes: [],
 		connections: [],
 		position: [],
+	};
+}
+
+function createEmptyCache(): SerializedLevel {
+	return {
+		id: null,
+		difficulty: null,
+		name: null,
+		entities: [],
+		date: null,
+		systems: [],
+		version,
 	};
 }
 
 let skybox: Mesh,
 	xzPlane: Mesh,
 	camera: Camera,
-	cache: SerializedSystem = createEmptyCache(),
+	cache: SerializedLevel = createEmptyCache(),
 	hitboxes = false,
 	gl: GlowLayer;
 export let engine: Engine, scene: Scene, hl: HighlightLayer, probe: ReflectionProbe;
@@ -50,7 +63,7 @@ export function setHitboxes(value: boolean) {
 	hitboxes = !!value;
 }
 
-const nodes: Map<string, Renderer<SerializedEntity>> = new Map();
+const entities: Map<string, Renderer<SerializedEntity>> = new Map();
 
 function onCanvasResive() {
 	engine.resize();
@@ -76,7 +89,7 @@ export async function init(
 
 	scene.registerBeforeRender(() => {
 		const ratio = scene.getAnimationRatio();
-		for (const node of nodes.values()) {
+		for (const node of entities.values()) {
 			if (node instanceof PlanetRenderer && node.material instanceof PlanetRendererMaterial) {
 				node.rotation.y += 0.0001 * ratio * node.material.rotationFactor;
 				node.material.setMatrix('rotation', Matrix.RotationY(node.material.matrixAngle));
@@ -154,9 +167,9 @@ export async function clear() {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	for (const [id, node] of nodes) {
+	for (const [id, node] of entities) {
 		node.dispose();
-		nodes.delete(id);
+		entities.delete(id);
 	}
 
 	engine.resize();
@@ -182,40 +195,40 @@ export async function load(serializedNodes: SerializedEntity[]) {
 		}
 
 		await node.update(data);
-		nodes.set(data.id, node);
+		entities.set(data.id, node);
 	}
 }
 
-export async function update(systemData: SerializedSystem) {
+export async function update(levelData: SerializedLevel) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
 	const renderersToAdd: SerializedEntity[] = [];
 
-	if (systemData.id != cache.id && cache.id) {
-		console.warn(`Updating the renderer with a different system (${cache.id} -> ${systemData.id}). The renderer should be cleared first.`);
+	if (levelData.id != cache.id && cache.id) {
+		console.warn(`Updating the renderer with a different system (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);
 	}
 
-	for (const node of [...cache.nodes, ...systemData.nodes]) {
-		const data = systemData.nodes.find(_body => _body.id == node.id),
-			cached = cache.nodes.find(_body => _body.id == node.id);
+	for (const entity of [...cache.entities, ...levelData.entities]) {
+		const data = levelData.entities.find(_body => _body.id == entity.id),
+			cached = cache.entities.find(_body => _body.id == entity.id);
 		if (!cached) {
-			renderersToAdd.push(node);
+			renderersToAdd.push(entity);
 			continue;
 		}
 
 		if (!data) {
-			nodes.get(node.id).dispose();
-			nodes.delete(node.id);
+			entities.get(entity.id).dispose();
+			entities.delete(entity.id);
 			continue;
 		}
 
-		nodes.get(node.id).update(data);
+		entities.get(entity.id).update(data);
 	}
 
 	const result = await load(renderersToAdd);
-	cache = systemData;
+	cache = levelData;
 	return result;
 }
 
@@ -232,9 +245,9 @@ export function getCamera() {
 }
 
 export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
-	ownerID ??= [...nodes.values()].find(e => e instanceof PlayerRenderer)?.id;
+	ownerID ??= [...entities.values()].find(e => e instanceof PlayerRenderer)?.id;
 	if (!ev.shiftKey) {
-		for (const node of nodes.values()) {
+		for (const node of entities.values()) {
 			if (node instanceof ShipRenderer) {
 				node.unselect();
 			}
@@ -270,7 +283,7 @@ export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
  */
 export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: string): MoveInfo<Vector3>[] {
 	const returnData: MoveInfo<Vector3>[] = [];
-	for (const renderer of nodes.values()) {
+	for (const renderer of entities.values()) {
 		if (renderer instanceof EntityRenderer && renderer.selected && renderer.parent?.id == ownerID) {
 			xzPlane.position = renderer.absolutePosition.clone();
 			const { pickedPoint: target } = scene.pick(evt.clientX, evt.clientY, mesh => mesh == xzPlane);
@@ -284,7 +297,7 @@ export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: st
 }
 
 export async function startFollowingPath(entityID: string, path: IVector3Like[]) {
-	const renderer = nodes.get(entityID);
+	const renderer = entities.get(entityID);
 	if (!(renderer instanceof EntityRenderer)) {
 		throw new TypeError(`Node ${entityID} is not an entity`);
 	}

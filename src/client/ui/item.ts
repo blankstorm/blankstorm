@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import type { Item } from '../../core/generic/items';
 import * as locales from '../locales';
-import { account, system } from '../user';
+import { action } from '../user';
 
 export class ItemUI extends HTMLDivElement {
 	constructor(item: Item) {
@@ -15,7 +15,7 @@ export class ItemUI extends HTMLDivElement {
 
 		$(this)
 			.on('click', async () => {
-				await system().tryAction(account.id, 'create_item', item);
+				await action('create_item', item);
 			})
 			.addClass('ui-item')
 			.appendTo('div.inventory');

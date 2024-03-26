@@ -1,8 +1,8 @@
-import { CelestialBody } from '../entities/CelestialBody';
+import type { Level } from '../Level';
 import type { SerializedCelestialBody } from '../entities/CelestialBody';
-import type { System } from '../System';
-import type { Station } from './Station';
+import { CelestialBody } from '../entities/CelestialBody';
 import { GenericStationComponentID, stationComponents } from '../generic/stationComponents';
+import type { Station } from './Station';
 
 export interface SerializedStationComponent extends SerializedCelestialBody {
 	hp: number;
@@ -18,8 +18,8 @@ export class StationComponent extends CelestialBody {
 	station: Station;
 	connections: StationComponent[] = [];
 	type: GenericStationComponentID;
-	constructor(id: string, system: System, { type }: StationComponentOptions) {
-		super(id, system, { radius: 1 });
+	constructor(id: string, level: Level, { type }: StationComponentOptions) {
+		super(id, level, { radius: 1 });
 
 		this.type = type;
 		this.hp = this.generic.hp;
@@ -73,8 +73,8 @@ export class StationComponent extends CelestialBody {
 		}
 	}
 
-	static FromJSON(data: SerializedStationComponent, system: System): StationComponent {
-		return <StationComponent>super.FromJSON(data, system, data);
+	static FromJSON(data: SerializedStationComponent, level: Level): StationComponent {
+		return <StationComponent>super.FromJSON(data, level, data);
 	}
 
 	static generic = stationComponents;

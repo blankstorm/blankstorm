@@ -1,11 +1,11 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { System } from '../System';
-import { random } from '../utils';
-import { Ship } from './Ship';
-import { Entity } from './Entity';
-import type { SerializedEntity } from './Entity';
+import type { Level } from '../Level';
 import { Storage } from '../Storage';
 import { ItemID } from '../generic/items';
+import { random } from '../utils';
+import type { SerializedEntity } from './Entity';
+import { Entity } from './Entity';
+import { Ship } from './Ship';
 
 export interface SerializedCelestialBody extends SerializedEntity {
 	fleetPosition: number[];
@@ -25,8 +25,8 @@ export class CelestialBody extends Entity {
 		return this.fleet.reduce((total, ship) => total + ship.generic.power, 0) ?? 0;
 	}
 
-	constructor(id: string, system: System, { radius = 1, rewards = {}, fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true), fleet = [] }) {
-		super(id, system);
+	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true), fleet = [] }) {
+		super(id, level);
 		this.radius = radius;
 		this.rewards = Storage.FromJSON({ items: rewards, max: 1e10 });
 		this.fleetPosition = fleetPosition;
@@ -35,17 +35,17 @@ export class CelestialBody extends Entity {
 			if (shipOrType instanceof Ship) {
 				ship = shipOrType;
 			} else {
-				ship = new Ship(null, system, { type: shipOrType });
+				ship = new Ship(null, level, { type: shipOrType });
 				ship.position.addInPlace(this.fleetPosition);
 			}
 			ship.parent = ship.owner = this;
 			this.fleet.push(ship);
 		}
-		setTimeout(() => system.emit('body.created', this.toJSON()));
+		setTimeout(() => level.emit('body.created', this.toJSON()));
 	}
 
 	remove() {
-		this.system.emit('body.removed', this.toJSON());
+		this.level.emit('body.removed', this.toJSON());
 		super.remove();
 	}
 
@@ -58,8 +58,8 @@ export class CelestialBody extends Entity {
 		});
 	}
 
-	static FromJSON(data: SerializedCelestialBody, system: System, constructorOptions): CelestialBody {
-		return <CelestialBody>super.FromJSON(data, system, {
+	static FromJSON(data: SerializedCelestialBody, level: Level, constructorOptions): CelestialBody {
+		return <CelestialBody>super.FromJSON(data, level, {
 			...constructorOptions,
 			radius: data.radius,
 			rewards: data.rewards,

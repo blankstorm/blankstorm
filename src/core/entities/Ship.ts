@@ -14,6 +14,7 @@ import type { CelestialBody } from './CelestialBody';
 import type { Player } from './Player';
 import type { HardpointType } from '../generic/hardpoints';
 import { ItemID } from '../generic/items';
+import type { Level } from '../Level';
 
 export interface SerializedShip extends SerializedEntity {
 	type: ShipType;
@@ -37,9 +38,9 @@ export class Ship extends Entity {
 	/**
 	 * @todo move distance related stuff to ship creation
 	 */
-	constructor(id: string, system: System, { type, hardpoints = [], power }: { type: ShipType; hardpoints?: SerializedHardpoint[]; power?: number }) {
+	constructor(id: string, level: Level, { type, hardpoints = [], power }: { type: ShipType; hardpoints?: SerializedHardpoint[]; power?: number }) {
 		if (type && !Ship.generic[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
-		super(id, system);
+		super(id, level);
 
 		const distance = Math.log(random.int(0, power || 1) ** 3 + 1);
 		this.position.addInPlace(random.cords(distance, true));
@@ -55,7 +56,7 @@ export class Ship extends Entity {
 				return;
 			}
 
-			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromJSON(hardpoints[i], system) : new Hardpoint(null, system, { type: info.type as HardpointType });
+			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromJSON(hardpoints[i], level) : new Hardpoint(null, level, { type: info.type as HardpointType });
 			hp.parent = this;
 			hp.info = info;
 			this.hardpoints.push(hp);
@@ -110,9 +111,9 @@ export class Ship extends Entity {
 		return fleet;
 	}
 
-	static FromJSON(data: SerializedShip, system: System): Ship {
+	static FromJSON(data: SerializedShip, level: Level): Ship {
 		const max = this.generic[data.type].storage;
-		const ship = <Ship>super.FromJSON(data, system, data);
+		const ship = <Ship>super.FromJSON(data, level, data);
 		ship.hp = data.hp;
 		ship.jumpCooldown = data.jumpCooldown;
 		ship.storage = Storage.FromJSON({ ...data.storage, max });

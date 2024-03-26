@@ -1,7 +1,7 @@
+import $ from 'jquery';
 import type { Research } from '../../core/generic/research';
 import * as locales from '../locales';
-import $ from 'jquery';
-import { system, account } from '../user';
+import { action } from '../user';
 
 export class ResearchUI extends HTMLDivElement {
 	constructor(research: Research) {
@@ -15,7 +15,7 @@ export class ResearchUI extends HTMLDivElement {
 		$(this)
 			.find('.upgrade')
 			.on('click', async () => {
-				await system().tryAction(account.id, 'do_research', research);
+				await action('do_research', research);
 			});
 
 		$(this).appendTo('div.lab');

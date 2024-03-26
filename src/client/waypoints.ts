@@ -11,6 +11,7 @@ import * as user from './user';
 import { SerializedCelestialBody } from '../core/entities/CelestialBody';
 import { getIconForNode, minimize } from './utils';
 import * as settings from './settings';
+import type { Level } from '../core';
 
 export interface SerializedWaypoint extends SerializedEntity {
 	color: number[];
@@ -36,8 +37,8 @@ export class Waypoint extends Entity {
 		return this._active;
 	}
 
-	constructor(id: string, public readonly readonly = false, public readonly builtin = false, system: System) {
-		super(id, system);
+	constructor(id: string, public readonly readonly = false, public readonly builtin = false, level: Level) {
+		super(id, level);
 		waypoints.add(this);
 		this.gui = $(new WaypointUI(this));
 		this.marker = $<SVGSVGElement>(`<svg><use href="_build.asset_dir/images/icons.svg#location-dot /></svg><p style=justify-self:center></p>`)
@@ -94,7 +95,7 @@ export class Waypoint extends Entity {
 			);
 		this.marker[this.screenPos.z > 1 && this.screenPos.z < 1.15 ? 'hide' : 'show']();
 
-		if (this.system.id == user.system().id) {
+		if (this.level.id == user.system().id) {
 			this.gui.appendTo('#waypoint-list');
 			this.marker.show();
 		} else {
@@ -114,15 +115,15 @@ export class Waypoint extends Entity {
 			icon: this.icon,
 			color: this.color.asArray(),
 			readonly: this.readonly,
-			system: this.system.id,
+			system: this.level.id,
 		});
 	}
 
-	static fromJSON(data: SerializedWaypoint, system: System): Waypoint {
-		if (system.id != data.system) {
-			throw new ReferenceError(`Can't load waypoint, system ID mismatch`);
+	static fromJSON(data: SerializedWaypoint, level: Level): Waypoint {
+		if (level.id != data.system) {
+			throw new ReferenceError('Can not load waypoint, level ID mismatch');
 		}
-		const waypoint = new Waypoint(data.id, data.readonly, false, system);
+		const waypoint = new Waypoint(data.id, data.readonly, false, level);
 		waypoint.name = data.name;
 		waypoint.color = Color3.FromArray(data.color);
 		waypoint.position = Vector3.FromArray(data.position);

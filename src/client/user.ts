@@ -3,6 +3,7 @@ import type { Player } from '../core/entities/Player';
 import { currentLevel } from './client';
 import { sendMessage } from './chat';
 import type { System } from '../core/System';
+import type { ActionArgs } from '../core';
 
 export const account: Account = {
 	id: '_guest_',
@@ -20,9 +21,13 @@ export function chat(...messages: string[]) {
 }
 
 export function player(): Player {
-	return <Player>system()?.nodes?.get(account.id);
+	return currentLevel?.getEntityByID(account.id);
 }
 
 export function system(): System {
-	return currentLevel?.getNodeSystem(account.id);
+	return player().system;
+}
+
+export function action(...args: ActionArgs): Promise<boolean> {
+	return currentLevel.tryAction(account.id, ...args);
 }

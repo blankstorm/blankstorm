@@ -23,7 +23,7 @@ export class MapMarker {
 
 	get color(): string {
 		if (this.target instanceof System) {
-			return this.target.getNodeBySelector<Star>('.Star').color.toHexString();
+			return this.target.selectEntity<Star>('.Star').color.toHexString();
 		}
 		switch (this.target.nodeType) {
 			case 'Star':
@@ -90,7 +90,7 @@ export class MapMarker {
 			rotate: (!isSystem ? this.target.absoluteRotation.y : 0) + 'rad',
 			fill: this.color,
 		});
-		(isSystem ? this.target : this.target.system).id == system().id && this.mode == mode ? this.gui.show() : this.gui.hide();
+		(isSystem ? this.target : this.target.level).id == system().id && this.mode == mode ? this.gui.show() : this.gui.hide();
 	}
 }
 
@@ -137,15 +137,15 @@ export function update(): void {
 		<span>${system().connections.length} hyperspace connection(s)</span>
 	`);
 	$('#map .mode').text(modeNames[mode]);
-	for (const [id, node] of system().nodes) {
-		if (markers.has(id) || !supportsMarkerType(node.nodeType)) {
+	for (const entity of system().entities) {
+		if (markers.has(entity.id) || !supportsMarkerType(entity.nodeType)) {
 			continue;
 		}
-		if (node instanceof Waypoint && node.builtin) {
+		if (entity instanceof Waypoint && entity.builtin) {
 			continue;
 		}
-		const marker = new MapMarker(node);
-		markers.set(id, marker);
+		const marker = new MapMarker(entity);
+		markers.set(entity.id, marker);
 	}
 	for (const [id, system] of currentLevel.systems) {
 		if (markers.has(id)) {
