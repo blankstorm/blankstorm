@@ -21,10 +21,9 @@
 		"url": "git+https://github.com/blankstorm/blankstorm.git"
 	},
 	"keywords": [
-		"blankstorm",
-		"dr-vortex"
+		"blankstorm"
 	],
-	"author": "Dr. Vortex",
+	"author": "James. P <jp@drvortex.dev> (https://drvortex.dev)",
 	"license": "See license.md",
 	"bugs": {
 		"url": "https://github.com/blankstorm/blankstorm/issues"
