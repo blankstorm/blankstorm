@@ -3,7 +3,7 @@ import { Animation } from '@babylonjs/core/Animations/animation';
 import type { Scene } from '@babylonjs/core/scene';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Material } from '@babylonjs/core/Materials/material';
-import { random, wait } from '../../core/utils';
+import { randomCords, randomFloat, randomHex, randomInt, wait } from '../../core/utils';
 import { ModelRenderer } from '../models';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 import type { SerializedHardpoint } from '../../core/entities/hardpoint';
@@ -54,13 +54,13 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Seriali
 	static projectiles: Map<string, HardpointProjectileHandler> = new Map(
 		Object.entries({
 			async laser(target, { material, speed, id: modelID }) {
-				await wait(random.int(4, 40));
-				const laser = new ModelRenderer(random.hex(32), this.getScene());
+				await wait(randomInt(4, 40));
+				const laser = new ModelRenderer(randomHex(32), this.getScene());
 				await laser.createInstance(modelID);
 				const bounding = this.getHierarchyBoundingVectors(),
-					targetOffset = random.float(0, bounding.max.subtract(bounding.min).length()),
+					targetOffset = randomFloat(0, bounding.max.subtract(bounding.min).length()),
 					startPos = this.getAbsolutePosition(),
-					endPos = target.getAbsolutePosition().add(random.cords(targetOffset)),
+					endPos = target.getAbsolutePosition().add(randomCords(targetOffset)),
 					frameFactor = Vector3.Distance(startPos, endPos) / speed;
 				this.projectiles.push(laser);
 				for (const child of laser.getChildMeshes()) {

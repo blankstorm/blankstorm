@@ -50,36 +50,45 @@ export function isJSON(str: string) {
 		return false;
 	}
 }
-export const random = {
-	float: (min = 0, max = 1) => Math.random() * (max - min) + min,
-	hex: (length = 1) => {
-		let s = '';
-		for (let i = 0; i < length; i++) {
-			s += Math.floor(Math.random() * 16).toString(16);
-		}
-		return s;
-	},
-	bool() {
-		return !!Math.round(Math.random());
-	},
-	bin: (length = 1) => {
-		let b = '';
-		for (let i = 0; i < length; i++) {
-			b += Math.round(Math.random());
-		}
-		return b;
-	},
-	int: (min = 0, max = 1) => Math.round(Math.random() * (max - min) + min),
-	cords: (dis = 1, y0?: boolean) => {
-		const angle = Math.random() * Math.PI * 2,
-			angle2 = Math.random() * Math.PI * 2;
 
-		const x = dis * Math.cos(angle),
-			y = y0 ? 0 : dis * Math.sin(angle) * Math.cos(angle2),
-			z = dis * Math.sin(angle) * (y0 ? 1 : Math.sin(angle2));
-		return new Vector3(x, y, z);
-	},
-};
+export function randomFloat(min = 0, max = 1): number {
+	return Math.random() * (max - min) + min;
+}
+
+export function randomHex(length = 1): string {
+	let s = '';
+	for (let i = 0; i < length; i++) {
+		s += Math.floor(Math.random() * 16).toString(16);
+	}
+	return s;
+}
+
+export function randomBoolean(): boolean {
+	return !!Math.round(Math.random());
+}
+
+export function randomBinaryString(length = 1): string {
+	let b = '';
+	for (let i = 0; i < length; i++) {
+		b += Math.round(Math.random());
+	}
+	return b;
+}
+
+export function randomInt(min = 0, max = 1): number {
+	return Math.round(Math.random() * (max - min) + min);
+}
+
+export function randomCords(dis = 1, y0?: boolean): Vector3 {
+	const angle = Math.random() * Math.PI * 2,
+		angle2 = Math.random() * Math.PI * 2;
+
+	const x = dis * Math.cos(angle),
+		y = y0 ? 0 : dis * Math.sin(angle) * Math.cos(angle2),
+		z = dis * Math.sin(angle) * (y0 ? 1 : Math.sin(angle2));
+	return new Vector3(x, y, z);
+}
+
 export function wait(time: number) {
 	return new Promise(resolve => setTimeout(resolve, time));
 }

@@ -1,20 +1,18 @@
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
-
-import { random } from '../utils';
-import { Entity } from './entity';
-import type { SerializedEntity } from './entity';
-import { Hardpoint } from './hardpoint';
-import type { SerializedHardpoint } from './hardpoint';
-import { Storage } from '../storage';
-import type { System } from '../system';
-import { genericShips } from '../generic/ships';
-import type { ShipType, GenericShip, HardpointInfo } from '../generic/ships';
-
-import type { CelestialBody } from './body';
-import type { Player } from './player';
+import { randomCords, randomInt } from '..';
 import type { HardpointType } from '../generic/hardpoints';
 import { ItemID } from '../generic/items';
+import type { GenericShip, HardpointInfo, ShipType } from '../generic/ships';
+import { genericShips } from '../generic/ships';
 import type { Level } from '../level';
+import { Storage } from '../storage';
+import type { System } from '../system';
+import type { CelestialBody } from './body';
+import type { SerializedEntity } from './entity';
+import { Entity } from './entity';
+import type { SerializedHardpoint } from './hardpoint';
+import { Hardpoint } from './hardpoint';
+import type { Player } from './player';
 
 export interface SerializedShip extends SerializedEntity {
 	type: ShipType;
@@ -42,8 +40,8 @@ export class Ship extends Entity {
 		if (type && !Ship.generic[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
 		super(id, level);
 
-		const distance = Math.log(random.int(0, power || 1) ** 3 + 1);
-		this.position.addInPlace(random.cords(distance, true));
+		const distance = Math.log(randomInt(0, power || 1) ** 3 + 1);
+		this.position.addInPlace(randomCords(distance, true));
 
 		this.type = type;
 		this.storage = new Storage(this.generic.storage);

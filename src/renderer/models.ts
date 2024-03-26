@@ -1,20 +1,18 @@
-import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Animation } from '@babylonjs/core/Animations/animation';
-import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
-import type { Scene } from '@babylonjs/core/scene';
-import type { AssetContainer } from '@babylonjs/core/assetContainer';
+import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { AssetContainer } from '@babylonjs/core/assetContainer';
+import type { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/loaders/glTF/index';
-
-import config from './config';
 import * as settings from '../client/settings';
-import { random } from '../core/utils';
 import type { SerializedEntity } from '../core/entities/entity';
+import { randomHex } from '../core/utils';
+import config from './config';
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
@@ -81,7 +79,7 @@ export class ModelRenderer extends TransformNode {
 		if (this.#pathGizmo) {
 			console.warn('Path gizmo was already drawn and not disposed');
 		} else if (settings.get('show_path_gizmos')) {
-			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + random.hex(16), { points: path }, this.getScene());
+			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + randomHex(16), { points: path }, this.getScene());
 			this.#pathGizmo.color = Color3.Green();
 		}
 

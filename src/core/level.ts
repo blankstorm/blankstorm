@@ -18,7 +18,7 @@ import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
 import { Berth } from './stations/berth';
-import { random } from './utils';
+import { randomHex } from './utils';
 
 export interface MoveInfo<T> {
 	id: string;
@@ -69,7 +69,7 @@ export interface LevelEvents {
 }
 
 export class Level<S extends System = System> extends EventEmitter<LevelEvents> {
-	public id: string = random.hex(16);
+	public id: string = randomHex(16);
 	public name: string = '';
 	public version = version;
 	public date = new Date();

@@ -1,7 +1,7 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
 
-import { FolderMap, random, isJSON } from '../core/utils';
+import { FolderMap, isJSON, randomCords } from '../core/utils';
 import { Ship } from '../core/entities/ship';
 import { Player } from '../core/entities/player';
 
@@ -72,7 +72,7 @@ export async function createDefault(name: string): Promise<Level> {
 	fleet[0].position.z += 4;
 	const player = new Player(account.id, level, { fleet });
 	player.name = account.username;
-	player.position = new Vector3(0, 0, -1000).add(random.cords(50, true));
+	player.position = new Vector3(0, 0, -1000).add(randomCords(50, true));
 	player.rotation = Vector3.Zero();
 	level.rootSystem = system;
 	return level;

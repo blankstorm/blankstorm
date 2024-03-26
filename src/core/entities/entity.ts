@@ -1,9 +1,9 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { random, resolveConstructors } from '../utils';
-import type { Level } from '../level';
-import type { System } from '../system';
 import EventEmitter from 'eventemitter3';
+import type { Level } from '../level';
 import { findPath } from '../path';
+import type { System } from '../system';
+import { randomHex, resolveConstructors } from '../utils';
 
 export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 
@@ -88,7 +88,7 @@ export class Entity extends EventEmitter {
 	}
 
 	public constructor(id: string, level: Level, constructorOptions?: object) {
-		id ||= random.hex(32);
+		id ||= randomHex(32);
 		super();
 		if (constructorOptions) {
 			console.warn(`constructorOptions should not be passed to Node constructor`);

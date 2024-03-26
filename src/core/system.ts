@@ -13,7 +13,7 @@ import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import { config } from './metadata';
 import { Berth } from './stations/berth';
-import { getRandomIntWithRecursiveProbability, greek, random, range } from './utils';
+import { getRandomIntWithRecursiveProbability, greek, randomBoolean, randomCords, randomFloat, randomHex, randomInt, range } from './utils';
 
 export type SerializedSystemConnection = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
 
@@ -54,7 +54,7 @@ export class System extends EventEmitter<{
 
 	constructor(public id: string, public level: Level) {
 		super();
-		this.id ||= random.hex(32);
+		this.id ||= randomHex(32);
 		this.level.systems.set(this.id, this);
 	}
 
@@ -159,21 +159,21 @@ export class System extends EventEmitter<{
 		system.name = name;
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		system.connections = new Array(connectionCount);
-		const star = new Star(null, level, { radius: random.int(options.stars.radius_min, options.stars.radius_max) });
+		const star = new Star(null, level, { radius: randomInt(options.stars.radius_min, options.stars.radius_max) });
 		star.name = name;
 		star.system = system;
 		star.position = Vector3.Zero();
 		star.color = Color3.FromArray([
-			Math.random() ** 3 / 2 + random.float(options.stars.color_min[0], options.stars.color_max[0]),
-			Math.random() ** 3 / 2 + random.float(options.stars.color_min[1], options.stars.color_max[1]),
-			Math.random() ** 3 / 2 + random.float(options.stars.color_min[2], options.stars.color_max[2]),
+			Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[0], options.stars.color_max[0]),
+			Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[1], options.stars.color_max[1]),
+			Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[2], options.stars.color_max[2]),
 		]);
-		const usePrefix = random.bool(),
-			planetCount = random.int(options.planets.min, options.planets.max),
-			names = random.bool() ? greek.slice(0, planetCount) : range(1, planetCount + 1),
+		const usePrefix = randomBoolean(),
+			planetCount = randomInt(options.planets.min, options.planets.max),
+			names = randomBoolean() ? greek.slice(0, planetCount) : range(1, planetCount + 1),
 			planets = [];
 		for (let i = 0; i < names.length; i++) {
-			const radius = random.int(options.planets.radius_min, options.planets.radius_max);
+			const radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			const planet = new Planet(null, level, {
 				radius,
 				fleet: Ship.GenerateFleetFromPower((options.difficulty * (i + 1)) ** 2),
@@ -182,8 +182,8 @@ export class System extends EventEmitter<{
 
 			planet.name = usePrefix ? names[i] + ' ' + name : name + ' ' + names[i];
 			planet.system = system;
-			planet.position = random.cords(random.int((star.radius + radius) * 1.5, options.planets.distance_max), true);
-			planet.biome = planetBiomes[random.int(0, 5)];
+			planet.position = randomCords(randomInt((star.radius + radius) * 1.5, options.planets.distance_max), true);
+			planet.biome = planetBiomes[randomInt(0, 5)];
 
 			planets[i] = planet;
 		}

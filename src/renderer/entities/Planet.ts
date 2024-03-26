@@ -1,22 +1,20 @@
-import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
-import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { ProceduralTexture } from '@babylonjs/core/Materials/Textures/Procedurals/proceduralTexture';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
-
-import config from '../config';
-import { random } from '../../core/utils';
-import type { SerializedPlanet } from '../../core';
-import type { HardpointProjectileHandlerOptions } from './Hardpoint';
-import { CelestialBodyRenderer } from './CelestialBody';
+import { randomHex, type SerializedPlanet } from '../../core';
 import { planetBiomes } from '../../core/generic/planets';
-import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
-import * as planetShader from '../shaders/planet';
+import config from '../config';
 import { cloudFragmentShader } from '../shaders/cloud';
 import { noiseFragmentShader } from '../shaders/noise';
+import * as planetShader from '../shaders/planet';
+import { CelestialBodyRenderer } from './CelestialBody';
+import type { HardpointProjectileHandlerOptions } from './Hardpoint';
+import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
@@ -42,7 +40,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	noiseTexture: ProceduralTexture;
 	cloudTexture: ProceduralTexture;
 	constructor(options: GenericPlanetRendererMaterial, scene: Scene) {
-		const id = random.hex(8);
+		const id = randomHex(8);
 		super('PlanetMaterial.' + id, scene, planetShader, {
 			attributes: ['position', 'normal', 'uv'],
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],

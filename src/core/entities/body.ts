@@ -2,10 +2,10 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Level } from '../level';
 import { Storage } from '../storage';
 import { ItemID } from '../generic/items';
-import { random } from '../utils';
 import type { SerializedEntity } from './entity';
 import { Entity } from './entity';
 import { Ship } from './ship';
+import { randomCords, randomInt } from '../utils';
 
 export interface SerializedCelestialBody extends SerializedEntity {
 	fleetPosition: number[];
@@ -25,7 +25,7 @@ export class CelestialBody extends Entity {
 		return this.fleet.reduce((total, ship) => total + ship.generic.power, 0) ?? 0;
 	}
 
-	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleetPosition = random.cords(random.int(radius + 5, radius * 1.2), true), fleet = [] }) {
+	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleetPosition = randomCords(randomInt(radius + 5, radius * 1.2), true), fleet = [] }) {
 		super(id, level);
 		this.radius = radius;
 		this.rewards = Storage.FromJSON({ items: rewards, max: 1e10 });
