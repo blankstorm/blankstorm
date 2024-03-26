@@ -196,7 +196,7 @@ export async function load(serializedNodes: SerializedEntity[]) {
 
 export async function update(levelData: SerializedLevel) {
 	if (!scene) {
-		throw new ReferenceError('Renderer not initalized');
+		throw logger.error(new ReferenceError('Renderer not initalized'));
 	}
 
 	const renderersToAdd: SerializedEntity[] = [];
@@ -229,11 +229,11 @@ export async function update(levelData: SerializedLevel) {
 
 export function getCamera() {
 	if (!scene) {
-		throw new ReferenceError('Renderer not initalized');
+		throw logger.error(new ReferenceError('Not initalized'));
 	}
 
 	if (!camera) {
-		throw new ReferenceError('Camera not initalized');
+		throw logger.error(new ReferenceError('Camera not initalized'));
 	}
 
 	return camera;
@@ -294,7 +294,7 @@ export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: st
 export async function startFollowingPath(entityID: string, path: IVector3Like[]) {
 	const renderer = entities.get(entityID);
 	if (!(renderer instanceof EntityRenderer)) {
-		throw new TypeError(`Node ${entityID} is not an entity`);
+		throw logger.error(new TypeError(`Node ${entityID} is not an entity`));
 	}
 	await renderer.followPath(path.map(({ x, y, z }) => new Vector3(x, y, z)));
 }
