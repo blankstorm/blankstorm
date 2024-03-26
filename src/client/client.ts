@@ -24,6 +24,7 @@ import { Level } from '../core/Level';
 import { waypoints } from './waypoints';
 import * as mods from './mods';
 import { execCommandString } from '../core/commands';
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 
 export interface ClientInit {
 	/**
@@ -503,7 +504,7 @@ export function load(level: Level): boolean {
 	level.on('player.death', async () => {
 		renderer.getCamera().reset();
 	});
-	level.on('entity.follow_path.start', async (entityID: string, path: number[][]) => {
+	level.on('entity.follow_path.start', async (entityID: string, path: IVector3Like[]) => {
 		renderer.startFollowingPath(entityID, path);
 	});
 	level.on('entity.death', async (node: SerializedNode) => {
