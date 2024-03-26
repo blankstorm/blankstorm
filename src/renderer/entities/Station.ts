@@ -4,7 +4,7 @@ import type { Scene } from '@babylonjs/core/scene';
 
 import { StationComponentRenderer } from './StationComponent';
 import type { SerializedStation } from '../../core';
-import { nodeMap, type Renderer, type RendererStatic } from './renderer';
+import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class StationRenderer extends TransformNode implements Renderer<SerializedStation> {
 	components: StationComponentRenderer[] = [];
@@ -25,4 +25,4 @@ export class StationRenderer extends TransformNode implements Renderer<Serialize
 	}
 }
 StationRenderer satisfies RendererStatic<StationRenderer>;
-nodeMap.set('Station', StationRenderer);
+entityRenderers.set('Station', StationRenderer);

@@ -27,7 +27,7 @@ import { PlanetRenderer, PlanetRendererMaterial } from './entities/Planet';
 import { PlayerRenderer } from './entities/Player';
 import { ShipRenderer } from './entities/Ship';
 import { StarRenderer } from './entities/Star';
-import { createAndUpdate, nodeMap, type Renderer } from './entities/renderer';
+import { createAndUpdate, entityRenderers, type Renderer } from './entities/renderer';
 import { logger } from './logger';
 
 export { logger };
@@ -157,7 +157,7 @@ export async function render() {
  */
 export async function clear() {
 	if (!scene) {
-		throw new ReferenceError('Renderer not initalized');
+		throw logger.error(new ReferenceError('Not initalized'));
 	}
 
 	for (const [id, entity] of entities) {
@@ -167,19 +167,21 @@ export async function clear() {
 
 	engine.resize();
 	cache = createEmptyCache();
+	logger.debug('Cleared');
 }
 
 export async function load(serializedNodes: SerializedEntity[]) {
 	if (!scene) {
-		throw new ReferenceError('Renderer not initalized');
+		throw logger.error(new ReferenceError('Not initalized'));
 	}
 
 	for (const data of serializedNodes) {
 		const type: string = data.nodeType;
-		if (!nodeMap.has(type)) {
-			throw new ReferenceError(`rendering for node type "${data.nodeType}" is not supported`);
+		if (!entityRenderers.has(type)) {
+			logger.warn(`rendering for node type "${data.nodeType}" is not supported`);
+			continue;
 		}
-		const entity: Renderer = await createAndUpdate(nodeMap.get(data.nodeType), data, scene);
+		const entity: Renderer = await createAndUpdate(entityRenderers.get(data.nodeType), data, scene);
 		if (['Player', 'Client'].includes(type)) {
 			/**
 			 * @todo change this

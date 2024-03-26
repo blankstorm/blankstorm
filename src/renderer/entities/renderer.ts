@@ -18,4 +18,4 @@ export async function createAndUpdate<R extends Renderer>(Renderer: RendererStat
 	return renderer;
 }
 
-export const nodeMap: Map<string, RendererStatic> = new Map();
+export const entityRenderers: Map<string, RendererStatic> = new Map();

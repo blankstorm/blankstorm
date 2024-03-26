@@ -6,7 +6,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import config from '../config';
 import type { SerializedStar } from '../../core';
 import { CelestialBodyRenderer } from './CelestialBody';
-import { nodeMap, type Renderer, type RendererStatic } from './renderer';
+import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class StarRenderer extends CelestialBodyRenderer implements Renderer<SerializedStar> {
 	light: PointLight;
@@ -32,4 +32,4 @@ export class StarRenderer extends CelestialBodyRenderer implements Renderer<Seri
 }
 
 StarRenderer satisfies RendererStatic<StarRenderer>;
-nodeMap.set('Star', StarRenderer);
+entityRenderers.set('Star', StarRenderer);
