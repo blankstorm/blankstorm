@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import type { ShipType } from '../../core/generic/ships';
 import { genericShips, shipTypes } from '../../core/generic/ships';
-import type { Berth } from '../../core/stations/Berth';
+import type { Berth } from '../../core/stations/berth';
 import * as locales from '../locales';
 import { action } from '../user';
 

@@ -14,7 +14,7 @@ import '@babylonjs/loaders/glTF/index';
 import config from './config';
 import * as settings from '../client/settings';
 import { random } from '../core/utils';
-import type { SerializedEntity } from '../core/entities/Entity';
+import type { SerializedEntity } from '../core/entities/entity';
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.

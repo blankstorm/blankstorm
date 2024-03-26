@@ -1,4 +1,4 @@
-import type { Player } from '../entities/Player';
+import type { Player } from '../entities/player';
 import { config } from '../metadata';
 import type { Producible } from './production';
 import { ItemID } from './items';

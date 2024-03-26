@@ -1,15 +1,15 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-import type { Level } from '../Level';
+import type { Level } from '../level';
 import type { GenericHardpoint, HardpointType } from '../generic/hardpoints';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { HardpointInfo, SerializedHardpointInfo } from '../generic/ships';
 import { resolveConstructors, wait, xpToLevel } from '../utils';
-import type { CelestialBody } from './CelestialBody';
-import type { SerializedEntity } from './Entity';
-import { Entity } from './Entity';
-import type { Player } from './Player';
-import type { Ship } from './Ship';
+import type { CelestialBody } from './body';
+import type { SerializedEntity } from './entity';
+import { Entity } from './entity';
+import type { Player } from './player';
+import type { Ship } from './ship';
 
 export interface SerializedHardpoint extends SerializedEntity {
 	info: SerializedHardpointInfo;

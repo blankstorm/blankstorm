@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { random, resolveConstructors } from '../utils';
-import type { Level } from '../Level';
-import type { System } from '../System';
+import type { Level } from '../level';
+import type { System } from '../system';
 import EventEmitter from 'eventemitter3';
 import { findPath } from '../path';
 

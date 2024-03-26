@@ -1,11 +1,11 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Level } from '../Level';
-import { Storage } from '../Storage';
+import type { Level } from '../level';
+import { Storage } from '../storage';
 import { ItemID } from '../generic/items';
 import { random } from '../utils';
-import type { SerializedEntity } from './Entity';
-import { Entity } from './Entity';
-import { Ship } from './Ship';
+import type { SerializedEntity } from './entity';
+import { Entity } from './entity';
+import { Ship } from './ship';
 
 export interface SerializedCelestialBody extends SerializedEntity {
 	fleetPosition: number[];

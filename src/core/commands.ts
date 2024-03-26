@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Entity } from './entities/Entity';
-import type { Player } from './entities/Player';
-import { Ship } from './entities/Ship';
+import type { Entity } from './entities/entity';
+import type { Player } from './entities/player';
+import { Ship } from './entities/ship';
 import { game_url } from './metadata';
 import { isJSON } from './utils';
 

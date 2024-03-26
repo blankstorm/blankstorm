@@ -1,7 +1,7 @@
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import type { Level } from '../Level';
-import type { SerializedCelestialBody } from './CelestialBody';
-import { CelestialBody } from './CelestialBody';
+import type { Level } from '../level';
+import type { SerializedCelestialBody } from './body';
+import { CelestialBody } from './body';
 
 export interface SerializedStar extends SerializedCelestialBody {
 	color: number[];

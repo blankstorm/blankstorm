@@ -2,8 +2,8 @@ import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
 
 import { FolderMap, random, isJSON } from '../core/utils';
-import { Ship } from '../core/entities/Ship';
-import { Player } from '../core/entities/Player';
+import { Ship } from '../core/entities/ship';
+import { Player } from '../core/entities/player';
 
 const fs = $app.require('fs');
 import { SaveListItem } from './ui/save';
@@ -11,7 +11,7 @@ import type { ShipType } from '../core/generic/ships';
 import { path } from './config';
 import * as chat from './chat';
 import { currentLevel } from './client';
-import { Level, SerializedLevel } from '../core/Level';
+import { Level, SerializedLevel } from '../core/level';
 import { account } from './user';
 
 export class Save {

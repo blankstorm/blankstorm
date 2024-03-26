@@ -1,15 +1,15 @@
 import { config } from '../../core/metadata';
-import { Entity } from '../../core/entities/Entity';
-import { Planet } from '../../core/entities/Planet';
-import { Ship } from '../../core/entities/Ship';
-import { Star } from '../../core/entities/Star';
+import { Entity } from '../../core/entities/entity';
+import { Planet } from '../../core/entities/planet';
+import { Ship } from '../../core/entities/ship';
+import { Star } from '../../core/entities/star';
 import { toDegrees } from '../../core/utils';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
 import { Waypoint } from '../waypoints';
 import * as settings from '../settings';
 import $ from 'jquery';
-import { System } from '../../core/System';
+import { System } from '../../core/system';
 import { currentLevel } from '../client';
 
 export type MapMode = 'in-system' | 'inter-system';

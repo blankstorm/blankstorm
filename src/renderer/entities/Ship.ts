@@ -1,7 +1,7 @@
 import { HardpointRenderer } from './Hardpoint';
 import { ModelRenderer } from '../models';
 import { ShipType, genericShips } from '../../core/generic/ships';
-import type { SerializedShip } from '../../core/entities/Ship';
+import type { SerializedShip } from '../../core/entities/ship';
 import { createAndUpdate, entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class ShipRenderer extends ModelRenderer implements Renderer<SerializedShip> {

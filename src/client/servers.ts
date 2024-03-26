@@ -9,7 +9,7 @@ import { config, versions } from '../core/metadata';
 import type { PingInfo } from '../server/Server';
 import { sendMessage } from './chat';
 import { path } from './config';
-import { Level, type LevelEvents } from '../core/Level';
+import { Level, type LevelEvents } from '../core/level';
 import { currentLevel, unload, load } from './client';
 import type EventEmitter from 'eventemitter3';
 

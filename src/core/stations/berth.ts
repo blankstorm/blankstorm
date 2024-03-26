@@ -1,9 +1,9 @@
-import type { Level } from '../Level';
+import type { Level } from '../level';
 import { Producer } from '../generic/production';
 import type { ShipType } from '../generic/ships';
 import { genericShips, shipTypes } from '../generic/ships';
-import type { SerializedStationComponent, StationComponentOptions } from './StationComponent';
-import { StationComponent } from './StationComponent';
+import type { SerializedStationComponent, StationComponentOptions } from './station_component';
+import { StationComponent } from './station_component';
 
 export interface SerializedBerth extends SerializedStationComponent {
 	productionID: ShipType;

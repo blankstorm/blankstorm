@@ -6,7 +6,7 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import { random, wait } from '../../core/utils';
 import { ModelRenderer } from '../models';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
-import type { SerializedHardpoint } from '../../core/entities/Hardpoint';
+import type { SerializedHardpoint } from '../../core/entities/hardpoint';
 import type { GenericProjectile } from '../../core/generic/hardpoints';
 
 export interface CustomHardpointProjectileMaterial {

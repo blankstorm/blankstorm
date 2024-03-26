@@ -9,8 +9,8 @@ import { getAccount } from '@blankstorm/api';
 import { version, config as coreConfig } from '../core/metadata';
 import type { VersionID } from '../core/metadata';
 import { execCommandString } from './commands';
-import { Level } from '../core/Level';
-import type { SerializedLevel } from '../core/Level';
+import { Level } from '../core/level';
+import type { SerializedLevel } from '../core/level';
 
 import { Logger } from 'logzen';
 import { Client, ClientStore } from './Client';

@@ -13,9 +13,9 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import { Scene } from '@babylonjs/core/scene';
-import type { SerializedLevel } from '../core/Level';
-import type { MoveInfo } from '../core/System';
-import type { SerializedEntity } from '../core/entities/Entity';
+import type { SerializedLevel } from '../core/level';
+import type { MoveInfo } from '../core/system';
+import type { SerializedEntity } from '../core/entities/entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import { version } from '../core/metadata';
 import { Camera } from './camera';

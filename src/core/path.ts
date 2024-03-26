@@ -1,6 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { System } from './System';
-import type { CelestialBody } from './entities/CelestialBody';
+import type { System } from './system';
+import type { CelestialBody } from './entities/body';
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 
 function roundVector({ x, y, z }: IVector3Like) {

@@ -1,7 +1,7 @@
-import type { Level } from '../Level';
+import type { Level } from '../level';
 import type { PlanetBiome } from '../generic/planets';
-import type { SerializedCelestialBody } from './CelestialBody';
-import { CelestialBody } from './CelestialBody';
+import type { SerializedCelestialBody } from './body';
+import { CelestialBody } from './body';
 
 export interface SerializedPlanet extends SerializedCelestialBody {
 	biome: PlanetBiome;

@@ -1,8 +1,8 @@
 import type { Account } from '@blankstorm/api';
-import type { Player } from '../core/entities/Player';
+import type { Player } from '../core/entities/player';
 import { currentLevel } from './client';
 import { sendMessage } from './chat';
-import type { System } from '../core/System';
+import type { System } from '../core/system';
 import type { ActionArgs } from '../core';
 
 export const account: Account = {

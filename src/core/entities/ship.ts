@@ -1,20 +1,20 @@
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 
 import { random } from '../utils';
-import { Entity } from './Entity';
-import type { SerializedEntity } from './Entity';
-import { Hardpoint } from './Hardpoint';
-import type { SerializedHardpoint } from './Hardpoint';
-import { Storage } from '../Storage';
-import type { System } from '../System';
+import { Entity } from './entity';
+import type { SerializedEntity } from './entity';
+import { Hardpoint } from './hardpoint';
+import type { SerializedHardpoint } from './hardpoint';
+import { Storage } from '../storage';
+import type { System } from '../system';
 import { genericShips } from '../generic/ships';
 import type { ShipType, GenericShip, HardpointInfo } from '../generic/ships';
 
-import type { CelestialBody } from './CelestialBody';
-import type { Player } from './Player';
+import type { CelestialBody } from './body';
+import type { Player } from './player';
 import type { HardpointType } from '../generic/hardpoints';
 import { ItemID } from '../generic/items';
-import type { Level } from '../Level';
+import type { Level } from '../level';
 
 export interface SerializedShip extends SerializedEntity {
 	type: ShipType;

@@ -1,13 +1,13 @@
-import type { Level } from '../Level';
+import type { Level } from '../level';
 import type { ItemID } from '../generic/items';
 import { items as Items } from '../generic/items';
 import type { ResearchID } from '../generic/research';
 import { research } from '../generic/research';
 import type { ShipType } from '../generic/ships';
-import type { SerializedEntity } from './Entity';
-import { Entity } from './Entity';
-import type { SerializedShip } from './Ship';
-import { Ship } from './Ship';
+import type { SerializedEntity } from './entity';
+import { Entity } from './entity';
+import type { SerializedShip } from './ship';
+import { Ship } from './ship';
 
 export interface SerializedPlayer extends SerializedEntity {
 	research: Record<ResearchID, number>;

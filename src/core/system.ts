@@ -1,18 +1,18 @@
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
-import type { Level } from './Level';
-import { type Entity } from './entities/Entity';
-import { Planet } from './entities/Planet';
-import { Ship } from './entities/Ship';
-import { Star } from './entities/Star';
+import type { Level } from './level';
+import { type Entity } from './entities/entity';
+import { Planet } from './entities/planet';
+import { Ship } from './entities/ship';
+import { Star } from './entities/star';
 import type { Item } from './generic/items';
 import { planetBiomes } from './generic/planets';
 import type { Research } from './generic/research';
 import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import { config } from './metadata';
-import { Berth } from './stations/Berth';
+import { Berth } from './stations/berth';
 import { getRandomIntWithRecursiveProbability, greek, random, range } from './utils';
 
 export type SerializedSystemConnection = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
