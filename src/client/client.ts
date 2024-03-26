@@ -346,8 +346,9 @@ async function _init(): Promise<void> {
 
 	_initLog('Initializing renderer...');
 	try {
-		await renderer.init(canvas[0], msg => {
-			_initLog(`Initalizing renderer: ${msg}`);
+		await renderer.init(canvas[0], message => {
+			renderer.logger.log('Initializing renderer: ' + message);
+			$('#loading_cover p').text('Initializing ' + message);
 		});
 	} catch (err) {
 		throw new Error('Failed to initalize renderer: ' + err, { cause: err.stack });

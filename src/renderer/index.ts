@@ -28,6 +28,9 @@ import { PlayerRenderer } from './nodes/Player';
 import { ShipRenderer } from './nodes/Ship';
 import { StarRenderer } from './nodes/Star';
 import { createAndUpdate, nodeMap, type Renderer } from './nodes/renderer';
+import { logger } from './logger';
+
+export { logger };
 
 function createEmptyCache(): SerializedLevel {
 	return {
@@ -59,22 +62,17 @@ function onCanvasResive() {
 	engine.resize();
 }
 
-export async function init(
-	canvas: HTMLCanvasElement,
-	messageHandler: (msg: string) => unknown = (msg: string) => {
-		console.debug('init renderer: ' + msg);
-	}
-) {
-	await messageHandler('engine');
+export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: string) => void) {
+	messageHandler('engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 	engine.resize();
 
 	addEventListener('resize', onCanvasResive);
 
-	await messageHandler('scene');
+	messageHandler('scene');
 	scene = new Scene(engine);
 
-	await messageHandler('camera');
+	messageHandler('camera');
 	camera = new Camera(scene);
 
 	scene.registerBeforeRender(() => {
@@ -90,7 +88,7 @@ export async function init(
 		}
 	});
 
-	await messageHandler('skybox');
+	messageHandler('skybox');
 	skybox = MeshBuilder.CreateBox('skybox', { size: config.skybox_size }, scene);
 	const skyboxMaterial = new StandardMaterial('skybox.mat', scene);
 	skyboxMaterial.backFaceCulling = false;
@@ -101,25 +99,25 @@ export async function init(
 	skybox.infiniteDistance = true;
 	skybox.isPickable = false;
 
-	await messageHandler('glow layer');
+	messageHandler('glow layer');
 	gl = new GlowLayer('glowLayer', scene);
 	gl.intensity = 0.9;
 
-	await messageHandler('highlight layer');
+	messageHandler('highlight layer');
 	hl = new HighlightLayer('highlight', scene);
 
 	xzPlane = MeshBuilder.CreatePlane('xzPlane', { size: config.plane_size }, scene);
 	xzPlane.rotation.x = Math.PI / 2;
 	xzPlane.setEnabled(false);
 
-	await messageHandler('reflection probe');
+	messageHandler('reflection probe');
 	probe = new ReflectionProbe('probe', 256, scene);
 
-	await messageHandler('models');
+	messageHandler('models');
 
 	const models = ['apis', 'cillus', 'horizon', 'hurricane', 'inca', 'laser', 'laser_cannon_double', 'mosquito', 'pilsung', 'wind'];
 	for (const id of models) {
-		await messageHandler(`models (${id}) (${models.indexOf(id) + 1}/${models.length})`);
+		messageHandler(`models (${id}) (${models.indexOf(id) + 1}/${models.length})`);
 		await initModels(id, scene);
 	}
 }
@@ -197,7 +195,7 @@ export async function update(levelData: SerializedLevel) {
 	const renderersToAdd: SerializedEntity[] = [];
 
 	if (levelData.id != cache.id && cache.id) {
-		console.warn(`Updating the renderer with a different system (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);
+		logger.warn(`Updating the renderer with a different system (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);
 	}
 
 	for (const entity of [...cache.entities, ...levelData.entities]) {

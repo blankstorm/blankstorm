@@ -151,5 +151,5 @@ export function $svg<TElement extends SVGElement>(tag: string): JQuery<TElement>
 	return $<TElement>(<TElement>element);
 }
 
-export const logger = new Logger();
+export const logger = new Logger({ prefix: 'client' });
 logger.on('send', $app.log);

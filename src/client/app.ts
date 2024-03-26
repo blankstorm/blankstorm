@@ -47,7 +47,7 @@ if (options['log-level']) {
 logger.log('Initializing...');
 
 ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options['bs-debug'] }));
-ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, prefix: 'client', computed: null }));
+ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, computed: null }));
 
 nativeTheme.themeSource = 'dark';
 
