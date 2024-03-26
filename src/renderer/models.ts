@@ -91,16 +91,15 @@ export class ModelRenderer extends TransformNode {
 		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.subtract((<TransformNode>this.parent).absolutePosition) })));
 		rotateAnimation.setKeys(
 			path.flatMap((node, i) => {
-				if (i != 0) {
-					const value = Vector3.PitchYawRollToMoveBetweenPoints(path[i - 1], node);
-					value.x -= Math.PI / 2;
-					return [
-						{ frame: i * 60 * this.generic.agility - 30, value },
-						{ frame: i * 60 * this.generic.agility - 10, value },
-					];
-				} else {
+				if (i == 0) {
 					return [{ frame: 0, value: this.rotation }];
 				}
+				const value = Vector3.PitchYawRollToMoveBetweenPoints(path[i - 1], node);
+				value.x -= Math.PI / 2;
+				return [
+					{ frame: i * 60 * this.generic.agility - 30, value },
+					{ frame: i * 60 * this.generic.agility - 10, value },
+				];
 			})
 		);
 		this.animations.push(animation);
