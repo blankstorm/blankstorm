@@ -14,7 +14,7 @@ import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import { Scene } from '@babylonjs/core/scene';
 import type { SerializedLevel } from '../core/Level';
-import type { MoveInfo, SerializedSystem } from '../core/System';
+import type { MoveInfo } from '../core/System';
 import type { SerializedEntity } from '../core/entities/Entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import { version } from '../core/metadata';
@@ -28,16 +28,6 @@ import { PlayerRenderer } from './nodes/Player';
 import { ShipRenderer } from './nodes/Ship';
 import { StarRenderer } from './nodes/Star';
 import { createAndUpdate, nodeMap, type Renderer } from './nodes/renderer';
-
-function _createEmptyCache(): SerializedSystem {
-	return {
-		id: null,
-		difficulty: null,
-		name: null,
-		connections: [],
-		position: [],
-	};
-}
 
 function createEmptyCache(): SerializedLevel {
 	return {
