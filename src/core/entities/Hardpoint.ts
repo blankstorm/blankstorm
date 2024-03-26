@@ -62,21 +62,21 @@ export class Hardpoint extends Entity {
 		// this is so we don't have a circular dependency by importing Ship
 		const targetConstructors = resolveConstructors(target);
 
-		this.level.emit('projectile.fire', this.id, target.id, this.generic.projectile);
+		this.level.emit('projectile_fire', this.id, target.id, this.generic.projectile);
 		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
 		this.reload = this.generic.reload;
 		await wait(time);
 		const targetShip = (targetConstructors.includes('Ship') ? target : target.owner) as Ship;
 		targetShip.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
 		if (targetShip.hp <= 0) {
-			this.level.emit('entity.death', targetShip.toJSON());
+			this.level.emit('entity_death', targetShip.toJSON());
 			let owner;
 			switch (this.owner.owner.constructor.name) {
 				case 'Player':
 					owner = this.owner.owner as Player;
 					owner.addItems(targetShip.generic.recipe);
 					if (Math.floor(xpToLevel(owner.xp + targetShip.generic.xp)) > Math.floor(xpToLevel(owner.xp))) {
-						this.level.emit('player.levelup', owner.toJSON());
+						this.level.emit('player_levelup', owner.toJSON());
 						owner.xpPoints++;
 					}
 					owner.xp += targetShip.generic.xp;

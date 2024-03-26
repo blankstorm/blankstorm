@@ -1,12 +1,17 @@
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
 import type { SerializedSystem } from './System';
 import { System } from './System';
+import type { SerializedCelestialBody } from './entities/CelestialBody';
 import type { Entity, SerializedEntity } from './entities/Entity';
+import { Planet, type SerializedPlanet } from './entities/Planet';
 import { Player, type SerializedPlayer } from './entities/Player';
 import { Ship, type SerializedShip } from './entities/Ship';
-import type { Item } from './generic/items';
+import { Star, type SerializedStar } from './entities/Star';
+import type { GenericProjectile } from './generic/hardpoints';
+import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
 import type { GenericShip, ShipType } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
@@ -14,8 +19,6 @@ import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
 import { Berth } from './stations/Berth';
 import { random } from './utils';
-import { Planet, type SerializedPlanet } from './entities/Planet';
-import { Star, type SerializedStar } from './entities/Star';
 
 export interface MoveInfo<T> {
 	id: string;
@@ -47,7 +50,25 @@ export interface SerializedLevel<S extends SerializedSystem = SerializedSystem> 
 	entities: SerializedEntity[];
 }
 
-export class Level<S extends System = System> extends EventEmitter {
+export interface LevelEvents {
+	body_created: [SerializedCelestialBody];
+	body_removed: [SerializedCelestialBody];
+	entity_added: [SerializedEntity];
+	entity_removed: [SerializedEntity];
+	entity_death: [SerializedEntity];
+	entity_path_start: [string, IVector3Like[]];
+	entity_created: [SerializedEntity];
+	player_created: [SerializedPlayer];
+	player_levelup: [SerializedPlayer];
+	player_items_change: [SerializedPlayer, Record<ItemID, number>];
+	player_removed: [SerializedPlayer];
+	player_reset: [SerializedPlayer];
+	projectile_fire: [string, string, GenericProjectile];
+	ship_created: [SerializedShip];
+	tick: [];
+}
+
+export class Level<S extends System = System> extends EventEmitter<LevelEvents> {
 	public id: string = random.hex(16);
 	public name: string = '';
 	public version = version;
@@ -190,7 +211,7 @@ export class Level<S extends System = System> extends EventEmitter {
 
 	public tick() {
 		this.sampleTick();
-		this.emit('level.tick');
+		this.emit('tick');
 
 		for (const entity of this.entities) {
 			if (Math.abs(entity.rotation.y) > Math.PI) {
@@ -203,7 +224,7 @@ export class Level<S extends System = System> extends EventEmitter {
 			if (entity instanceof Ship) {
 				if (entity.hp <= 0) {
 					entity.remove();
-					this.emit('entity.death', entity.toJSON());
+					this.emit('entity_death', entity.toJSON());
 					continue;
 				}
 				for (const hardpoint of entity.hardpoints) {
@@ -252,7 +273,7 @@ export class Level<S extends System = System> extends EventEmitter {
 					ship.position = entity.absolutePosition;
 					ship.owner = entity.station.owner;
 					entity.productionID = null;
-					this.emit('ship.created', entity.toJSON(), { ship });
+					this.emit('ship_created', ship.toJSON());
 				}
 			}
 		}

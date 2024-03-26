@@ -1,6 +1,5 @@
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import EventEmitter from 'eventemitter3';
 import type { Level } from './Level';
 import { type Entity } from './entities/Entity';
@@ -44,11 +43,12 @@ export interface ActionData {
 
 export type SystemConnection = System | Vector2;
 
-export class System extends EventEmitter {
+export class System extends EventEmitter<{
+	null;
+}> {
 	public name = '';
 
 	public difficulty = 1;
-	protected _performanceMonitor = new PerformanceMonitor(60);
 	public position: Vector2;
 	public connections: SystemConnection[] = [];
 
@@ -104,20 +104,6 @@ export class System extends EventEmitter {
 
 	public get selected() {
 		return [...this.entities].filter(e => e.selected);
-	}
-
-	//events and ticking
-	get tps(): number {
-		return this._performanceMonitor.averageFPS;
-	}
-
-	sampleTick() {
-		this._performanceMonitor.sampleFrame();
-	}
-
-	tick() {
-		this.sampleTick();
-		this.emit('system.tick', this.toJSON());
 	}
 
 	toJSON(): SerializedSystem {

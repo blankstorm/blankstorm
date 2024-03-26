@@ -41,11 +41,11 @@ export class CelestialBody extends Entity {
 			ship.parent = ship.owner = this;
 			this.fleet.push(ship);
 		}
-		setTimeout(() => level.emit('body.created', this.toJSON()));
+		setTimeout(() => level.emit('body_created', this.toJSON()));
 	}
 
 	remove() {
-		this.level.emit('body.removed', this.toJSON());
+		this.level.emit('body_removed', this.toJSON());
 		super.remove();
 	}
 

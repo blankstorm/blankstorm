@@ -48,12 +48,12 @@ export class Entity extends EventEmitter {
 	public set level(value: Level) {
 		if (this._level) {
 			this._level.entities.delete(this);
-			this._level.emit('entity.removed', this.toJSON());
+			this._level.emit('entity_removed', this.toJSON());
 		}
 		this._level = value;
 		if (value) {
 			value.entities.add(this);
-			setTimeout(() => value.emit('entity.added', this.toJSON()));
+			setTimeout(() => value.emit('entity_added', this.toJSON()));
 		}
 	}
 
@@ -95,7 +95,7 @@ export class Entity extends EventEmitter {
 		}
 		this.id = id;
 		this.level = level;
-		setTimeout(() => level.emit('entity.created', this.toJSON()));
+		setTimeout(() => level.emit('entity_created', this.toJSON()));
 	}
 
 	public remove() {
@@ -112,7 +112,7 @@ export class Entity extends EventEmitter {
 		const path = findPath(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
 		if (path.length > 0) {
 			this.level.emit(
-				'entity.follow_path.start',
+				'entity_path_start',
 				this.id,
 				path.map(({ x, y, z }) => ({ x, y, z }))
 			);

@@ -138,9 +138,9 @@ export class Server extends EventEmitter {
 			this.level = new Level();
 		}
 
-		for (const type of ['projectile.fire', 'level.tick', 'player.death', 'entity.follow_path.start']) {
+		for (const type of ['projectile_fire', 'tick', 'player_removed', 'entity_path_start'] as const) {
 			this.level.on(type, async (...args) => {
-				this.io.emit('event', ...args);
+				this.io.emit('event', type, ...args);
 			});
 		}
 

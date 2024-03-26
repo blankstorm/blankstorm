@@ -9,8 +9,9 @@ import { config, versions } from '../core/metadata';
 import type { PingInfo } from '../server/Server';
 import { sendMessage } from './chat';
 import { path } from './config';
-import { Level } from '../core/Level';
+import { Level, type LevelEvents } from '../core/Level';
 import { currentLevel, unload, load } from './client';
+import type EventEmitter from 'eventemitter3';
 
 export type ServerData = {
 	id: string;
@@ -47,6 +48,18 @@ function handleConnectionError({ message }: Error): void {
 function handleConnectionFailed({ message }: Error): void {
 	$('#connect p').text('Connection failed: ' + message);
 	$('#connect button').text('Back');
+}
+
+function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ...data: EventEmitter.EventArgs<LevelEvents, T>) {
+	if (type == 'tick') {
+		if (!currentLevel) {
+			load(new Level());
+		}
+		Level.FromJSON(data[0], currentLevel);
+		currentLevel.sampleTick();
+	}
+
+	currentLevel.emit(type, ...data);
 }
 
 function updatePlayerList(list: string[]): void {
@@ -116,17 +129,7 @@ export function connect(id: string): void {
 	socket.on('playerlist', updatePlayerList);
 	socket.on('kick', message => (kickMessage = 'Kicked from server: ' + message));
 	socket.on('chat', sendMessage);
-	socket.on('event', (type: string, ...data) => {
-		if (type == 'level.tick') {
-			if (!currentLevel) {
-				load(new Level());
-			}
-			Level.FromJSON(data[0], currentLevel);
-			currentLevel.sampleTick();
-		}
-
-		currentLevel.emit(type, ...data);
-	});
+	socket.on('event', handleEvent);
 	socket.on('disconnect', handleDisconnect);
 	$('#server-list').hide();
 	$('#connect').show();

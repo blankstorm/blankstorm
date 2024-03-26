@@ -35,7 +35,7 @@ export class Player extends Entity {
 			ship.position.addInPlace(this.absolutePosition);
 			this.fleet.push(ship);
 		}
-		setTimeout(() => level.emit('player.created', this.toJSON()));
+		setTimeout(() => level.emit('player_created', this.toJSON()));
 	}
 
 	get items(): Record<ItemID, number> {
@@ -83,7 +83,7 @@ export class Player extends Entity {
 				}
 			}
 		}
-		this.level.emit('player.items.change', this.toJSON(), this.items);
+		this.level.emit('player_items_change', this.toJSON(), this.items);
 	}
 
 	removeItems(items: Partial<Record<ItemID, number>>) {
@@ -95,7 +95,7 @@ export class Player extends Entity {
 				items[item] -= stored;
 			}
 		}
-		this.level.emit('player.items.change', this.toJSON(), this.items);
+		this.level.emit('player_items_change', this.toJSON(), this.items);
 	}
 
 	removeAllItems() {
@@ -121,11 +121,11 @@ export class Player extends Entity {
 		for (const ship of this.fleet) {
 			ship.remove();
 		}
-		this.level.emit('player.reset', this.toJSON());
+		this.level.emit('player_reset', this.toJSON());
 	}
 
 	remove() {
-		this.level.emit('player.removed', this.toJSON());
+		this.level.emit('player_removed', this.toJSON());
 		super.remove();
 	}
 

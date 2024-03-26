@@ -490,24 +490,24 @@ export function load(level: Level): boolean {
 	currentLevel = level;
 	renderer.clear();
 	renderer.update(currentLevel.toJSON());
-	level.on('projectile.fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
+	level.on('projectile_fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
 		renderer.fireProjectile(hardpointID, targetID, projectile);
 	});
-	level.on('player.levelup', async () => {
-		logger.debug('Triggered player.levelup (unimplemented)');
+	level.on('player_levelup', async () => {
+		logger.debug('Triggered player_levelup (unimplemented)');
 	});
-	level.on('player.death', async () => {
+	level.on('player_removed', async () => {
 		renderer.getCamera().reset();
 	});
-	level.on('entity.follow_path.start', async (entityID: string, path: IVector3Like[]) => {
+	level.on('entity_path_start', async (entityID: string, path: IVector3Like[]) => {
 		renderer.startFollowingPath(entityID, path);
 	});
-	level.on('entity.death', async (entity: SerializedEntity) => {
+	level.on('entity_death', async (entity: SerializedEntity) => {
 		if (entity.nodeType == 'Ship') {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}
 	});
-	level.on('player.items.change', async (player, items: Record<ItemID, number>) => {
+	level.on('player_items_change', async (player, items: Record<ItemID, number>) => {
 		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
 			$(ui.items.get(id)).find('.count').text(minimize(amount));
 		}
@@ -518,7 +518,7 @@ export function load(level: Level): boolean {
 }
 
 export function unload(): void {
-	for (const event of ['projectile.fire', 'level.tick', 'player.levelup', 'player.death', 'entity.follow_path.start', 'entity.death', 'player.items.change']) {
+	for (const event of ['projectile_fire', 'tick', 'player_levelup', 'player_removed', 'entity_path_start', 'entity_death', 'player_items_change'] as const) {
 		currentLevel.off(event);
 	}
 	pause();
