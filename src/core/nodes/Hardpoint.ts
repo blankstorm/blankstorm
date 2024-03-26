@@ -1,8 +1,8 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
 import { resolveConstructors, wait, xpToLevel } from '../utils';
-import { Node } from './Node';
-import type { SerializedNode } from './Node';
+import { Entity } from './Node';
+import type { SerializedEntity } from './Node';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { HardpointType, GenericHardpoint } from '../generic/hardpoints';
 import type { Ship } from './Ship';
@@ -11,13 +11,13 @@ import type { Player } from './Player';
 import type { CelestialBody } from '../nodes/CelestialBody';
 import type { HardpointInfo, SerializedHardpointInfo } from '../generic/ships';
 
-export interface SerializedHardpoint extends SerializedNode {
+export interface SerializedHardpoint extends SerializedEntity {
 	info: SerializedHardpointInfo;
 	type: HardpointType;
 	reload: number;
 }
 
-export class Hardpoint extends Node {
+export class Hardpoint extends Entity {
 	info: HardpointInfo;
 	type: HardpointType;
 	reload: number;

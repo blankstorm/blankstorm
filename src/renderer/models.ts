@@ -14,7 +14,7 @@ import '@babylonjs/loaders/glTF/index';
 import config from './config';
 import * as settings from '../client/settings';
 import { random } from '../core/utils';
-import type { SerializedNode } from '../core/nodes/Node';
+import type { SerializedEntity } from '../core/nodes/Node';
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
@@ -142,7 +142,7 @@ export class ModelRenderer extends TransformNode {
 		return this.#instance;
 	}
 
-	async update({ name, position, rotation, parent, nodeType, type }: SerializedNode & { type?: string }, rendererType?: RendererType) {
+	async update({ name, position, rotation, parent, nodeType, type }: SerializedEntity & { type?: string }, rendererType?: RendererType) {
 		this.name = name;
 		if (!this.#currentPath) {
 			this.position = Vector3.FromArray(position);

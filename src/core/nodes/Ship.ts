@@ -1,8 +1,8 @@
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 
 import { random } from '../utils';
-import { Entity } from './Entity';
-import type { SerializedEntity } from './Entity';
+import { Entity } from './Node';
+import type { SerializedEntity } from './Node';
 import { Hardpoint } from './Hardpoint';
 import type { SerializedHardpoint } from './Hardpoint';
 import { Storage } from '../Storage';

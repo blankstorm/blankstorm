@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type { SerializedNode } from '../core/nodes/Node';
+import type { SerializedEntity } from '../core/nodes/Node';
 import type { PlanetBiome } from '../core/generic/planets';
 import { Logger } from 'logzen';
 const { fileURLToPath } = $app.require('node:url');
@@ -115,7 +115,7 @@ export const cookies: Map<string, string> & { get _map(): Map<string, string> } 
 	},
 };
 
-export function getIconForNode(node: SerializedNode): string {
+export function getIconForNode(node: SerializedEntity): string {
 	switch (node.nodeType) {
 		case 'Planet':
 			return 'earth-americas';

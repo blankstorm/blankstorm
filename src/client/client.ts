@@ -6,7 +6,7 @@ import { config, version } from '../core/metadata';
 import type { SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemID } from '../core/generic/items';
-import type { SerializedNode } from '../core/nodes/Node';
+import type { SerializedEntity } from '../core/nodes/Node';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
@@ -507,7 +507,7 @@ export function load(level: Level): boolean {
 	level.on('entity.follow_path.start', async (entityID: string, path: IVector3Like[]) => {
 		renderer.startFollowingPath(entityID, path);
 	});
-	level.on('entity.death', async (node: SerializedNode) => {
+	level.on('entity.death', async (node: SerializedEntity) => {
 		if (node.nodeType == 'Ship') {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}

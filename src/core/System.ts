@@ -2,9 +2,8 @@ import EventEmitter from 'eventemitter3';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
-import { Node, type SerializedNode } from './nodes/Node';
+import { Entity, type SerializedEntity } from './nodes/Node';
 import { Planet, type SerializedPlanet } from './nodes/Planet';
-import type { Entity } from './nodes/Entity';
 import { Ship, type SerializedShip } from './nodes/Ship';
 import { Star, type SerializedStar } from './nodes/Star';
 import { Player, type SerializedPlayer } from './nodes/Player';
@@ -22,7 +21,7 @@ import { getRandomIntWithRecursiveProbability, greek, random, range } from './ut
 export type SerializedSystemConnection = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
 
 export interface SerializedSystem {
-	nodes: SerializedNode[];
+	nodes: SerializedEntity[];
 	name: string;
 	id: string;
 	difficulty: number;
@@ -50,7 +49,7 @@ export type SystemConnection = System | Vector2;
 
 export class System extends EventEmitter {
 	name = '';
-	nodes: Map<string, Node> = new Map();
+	nodes: Map<string, Entity> = new Map();
 	difficulty = 1;
 	#performanceMonitor = new PerformanceMonitor(60);
 	position: Vector2;
@@ -128,7 +127,7 @@ export class System extends EventEmitter {
 		return [...this.nodes.values()].filter(e => e.selected);
 	}
 
-	getNodeByID<N extends Node = Node>(nodeID: string): N {
+	getNodeByID<N extends Entity = Entity>(nodeID: string): N {
 		for (const [id, node] of this.nodes) {
 			if (id == nodeID) return <N>node;
 		}
@@ -136,7 +135,7 @@ export class System extends EventEmitter {
 		return null;
 	}
 
-	getNodesBySelector(selector: string): Node[] {
+	getNodesBySelector(selector: string): Entity[] {
 		if (typeof selector != 'string') throw new TypeError('selector must be of type string');
 		switch (selector[0]) {
 			case '*':
@@ -159,11 +158,11 @@ export class System extends EventEmitter {
 		}
 	}
 
-	getNodesBySelectors(...selectors: string[]): Node[] {
+	getNodesBySelectors(...selectors: string[]): Entity[] {
 		return selectors.flatMap(selector => this.getNodesBySelector(selector));
 	}
 
-	getNodeBySelector<T extends Node = Node>(selector: string): T {
+	getNodeBySelector<T extends Entity = Entity>(selector: string): T {
 		return <T>this.getNodesBySelector(selector)[0];
 	}
 

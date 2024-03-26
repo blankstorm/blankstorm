@@ -1,8 +1,8 @@
 import { Vector3, Matrix, Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Node } from '../core/nodes/Node';
-import type { SerializedNode } from '../core/nodes/Node';
+import { Entity } from '../core/nodes/Node';
+import type { SerializedEntity } from '../core/nodes/Node';
 import $ from 'jquery';
 import { scene } from '../renderer/index';
 import { WaypointUI } from './ui/waypoint';
@@ -12,14 +12,14 @@ import { SerializedCelestialBody } from '../core/nodes/CelestialBody';
 import { getIconForNode, minimize } from './utils';
 import * as settings from './settings';
 
-export interface SerializedWaypoint extends SerializedNode {
+export interface SerializedWaypoint extends SerializedEntity {
 	color: number[];
 	icon: string;
 	readonly: boolean;
 	system: string;
 }
 
-export class Waypoint extends Node {
+export class Waypoint extends Entity {
 	gui: JQuery;
 	marker: JQuery<SVGSVGElement>;
 	#color: Color3 = new Color3(Math.random(), Math.random(), Math.random());

@@ -2,19 +2,19 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { System } from '../System';
 import { random } from '../utils';
 import { Ship } from './Ship';
-import { Node } from './Node';
-import type { SerializedNode } from './Node';
+import { Entity } from './Node';
+import type { SerializedEntity } from './Node';
 import { Storage } from '../Storage';
 import { ItemID } from '../generic/items';
 
-export interface SerializedCelestialBody extends SerializedNode {
+export interface SerializedCelestialBody extends SerializedEntity {
 	fleetPosition: number[];
 	fleet: string[];
 	radius: number;
 	rewards: Record<ItemID, number>;
 }
 
-export class CelestialBody extends Node {
+export class CelestialBody extends Entity {
 	fleet: Ship[] = [];
 	rewards: Storage;
 	radius = 0;

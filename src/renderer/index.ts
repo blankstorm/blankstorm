@@ -14,7 +14,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import '@babylonjs/core/Culling'; // For Ray side effects
 import type { MoveInfo, SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
-import type { SerializedNode } from '../core/nodes/Node';
+import type { SerializedEntity } from '../core/nodes/Node';
 import config from './config';
 import { Camera } from './camera';
 import { initModels } from './models';
@@ -50,7 +50,7 @@ export function setHitboxes(value: boolean) {
 	hitboxes = !!value;
 }
 
-const nodes: Map<string, Renderer<SerializedNode>> = new Map();
+const nodes: Map<string, Renderer<SerializedEntity>> = new Map();
 
 function onCanvasResive() {
 	engine.resize();
@@ -163,7 +163,7 @@ export async function clear() {
 	cache = createEmptyCache();
 }
 
-export async function load(serializedNodes: SerializedNode[]) {
+export async function load(serializedNodes: SerializedEntity[]) {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
@@ -191,7 +191,7 @@ export async function update(systemData: SerializedSystem) {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	const renderersToAdd: SerializedNode[] = [];
+	const renderersToAdd: SerializedEntity[] = [];
 
 	if (systemData.id != cache.id && cache.id) {
 		console.warn(`Updating the renderer with a different system (${cache.id} -> ${systemData.id}). The renderer should be cleared first.`);

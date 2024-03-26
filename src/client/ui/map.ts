@@ -1,5 +1,5 @@
 import { config } from '../../core/metadata';
-import { Node } from '../../core/nodes/Node';
+import { Entity } from '../../core/nodes/Node';
 import { Planet } from '../../core/nodes/Planet';
 import { Ship } from '../../core/nodes/Ship';
 import { Star } from '../../core/nodes/Star';
@@ -36,7 +36,7 @@ export class MapMarker {
 		}
 	}
 
-	constructor(public readonly target: Node | System) {
+	constructor(public readonly target: Entity | System) {
 		this.gui.attr('id', this.markerID).addClass('map-marker').appendTo('#map-markers');
 		let internalMarker: JQuery<SVGElement>;
 		if (target instanceof System) {

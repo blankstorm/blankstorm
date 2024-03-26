@@ -18,13 +18,14 @@ export interface SerializedLevel<S extends SerializedSystem = SerializedSystem> 
 }
 
 export class Level<S extends System = System> extends EventEmitter {
-	id: string = random.hex(16);
-	name: string = '';
-	version = version;
-	date = new Date();
-	difficulty = 1;
-	systems: Map<string, S> = new Map();
-	rootSystem: S;
+	public id: string = random.hex(16);
+	public name: string = '';
+	public version = version;
+	public date = new Date();
+	public difficulty = 1;
+
+	public systems: Map<string, S> = new Map();
+	public rootSystem: S;
 	#initPromise: Promise<Level>;
 	#performanceMonitor = new PerformanceMonitor(60);
 

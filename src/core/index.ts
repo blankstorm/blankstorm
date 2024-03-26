@@ -7,7 +7,7 @@ export * from './generic/stationComponents';
 export * from './path';
 export * from './Storage';
 
-export * from './nodes/Entity';
+export * from './nodes/Node';
 export * from './nodes/Player';
 export * from './nodes/Hardpoint';
 export * from './nodes/Ship';

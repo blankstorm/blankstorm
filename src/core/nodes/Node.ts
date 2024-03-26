@@ -3,10 +3,11 @@ import { random, resolveConstructors } from '../utils';
 import type { Level } from '../Level';
 import type { System } from '../System';
 import EventEmitter from 'eventemitter3';
+import { findPath } from '../path';
 
-export type NodeConstructor<T extends Node> = new (...args: ConstructorParameters<typeof Node>) => T;
+export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 
-export interface SerializedNode {
+export interface SerializedEntity {
 	id: string;
 	name: string;
 	owner: string;
@@ -15,25 +16,28 @@ export interface SerializedNode {
 	position: number[];
 	rotation: number[];
 	velocity: number[];
+	selected: boolean;
+	isTargetable: boolean;
 }
 
-export class Node extends EventEmitter {
-	id: string;
+export class Entity extends EventEmitter {
+	public id: string;
+
 	private _name = '';
 
-	get name(): string {
+	public get name(): string {
 		return this._name;
 	}
 
-	set name(name: string) {
+	public set name(name: string) {
 		this._name = name;
 	}
 
-	get nodeType(): string {
+	public get nodeType(): string {
 		return this.constructor.name;
 	}
 
-	get nodeTypes(): string[] {
+	public get nodeTypes(): string[] {
 		return resolveConstructors(this);
 	}
 
@@ -52,33 +56,33 @@ export class Node extends EventEmitter {
 			setTimeout(() => value.emit('node.added', this.toJSON()));
 		}
 	}
-	parent?: Node;
-	owner?: Node;
+	public parent?: Entity;
+	public owner?: Entity;
 
-	get level(): Level {
+	public get level(): Level {
 		return this.system.level;
 	}
 
-	selected = false;
-	isTargetable = false;
+	public selected = false;
+	public isTargetable = false;
 
-	position = Vector3.Zero();
-	rotation = Vector3.Zero();
-	velocity = Vector3.Zero();
+	public position = Vector3.Zero();
+	public rotation = Vector3.Zero();
+	public velocity = Vector3.Zero();
 
-	get absolutePosition() {
-		return this.parent instanceof Node ? this.parent.absolutePosition.add(this.position) : this.position;
+	public get absolutePosition() {
+		return this.parent instanceof Entity ? this.parent.absolutePosition.add(this.position) : this.position;
 	}
 
-	get absoluteRotation() {
-		return this.parent instanceof Node ? this.parent.absoluteRotation.add(this.rotation) : this.rotation;
+	public get absoluteRotation() {
+		return this.parent instanceof Entity ? this.parent.absoluteRotation.add(this.rotation) : this.rotation;
 	}
 
-	get absoluteVelocity() {
-		return this.parent instanceof Node ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
+	public get absoluteVelocity() {
+		return this.parent instanceof Entity ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
-	constructor(id: string, system: System, constructorOptions?: object) {
+	public constructor(id: string, system: System, constructorOptions?: object) {
 		id ||= random.hex(32);
 		super();
 		if (constructorOptions) {
@@ -89,11 +93,32 @@ export class Node extends EventEmitter {
 		setTimeout(() => system.emit('node.created', this.toJSON()));
 	}
 
-	remove() {
+	public remove() {
 		this.system = null;
 	}
 
-	toJSON(): SerializedNode {
+	/**
+	 *
+	 * @param target The position the entity should move to
+	 * @param isRelative Wheter the target is a change to the current position (i.e. a "delta" vector) or absolute
+	 */
+	public async moveTo(target: Vector3, isRelative = false) {
+		if (!(target instanceof Vector3)) throw new TypeError('target must be a Vector3');
+		const path = findPath(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
+		if (path.length > 0) {
+			this.system.emit(
+				'entity.follow_path.start',
+				this.id,
+				path.map(({ x, y, z }) => ({ x, y, z }))
+			);
+			this.position = path.at(-1).subtract(this.parent.absolutePosition);
+			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.at(-2), path.at(-1));
+			rotation.x -= Math.PI / 2;
+			this.rotation = rotation;
+		}
+	}
+
+	public toJSON(): SerializedEntity {
 		return {
 			id: this.id,
 			name: this.name,
@@ -103,10 +128,12 @@ export class Node extends EventEmitter {
 			position: this.position.asArray(),
 			rotation: this.rotation.asArray(),
 			velocity: this.velocity.asArray(),
+			isTargetable: this.isTargetable,
+			selected: this.selected,
 		};
 	}
 
-	static FromJSON(data: SerializedNode, level: System, constructorOptions: object): Node {
+	public static FromJSON(data: SerializedEntity, level: System, constructorOptions: object): Entity {
 		const node = new this(data.id, level, constructorOptions);
 		node.position = Vector3.FromArray(data.position || [0, 0, 0]);
 		node.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);
