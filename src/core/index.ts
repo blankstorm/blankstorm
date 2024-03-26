@@ -15,7 +15,7 @@ export * from './entities/body';
 export * from './entities/planet';
 export * from './entities/star';
 
-export * from './stations/station_component';
+export * from './stations/part';
 export * from './stations/station';
 
 export * from './level';

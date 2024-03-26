@@ -2,35 +2,35 @@ import type { Level } from '../level';
 import { Producer } from '../generic/production';
 import type { ShipType } from '../generic/ships';
 import { genericShips, shipTypes } from '../generic/ships';
-import type { SerializedStationComponent, StationComponentOptions } from './station_component';
-import { StationComponent } from './station_component';
+import type { SerializedStationPart, StationPartOptions } from './part';
+import { StationPart } from './part';
 
-export interface SerializedBerth extends SerializedStationComponent {
+export interface SerializedBerth extends SerializedStationPart {
 	productionID: ShipType;
 	productionTime: number;
 }
 
-export class Berth extends StationComponent implements Producer {
-	productionID: ShipType;
-	productionTime: number;
-	canProduce = shipTypes;
-	constructor(id: string, level: Level, options: StationComponentOptions) {
+export class Berth extends StationPart implements Producer {
+	public productionID: ShipType;
+	public productionTime: number;
+	public canProduce = shipTypes;
+	public constructor(id: string, level: Level, options: StationPartOptions) {
 		super(id, level, options);
 	}
 
-	build(type: ShipType) {
+	public build(type: ShipType) {
 		this.productionID = type;
 		this.productionTime = +genericShips[type].productionTime;
 	}
 
-	toJSON(): SerializedBerth {
+	public toJSON(): SerializedBerth {
 		return Object.assign(super.toJSON(), {
 			productionID: this.productionID,
 			productionTime: this.productionTime,
 		});
 	}
 
-	static FromJSON(data: SerializedBerth, level: Level): Berth {
+	public static FromJSON(data: SerializedBerth, level: Level): Berth {
 		const berth = <Berth>super.FromJSON(data, level);
 		berth.productionID = data.productionID;
 		berth.productionTime = data.productionTime;
