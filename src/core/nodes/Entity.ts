@@ -1,6 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-import { Path } from '../Path';
+import { findPath } from '../Path';
 import { Node } from './Node';
 import type { SerializedNode } from './Node';
 import type { System } from '../System';
@@ -35,7 +35,7 @@ export class Entity extends Node {
 	 */
 	async moveTo(target: Vector3, isRelative = false) {
 		if (!(target instanceof Vector3)) throw new TypeError('target must be a Vector3');
-		const path = Path.Find(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
+		const path = findPath(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
 		if (path.path.length > 0) {
 			this.system.emit('entity.follow_path.start', this.id, path.toJSON());
 			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);
