@@ -1,28 +1,28 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Fleet, type FleetData } from '../fleet';
+import { ItemID } from '../generic/items';
 import type { Level } from '../level';
 import { Storage } from '../storage';
-import { ItemID } from '../generic/items';
+import { randomCords, randomInt } from '../utils';
 import type { SerializedEntity } from './entity';
 import { Entity } from './entity';
 import { Ship } from './ship';
-import { randomCords, randomInt } from '../utils';
 
 export interface SerializedCelestialBody extends SerializedEntity {
-	fleetPosition: number[];
-	fleet: string[];
+	fleet: FleetData;
 	radius: number;
 	rewards: Record<ItemID, number>;
 }
 
 export class CelestialBody extends Entity {
-	fleet: Ship[] = [];
+	fleet: Fleet;
 	rewards: Storage;
 	radius = 0;
 	fleetPosition: Vector3;
 	option?: JQuery<HTMLElement>;
 
 	get power(): number {
-		return this.fleet.reduce((total, ship) => total + ship.generic.power, 0) ?? 0;
+		return this.fleet.power;
 	}
 
 	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleetPosition = randomCords(randomInt(radius + 5, radius * 1.2), true), fleet = [] }) {
@@ -39,7 +39,7 @@ export class CelestialBody extends Entity {
 				ship.position.addInPlace(this.fleetPosition);
 			}
 			ship.parent = ship.owner = this;
-			this.fleet.push(ship);
+			this.fleet.add(ship);
 		}
 		setTimeout(() => level.emit('body_created', this.toJSON()));
 	}
@@ -51,8 +51,7 @@ export class CelestialBody extends Entity {
 
 	toJSON(): SerializedCelestialBody {
 		return Object.assign(super.toJSON(), {
-			fleetPosition: this.fleetPosition.asArray(),
-			fleet: this.fleet.map(ship => ship.id),
+			fleet: this.fleet.toJSON(),
 			rewards: this.rewards.toJSON().items,
 			radius: this.radius,
 		});
@@ -63,7 +62,7 @@ export class CelestialBody extends Entity {
 			...constructorOptions,
 			radius: data.radius,
 			rewards: data.rewards,
-			fleetPosition: Vector3.FromArray(data.fleetPosition || [0, 0, 0]),
+			fleet: Fleet.FromJSON(data.fleet),
 		});
 	}
 }

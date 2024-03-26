@@ -1,16 +1,16 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
-export interface GenericStationComponent {
+export interface GenericStationPart {
 	type: string;
 	hp: number;
 	connecters: {
-		type: GenericStationComponentID | '*' | GenericStationComponentID[] | string;
+		type: GenericStationPartID | '*' | GenericStationPartID[] | string;
 		position: Vector3;
 		rotation: Vector3;
 	}[];
 }
 
-const stationComponents = {
+const stationParts = {
 	core: {
 		type: 'core',
 		hp: 100,
@@ -31,9 +31,7 @@ const stationComponents = {
 	},
 };
 
-export type GenericStationComponentID = keyof typeof stationComponents;
+export type GenericStationPartID = keyof typeof stationParts;
 
-export type GenericStationComponentCollection<T = number> = Record<GenericStationComponentID, T>;
-
-const _components: GenericStationComponentCollection<GenericStationComponent> = stationComponents;
-export { _components as stationComponents };
+const _parts: Record<GenericStationPartID, GenericStationPart> = stationParts;
+export { _parts as stationParts };

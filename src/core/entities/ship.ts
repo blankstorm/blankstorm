@@ -67,7 +67,7 @@ export class Ship extends Entity {
 
 	remove() {
 		super.remove();
-		this.owner.fleet.splice(this.owner.fleet.indexOf(this), 1);
+		this.owner.fleet.delete(this);
 	}
 
 	jumpTo(targetSystem: System) {
@@ -114,7 +114,7 @@ export class Ship extends Entity {
 		const ship = <Ship>super.FromJSON(data, level, data);
 		ship.hp = data.hp;
 		ship.jumpCooldown = data.jumpCooldown;
-		ship.storage = Storage.FromJSON({ ...data.storage, max });
+		ship.storage = Storage.FromJSON({ items: data.storage, max });
 		return ship;
 	}
 

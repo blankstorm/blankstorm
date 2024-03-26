@@ -1,9 +1,7 @@
-import type { Level } from '../level';
-import type { ItemID } from '../generic/items';
-import { items as Items } from '../generic/items';
+import { Fleet, FleetData } from '../fleet';
 import type { ResearchID } from '../generic/research';
 import { research } from '../generic/research';
-import type { ShipType } from '../generic/ships';
+import type { Level } from '../level';
 import type { SerializedEntity } from './entity';
 import { Entity } from './entity';
 import type { SerializedShip } from './ship';
@@ -11,20 +9,20 @@ import { Ship } from './ship';
 
 export interface SerializedPlayer extends SerializedEntity {
 	research: Record<ResearchID, number>;
-	fleet: string[];
+	fleet: FleetData;
 	xp: number;
 	xpPoints: number;
 }
 
 export class Player extends Entity {
 	research = <Record<ResearchID, number>>Object.fromEntries(Object.keys(research).map((k: ResearchID) => [k, 0]));
-	fleet: Ship[] = [];
+	fleet: Fleet;
 	xp = 0;
 	xpPoints = 0;
 	speed = 1;
 	oplvl?: number;
 	get power(): number {
-		return this.fleet.reduce((a, ship) => a + (ship.generic.power || 0), 0);
+		return this.fleet.power;
 	}
 
 	constructor(id: string, level: Level, { fleet }: { fleet: (SerializedShip | Ship | string)[] }) {
@@ -33,88 +31,13 @@ export class Player extends Entity {
 			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? level.getEntityByID<Ship>(shipData) : Ship.FromJSON(shipData, level);
 			ship.owner = this;
 			ship.position.addInPlace(this.absolutePosition);
-			this.fleet.push(ship);
+			this.fleet.add(ship);
 		}
 		setTimeout(() => level.emit('player_created', this.toJSON()));
 	}
 
-	get items(): Record<ItemID, number> {
-		const items = Object.fromEntries(Object.keys(Items).map(i => [i, 0])) as Record<ItemID, number>;
-		for (const ship of this.fleet) {
-			for (const [name, amount] of Object.entries(items)) {
-				items[name] = +ship.storage.get(name) + amount;
-			}
-		}
-		return items;
-	}
-
-	set items(value: Record<ItemID, number>) {
-		for (const ship of this.fleet) {
-			ship.storage.empty(Object.keys(value) as ItemID[]);
-		}
-		this.addItems(value);
-	}
-
-	get totalItems(): number {
-		return this.fleet.reduce((total, ship) => total + ship.storage.total, 0);
-	}
-
-	get maxItems(): number {
-		return this.fleet.reduce((total, ship) => total + ship.storage.max * (1 + this.research.storage / 20), 0);
-	}
-
-	shipNum(type: ShipType) {
-		return this.fleet.reduce((total, ship) => total + +(ship.type == type), 0);
-	}
-
-	addItems(items: Partial<Record<ItemID, number>>) {
-		for (const ship of this.fleet) {
-			let space = ship.storage.max * (1 + this.research.storage / 20) - ship.storage.total;
-			if (space > 0) {
-				for (const [name, amount] of Object.entries(items)) {
-					if (Items[name]) {
-						const stored = Math.min(space, amount);
-						ship.storage.add(name as ItemID, stored);
-						items[name] -= stored;
-						space -= stored;
-					} else {
-						console.warn(`Failed to add ${amount} ${name} to player items: Invalid item`);
-					}
-				}
-			}
-		}
-		this.level.emit('player_items_change', this.toJSON(), this.items);
-	}
-
-	removeItems(items: Partial<Record<ItemID, number>>) {
-		items = { ...items };
-		for (const ship of this.fleet) {
-			for (const [item, amount] of Object.entries(items)) {
-				const stored = Math.min(ship.storage.get(item), amount);
-				ship.storage.remove(item as ItemID, stored);
-				items[item] -= stored;
-			}
-		}
-		this.level.emit('player_items_change', this.toJSON(), this.items);
-	}
-
-	removeAllItems() {
-		this.removeItems(Object.fromEntries(Object.keys(Items).map(i => [i, Infinity])) as Record<ItemID, number>);
-	}
-
-	hasItems(items: Partial<Record<ItemID, number>>) {
-		items = { ...items };
-		for (const ship of this.fleet) {
-			for (const [item, amount] of Object.entries(items)) {
-				const stored = Math.min(ship.storage.get(item), amount);
-				items[item] -= stored;
-			}
-		}
-		return Object.values(items).every(item => item <= 0);
-	}
-
 	reset() {
-		this.removeAllItems();
+		this.fleet.removeAllItems();
 		for (const type of Object.keys(research)) {
 			this.research[type] = 0;
 		}
@@ -131,7 +54,7 @@ export class Player extends Entity {
 
 	toJSON(): SerializedPlayer {
 		return Object.assign(super.toJSON(), {
-			fleet: this.fleet.map(ship => ship.id),
+			fleet: this.fleet.toJSON(),
 			xp: this.xp,
 			xpPoints: this.xpPoints,
 			research: this.research,

@@ -204,7 +204,11 @@ export class FolderMap implements Map<string, string> {
 		return '[FolderMap]';
 	}
 
-	constructor(protected _path: string, protected _fs: typeof FS, protected _suffix = '') {}
+	constructor(
+		protected _path: string,
+		protected _fs: typeof FS,
+		protected _suffix = ''
+	) {}
 
 	get _names(): string[] {
 		return this._fs

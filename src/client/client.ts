@@ -507,7 +507,7 @@ export function load(level: Level): boolean {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}
 	});
-	level.on('player_items_change', async (player, items: Record<ItemID, number>) => {
+	level.on('fleet_items_change', async (_, items: Record<ItemID, number>) => {
 		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
 			$(ui.items.get(id)).find('.count').text(minimize(amount));
 		}
@@ -518,7 +518,7 @@ export function load(level: Level): boolean {
 }
 
 export function unload(): void {
-	for (const event of ['projectile_fire', 'tick', 'player_levelup', 'player_removed', 'entity_path_start', 'entity_death', 'player_items_change'] as const) {
+	for (const event of ['projectile_fire', 'tick', 'player_levelup', 'player_removed', 'entity_path_start', 'entity_death', 'fleet_items_change'] as const) {
 		currentLevel.off(event);
 	}
 	pause();

@@ -19,6 +19,7 @@ import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
 import { Berth } from './stations/berth';
 import { randomHex } from './utils';
+import { FleetData } from './fleet';
 
 export interface MoveInfo<T> {
 	id: string;
@@ -58,9 +59,9 @@ export interface LevelEvents {
 	entity_death: [SerializedEntity];
 	entity_path_start: [string, IVector3Like[]];
 	entity_created: [SerializedEntity];
+	fleet_items_change: [FleetData, Record<ItemID, number>];
 	player_created: [SerializedPlayer];
 	player_levelup: [SerializedPlayer];
-	player_items_change: [SerializedPlayer, Record<ItemID, number>];
 	player_removed: [SerializedPlayer];
 	player_reset: [SerializedPlayer];
 	projectile_fire: [string, string, GenericProjectile];
@@ -147,33 +148,33 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 
 		switch (action) {
 			case 'create_item':
-				if (!data.recipe || !player.hasItems(data.recipe)) {
+				if (!data.recipe || !player.fleet.hasItems(data.recipe)) {
 					return false;
 				}
 
-				player.removeItems(data.recipe);
-				player.addItems({ [data.id]: player.items[data.id] + 1 });
+				player.fleet.removeItems(data.recipe);
+				player.fleet.addItems({ [data.id]: player.fleet.items[data.id] + 1 });
 				break;
 			case 'create_ship':
-				if (!player.hasItems(data.ship.recipe)) {
+				if (!player.fleet.hasItems(data.ship.recipe)) {
 					return false;
 				}
 
-				player.removeItems(data.ship.recipe);
+				player.fleet.removeItems(data.ship.recipe);
 				const ship = new Ship(null, player.level, { type: <ShipType>data.ship.id, power: player.power });
 				ship.parent = ship.owner = player;
-				player.fleet.push(ship);
+				player.fleet.add(ship);
 				break;
 			case 'do_research':
 				if (player.research[id] >= data.max || isResearchLocked(<ResearchID>data.id, player) || player.xpPoints < 1) {
 					return false;
 				}
 				const neededItems = priceOfResearch(<ResearchID>data.id, player.research[data.id]);
-				if (!player.hasItems(neededItems)) {
+				if (!player.fleet.hasItems(neededItems)) {
 					return false;
 				}
 
-				player.removeItems(neededItems);
+				player.fleet.removeItems(neededItems);
 				player.research[data.id]++;
 				player.xpPoints--;
 				break;

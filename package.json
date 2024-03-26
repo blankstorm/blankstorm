@@ -58,7 +58,7 @@
 		"eslint": "^8.24.0",
 		"mime-types": "^2.1.35",
 		"pkg": "^5.8.1",
-		"prettier": "^2.7.1",
+		"prettier": "^3.2.5",
 		"tsx": "^4.7.0",
 		"typescript": "^5.0.4"
 	}

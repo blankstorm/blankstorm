@@ -9,7 +9,10 @@ function roundVector({ x, y, z }: IVector3Like) {
 
 export class PathNode {
 	public position = Vector3.Zero();
-	public constructor(position: IVector3Like, public parent?: PathNode) {
+	public constructor(
+		position: IVector3Like,
+		public parent?: PathNode
+	) {
 		this.position = roundVector(position);
 	}
 	public gCost = 0;

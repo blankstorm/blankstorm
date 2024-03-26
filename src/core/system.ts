@@ -52,7 +52,10 @@ export class System extends EventEmitter<{
 	public position: Vector2;
 	public connections: SystemConnection[] = [];
 
-	constructor(public id: string, public level: Level) {
+	constructor(
+		public id: string,
+		public level: Level
+	) {
 		super();
 		this.id ||= randomHex(32);
 		this.level.systems.set(this.id, this);

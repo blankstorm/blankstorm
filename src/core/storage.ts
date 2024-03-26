@@ -1,49 +1,61 @@
-import { ItemID, items } from './generic/items';
-import type { ItemContainer } from './generic/items';
+import { ItemID, items as Items } from './generic/items';
+import type { ItemContainer, PartialItemContainer } from './generic/items';
 
-export class Storage extends Map {
-	#max = 1;
-	constructor(max = 1, initalItems?: Record<ItemID, number>) {
-		super();
-		for (const id of Object.keys(items)) {
-			this.set(id, typeof initalItems?.[id] == 'number' ? initalItems[id] : 0);
-		}
-		this.#max = max;
+export class Storage {
+	//public items: Map<ItemID, number> = new Map();
+
+	public constructor(
+		public max: number = 1,
+		public items: Map<ItemID, number> = new Map()
+	) {}
+
+	public get total(): number {
+		return [...this.items].reduce((total, [name, amount]) => total + amount * Items[name].weight, 0);
 	}
 
-	get max(): number {
-		return this.#max;
-	}
-
-	get total(): number {
-		return [...this.entries()].reduce((total, [name, amount]) => total + amount * items[name].weight, 0);
-	}
-
-	empty(filter: ItemID | ItemID[]) {
-		for (const name of this.keys()) {
-			if ((filter instanceof Array ? filter.includes(name) : filter == name) || !filter) this.set(name, 0);
+	public empty(filter: ItemID | ItemID[]) {
+		for (const name of this.items.keys()) {
+			if ((filter instanceof Array ? filter.includes(name) : filter == name) || !filter) this.items.set(name, 0);
 		}
 	}
 
-	toJSON(): ItemContainer {
-		return { items: Object.fromEntries([...this]), max: this.#max };
+	public count(item: ItemID): number {
+		return this.items.get(item);
 	}
 
-	add(item: ItemID, amount: number) {
-		this.set(item, this.get(item) + amount);
+	public addItem(item: ItemID, amount: number) {
+		this.items.set(item, this.items.get(item) + amount);
 	}
 
-	addItems(items: Partial<Record<ItemID, number>>) {
+	public addItems(items: Partial<Record<ItemID, number>>) {
 		for (const [id, amount] of Object.entries(items)) {
-			this.add(id as ItemID, amount);
+			this.addItem(<ItemID>id, amount);
 		}
 	}
 
-	remove(item: ItemID, amount: number) {
-		this.set(item, this.get(item) - amount);
+	public removeItem(item: ItemID, amount?: number) {
+		this.items.set(item, typeof amount == 'number' ? this.items.get(item) - amount : 0);
 	}
 
-	static FromJSON(data) {
-		return new this(data.max, data.items);
+	public removeItems(items: Partial<Record<ItemID, number>>) {
+		items = { ...items };
+		for (const [id, amount] of Object.entries(items)) {
+			this.removeItem(<ItemID>id, amount);
+		}
+	}
+
+	public toJSON(): ItemContainer {
+		return {
+			items: <Record<ItemID, number>>Object.fromEntries(this.items),
+			max: this.max,
+		};
+	}
+
+	public static FromJSON({ max, items }: PartialItemContainer, storage = new this()): Storage {
+		for (const id of <ItemID[]>Object.keys(Items)) {
+			storage.items.set(id, typeof items?.[id] == 'number' ? items[id] : 0);
+		}
+		storage.max = max;
+		return storage;
 	}
 }

@@ -76,17 +76,17 @@ export function update() {
 	if (system() instanceof System) {
 		const player: Player = getPlayer();
 		$('#waypoint-list div').detach();
-		$('svg.item-bar rect').attr('width', (player.totalItems / player.maxItems) * 100 || 0);
-		$('div.item-bar p.label').text(`${minimize(player.totalItems)} / ${minimize(player.maxItems)}`);
+		$('svg.item-bar rect').attr('width', (player.fleet.totalItems / player.fleet.maxItems) * 100 || 0);
+		$('div.item-bar p.label').text(`${minimize(player.fleet.totalItems)} / ${minimize(player.fleet.maxItems)}`);
 
-		for (const [id, amount] of Object.entries(player.items)) {
+		for (const [id, amount] of Object.entries(player.fleet.items)) {
 			$(items.get(id)).find('.count').text(minimize(amount));
 		}
 
 		//update tech info
 		for (const [id, t] of Object.entries(researchData)) {
 			const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
-				(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.items[id])}/${minimize(amount)}`,
+				(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.fleet.items[id])}/${minimize(amount)}`,
 				''
 			);
 			const requires = Object.entries(t.requires).reduce(
@@ -111,7 +111,7 @@ export function update() {
 		//update ship info
 		for (const [id, ship] of Object.entries(genericShips)) {
 			const materials = Object.entries(ship.recipe).reduce(
-				(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.items[id])}/${minimize(amount)}`,
+				(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.fleet.items[id])}/${minimize(amount)}`,
 				''
 			);
 			const requires = Object.entries(ship.requires).reduce(
@@ -184,8 +184,8 @@ export function update() {
 			position: ['absolute', 'fixed', 'relative', 'sticky'].includes(plot[4])
 				? plot[4]
 				: /^(a|s|f|r)$/.test(plot[4])
-				? { a: 'absolute', f: 'fixed', r: 'relative', s: 'sticky' }[plot[4]]
-				: 'fixed',
+					? { a: 'absolute', f: 'fixed', r: 'relative', s: 'sticky' }[plot[4]]
+					: 'fixed',
 		});
 	});
 }

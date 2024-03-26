@@ -9,7 +9,11 @@ export class Client extends Player {
 	lastMessager?: Client;
 	declare oplvl: number;
 	sentPackets = 0;
-	constructor(id: string, public server: Server, { fleet, socket }: { fleet: Ship[]; socket: Socket }) {
+	constructor(
+		id: string,
+		public server: Server,
+		{ fleet, socket }: { fleet: Ship[]; socket: Socket }
+	) {
 		super(id, server.level, { fleet });
 		this.socket = socket;
 	}

@@ -14,7 +14,10 @@ export class SettingsError extends Error {
 }
 
 export class SettingsEvent extends Event {
-	constructor(type: string, public item: Item) {
+	constructor(
+		type: string,
+		public item: Item
+	) {
 		super(type);
 	}
 }

@@ -1,292 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel=icon href="_build.asset_dir/images/icon.png" type=image/png>
-		<link rel="stylesheet" href="styles/styles.css" type="text/css" />
-		<link rel="stylesheet" href="styles/utils.css" type="text/css" />
-		<link rel="stylesheet" href="styles/client.css" type="text/css" />
-	</head>
 
-	<body data-server-no-reload oncontextmenu="e=>false" background="_build.asset_dir/images/menu.png">
-		<div id="loading_cover" class="cover bg-alt" style="z-index: 100; display: flex; justify-content: center">
-			<svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: calc(50% - 100px); width: 150px; height: 150px" viewBox="0 0 100 100">
-				<defs>
-					<linearGradient id="gradient">
-						<stop offset="0%" stop-color="hsl(200,100%,90%,.2)" />
-						<stop offset="100%" stop-color="hsl(200,100%,90%,1)" />
-					</linearGradient>
-				</defs>
-				<path fill="var(--text-color)" d="m60,50c0,5.5 -4.5,10 -10,10c-5.5,0 -10,-4.5 -10,-10c0,-5.5 4.5,-10 10,-10c5.5,0 10,4.5 10,10z" />
-				<path
-					fill="url(#gradient)"
-					d="m73,50c0,-12.7 -10.3,-23 -23,-23s-23,10.3 -23,23m0.47001,0c0,-10.5 11.50746,-20.6493 22.10746,-20.6493s19.52254,10.1493 19.52254,20.6493"
-				/>
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel=icon href="_build.asset_dir/images/icon.png" type="image/png" />
+	<link rel="stylesheet" href="styles/styles.css" type="text/css" />
+	<link rel="stylesheet" href="styles/utils.css" type="text/css" />
+	<link rel="stylesheet" href="styles/client.css" type="text/css" />
+</head>
+
+<body data-server-no-reload oncontextmenu="e=>false" background="_build.asset_dir/images/menu.png">
+	<div id="loading_cover" class="cover bg-alt" style="z-index: 100; display: flex; justify-content: center">
+		<svg xmlns="http://www.w3.org/2000/svg"
+			style="position: absolute; top: calc(50% - 100px); width: 150px; height: 150px" viewBox="0 0 100 100">
+			<defs>
+				<linearGradient id="gradient">
+					<stop offset="0%" stop-color="hsl(200,100%,90%,.2)" />
+					<stop offset="100%" stop-color="hsl(200,100%,90%,1)" />
+				</linearGradient>
+			</defs>
+			<path fill="var(--text-color)"
+				d="m60,50c0,5.5 -4.5,10 -10,10c-5.5,0 -10,-4.5 -10,-10c0,-5.5 4.5,-10 10,-10c5.5,0 10,4.5 10,10z" />
+			<path fill="url(#gradient)"
+				d="m73,50c0,-12.7 -10.3,-23 -23,-23s-23,10.3 -23,23m0.47001,0c0,-10.5 11.50746,-20.6493 22.10746,-20.6493s19.52254,10.1493 19.52254,20.6493" />
+		</svg>
+		<p style="position: absolute; font-size: 25px; top: 50%">Loading</p>
+	</div>
+	<input id="chat-input" class="ingame" />
+	<ul id="chat" style="overflow: none"></ul>
+	<ul id="chat-history" class="ingame" style="overflow-y: scroll; display: none"></ul>
+	<div id="main" class="cover">
+		<img src="_build.asset_dir/images/title.png" alt="Title" plot="c,90px,475px,75px" />
+		<button class="sp" plot="c,260px,350px,50px"></button>
+		<button class="mp" plot="c,360px,350px,50px"></button>
+		<button class="options" plot="c,460px,350px,50px"></button>
+		<button class="exit" plot="c,560px,350px,50px"></button>
+		<p class="version" plot="r2em,b1em,fit-content,1em" style="text-align: right"><a target="_blank">Version</a></p>
+		<p class="copyright" plot="2em,b1em,fit-content,1em">_copyright</p>
+	</div>
+	<ul id="save-list" class="playable-list content bg-transparent">
+		<button class="back menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#arrow-left" />
 			</svg>
-			<p style="position: absolute; font-size: 25px; top: 50%">Loading</p>
-		</div>
-		<input id="chat-input" class="ingame" />
-		<ul id="chat" style="overflow: none"></ul>
-		<ul id="chat-history" class="ingame" style="overflow-y: scroll; display: none"></ul>
-		<div id="main" class="cover">
-			<img src="_build.asset_dir/images/title.png" alt="Title" plot="c,90px,475px,75px" />
-			<button class="sp" plot="c,260px,350px,50px"></button>
-			<button class="mp" plot="c,360px,350px,50px"></button>
-			<button class="options" plot="c,460px,350px,50px"></button>
-			<button class="exit" plot="c,560px,350px,50px"></button>
-			<p class="version" plot="r2em,b1em,fit-content,1em" style="text-align: right"><a target="_blank">Version</a></p>
-			<p class="copyright" plot="2em,b1em,fit-content,1em">_copyright</p>
-		</div>
-		<ul id="save-list" class="playable-list content bg-transparent">
-			<button class="back menu">
-				<svg>
-					<use href="_build.asset_dir/images/icons.svg#arrow-left" />
-				</svg>
-				<span></span>
-			</button>
-			<button class="new menu">
-				<svg>
-					<use href="_build.asset_dir/images/icons.svg#plus" />
-				</svg>
-				<span></span>
-			</button>
-			<button class="upload menu">
-				<svg>
-					<use href="_build.asset_dir/images/icons.svg#upload" />
-				</svg>
-				<span></span>
-			</button>
-		</ul>
-		<ul id="server-list" class="playable-list content bg-transparent">
-			<button class="back menu">
-				<svg>
-					<use href="_build.asset_dir/images/icons.svg#arrow-left" />
-				</svg>
-				<span></span>
-			</button>
-			<button class="new menu">
-				<svg>
-					<use href="_build.asset_dir/images/icons.svg#plus" />
-				</svg>
-				<span></span>
-			</button>
-			<button class="refresh menu">
-				<svg>
-					<use href="_build.asset_dir/images/icons.svg#arrows-rotate" />
-				</svg>
-				<span></span>
-			</button>
-		</ul>
-		<dialog id="login" class="bg-normal">
-			<svg clickable class="top-right cancel">
-				<use href="_build.asset_dir/images/icons.svg#xmark" />
+			<span></span>
+		</button>
+		<button class="new menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#plus" />
 			</svg>
-			<h3>Login</h3>
-			<div style="display: none" class="error"></div>
+			<span></span>
+		</button>
+		<button class="upload menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#upload" />
+			</svg>
+			<span></span>
+		</button>
+	</ul>
+	<ul id="server-list" class="playable-list content bg-transparent">
+		<button class="back menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#arrow-left" />
+			</svg>
+			<span></span>
+		</button>
+		<button class="new menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#plus" />
+			</svg>
+			<span></span>
+		</button>
+		<button class="refresh menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#arrows-rotate" />
+			</svg>
+			<span></span>
+		</button>
+	</ul>
+	<dialog id="login" class="bg-normal">
+		<svg clickable class="top-right cancel">
+			<use href="_build.asset_dir/images/icons.svg#xmark" />
+		</svg>
+		<h3>Login</h3>
+		<div style="display: none" class="error"></div>
+		<br />
+		<!-- form is so Chrome shuts up about "Password field is not contained in a form" -->
+		<form>
+			<input class="email" autocomplete="email" placeholder="Email" />
 			<br />
-			<!-- form is so Chrome shuts up about "Password field is not contained in a form" -->
-			<form>
-				<input class="email" autocomplete="email" placeholder="Email" />
-				<br />
-				<input class="password" autocomplete="current-password" placeholder="Password" type="password" />
-			</form>
-			<br />
-			<br />
-			<button class="cancel"></button><button class="login">Login</button>
-		</dialog>
-		<dialog id="save-new" class="bg-normal save">
-			<input placeholder="Save name" class="name" plot="c,3em,250px,2em,a" />
-			<button class="back" plot="c-75px,b62.5px,150px,36.6px,a">
+			<input class="password" autocomplete="current-password" placeholder="Password" type="password" />
+		</form>
+		<br />
+		<br />
+		<button class="cancel"></button><button class="login">Login</button>
+	</dialog>
+	<dialog id="save-new" class="bg-normal save">
+		<input placeholder="Save name" class="name" plot="c,3em,250px,2em,a" />
+		<button class="back" plot="c-75px,b62.5px,150px,36.6px,a">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#arrow-left" />
+			</svg>
+			<span></span>
+		</button>
+		<button class="new" plot="c+75px,b62.5px,150px,36.6px,a">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#plus" />
+			</svg>
+			<span></span>
+		</button>
+	</dialog>
+	<dialog id="save-edit" class="bg-normal save">
+		<input type="hidden" class="id" />
+		<input placeholder="Save Name" class="name" plot="c,3em,250px,2em,a" />
+		<button class="cancel" plot="c-75px,b62.5px,150px,36.6px,a">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#arrow-left" />
+			</svg>
+			<span></span>
+		</button>
+		<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
+	</dialog>
+	<dialog id="server-dialog" class="bg-normal server">
+		<input placeholder="Display name" class="name" plot="c,3em,250px,2em,a" /><br />
+		<input placeholder="Address" class="url" plot="c,8em,250px,2em,a" /><br />
+		<button class="cancel" plot="c-75px,b62.5px,150px,36.6px,a">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#arrow-left" />
+			</svg>
+			<span></span>
+		</button>
+		<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
+	</dialog>
+	<dialog id="waypoint-dialog" class="bg-normal">
+		<input type="text" name="name" placeholder="Name" /><br />
+		<input type="number" name="x" placeholder="X" style="width: 4em" />
+		<input type="number" name="y" placeholder="Y" style="width: 4em" />
+		<input type="number" name="z" placeholder="Z" style="width: 4em" /><br />
+		<input type="color" name="color" placeholder="Color" /><br />
+		<button class="cancel"></button>
+		<button class="save"></button>
+	</dialog>
+	<div id="connect" class="content bg-transparent" style="display: none">
+		<p plot="c,c-2em,75%,1em" style="text-align: center"></p>
+		<button plot="c,c+2em,100px,2em" class="back">
+			<span></span>
+		</button>
+	</div>
+	<div id="tablist" class="bg-transparent ingame" plot="c,0,200px,fit-content"
+		style="display: none; word-wrap: break-word; text-align: center">
+		<p class="info"></p>
+		<p class="players"></p>
+	</div>
+	<dialog id="confirm" class="bg-normal">
+		<p class="message"></p>
+		<button class="cancel"></button>
+		<button class="ok">Ok</button>
+	</dialog>
+	<dialog id="alert" class="bg-normal">
+		<p class="message"></p>
+		<button class="ok">Ok</button>
+	</dialog>
+	<div id="ingame-temp-menu" class="bg-transparent content game-ui ingame" style="display: none; z-index: 5"
+		tabindex="-1">
+		<div class="nav" plot="5%,25px,90%,45px,a">
+			<button section="inventory">
 				<svg>
-					<use href="_build.asset_dir/images/icons.svg#arrow-left" />
+					<use href="_build.asset_dir/images/icons.svg#box" />
 				</svg>
 				<span></span>
 			</button>
-			<button class="new" plot="c+75px,b62.5px,150px,36.6px,a">
+			<button section="screenshots">
 				<svg>
-					<use href="_build.asset_dir/images/icons.svg#plus" />
+					<use href="_build.asset_dir/images/icons.svg#image" />
 				</svg>
 				<span></span>
 			</button>
-		</dialog>
-		<dialog id="save-edit" class="bg-normal save">
-			<input type="hidden" class="id" />
-			<input placeholder="Save Name" class="name" plot="c,3em,250px,2em,a" />
-			<button class="cancel" plot="c-75px,b62.5px,150px,36.6px,a">
+			<button section="shipyard">
 				<svg>
-					<use href="_build.asset_dir/images/icons.svg#arrow-left" />
+					<use href="_build.asset_dir/images/icons.svg#wrench" />
 				</svg>
 				<span></span>
 			</button>
-			<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
-		</dialog>
-		<dialog id="server-dialog" class="bg-normal server">
-			<input placeholder="Display name" class="name" plot="c,3em,250px,2em,a" /><br />
-			<input placeholder="Address" class="url" plot="c,8em,250px,2em,a" /><br />
-			<button class="cancel" plot="c-75px,b62.5px,150px,36.6px,a">
+			<button section="lab">
 				<svg>
-					<use href="_build.asset_dir/images/icons.svg#arrow-left" />
+					<use href="_build.asset_dir/images/icons.svg#flask" />
 				</svg>
 				<span></span>
 			</button>
-			<button class="save" plot="c+75px,b62.5px,150px,36.6px,a"></button>
-		</dialog>
-		<dialog id="waypoint-dialog" class="bg-normal">
-			<input type="text" name="name" placeholder="Name" /><br />
-			<input type="number" name="x" placeholder="X" style="width: 4em" />
-			<input type="number" name="y" placeholder="Y" style="width: 4em" />
-			<input type="number" name="z" placeholder="Z" style="width: 4em" /><br />
-			<input type="color" name="color" placeholder="Color" /><br />
-			<button class="cancel"></button>
+		</div>
+		<div class="ingame-menu-grid inventory" style="display: grid"></div>
+		<div class="item-bar bg-normal" plot="c,calc(3em + 45px),75%,1.5em,a" style="line-height: 0">
+			<p class="label" plot="c,0,200px,1em,a"></p>
+			<svg class="item-bar" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1">
+				<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
+			</svg>
+		</div>
+		<div class="ingame-menu-grid screenshots"></div>
+		<div class="ingame-menu-grid shipyard"></div>
+		<div class="ingame-menu-grid lab"></div>
+	</div>
+	<div id="map" class="cover game-ui ingame" tabindex="-1">
+		<svg id="map-markers-container" class="cover" transform-origin="center">
+			<g id="map-markers" style="transition: 0.25s ease-out allow-discrete"></g>
+		</svg>
+		<div id="map-system-info" class="text-overlay"></div>
+		<div id="map-transform-info" class="text-overlay"></div>
+		<button class="waypoints menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#location-dot" />
+			</svg>
+			<span></span>
+		</button>
+		<button class="mode menu"></button>
+	</div>
+	<div id="waypoint-list" class="content bg-transparent center-flex" style="z-index: 6">
+		<button class="new menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#plus" />
+			</svg>
+			<span></span>
+		</button>
+		<button class="back menu">
+			<svg>
+				<use href="_build.asset_dir/images/icons.svg#arrow-left" />
+			</svg>
+			<span></span>
+		</button>
+	</div>
+	<canvas class="game cover ingame" style="display: none; z-index: 0"></canvas>
+	<div id="debug" class="text-overlay cover ingame" style="display: none; width: fit-content">
+		<p style="left: 1%; top: 0" class="left"></p>
+		<p style="right: 1%; top: 0; text-align: right" class="right"></p>
+	</div>
+	<div id="hud" class="ingame" style="display: none">
+		<p class="level" plot="c,b1em,150px,1em" style="text-align: center; line-height: 3em"></p>
+		<div class="xp" plot="c,b1em,300px,1em"
+			style="border: 1px solid var(--text-color); border-radius: var(--bg-radius)">
+			<svg class="xp" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1" border>
+				<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
+			</svg>
+		</div>
+	</div>
+	<div id="pause" style="display: none" class="cover ingame center-flex" tabindex="-1">
+		<div class="bg-normal center-flex">
+			<button class="resume"></button>
 			<button class="save"></button>
-		</dialog>
-		<div id="connect" class="content bg-transparent" style="display: none">
-			<p plot="c,c-2em,75%,1em" style="text-align: center"></p>
-			<button plot="c,c+2em,100px,2em" class="back">
-				<span></span>
-			</button>
+			<button class="options"></button>
+			<button class="quit"></button>
 		</div>
-		<div id="tablist" class="bg-transparent ingame" plot="c,0,200px,fit-content" style="display: none; word-wrap: break-word; text-align: center">
-			<p class="info"></p>
-			<p class="players"></p>
-		</div>
-		<dialog id="confirm" class="bg-normal">
-			<p class="message"></p>
-			<button class="cancel"></button>
-			<button class="ok">Ok</button>
-		</dialog>
-		<dialog id="alert" class="bg-normal">
-			<p class="message"></p>
-			<button class="ok">Ok</button>
-		</dialog>
-		<div id="ingame-temp-menu" class="bg-transparent content game-ui ingame" style="display: none; z-index: 5" tabindex="-1">
-			<div class="nav" plot="5%,25px,90%,45px,a">
-				<button section="inventory">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#box" />
-					</svg>
-					<span></span>
-				</button>
-				<button section="screenshots">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#image" />
-					</svg>
-					<span></span>
-				</button>
-				<button section="shipyard">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#wrench" />
-					</svg>
-					<span></span>
-				</button>
-				<button section="lab">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#flask" />
-					</svg>
-					<span></span>
-				</button>
-			</div>
-			<div class="ingame-menu-grid inventory" style="display: grid"></div>
-			<div class="item-bar bg-normal" plot="c,calc(3em + 45px),75%,1.5em,a" style="line-height: 0">
-				<p class="label" plot="c,0,200px,1em,a"></p>
-				<svg class="item-bar" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1">
-					<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
-				</svg>
-			</div>
-			<div class="ingame-menu-grid screenshots"></div>
-			<div class="ingame-menu-grid shipyard"></div>
-			<div class="ingame-menu-grid lab"></div>
-		</div>
-		<div id="map" class="cover game-ui ingame" tabindex="-1">
-			<svg id="map-markers-container" class="cover" transform-origin="center">
-				<g id="map-markers" style="transition: 0.25s ease-out allow-discrete"></g>
-			</svg>
-			<div id="map-system-info" class="text-overlay"></div>
-			<div id="map-transform-info" class="text-overlay"></div>
-			<button class="waypoints menu">
+	</div>
+	<div id="settings" class="content bg-transparent" style="display: none">
+		<div id="settings-nav">
+			<button class="general" setting-section="general">
 				<svg>
-					<use href="_build.asset_dir/images/icons.svg#location-dot" />
+					<use href="_build.asset_dir/images/icons.svg#gear" />
 				</svg>
 				<span></span>
 			</button>
-			<button class="mode menu"></button>
-		</div>
-		<div id="waypoint-list" class="content bg-transparent center-flex" style="z-index: 6">
-			<button class="new menu">
+			<button class="keybinds" setting-section="keybinds">
 				<svg>
-					<use href="_build.asset_dir/images/icons.svg#plus" />
+					<use href="_build.asset_dir/images/icons.svg#keyboard" />
 				</svg>
 				<span></span>
 			</button>
-			<button class="back menu">
+			<button class="mod" style="display: none">
+				<svg>
+					<use href="_build.asset_dir/images/icons.svg#puzzle-piece" />
+				</svg>
+				<span>Mods</span>
+			</button>
+			<button class="debug" setting-section="debug">
+				<svg>
+					<use href="_build.asset_dir/images/icons.svg#bug" />
+				</svg>
+				<span></span>
+			</button>
+			<button class="back">
 				<svg>
 					<use href="_build.asset_dir/images/icons.svg#arrow-left" />
 				</svg>
 				<span></span>
 			</button>
 		</div>
-		<canvas class="game cover ingame" style="display: none; z-index: 0"></canvas>
-		<div id="debug" class="text-overlay cover ingame" style="display: none; width: fit-content">
-			<p style="left: 1%; top: 0" class="left"></p>
-			<p style="right: 1%; top: 0; text-align: right" class="right"></p>
-		</div>
-		<div id="hud" class="ingame" style="display: none">
-			<p class="level" plot="c,b1em,150px,1em" style="text-align: center; line-height: 3em"></p>
-			<div class="xp" plot="c,b1em,300px,1em" style="border: 1px solid var(--text-color); border-radius: var(--bg-radius)">
-				<svg class="xp" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1" border>
-					<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
-				</svg>
-			</div>
-		</div>
-		<div id="pause" style="display: none" class="cover ingame center-flex" tabindex="-1">
-			<div class="bg-normal center-flex">
-				<button class="resume"></button>
-				<button class="save"></button>
-				<button class="options"></button>
-				<button class="quit"></button>
-			</div>
-		</div>
-		<div id="settings" class="content bg-transparent" style="display: none">
-			<div id="settings-nav">
-				<button class="general" setting-section="general">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#gear" />
-					</svg>
-					<span></span>
-				</button>
-				<button class="keybinds" setting-section="keybinds">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#keyboard" />
-					</svg>
-					<span></span>
-				</button>
-				<button class="mod" style="display: none">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#puzzle-piece" />
-					</svg>
-					<span>Mods</span>
-				</button>
-				<button class="debug" setting-section="debug">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#bug" />
-					</svg>
-					<span></span>
-				</button>
-				<button class="back">
-					<svg>
-						<use href="_build.asset_dir/images/icons.svg#arrow-left" />
-					</svg>
-					<span></span>
-				</button>
-			</div>
 
-			<div class="general" setting-section="general"></div>
-			<div class="keybinds" setting-section="keybinds" style="display: none"></div>
-			<div class="debug" setting-section="debug" style="display: none"></div>
-			<div class="mod" style="display: none"></div>
-		</div>
-	</body>
-	<script type="module" src="index.js"></script>
+		<div class="general" setting-section="general"></div>
+		<div class="keybinds" setting-section="keybinds" style="display: none"></div>
+		<div class="debug" setting-section="debug" style="display: none"></div>
+		<div class="mod" style="display: none"></div>
+	</div>
+</body>
+<script type="module" src="index.js"></script>
+
 </html>

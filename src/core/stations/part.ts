@@ -1,7 +1,7 @@
 import type { Level } from '../level';
 import type { SerializedCelestialBody } from '../entities/body';
 import { CelestialBody } from '../entities/body';
-import { GenericStationComponentID as GenericStationPartID, stationComponents } from '../generic/station_components';
+import { GenericStationPartID as GenericStationPartID, stationParts } from '../generic/station_part';
 import type { Station } from './station';
 
 export interface SerializedStationPart extends SerializedCelestialBody {
@@ -77,5 +77,5 @@ export class StationPart extends CelestialBody {
 		return <StationPart>super.FromJSON(data, level, data);
 	}
 
-	public static generic = stationComponents;
+	public static generic = stationParts;
 }

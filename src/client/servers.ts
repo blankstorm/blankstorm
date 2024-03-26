@@ -27,12 +27,12 @@ function handleDisconnect(reason: string): void {
 		(reason == 'io server disconnect'
 			? 'Disconnected by server'
 			: reason == 'io client disconnect'
-			? 'Client disconnected'
-			: reason == 'ping timeout' || reason == 'transport error'
-			? 'Connection timed out'
-			: reason == 'transport close'
-			? 'Lost Connection'
-			: reason);
+				? 'Client disconnected'
+				: reason == 'ping timeout' || reason == 'transport error'
+					? 'Connection timed out'
+					: reason == 'transport close'
+						? 'Lost Connection'
+						: reason);
 	$('#connect p').text(message);
 	kickMessage = null;
 	$('#connect button').text('Back');

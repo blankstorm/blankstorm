@@ -37,7 +37,12 @@ export class Waypoint extends Entity {
 		return this._active;
 	}
 
-	constructor(id: string, public readonly readonly = false, public readonly builtin = false, level: Level) {
+	constructor(
+		id: string,
+		public readonly readonly = false,
+		public readonly builtin = false,
+		level: Level
+	) {
 		super(id, level);
 		waypoints.add(this);
 		this.gui = $(new WaypointUI(this));
