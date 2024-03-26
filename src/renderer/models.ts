@@ -71,7 +71,7 @@ export class ModelRenderer extends TransformNode {
 
 	async followPath(path: Path) {
 		if (!(path instanceof Path)) throw new TypeError('path must be a Path');
-		if (path.path.length == 0) {
+		if (path.length == 0) {
 			return;
 		}
 		if (this.#pathGizmo && settings.get('show_path_gizmos')) {
@@ -82,18 +82,18 @@ export class ModelRenderer extends TransformNode {
 		if (this.#pathGizmo) {
 			console.warn('Path gizmo was already drawn and not disposed');
 		} else if (settings.get('show_path_gizmos')) {
-			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + random.hex(16), { points: path.path.map(node => node.position) }, this.getScene());
+			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + random.hex(16), { points: path.map(node => node.position) }, this.getScene());
 			this.#pathGizmo.color = Color3.Green();
 		}
 
 		const animation = new Animation('pathFollow', 'position', 60 * this.generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
 			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this.generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-		animation.setKeys(path.path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.position.subtract((this.parent as TransformNode).absolutePosition) })));
+		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.position.subtract((this.parent as TransformNode).absolutePosition) })));
 		rotateAnimation.setKeys(
-			path.path.flatMap((node, i) => {
+			path.flatMap((node, i) => {
 				if (i != 0) {
-					const value = Vector3.PitchYawRollToMoveBetweenPoints(path.path[i - 1].position, node.position);
+					const value = Vector3.PitchYawRollToMoveBetweenPoints(path[i - 1].position, node.position);
 					value.x -= Math.PI / 2;
 					return [
 						{ frame: i * 60 * this.generic.agility - 30, value },
@@ -107,7 +107,7 @@ export class ModelRenderer extends TransformNode {
 		this.animations.push(animation);
 		this.animations.push(rotateAnimation);
 
-		const result = this.getScene().beginAnimation(this, 0, path.path.length * 60);
+		const result = this.getScene().beginAnimation(this, 0, path.length * 60);
 		result.disposeOnEnd = true;
 		await result.waitAsync();
 		this.#currentPath = null;

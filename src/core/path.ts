@@ -1,108 +1,105 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { System } from './System';
 import type { CelestialBody } from './nodes/CelestialBody';
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 
-export class PathNode {
-	position = Vector3.Zero();
-	parent = null;
-	constructor(...args) {
-		this.position = PathNode.Round(args[0] instanceof Vector3 ? args[0] : new Vector3(args[0], args[1], args[2]));
-		if (args.at(-1) instanceof PathNode) this.parent = args.at(-1);
+class PathNode {
+	public position = Vector3.Zero();
+	public constructor({ x, y, z }: IVector3Like, public parent?: PathNode) {
+		this.position = PathNode.Round(new Vector3(x, y, z));
 	}
-	gCost = 0;
-	hCost = 0;
-	intersects = [];
-	heapIndex = null;
-	get fCost() {
+	public gCost = 0;
+	public hCost = 0;
+	public heapIndex = null;
+	public get fCost() {
 		return this.gCost + this.hCost;
 	}
-	equals(node: PathNode) {
-		return this.position.equals(node.position);
+
+	public get id(): string {
+		return this.position.asArray().toString();
 	}
-	static Round(vector: Vector3) {
+	public static Round(vector: Vector3) {
 		return new Vector3(Math.round(vector.x), Math.round(vector.y), Math.round(vector.z));
 	}
 }
 
-export class Path {
-	public path: PathNode[];
-	public openNodes: PathNode[] = [];
-	public closedNodes: PathNode[] = [];
-	public startNode: PathNode = null;
-	public endNode: PathNode = null;
+export class Path extends Array<PathNode> {
 	public gizmo = null;
-	constructor(path?: PathNode[]) {
-		this.path = path;
-	}
 
 	toJSON(): number[][] {
-		return this.path.map(node => node.position.asArray());
+		return this.map(node => node.position.asArray());
 	}
 
 	static FromJSON(path: number[][]) {
-		return new this(path.map(vector => new PathNode(Vector3.FromArray(vector))));
+		return new this(...path.map(vector => new PathNode(Vector3.FromArray(vector))));
 	}
 }
 
-function nodeDistance(nodeA: PathNode, nodeB: PathNode) {
+function nodeDistance(nodeA: PathNode, nodeB: PathNode): number {
 	if (!(nodeA instanceof PathNode && nodeB instanceof PathNode)) throw new TypeError('passed nodes must be path.Node');
 	const distanceX = Math.abs(nodeA.position.x - nodeB.position.x);
 	const distanceY = Math.abs(nodeA.position.z - nodeB.position.z);
 	return Math.SQRT2 * (distanceX > distanceY ? distanceY : distanceX) + (distanceX > distanceY ? 1 : -1) * (distanceX - distanceY);
 }
 
-function trace(startNode: PathNode, endNode: PathNode) {
+function trace(startNode: PathNode, endNode: PathNode): PathNode[] {
 	const path = [];
 	let currentNode = endNode;
-	while (!currentNode.equals(startNode)) {
+	while (currentNode.id != startNode.id) {
 		path.push(currentNode);
 		currentNode = currentNode.parent;
 	}
 	return path.reverse();
 }
 
-export function findPath(start: Vector3, end: Vector3, system: System) {
-	const path = new Path();
+export function findPath(start: Vector3, end: Vector3, system: System): PathNode[] {
 	if (!(start instanceof Vector3)) throw new TypeError('Start must be a Vector');
 	if (!(end instanceof Vector3)) throw new TypeError('End must be a Vector');
-	path.startNode = new PathNode(start);
-	path.endNode = new PathNode(end);
-	path.openNodes.push(path.startNode);
-	let pathFound = false;
-	while (!pathFound && path.openNodes.length > 0 && path.openNodes.length < 1e4 && path.closedNodes.length < 1e4) {
-		const currentNode: PathNode = path.openNodes.reduce(
+	const openNodes: Map<string, PathNode> = new Map();
+	const closedNodes: Map<string, PathNode> = new Map();
+	const startNode: PathNode = new PathNode(start);
+	let endNode: PathNode = new PathNode(end);
+	openNodes.set(startNode.id, startNode);
+	while (openNodes.size > 0 && openNodes.size < 1e4 && closedNodes.size < 1e4) {
+		const currentNode = Array.from(openNodes.values()).reduce(
 			(previous, current) => (previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current),
-			path.openNodes[0]
+			openNodes.values().next().value
 		);
-		path.openNodes.splice(
-			path.openNodes.findIndex(node => node == currentNode),
-			1
-		);
-		path.closedNodes.push(currentNode);
-		if (currentNode.equals(path.endNode)) {
-			path.endNode = currentNode;
-			path.path = trace(path.startNode, path.endNode);
-			pathFound = true;
+		openNodes.delete(currentNode.id);
+		closedNodes.set(currentNode.id, currentNode);
+		if (currentNode.id == endNode.id) {
+			endNode = currentNode;
+			const path = trace(startNode, endNode);
+			return new Path(...path);
 		}
-		const relatives = [0, 1, -1].flatMap(x => [0, 1, -1].map(y => new Vector3(x, 0, y))).filter(v => v.x != 0 || v.z != 0);
-		const neighbors = relatives.map(v =>
-			path.openNodes.some(node => node.position.equals(v)) ? path.openNodes.find(node => node.position.equals(v)) : new PathNode(currentNode.position.add(v), currentNode)
-		);
+		const neighbors = [0, 1, -1]
+			.flatMap(x => [0, 1, -1].map(y => new Vector3(x, 0, y)))
+			.filter(v => v.x != 0 || v.z != 0)
+			.map(v => {
+				const id = v.asArray().toString();
+				return openNodes.has(id) ? openNodes.get(id) : new PathNode(currentNode.position.add(v), currentNode);
+			});
 		for (const neighbor of neighbors) {
+			let intersects = false;
 			for (const node of system.nodes.values()) {
-				if (Vector3.Distance(node.absolutePosition, neighbor.position) <= (node.nodeTypes.includes('CelestialBody') ? (<CelestialBody>node).radius : 1) + 1)
-					neighbor.intersects.push(node);
-			}
-			if (!neighbor.intersects.length && !path.closedNodes.some(node => node.equals(neighbor))) {
-				const costToNeighbor = currentNode.gCost + nodeDistance(currentNode, neighbor);
-				if (costToNeighbor < neighbor.gCost || !path.openNodes.some(node => node.equals(neighbor))) {
-					neighbor.gCost = costToNeighbor;
-					neighbor.hCost = nodeDistance(neighbor, path.endNode);
-					if (!path.openNodes.some(node => node.equals(neighbor))) path.openNodes.push(neighbor);
+				if (Vector3.Distance(node.absolutePosition, neighbor.position) <= (node.nodeTypes.includes('CelestialBody') ? (<CelestialBody>node).radius : 1) + 1) {
+					intersects = true;
 				}
+			}
+			if (intersects || closedNodes.has(neighbor.id)) {
+				continue;
+			}
+
+			const costToNeighbor = currentNode.gCost + nodeDistance(currentNode, neighbor);
+			if (costToNeighbor > neighbor.gCost && openNodes.has(neighbor.id)) {
+				continue;
+			}
+
+			neighbor.gCost = costToNeighbor;
+			neighbor.hCost = nodeDistance(neighbor, endNode);
+			if (!openNodes.has(neighbor.id)) {
+				openNodes.set(neighbor.id, neighbor);
 			}
 		}
 	}
-
-	return path;
 }

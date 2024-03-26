@@ -36,10 +36,14 @@ export class Entity extends Node {
 	async moveTo(target: Vector3, isRelative = false) {
 		if (!(target instanceof Vector3)) throw new TypeError('target must be a Vector3');
 		const path = findPath(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
-		if (path.path.length > 0) {
-			this.system.emit('entity.follow_path.start', this.id, path.toJSON());
-			this.position = path.path.at(-1).position.subtract(this.parent.absolutePosition);
-			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.path.at(-2).position, path.path.at(-1).position);
+		if (path.length > 0) {
+			this.system.emit(
+				'entity.follow_path.start',
+				this.id,
+				path.map(node => node.position.asArray())
+			);
+			this.position = path.at(-1).position.subtract(this.parent.absolutePosition);
+			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.at(-2).position, path.at(-1).position);
 			rotation.x -= Math.PI / 2;
 			this.rotation = rotation;
 		}
