@@ -12,7 +12,7 @@ import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import '@babylonjs/core/Culling'; // For Ray side effects
-import { Path } from '../core/Path';
+import { Path } from '../core/path';
 import type { MoveInfo, SerializedSystem } from '../core/System';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { SerializedNode } from '../core/nodes/Node';

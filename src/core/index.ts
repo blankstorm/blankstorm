@@ -4,7 +4,7 @@ export * from './generic/research';
 export * from './generic/ships';
 export * from './generic/hardpoints';
 export * from './generic/stationComponents';
-export * from './Path';
+export * from './path';
 export * from './Storage';
 
 export * from './nodes/Entity';

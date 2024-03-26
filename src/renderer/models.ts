@@ -12,7 +12,7 @@ import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/loaders/glTF/index';
 
 import config from './config';
-import { Path } from '../core/Path';
+import { Path } from '../core/path';
 import * as settings from '../client/settings';
 import { random } from '../core/utils';
 import type { SerializedNode } from '../core/nodes/Node';
