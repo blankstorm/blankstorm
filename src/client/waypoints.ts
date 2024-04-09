@@ -75,10 +75,6 @@ export class Waypoint extends Entity {
 		this.gui.find('.icon svg').css('fill', color.toHexString());
 	}
 
-	override get name(): string {
-		return super.name;
-	}
-
 	override set name(name: string) {
 		super.name = name;
 		this.gui.find('.name').text(name);
@@ -116,12 +112,13 @@ export class Waypoint extends Entity {
 	}
 
 	toJSON(): WaypointJSON {
-		return Object.assign(super.toJSON(), {
+		return {
+			...super.toJSON(),
 			icon: this.icon,
 			color: this.color.asArray(),
 			readonly: this.readonly,
 			system: this.level.id,
-		});
+		};
 	}
 
 	static fromJSON(data: WaypointJSON, level: Level): Waypoint {

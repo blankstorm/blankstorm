@@ -14,9 +14,10 @@ export class Planet extends CelestialBody {
 	}
 
 	toJSON(): PlanetData {
-		return Object.assign(super.toJSON(), {
+		return {
+			...super.toJSON(),
 			biome: this.biome,
-		});
+		};
 	}
 
 	static FromJSON(data: PlanetData, level: Level): Planet {

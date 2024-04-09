@@ -53,12 +53,13 @@ export class Player extends Entity {
 	}
 
 	toJSON(): PlayerJSON {
-		return Object.assign(super.toJSON(), {
+		return {
+			...super.toJSON(),
 			fleet: this.fleet.toJSON(),
 			xp: this.xp,
 			xpPoints: this.xpPoints,
 			research: this.research,
-		});
+		};
 	}
 
 	static FromJSON(data: PlayerJSON, level: Level): Player {

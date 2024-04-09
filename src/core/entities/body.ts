@@ -48,11 +48,12 @@ export class CelestialBody extends Entity {
 	}
 
 	toJSON(): CelestialBodyJSON {
-		return Object.assign(super.toJSON(), {
+		return {
+			...super.toJSON(),
 			fleet: this.fleet.toJSON(),
 			rewards: this.rewards.toJSON().items,
 			radius: this.radius,
-		});
+		};
 	}
 
 	static FromJSON(data: CelestialBodyJSON, level: Level, constructorOptions): CelestialBody {

@@ -87,13 +87,14 @@ export class Ship extends Entity {
 	}
 
 	toJSON() {
-		return Object.assign(super.toJSON(), {
+		return {
+			...super.toJSON(),
 			type: this.type,
 			hp: +this.hp.toFixed(3),
 			jumpCooldown: +this.jumpCooldown.toFixed(),
 			storage: this.storage.toJSON().items,
 			hardpoints: this.hardpoints.map(hp => hp.toJSON()),
-		});
+		};
 	}
 
 	static GenerateFleetFromPower(power: number): ShipType[] {

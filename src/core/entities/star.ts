@@ -14,9 +14,10 @@ export class Star extends CelestialBody {
 	}
 
 	toJSON(): StarJSON {
-		return Object.assign(super.toJSON(), {
+		return {
+			...super.toJSON(),
 			color: this.color.asArray(),
-		});
+		};
 	}
 
 	static FromJSON(data: StarJSON, level: Level): Star {

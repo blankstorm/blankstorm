@@ -21,9 +21,7 @@ export interface EntityJSON {
 }
 
 export class Entity extends EventEmitter {
-	public id: string;
-
-	private _name = '';
+	protected _name: string;
 
 	public get name(): string {
 		return this._name;
@@ -87,13 +85,16 @@ export class Entity extends EventEmitter {
 		return this.parent instanceof Entity ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
-	public constructor(id: string, level: Level, constructorOptions?: object) {
-		id ||= randomHex(32);
+	public constructor(
+		public id: string = randomHex(32),
+		level: Level,
+		constructorOptions?: object
+	) {
 		super();
+		this.id ||= randomHex(32);
 		if (constructorOptions) {
 			console.warn(`constructorOptions should not be passed to Node constructor`);
 		}
-		this.id = id;
 		this.level = level;
 		setTimeout(() => level.emit('entity_created', this.toJSON()));
 	}
