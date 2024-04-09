@@ -69,9 +69,9 @@ export async function createDefault(name: string): Promise<Level> {
 	level.name = name;
 	await level.ready();
 	const system = await level.generateSystem('Kurassh', Vector2.Zero());
-	const fleet = ['mosquito', 'cillus'].map((type: ShipType) => new Ship(null, level, { type }));
+	const fleet = ['mosquito', 'cillus'].map((type: ShipType) => new Ship(null, level, type));
 	fleet[0].position.z += 4;
-	const player = new Player(account.id, level, { fleet });
+	const player = new Player(account.id, level, fleet);
 	player.name = account.username;
 	player.position = new Vector3(0, 0, -1000).add(randomCords(50, true));
 	player.rotation = Vector3.Zero();

@@ -9,6 +9,7 @@ import { Entity } from './entity';
 import type { ShipJSON } from './ship';
 import { Ship } from './ship';
 import { Vector3 } from '@babylonjs/core';
+import type { ShipType } from '../generic/ships';
 
 export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;
@@ -28,7 +29,7 @@ export class Player extends Entity {
 		return this.fleet.storage;
 	}
 
-	public constructor(id: string, level: Level, { fleet }: { fleet: (ShipJSON | Ship | string)[] }) {
+	public constructor(id: string, level: Level, fleet: (ShipJSON | Ship | ShipType)[]) {
 		super(id, level);
 		this.fleet.position = Vector3.Zero();
 		for (const shipData of fleet) {

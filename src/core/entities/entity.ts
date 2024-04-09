@@ -104,7 +104,7 @@ export class Entity extends EventEmitter {
 	public constructor(
 		public id: string = randomHex(32),
 		level: Level,
-		constructorOptions?: object
+		constructorOptions?
 	) {
 		super();
 		this.id ||= randomHex(32);
@@ -167,7 +167,7 @@ export class Entity extends EventEmitter {
 		this.owner = level.getEntityByID(data.owner) || this.owner;
 	}
 
-	public static From<const T extends Entity = Entity>(this: EntityConstructor<T>, data: EntityJSON, level: Level, constructorOptions?: object): T {
+	public static From<const T extends Entity = Entity>(this: EntityConstructor<T>, data: Partial<EntityJSON>, level: Level, constructorOptions?): T {
 		const entity = new this(data.id, level, constructorOptions);
 		entity.from(data, level);
 		return entity;

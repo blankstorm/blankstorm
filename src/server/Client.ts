@@ -13,7 +13,7 @@ export class Client extends Player {
 		public server: Server,
 		{ fleet, socket }: { fleet: Ship[]; socket: Socket }
 	) {
-		super(id, server.level, { fleet });
+		super(id, server.level, fleet);
 		this.socket = socket;
 	}
 

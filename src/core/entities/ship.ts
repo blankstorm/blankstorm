@@ -34,9 +34,11 @@ export class Ship extends Entity {
 	/**
 	 * @todo move distance related stuff to ship creation
 	 */
-	public constructor(id: string, level: Level, { type, hardpoints = [], power }: { type: ShipType; hardpoints?: HardpointJSON[]; power?: number }) {
+	public constructor(id: string, level: Level, type?: ShipType) {
 		if (type && !genericShips[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
 		super(id, level);
+
+		const { power, hardpoints } = genericShips[type];
 
 		const distance = Math.log(randomInt(0, power || 1) ** 3 + 1);
 		this.position.addInPlace(randomCords(distance, true));
@@ -52,9 +54,9 @@ export class Ship extends Entity {
 				continue;
 			}
 
-			const hp: Hardpoint = hardpoints[i] ? Hardpoint.From(hardpoints[i], level) : new Hardpoint(null, level, info);
-			hp.parent = this;
-			this.hardpoints.push(hp);
+			const hardpoint: Hardpoint = hardpoints[i] ? Hardpoint.From(hardpoints[i], level) : new Hardpoint(null, level, info);
+			hardpoint.parent = this;
+			this.hardpoints.push(hardpoint);
 		}
 	}
 

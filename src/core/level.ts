@@ -161,7 +161,7 @@ export class Level extends EventEmitter<LevelEvents> {
 				}
 
 				player.storage.removeItems(data.ship.recipe);
-				const ship = new Ship(null, player.level, { type: <ShipType>data.ship.id, power: player.power });
+				const ship = new Ship(null, player.level, <ShipType>data.ship.id);
 				ship.parent = ship.owner = player;
 				player.fleet.add(ship);
 				break;
@@ -269,7 +269,7 @@ export class Level extends EventEmitter<LevelEvents> {
 			if (entity instanceof Berth) {
 				entity.productionTime = Math.max(entity.productionTime - 1, 0);
 				if (entity.productionTime == 0 && entity.productionID) {
-					const ship = new Ship(null, this, { type: entity.productionID });
+					const ship = new Ship(null, this, entity.productionID);
 					ship.position = entity.absolutePosition;
 					ship.owner = entity.station.owner;
 					entity.productionID = null;

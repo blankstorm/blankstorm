@@ -30,7 +30,7 @@ export class CelestialBody extends Entity {
 			if (shipOrType instanceof Ship) {
 				ship = shipOrType;
 			} else {
-				ship = new Ship(null, level, { type: shipOrType });
+				ship = new Ship(null, level, shipOrType);
 				ship.position.addInPlace(this.fleet.position);
 			}
 			ship.parent = ship.owner = this;
