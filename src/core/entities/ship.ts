@@ -38,7 +38,7 @@ export class Ship extends Entity {
 		if (type && !genericShips[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
 		super(id, level);
 
-		const { power, hardpoints } = genericShips[type];
+		const { power } = genericShips[type];
 
 		const distance = Math.log(randomInt(0, power || 1) ** 3 + 1);
 		this.position.addInPlace(randomCords(distance, true));
@@ -48,7 +48,7 @@ export class Ship extends Entity {
 		this.hp = this.generic.hp;
 		this.jumpCooldown = this.generic.jump.cooldown;
 
-		for (const [i, info] of this.generic.hardpoints.entries()) {
+		for (const info of this.generic.hardpoints) {
 			if (!Object.hasOwn(genericHardpoints, info.type)) {
 				console.warn(`Hardpoint type "${info.type}" does not exist, skipping`);
 				continue;
