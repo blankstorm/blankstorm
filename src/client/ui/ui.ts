@@ -28,6 +28,7 @@ import { alert } from '../utils';
 import { System } from '../../core/system';
 import { Level } from '../../core/level';
 import { isServer } from '../config';
+import { changeUI } from './utils';
 
 export const items: Map<string, ItemUI> = new Map();
 
@@ -489,13 +490,13 @@ export function registerListeners() {
 	$('#ingame-temp-menu')
 		.on('keydown', e => {
 			if (e.key == settings.get('toggle_temp_menu') || e.key == 'Escape') {
-				client.changeUI('#ingame-temp-menu');
+				changeUI('#ingame-temp-menu');
 			}
 		})
 		.on('click', update);
 	$('canvas.game,#pause,#hud').on('keydown', e => {
 		if (e.key == 'Escape') {
-			client.changeUI('#pause', true);
+			changeUI('#pause', true);
 			client.isPaused ? client.unpause() : client.pause();
 		}
 		update();

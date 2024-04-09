@@ -24,6 +24,7 @@ import * as ui from './ui/ui';
 import * as user from './user';
 import { alert, cookies, fixPaths, logger, minimize } from './utils';
 import { waypoints } from './waypoints';
+import { changeUI } from './ui/utils';
 
 export interface ClientInit {
 	/**
@@ -55,19 +56,6 @@ export function toggleHitboxes() {
 }
 
 export const screenshots = [];
-
-export function changeUI(selector: string, hideAll?: boolean) {
-	if ($(selector).is(':visible')) {
-		$('canvas.game').trigger('focus');
-		$(selector).hide();
-	} else if ($('.game-ui').not(selector).is(':visible') && hideAll) {
-		$('canvas.game').trigger('focus');
-		$('.game-ui').hide();
-	} else if (!$('.game-ui').is(':visible')) {
-		renderer.getCamera().detachControl();
-		$(selector).show().trigger('focus');
-	}
-}
 
 function _initLog(message: string): void {
 	$('#loading_cover p').text(message);

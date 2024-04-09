@@ -1,5 +1,7 @@
 import $ from 'jquery';
 
+import { getCamera } from '../../renderer';
+
 export function contextMenu(target: JQuery | HTMLElement | string | JQuery.PlainObject) {
 	const jq = $(target);
 	const menu = $('<div></div>').addClass('bg-light content-menu');
@@ -12,4 +14,17 @@ export function contextMenu(target: JQuery | HTMLElement | string | JQuery.Plain
 		menu.css('top', e.pageY + height < innerHeight ? e.pageY : e.pageY - height);
 	});
 	return menu;
+}
+
+export function changeUI(selector: string, hideAll?: boolean) {
+	if ($(selector).is(':visible')) {
+		$('canvas.game').trigger('focus');
+		$(selector).hide();
+	} else if ($('.game-ui').not(selector).is(':visible') && hideAll) {
+		$('canvas.game').trigger('focus');
+		$('.game-ui').hide();
+	} else if (!$('.game-ui').is(':visible')) {
+		getCamera().detachControl();
+		$(selector).show().trigger('focus');
+	}
 }
