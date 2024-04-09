@@ -52,7 +52,7 @@ if (options.keep) {
 	fs.rmSync(options.output, { recursive: true, force: true });
 }
 
-const copyright = `Copyright © ${new Date().getFullYear()} ${pkg.author}. All Rights Reserved.`;
+const copyright = `Copyright © ${new Date().getFullYear()} ${pkg.author.slice(0, pkg.author.indexOf('<') - 1)}. All Rights Reserved.`;
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
 	projectDir: dirname,

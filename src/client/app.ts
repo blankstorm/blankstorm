@@ -12,17 +12,17 @@ const __dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
 const options = parseArgs({
 	options: {
-		'bs-debug': { type: 'boolean', default: false },
-		'log-level': { type: 'string' },
+		dev: { type: 'boolean', default: false },
+		logLevel: { type: 'string' },
 		quiet: { type: 'boolean', default: false },
-		'initial-scale': { type: 'string', default: '100' },
+		initalScale: { type: 'string', default: '100' },
 		path: { type: 'string', default: __dirname },
 	},
 	allowPositionals: true,
 }).values;
 
 // Initial window scale
-let initialScale: number = parseInt(options['initial-scale'].toString());
+let initialScale: number = parseInt(options.initalScale);
 initialScale = isNaN(initialScale) ? 100 : initialScale;
 
 // Set up logging
@@ -35,19 +35,19 @@ if (!existsSync(logDir)) {
 const logFile = join(logDir, new Date().toISOString().replaceAll(':', '.') + '.log');
 logger.on('entry', entry => appendFileSync(logFile, entry + '\n'));
 
-if (options.quiet || !options['bs-debug']) {
+if (options.quiet || !options.dev) {
 	logger.detach(console, [LogLevel.DEBUG, LogLevel.LOG, LogLevel.INFO]);
 }
 
 logger.debug('Options: ' + JSON.stringify(options));
 
-if (options['log-level']) {
-	logger.warn('CLI flag "log-level" ignored (unsupported)');
+if (options.logLevel) {
+	logger.warn('CLI flag for log level ignored (unsupported)');
 }
 
 logger.log('Initializing...');
 
-ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options['bs-debug'] }));
+ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options.dev }));
 ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, computed: null }));
 
 nativeTheme.themeSource = 'dark';
@@ -79,7 +79,7 @@ function init(): void {
 		}
 		switch (input.key) {
 			case 'F12':
-				if (options['bs-debug']) {
+				if (options.dev) {
 					window.webContents.toggleDevTools();
 				}
 				break;
