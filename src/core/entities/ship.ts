@@ -21,7 +21,7 @@ export interface ShipJSON extends EntityJSON {
 }
 
 export class Ship extends Entity {
-	public hardpoints: Hardpoint[] = [];
+	public hardpoints: Set<Hardpoint> = new Set();
 	public type: ShipType;
 	public hp: number;
 	public jumpCooldown: number;
@@ -56,7 +56,7 @@ export class Ship extends Entity {
 
 			const hardpoint: Hardpoint = hardpoints[i] ? Hardpoint.From(hardpoints[i], level) : new Hardpoint(null, level, info);
 			hardpoint.parent = this;
-			this.hardpoints.push(hardpoint);
+			this.hardpoints.add(hardpoint);
 		}
 	}
 
@@ -90,7 +90,7 @@ export class Ship extends Entity {
 			type: this.type,
 			hp: +this.hp.toFixed(3),
 			jumpCooldown: +this.jumpCooldown.toFixed(),
-			hardpoints: this.hardpoints.map(hp => hp.toJSON()),
+			hardpoints: [...this.hardpoints].map(hp => hp.toJSON()),
 		};
 	}
 

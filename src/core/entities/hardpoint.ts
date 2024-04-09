@@ -34,7 +34,7 @@ export class Hardpoint extends Entity {
 	remove() {
 		super.remove();
 		if (this.owner) {
-			this.owner.hardpoints.splice(this.owner.hardpoints.indexOf(this), 1);
+			this.owner.hardpoints.delete(this);
 		}
 	}
 
