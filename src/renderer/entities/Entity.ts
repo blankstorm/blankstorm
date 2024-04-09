@@ -1,5 +1,5 @@
 import type { Scene } from '@babylonjs/core/scene';
-import type { EntityJSON } from '../../core';
+import type { EntityJSON } from '../../core/entities/entity';
 import { ModelRenderer } from '../models';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 

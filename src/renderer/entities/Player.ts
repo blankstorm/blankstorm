@@ -3,7 +3,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
-import type { PlayerJSON } from '../../core';
+import type { PlayerJSON } from '../../core/entities/player';
 import type { CustomHardpointProjectileMaterial } from './Hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 

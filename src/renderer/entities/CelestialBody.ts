@@ -3,7 +3,7 @@ import type { Node } from '@babylonjs/core/node';
 import type { Scene } from '@babylonjs/core/scene';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
-import type { CelestialBodyJSON } from '../../core';
+import type { CelestialBodyJSON } from '../../core/entities/body';
 import config from '../config';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
