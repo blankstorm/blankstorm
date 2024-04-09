@@ -2,14 +2,14 @@ import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
-import type { SerializedSystem } from './system';
+import type { SystemJSON } from './system';
 import { System } from './system';
-import type { SerializedCelestialBody } from './entities/body';
-import type { Entity, SerializedEntity } from './entities/entity';
-import { Planet, type SerializedPlanet } from './entities/planet';
-import { Player, type SerializedPlayer } from './entities/player';
-import { Ship, type SerializedShip } from './entities/ship';
-import { Star, type SerializedStar } from './entities/star';
+import type { CelestialBodyJSON } from './entities/body';
+import type { Entity, EntityJSON } from './entities/entity';
+import { Planet, type PlanetData } from './entities/planet';
+import { Player, type PlayerJSON } from './entities/player';
+import { Ship, type ShipJSON } from './entities/ship';
+import { Star, type StarJSON } from './entities/star';
 import type { GenericProjectile } from './generic/hardpoints';
 import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
@@ -19,7 +19,7 @@ import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
 import { Berth } from './stations/berth';
 import { randomHex } from './utils';
-import { FleetData } from './fleet';
+import { FleetJSON } from './fleet';
 
 export interface MoveInfo<T> {
 	id: string;
@@ -41,31 +41,31 @@ export type ActionArgs = {
 	[A in keyof ActionData]: [action: A, data: ActionData[A]];
 }[keyof ActionData];
 
-export interface SerializedLevel<S extends SerializedSystem = SerializedSystem> {
+export interface LevelJSON {
 	date: string;
-	systems: S[];
+	systems: SystemJSON[];
 	difficulty: number;
 	version: VersionID;
 	name: string;
 	id: string;
-	entities: SerializedEntity[];
+	entities: EntityJSON[];
 }
 
 export interface LevelEvents {
-	body_created: [SerializedCelestialBody];
-	body_removed: [SerializedCelestialBody];
-	entity_added: [SerializedEntity];
-	entity_removed: [SerializedEntity];
-	entity_death: [SerializedEntity];
+	body_created: [CelestialBodyJSON];
+	body_removed: [CelestialBodyJSON];
+	entity_added: [EntityJSON];
+	entity_removed: [EntityJSON];
+	entity_death: [EntityJSON];
 	entity_path_start: [string, IVector3Like[]];
-	entity_created: [SerializedEntity];
-	fleet_items_change: [FleetData, Record<ItemID, number>];
-	player_created: [SerializedPlayer];
-	player_levelup: [SerializedPlayer];
-	player_removed: [SerializedPlayer];
-	player_reset: [SerializedPlayer];
+	entity_created: [EntityJSON];
+	fleet_items_change: [FleetJSON, Record<ItemID, number>];
+	player_created: [PlayerJSON];
+	player_levelup: [PlayerJSON];
+	player_removed: [PlayerJSON];
+	player_reset: [PlayerJSON];
 	projectile_fire: [string, string, GenericProjectile];
-	ship_created: [SerializedShip];
+	ship_created: [ShipJSON];
 	tick: [];
 }
 
@@ -280,7 +280,7 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 		}
 	}
 
-	public toJSON(): SerializedLevel {
+	public toJSON(): LevelJSON {
 		return {
 			date: new Date().toJSON(),
 			systems: [...this.systems.values()].map(system => system.toJSON()) as ReturnType<S['toJSON']>[],
@@ -292,7 +292,7 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 		};
 	}
 
-	public static async upgrade(data: SerializedLevel) {
+	public static async upgrade(data: LevelJSON) {
 		switch (data.version) {
 			case 'infdev_1':
 			case 'infdev_2':
@@ -319,7 +319,7 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 		return data;
 	}
 
-	public static FromJSON(levelData: SerializedLevel, level?: Level): Level {
+	public static FromJSON(levelData: LevelJSON, level?: Level): Level {
 		if (levelData.version != version) {
 			throw new Error(`Can't load level data: wrong version`);
 		}
@@ -347,16 +347,16 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 		for (const data of entities) {
 			switch (data.nodeType) {
 				case 'Player':
-					Player.FromJSON(<SerializedPlayer>data, level);
+					Player.FromJSON(<PlayerJSON>data, level);
 					break;
 				case 'Ship':
-					Ship.FromJSON(<SerializedShip>data, level);
+					Ship.FromJSON(<ShipJSON>data, level);
 					break;
 				case 'Star':
-					Star.FromJSON(<SerializedStar>data, level);
+					Star.FromJSON(<StarJSON>data, level);
 					break;
 				case 'Planet':
-					Planet.FromJSON(<SerializedPlanet>data, level);
+					Planet.FromJSON(<PlanetData>data, level);
 					break;
 				default:
 			}

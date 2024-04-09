@@ -7,18 +7,19 @@ import type { Level } from '../level';
 import { Storage } from '../storage';
 import type { System } from '../system';
 import type { CelestialBody } from './body';
-import type { SerializedEntity } from './entity';
+import type { EntityJSON } from './entity';
 import { Entity } from './entity';
-import type { SerializedHardpoint } from './hardpoint';
+import type { HardpointJSON } from './hardpoint';
 import { Hardpoint } from './hardpoint';
 import type { Player } from './player';
+import { genericHardpoints } from '..';
 
-export interface SerializedShip extends SerializedEntity {
+export interface ShipJSON extends EntityJSON {
 	type: ShipType;
 	hp: number;
 	storage: Record<ItemID, number>;
 	jumpCooldown: number;
-	hardpoints: SerializedHardpoint[];
+	hardpoints: HardpointJSON[];
 }
 
 export class Ship extends Entity {
@@ -35,7 +36,7 @@ export class Ship extends Entity {
 	/**
 	 * @todo move distance related stuff to ship creation
 	 */
-	constructor(id: string, level: Level, { type, hardpoints = [], power }: { type: ShipType; hardpoints?: SerializedHardpoint[]; power?: number }) {
+	constructor(id: string, level: Level, { type, hardpoints = [], power }: { type: ShipType; hardpoints?: HardpointJSON[]; power?: number }) {
 		if (type && !Ship.generic[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
 		super(id, level);
 
@@ -49,7 +50,7 @@ export class Ship extends Entity {
 
 		for (const i in this.generic.hardpoints) {
 			const info = this.generic.hardpoints[i];
-			if (!Object.hasOwn(Hardpoint.generic, info.type)) {
+			if (!Object.hasOwn(genericHardpoints, info.type)) {
 				console.warn(`Hardpoint type "${info.type}" does not exist, skipping`);
 				continue;
 			}
@@ -109,7 +110,7 @@ export class Ship extends Entity {
 		return fleet;
 	}
 
-	static FromJSON(data: SerializedShip, level: Level): Ship {
+	static FromJSON(data: ShipJSON, level: Level): Ship {
 		const max = this.generic[data.type].storage;
 		const ship = <Ship>super.FromJSON(data, level, data);
 		ship.hp = data.hp;

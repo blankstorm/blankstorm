@@ -3,10 +3,10 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
 
 import { StationComponentRenderer } from './StationComponent';
-import type { SerializedStation } from '../../core';
+import type { StationJSON } from '../../core';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
-export class StationRenderer extends TransformNode implements Renderer<SerializedStation> {
+export class StationRenderer extends TransformNode implements Renderer<StationJSON> {
 	components: StationComponentRenderer[] = [];
 	core: StationComponentRenderer;
 
@@ -14,7 +14,7 @@ export class StationRenderer extends TransformNode implements Renderer<Serialize
 		super(id, scene);
 	}
 
-	async update({ name, position, rotation, parent }: SerializedStation) {
+	async update({ name, position, rotation, parent }: StationJSON) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);

@@ -10,7 +10,7 @@ import { version, config as coreConfig } from '../core/metadata';
 import type { VersionID } from '../core/metadata';
 import { execCommandString } from './commands';
 import { Level } from '../core/level';
-import type { SerializedLevel } from '../core/level';
+import type { LevelJSON } from '../core/level';
 
 import { Logger } from 'logzen';
 import { Client, ClientStore } from './Client';
@@ -45,7 +45,7 @@ export interface ServerOptions {
 	whitelist?: string[];
 	blacklist?: string[];
 	ops?: OpsEntry[];
-	levelData?: SerializedLevel;
+	levelData?: LevelJSON;
 }
 
 // see https://stackoverflow.com/a/71689964/17637456

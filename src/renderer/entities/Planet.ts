@@ -6,7 +6,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
-import { randomHex, type SerializedPlanet } from '../../core';
+import { randomHex, type PlanetData } from '../../core';
 import { planetBiomes } from '../../core/generic/planets';
 import config from '../config';
 import { cloudFragmentShader } from '../shaders/cloud';
@@ -203,7 +203,7 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 	},
 };
 
-export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<SerializedPlanet> {
+export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
 	biome = '';
 	customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
 	constructor(id: string, scene: Scene) {
@@ -216,7 +216,7 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Se
 		];
 	}
 
-	async update(data: SerializedPlanet) {
+	async update(data: PlanetData) {
 		await super.update(data);
 		if (this.biome != data.biome) {
 			if (Object.keys(biomes).includes(data.biome)) {

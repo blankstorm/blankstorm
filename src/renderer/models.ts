@@ -10,7 +10,7 @@ import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/loaders/glTF/index';
 import * as settings from '../client/settings';
-import type { SerializedEntity } from '../core/entities/entity';
+import type { EntityJSON } from '../core/entities/entity';
 import { randomHex } from '../core/utils';
 import config from './config';
 
@@ -139,7 +139,7 @@ export class ModelRenderer extends TransformNode {
 		return this.#instance;
 	}
 
-	async update({ name, position, rotation, parent, nodeType, type }: SerializedEntity & { type?: string }, rendererType?: RendererType) {
+	async update({ name, position, rotation, parent, nodeType, type }: EntityJSON & { type?: string }, rendererType?: RendererType) {
 		this.name = name;
 		if (!this.#currentPath) {
 			this.position = Vector3.FromArray(position);

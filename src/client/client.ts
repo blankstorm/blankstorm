@@ -5,7 +5,7 @@ import { getAccount, type Account } from '@blankstorm/api';
 import $ from 'jquery';
 import { Level } from '../core/level';
 import { execCommandString } from '../core/commands';
-import type { SerializedEntity } from '../core/entities/entity';
+import type { EntityJSON } from '../core/entities/entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemID } from '../core/generic/items';
 import { config, version } from '../core/metadata';
@@ -502,7 +502,7 @@ export function load(level: Level): boolean {
 	level.on('entity_path_start', async (entityID: string, path: IVector3Like[]) => {
 		renderer.startFollowingPath(entityID, path);
 	});
-	level.on('entity_death', async (entity: SerializedEntity) => {
+	level.on('entity_death', async (entity: EntityJSON) => {
 		if (entity.nodeType == 'Ship') {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}

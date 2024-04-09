@@ -11,15 +11,15 @@ import type { ShipType } from '../core/generic/ships';
 import { path } from './config';
 import * as chat from './chat';
 import { currentLevel } from './client';
-import { Level, SerializedLevel } from '../core/level';
+import { Level, LevelJSON } from '../core/level';
 import { account } from './user';
 
 export class Save {
-	#data: SerializedLevel;
+	#data: LevelJSON;
 
 	gui: JQuery<SaveListItem>;
 
-	constructor(data: SerializedLevel) {
+	constructor(data: LevelJSON) {
 		this.#data = data;
 
 		set(this.id, this);
@@ -31,14 +31,14 @@ export class Save {
 		return this.#data?.id;
 	}
 
-	get data(): SerializedLevel {
+	get data(): LevelJSON {
 		if (folder.has(this.id)) {
 			this.#data = JSON.parse(folder.get(this.id));
 		}
 		return this.#data;
 	}
 
-	set data(data: SerializedLevel) {
+	set data(data: LevelJSON) {
 		this.#data = data;
 		this.updateData();
 	}

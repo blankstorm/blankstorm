@@ -1,20 +1,20 @@
-import { Fleet, type FleetData } from '../fleet';
+import { Fleet, type FleetJSON } from '../fleet';
 import { ItemID } from '../generic/items';
 import type { Level } from '../level';
 import { Storage } from '../storage';
 import { randomCords, randomInt } from '../utils';
-import type { SerializedEntity } from './entity';
+import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import { Ship } from './ship';
 
-export interface SerializedCelestialBody extends SerializedEntity {
-	fleet: FleetData;
+export interface CelestialBodyJSON extends EntityJSON {
+	fleet: FleetJSON;
 	radius: number;
 	rewards: Record<ItemID, number>;
 }
 
 export class CelestialBody extends Entity {
-	fleet: Fleet;
+	fleet?: Fleet;
 	rewards: Storage;
 	radius = 0;
 	option?: JQuery<HTMLElement>;
@@ -47,7 +47,7 @@ export class CelestialBody extends Entity {
 		super.remove();
 	}
 
-	toJSON(): SerializedCelestialBody {
+	toJSON(): CelestialBodyJSON {
 		return Object.assign(super.toJSON(), {
 			fleet: this.fleet.toJSON(),
 			rewards: this.rewards.toJSON().items,
@@ -55,7 +55,7 @@ export class CelestialBody extends Entity {
 		});
 	}
 
-	static FromJSON(data: SerializedCelestialBody, level: Level, constructorOptions): CelestialBody {
+	static FromJSON(data: CelestialBodyJSON, level: Level, constructorOptions): CelestialBody {
 		return <CelestialBody>super.FromJSON(data, level, {
 			...constructorOptions,
 			radius: data.radius,

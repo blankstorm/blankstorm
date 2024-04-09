@@ -2,10 +2,10 @@ import type { Level } from '../level';
 import { Producer } from '../generic/production';
 import type { ShipType } from '../generic/ships';
 import { genericShips, shipTypes } from '../generic/ships';
-import type { SerializedStationPart, StationPartOptions } from './part';
+import type { StationPartJSON, StationPartOptions } from './part';
 import { StationPart } from './part';
 
-export interface SerializedBerth extends SerializedStationPart {
+export interface BerthJSON extends StationPartJSON {
 	productionID: ShipType;
 	productionTime: number;
 }
@@ -23,14 +23,14 @@ export class Berth extends StationPart implements Producer {
 		this.productionTime = +genericShips[type].productionTime;
 	}
 
-	public toJSON(): SerializedBerth {
+	public toJSON(): BerthJSON {
 		return Object.assign(super.toJSON(), {
 			productionID: this.productionID,
 			productionTime: this.productionTime,
 		});
 	}
 
-	public static FromJSON(data: SerializedBerth, level: Level): Berth {
+	public static FromJSON(data: BerthJSON, level: Level): Berth {
 		const berth = <Berth>super.FromJSON(data, level);
 		berth.productionID = data.productionID;
 		berth.productionTime = data.productionTime;

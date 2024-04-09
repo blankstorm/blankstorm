@@ -1,8 +1,8 @@
 import type { Scene } from '@babylonjs/core/scene';
-import type { SerializedEntity } from '../../core/entities/entity';
+import type { EntityJSON } from '../../core/entities/entity';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 
-export interface Renderer<S extends SerializedEntity = SerializedEntity> extends TransformNode {
+export interface Renderer<S extends EntityJSON = EntityJSON> extends TransformNode {
 	update(s: S): Promise<void>;
 }
 

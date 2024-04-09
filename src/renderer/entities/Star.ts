@@ -4,11 +4,11 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { Scene } from '@babylonjs/core/scene';
 
 import config from '../config';
-import type { SerializedStar } from '../../core';
+import type { StarJSON } from '../../core';
 import { CelestialBodyRenderer } from './CelestialBody';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
-export class StarRenderer extends CelestialBodyRenderer implements Renderer<SerializedStar> {
+export class StarRenderer extends CelestialBodyRenderer implements Renderer<StarJSON> {
 	light: PointLight;
 	//get material(): StandardMaterial { return super.material as StandardMaterial }
 	constructor(id: string, scene: Scene) {
@@ -25,7 +25,7 @@ export class StarRenderer extends CelestialBodyRenderer implements Renderer<Seri
 		*/
 	}
 
-	async update(data: SerializedStar) {
+	async update(data: StarJSON) {
 		await super.update(data);
 		(<StandardMaterial>this.material).emissiveColor = Color3.FromArray(data.color);
 	}

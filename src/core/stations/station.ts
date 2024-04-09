@@ -1,12 +1,12 @@
 import type { Level } from '../level';
-import type { SerializedCelestialBody } from '../entities/body';
+import type { CelestialBodyJSON } from '../entities/body';
 import { CelestialBody } from '../entities/body';
 import type { Player } from '../entities/player';
-import { SerializedStationPart, StationPart } from './part';
+import { StationPartJSON, StationPart } from './part';
 
-export interface SerializedStation extends SerializedCelestialBody {
+export interface StationJSON extends CelestialBodyJSON {
 	type: string;
-	components: SerializedStationPart;
+	components: StationPartJSON;
 }
 
 export class Station extends CelestialBody {
@@ -32,7 +32,7 @@ export class Station extends CelestialBody {
 	/**
 	 * @todo actually implement
 	 */
-	public static FromJSON(data: SerializedStation, level: Level): Station {
+	public static FromJSON(data: StationJSON, level: Level): Station {
 		return <Station>super.FromJSON(data, level, {});
 	}
 }

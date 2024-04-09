@@ -13,9 +13,9 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import { Scene } from '@babylonjs/core/scene';
-import type { SerializedLevel } from '../core/level';
+import type { LevelJSON } from '../core/level';
 import type { MoveInfo } from '../core/system';
-import type { SerializedEntity } from '../core/entities/entity';
+import type { EntityJSON } from '../core/entities/entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import { version } from '../core/metadata';
 import { Camera } from './camera';
@@ -32,7 +32,7 @@ import { logger } from './logger';
 
 export { logger };
 
-function createEmptyCache(): SerializedLevel {
+function createEmptyCache(): LevelJSON {
 	return {
 		id: null,
 		difficulty: null,
@@ -47,7 +47,7 @@ function createEmptyCache(): SerializedLevel {
 let skybox: Mesh,
 	xzPlane: Mesh,
 	camera: Camera,
-	cache: SerializedLevel = createEmptyCache(),
+	cache: LevelJSON = createEmptyCache(),
 	hitboxes = false,
 	gl: GlowLayer;
 export let engine: Engine, scene: Scene, hl: HighlightLayer, probe: ReflectionProbe;
@@ -56,7 +56,7 @@ export function setHitboxes(value: boolean) {
 	hitboxes = !!value;
 }
 
-const entities: Map<string, Renderer<SerializedEntity>> = new Map();
+const entities: Map<string, Renderer<EntityJSON>> = new Map();
 
 function onCanvasResive() {
 	engine.resize();
@@ -170,7 +170,7 @@ export async function clear() {
 	logger.debug('Cleared');
 }
 
-export async function load(serializedNodes: SerializedEntity[]) {
+export async function load(serializedNodes: EntityJSON[]) {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Not initalized'));
 	}
@@ -194,12 +194,12 @@ export async function load(serializedNodes: SerializedEntity[]) {
 	}
 }
 
-export async function update(levelData: SerializedLevel) {
+export async function update(levelData: LevelJSON) {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Renderer not initalized'));
 	}
 
-	const renderersToAdd: SerializedEntity[] = [];
+	const renderersToAdd: EntityJSON[] = [];
 
 	if (levelData.id != cache.id && cache.id) {
 		logger.warn(`Updating the renderer with a different system (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);

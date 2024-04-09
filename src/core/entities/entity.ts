@@ -7,7 +7,7 @@ import { randomHex, resolveConstructors } from '../utils';
 
 export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 
-export interface SerializedEntity {
+export interface EntityJSON {
 	id: string;
 	name: string;
 	owner: string;
@@ -16,7 +16,7 @@ export interface SerializedEntity {
 	position: number[];
 	rotation: number[];
 	velocity: number[];
-	selected: boolean;
+	isSelected: boolean;
 	isTargetable: boolean;
 }
 
@@ -68,7 +68,7 @@ export class Entity extends EventEmitter {
 	public parent?: Entity;
 	public owner?: Entity;
 
-	public selected = false;
+	public isSelected = false;
 	public isTargetable = false;
 
 	public position = Vector3.Zero();
@@ -123,7 +123,7 @@ export class Entity extends EventEmitter {
 		}
 	}
 
-	public toJSON(): SerializedEntity {
+	public toJSON(): EntityJSON {
 		return {
 			id: this.id,
 			name: this.name,
@@ -134,11 +134,11 @@ export class Entity extends EventEmitter {
 			rotation: this.rotation.asArray(),
 			velocity: this.velocity.asArray(),
 			isTargetable: this.isTargetable,
-			selected: this.selected,
+			isSelected: this.isSelected,
 		};
 	}
 
-	public static FromJSON(data: SerializedEntity, level: Level, constructorOptions: object): Entity {
+	public static FromJSON(data: EntityJSON, level: Level, constructorOptions: object): Entity {
 		const entity = new this(data.id, level, constructorOptions);
 		entity.position = Vector3.FromArray(data.position || [0, 0, 0]);
 		entity.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);

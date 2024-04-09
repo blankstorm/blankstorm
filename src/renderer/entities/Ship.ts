@@ -1,10 +1,10 @@
 import { HardpointRenderer } from './Hardpoint';
 import { ModelRenderer } from '../models';
 import { ShipType, genericShips } from '../../core/generic/ships';
-import type { SerializedShip } from '../../core/entities/ship';
+import type { ShipJSON } from '../../core/entities/ship';
 import { createAndUpdate, entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
-export class ShipRenderer extends ModelRenderer implements Renderer<SerializedShip> {
+export class ShipRenderer extends ModelRenderer implements Renderer<ShipJSON> {
 	hardpoints: Map<string, HardpointRenderer> = new Map();
 	type: ShipType;
 	constructor(id, scene) {
@@ -15,7 +15,7 @@ export class ShipRenderer extends ModelRenderer implements Renderer<SerializedSh
 		return genericShips[this.type];
 	}
 
-	async update(data: SerializedShip) {
+	async update(data: ShipJSON) {
 		await super.update(data);
 		for (const hardpointData of [...data.hardpoints]) {
 			if (this.hardpoints.has(hardpointData.id)) {

@@ -3,11 +3,11 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
-import type { SerializedPlayer } from '../../core';
+import type { PlayerJSON } from '../../core';
 import type { CustomHardpointProjectileMaterial } from './Hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
-export class PlayerRenderer extends TransformNode implements Renderer<SerializedPlayer> {
+export class PlayerRenderer extends TransformNode implements Renderer<PlayerJSON> {
 	velocity = Vector3.Zero();
 	customHardpointProjectileMaterials: CustomHardpointProjectileMaterial[];
 	constructor(id: string, scene: Scene) {
@@ -23,7 +23,7 @@ export class PlayerRenderer extends TransformNode implements Renderer<Serialized
 		];
 	}
 
-	async update({ name, position, rotation, velocity, parent }: SerializedPlayer) {
+	async update({ name, position, rotation, velocity, parent }: PlayerJSON) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);

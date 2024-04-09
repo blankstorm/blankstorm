@@ -6,7 +6,7 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import { randomCords, randomFloat, randomHex, randomInt, wait } from '../../core/utils';
 import { ModelRenderer } from '../models';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
-import type { SerializedHardpoint } from '../../core/entities/hardpoint';
+import type { HardpointJSON } from '../../core/entities/hardpoint';
 import type { GenericProjectile } from '../../core/generic/hardpoints';
 
 export interface CustomHardpointProjectileMaterial {
@@ -24,7 +24,7 @@ export interface HardpointProjectileHandlerOptions extends FireProjectileOptions
 
 export type HardpointProjectileHandler = (this: HardpointRenderer, target: TransformNode, options: HardpointProjectileHandlerOptions) => Promise<unknown>;
 
-export class HardpointRenderer extends ModelRenderer implements Renderer<SerializedHardpoint> {
+export class HardpointRenderer extends ModelRenderer implements Renderer<HardpointJSON> {
 	projectiles = [];
 	_projectile: HardpointProjectileHandler;
 	constructor(id: string, scene: Scene) {
@@ -41,7 +41,7 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Seriali
 		this._projectile.call(this, target, options);
 	}
 
-	async update(data: SerializedHardpoint) {
+	async update(data: HardpointJSON) {
 		if (this.rendererType != data.type) {
 			this._projectile = HardpointRenderer.projectiles.get(data.type);
 		}

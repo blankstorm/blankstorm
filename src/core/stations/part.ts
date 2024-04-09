@@ -1,10 +1,10 @@
 import type { Level } from '../level';
-import type { SerializedCelestialBody } from '../entities/body';
+import type { CelestialBodyJSON } from '../entities/body';
 import { CelestialBody } from '../entities/body';
 import { GenericStationPartID as GenericStationPartID, stationParts } from '../generic/station_part';
 import type { Station } from './station';
 
-export interface SerializedStationPart extends SerializedCelestialBody {
+export interface StationPartJSON extends CelestialBodyJSON {
 	hp: number;
 	type: string;
 }
@@ -58,7 +58,7 @@ export class StationPart extends CelestialBody {
 		return this.removePart(component);
 	}
 
-	public toJSON(): SerializedStationPart {
+	public toJSON(): StationPartJSON {
 		return Object.assign(super.toJSON(), {
 			type: this.type,
 			hp: this.hp,
@@ -73,7 +73,7 @@ export class StationPart extends CelestialBody {
 		}
 	}
 
-	public static FromJSON(data: SerializedStationPart, level: Level): StationPart {
+	public static FromJSON(data: StationPartJSON, level: Level): StationPart {
 		return <StationPart>super.FromJSON(data, level, data);
 	}
 

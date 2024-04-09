@@ -15,14 +15,14 @@ import { config } from './metadata';
 import { Berth } from './stations/berth';
 import { getRandomIntWithRecursiveProbability, greek, randomBoolean, randomCords, randomFloat, randomHex, randomInt, range } from './utils';
 
-export type SerializedSystemConnection = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
+export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
 
-export interface SerializedSystem {
+export interface SystemJSON {
 	name: string;
 	id: string;
 	difficulty: number;
 	position: number[];
-	connections: SerializedSystemConnection[];
+	connections: SystemConnectionJSON[];
 }
 
 export interface MoveInfo<T> {
@@ -106,11 +106,11 @@ export class System extends EventEmitter<{
 	}
 
 	public get selected() {
-		return [...this.entities].filter(e => e.selected);
+		return [...this.entities].filter(e => e.isSelected);
 	}
 
-	toJSON(): SerializedSystem {
-		const data: SerializedSystem = {
+	toJSON(): SystemJSON {
+		const data: SystemJSON = {
 			difficulty: this.difficulty,
 			name: this.name,
 			id: this.id,
@@ -135,7 +135,7 @@ export class System extends EventEmitter<{
 		return data;
 	}
 
-	static FromJSON(systemData: SerializedSystem, level: Level, system?: System): System {
+	static FromJSON(systemData: SystemJSON, level: Level, system?: System): System {
 		system ||= new System(systemData.id, level);
 		system.name = systemData.name;
 		system.difficulty = systemData.difficulty;

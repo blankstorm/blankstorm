@@ -6,7 +6,7 @@ import { CelestialBody } from './entities/body';
 import { Player } from './entities/player';
 import { Level } from './level';
 
-export interface FleetData {
+export interface FleetJSON {
 	position: number[];
 	ships: string[];
 }
@@ -108,14 +108,14 @@ export class Fleet extends Set<Ship> {
 		return Object.values(items).every(item => item <= 0);
 	}
 
-	public toJSON(): FleetData {
+	public toJSON(): FleetJSON {
 		return {
 			position: this.position.asArray(),
 			ships: Array.from(this).map(s => s.id),
 		};
 	}
 
-	public fromJSON({ position, ships }: FleetData): void {
+	public fromJSON({ position, ships }: FleetJSON): void {
 		this.position = Vector3.FromArray(position || [0, 0, 0]);
 		this.clear();
 		for (const id of ships) {
@@ -128,7 +128,7 @@ export class Fleet extends Set<Ship> {
 		}
 	}
 
-	public static FromJSON(data: FleetData): Fleet {
+	public static FromJSON(data: FleetJSON): Fleet {
 		const fleet = new Fleet();
 		fleet.fromJSON(data);
 		return fleet;

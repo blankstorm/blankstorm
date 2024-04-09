@@ -3,8 +3,8 @@ import { Matrix, Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import $ from 'jquery';
 import type { Level } from '../core';
-import { SerializedCelestialBody } from '../core/entities/body';
-import type { SerializedEntity } from '../core/entities/entity';
+import { CelestialBodyJSON } from '../core/entities/body';
+import type { EntityJSON } from '../core/entities/entity';
 import { Entity } from '../core/entities/entity';
 import { scene } from '../renderer/index';
 import { currentLevel } from './client';
@@ -13,7 +13,7 @@ import { WaypointUI } from './ui/waypoint';
 import * as user from './user';
 import { getEntityIcon, minimize } from './utils';
 
-export interface SerializedWaypoint extends SerializedEntity {
+export interface WaypointJSON extends EntityJSON {
 	color: number[];
 	icon: string;
 	readonly: boolean;
@@ -115,7 +115,7 @@ export class Waypoint extends Entity {
 		waypoints.delete(this);
 	}
 
-	toJSON(): SerializedWaypoint {
+	toJSON(): WaypointJSON {
 		return Object.assign(super.toJSON(), {
 			icon: this.icon,
 			color: this.color.asArray(),
@@ -124,7 +124,7 @@ export class Waypoint extends Entity {
 		});
 	}
 
-	static fromJSON(data: SerializedWaypoint, level: Level): Waypoint {
+	static fromJSON(data: WaypointJSON, level: Level): Waypoint {
 		if (level.id != data.system) {
 			throw new ReferenceError('Can not load waypoint, level ID mismatch');
 		}
@@ -135,7 +135,7 @@ export class Waypoint extends Entity {
 		return waypoint;
 	}
 
-	static FromBody(body: SerializedCelestialBody): void {
+	static FromBody(body: CelestialBodyJSON): void {
 		const waypoint = new Waypoint(null, true, true, currentLevel);
 		waypoint.name = body.name;
 		waypoint.position = Vector3.FromArray(body.position);

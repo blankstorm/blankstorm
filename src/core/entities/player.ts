@@ -1,15 +1,15 @@
-import { Fleet, FleetData } from '../fleet';
+import { Fleet, FleetJSON } from '../fleet';
 import type { ResearchID } from '../generic/research';
 import { research } from '../generic/research';
 import type { Level } from '../level';
-import type { SerializedEntity } from './entity';
+import type { EntityJSON } from './entity';
 import { Entity } from './entity';
-import type { SerializedShip } from './ship';
+import type { ShipJSON } from './ship';
 import { Ship } from './ship';
 
-export interface SerializedPlayer extends SerializedEntity {
+export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;
-	fleet: FleetData;
+	fleet: FleetJSON;
 	xp: number;
 	xpPoints: number;
 }
@@ -25,7 +25,7 @@ export class Player extends Entity {
 		return this.fleet.power;
 	}
 
-	constructor(id: string, level: Level, { fleet }: { fleet: (SerializedShip | Ship | string)[] }) {
+	constructor(id: string, level: Level, { fleet }: { fleet: (ShipJSON | Ship | string)[] }) {
 		super(id, level);
 		for (const shipData of fleet) {
 			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? level.getEntityByID<Ship>(shipData) : Ship.FromJSON(shipData, level);
@@ -52,7 +52,7 @@ export class Player extends Entity {
 		super.remove();
 	}
 
-	toJSON(): SerializedPlayer {
+	toJSON(): PlayerJSON {
 		return Object.assign(super.toJSON(), {
 			fleet: this.fleet.toJSON(),
 			xp: this.xp,
@@ -61,7 +61,7 @@ export class Player extends Entity {
 		});
 	}
 
-	static FromJSON(data: SerializedPlayer, level: Level): Player {
+	static FromJSON(data: PlayerJSON, level: Level): Player {
 		return <Player>super.FromJSON(data, level, data);
 	}
 }

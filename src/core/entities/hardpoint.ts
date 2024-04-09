@@ -6,12 +6,12 @@ import { genericHardpoints } from '../generic/hardpoints';
 import type { HardpointInfo } from '../generic/ships';
 import { resolveConstructors, wait, xpToLevel } from '../utils';
 import type { CelestialBody } from './body';
-import type { SerializedEntity } from './entity';
+import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import type { Player } from './player';
 import type { Ship } from './ship';
 
-export interface SerializedHardpoint extends SerializedEntity {
+export interface HardpointJSON extends EntityJSON {
 	info: HardpointInfo;
 	type: HardpointType;
 	reload: number;
@@ -42,7 +42,7 @@ export class Hardpoint extends Entity {
 		}
 	}
 
-	toJSON(): SerializedHardpoint {
+	toJSON(): HardpointJSON {
 		return {
 			...super.toJSON(),
 			type: this.type,
@@ -87,9 +87,7 @@ export class Hardpoint extends Entity {
 		}
 	}
 
-	static FromJSON(data: SerializedHardpoint, level: Level): Hardpoint {
+	static FromJSON(data: HardpointJSON, level: Level): Hardpoint {
 		return <Hardpoint>super.FromJSON(data, level, data);
 	}
-
-	static generic = genericHardpoints;
 }

@@ -1,6 +1,6 @@
 import type { Server } from './Server';
 import { Player } from '../core/entities/player';
-import type { SerializedPlayer } from '../core/entities/player';
+import type { PlayerJSON } from '../core/entities/player';
 import type { Socket } from 'socket.io';
 import type { Ship } from '../core/entities/ship';
 
@@ -28,7 +28,7 @@ export class Client extends Player {
 		this.server.blacklist.push(this.id);
 	}
 
-	toJSON(): SerializedPlayer {
+	toJSON(): PlayerJSON {
 		return Object.assign(super.toJSON(), { nodeType: 'Player' });
 	}
 
