@@ -1,8 +1,7 @@
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
-import { randomCords, randomInt } from '..';
-import type { HardpointType } from '../generic/hardpoints';
+import { randomCords, randomInt } from '../utils';
 import { ItemID } from '../generic/items';
-import type { GenericShip, HardpointInfo, ShipType } from '../generic/ships';
+import type { GenericShip, ShipType } from '../generic/ships';
 import { genericShips } from '../generic/ships';
 import type { Level } from '../level';
 import { Storage } from '../storage';
@@ -46,19 +45,20 @@ export class Ship extends Entity {
 		this.type = type;
 		this.storage = new Storage(this.generic.storage);
 		this.hp = this.generic.hp;
-		this.jumpCooldown = this.generic.jumpCooldown;
+		this.jumpCooldown = this.generic.jump.cooldown;
 
-		this.generic.hardpoints.forEach((info: HardpointInfo, i: number) => {
-			if (!Hardpoint.generic[info.type]) {
-				console.warn(`Hardpoint type ${info.type} doesn't exist, skipping`);
-				return;
+		for (const i in this.generic.hardpoints) {
+			const info = this.generic.hardpoints[i];
+			if (!Object.hasOwn(Hardpoint.generic, info.type)) {
+				console.warn(`Hardpoint type "${info.type}" does not exist, skipping`);
+				continue;
 			}
 
-			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromJSON(hardpoints[i], level) : new Hardpoint(null, level, { type: info.type as HardpointType });
+			const hp: Hardpoint = hardpoints[i] ? Hardpoint.FromJSON(hardpoints[i], level) : new Hardpoint(null, level, info);
 			hp.parent = this;
 			hp.info = info;
 			this.hardpoints.push(hp);
-		});
+		}
 	}
 
 	get generic(): GenericShip {
@@ -77,12 +77,12 @@ export class Ship extends Entity {
 
 		const distance = Vector2.Distance(this.system.position, targetSystem.position);
 
-		if (distance > this.generic.jumpRange) {
+		if (distance > this.generic.jump.range) {
 			return false;
 		}
 
 		this.system = targetSystem;
-		this.jumpCooldown = this.generic.jumpCooldown + 0;
+		this.jumpCooldown = this.generic.jump.cooldown + 0;
 	}
 
 	toJSON() {

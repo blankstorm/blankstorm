@@ -27,7 +27,6 @@ export class CelestialBody extends Entity {
 		super(id, level);
 		this.radius = radius;
 		this.rewards = Storage.FromJSON({ items: rewards, max: 1e10 });
-		
 		for (const shipOrType of fleet.ships) {
 			let ship: Ship;
 			if (shipOrType instanceof Ship) {

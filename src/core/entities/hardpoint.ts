@@ -3,7 +3,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Level } from '../level';
 import type { GenericHardpoint, HardpointType } from '../generic/hardpoints';
 import { genericHardpoints } from '../generic/hardpoints';
-import type { HardpointInfo, SerializedHardpointInfo } from '../generic/ships';
+import type { HardpointInfo } from '../generic/ships';
 import { resolveConstructors, wait, xpToLevel } from '../utils';
 import type { CelestialBody } from './body';
 import type { SerializedEntity } from './entity';
@@ -12,7 +12,7 @@ import type { Player } from './player';
 import type { Ship } from './ship';
 
 export interface SerializedHardpoint extends SerializedEntity {
-	info: SerializedHardpointInfo;
+	info: HardpointInfo;
 	type: HardpointType;
 	reload: number;
 }
@@ -43,16 +43,12 @@ export class Hardpoint extends Entity {
 	}
 
 	toJSON(): SerializedHardpoint {
-		return Object.assign(super.toJSON(), {
+		return {
+			...super.toJSON(),
 			type: this.type,
-			info: {
-				type: this.info?.type,
-				scale: this.info?.scale || 1,
-				position: this.info?.position?.asArray() || [0, 0, 0],
-				rotation: this.info?.rotation?.asArray() || [0, 0, 0],
-			},
+			info: this.info,
 			reload: this.reload,
-		});
+		};
 	}
 
 	/**
