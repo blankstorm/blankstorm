@@ -13,7 +13,7 @@ import { Level } from '../core/level';
 import type { LevelJSON } from '../core/level';
 
 import { Logger } from 'logzen';
-import { Client, ClientStore } from './Client';
+import { Client, ClientStore, getDisconnectReason } from './Client';
 import { captureArrayUpdates } from './utils';
 
 export interface PingInfo {
@@ -49,9 +49,8 @@ export interface ServerOptions {
 }
 
 // see https://stackoverflow.com/a/71689964/17637456
-type _Wrap<T> = { [K in keyof T]-?: [T[K]] };
 type _Unwrap<T> = { [K in keyof T]: Extract<T[K], [unknown]>[0] };
-type InitialParameters<F extends (...args: unknown[]) => unknown> = _Wrap<Parameters<F>> extends [...infer InitPs, unknown] ? _Unwrap<InitPs> : never;
+type InitialParameters<F extends (...args: unknown[]) => unknown> = Required<Parameters<F>> extends [...infer InitPs, unknown] ? _Unwrap<InitPs> : never;
 
 export class Server extends EventEmitter {
 	whitelist: string[];
@@ -204,7 +203,7 @@ export class Server extends EventEmitter {
 			client.sentPackets++;
 		});
 		client.socket.on('disconnect', reason => {
-			const message = Client.GetDisconnectReason(reason);
+			const message = getDisconnectReason(reason);
 			this.log.log(`${client.name} left (${message})`);
 			this.io.emit('chat', `${client.name} left`);
 			this.clients.delete(client.socket.id);

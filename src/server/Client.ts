@@ -7,7 +7,6 @@ import type { Ship } from '../core/entities/ship';
 export class Client extends Player {
 	socket: Socket;
 	lastMessager?: Client;
-	declare oplvl: number;
 	sentPackets = 0;
 	constructor(
 		id: string,
@@ -31,17 +30,17 @@ export class Client extends Player {
 	toJSON(): PlayerJSON {
 		return Object.assign(super.toJSON(), { nodeType: 'Player' });
 	}
+}
 
-	static GetDisconnectReason(reason: string): string {
-		const reasons = new Map([
-			['server namespace disconnect', 'Disconnected by server'],
-			['client namespace disconnect', 'Client disconnected'],
-			['ping timeout', 'Connection timed out'],
-			['transport close', 'Lost Connection'],
-			['transport error', 'Connection failed'],
-		]);
-		return reasons.has(reason) ? reasons.get(reason) : reason;
-	}
+export function getDisconnectReason(reason: string): string {
+	const reasons = new Map([
+		['server namespace disconnect', 'Disconnected by server'],
+		['client namespace disconnect', 'Client disconnected'],
+		['ping timeout', 'Connection timed out'],
+		['transport close', 'Lost Connection'],
+		['transport error', 'Connection failed'],
+	]);
+	return reasons.has(reason) ? reasons.get(reason) : reason;
 }
 
 export class ClientStore extends Map<string, Client> {

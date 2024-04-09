@@ -166,7 +166,7 @@ export class Level extends EventEmitter<LevelEvents> {
 				player.fleet.add(ship);
 				break;
 			case 'do_research':
-				if (player.research[id] >= data.max || isResearchLocked(<ResearchID>data.id, player) || player.xpPoints < 1) {
+				if (player.research[id] >= data.max || isResearchLocked(<ResearchID>data.id, player)) {
 					return false;
 				}
 				const neededItems = priceOfResearch(<ResearchID>data.id, player.research[data.id]);
@@ -176,7 +176,6 @@ export class Level extends EventEmitter<LevelEvents> {
 
 				player.storage.removeItems(neededItems);
 				player.research[data.id]++;
-				player.xpPoints--;
 				break;
 			case 'warp':
 				for (const { id, target } of data) {

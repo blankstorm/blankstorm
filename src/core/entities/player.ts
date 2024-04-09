@@ -14,16 +14,12 @@ export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;
 	fleet: FleetJSON;
 	xp: number;
-	xpPoints: number;
 }
 
 export class Player extends Entity {
 	public research = <Record<ResearchID, number>>Object.fromEntries(Object.keys(research).map((k: ResearchID) => [k, 0]));
 	public fleet: Fleet = new Fleet();
 	public xp = 0;
-	public xpPoints = 0;
-	public speed = 1;
-	public oplvl?: number;
 	public get power(): number {
 		return this.fleet.power;
 	}
@@ -62,6 +58,12 @@ export class Player extends Entity {
 
 	public from(data: PlayerJSON, level: Level): void {
 		super.from(data, level);
+		this.xp = data.xp;
+		this.research = data.research;
+		if('fleet' in data) {
+			this.fleet.from(data.fleet);
+		}
+		
 	}
 
 	public toJSON(): PlayerJSON {
@@ -69,7 +71,6 @@ export class Player extends Entity {
 			...super.toJSON(),
 			fleet: this.fleet.toJSON(),
 			xp: this.xp,
-			xpPoints: this.xpPoints,
 			research: this.research,
 		};
 	}
