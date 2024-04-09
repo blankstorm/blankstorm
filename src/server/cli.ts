@@ -5,7 +5,7 @@ import { config as coreConfig } from '../core/metadata';
 import { readJSONFile } from './utils';
 import { Logger } from 'logzen';
 import { Server } from './Server';
-import { ServerOptions } from './Server';
+import type { ServerOptions } from './Server';
 
 const log = new Logger();
 

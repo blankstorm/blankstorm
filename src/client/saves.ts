@@ -11,7 +11,8 @@ import type { ShipType } from '../core/generic/ships';
 import { path } from './config';
 import * as chat from './chat';
 import { currentLevel } from './client';
-import { Level, LevelJSON } from '../core/level';
+import type { LevelJSON } from '../core/level';
+import { Level } from '../core/level';
 import { account } from './user';
 
 export class Save {

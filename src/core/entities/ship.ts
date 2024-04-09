@@ -1,6 +1,6 @@
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { randomCords, randomInt } from '../utils';
-import { ItemID } from '../generic/items';
+import type { ItemID } from '../generic/items';
 import type { GenericShip, ShipType } from '../generic/ships';
 import { genericShips } from '../generic/ships';
 import type { Level } from '../level';

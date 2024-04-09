@@ -3,7 +3,7 @@ import { Matrix, Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import $ from 'jquery';
 import type { Level } from '../core';
-import { CelestialBodyJSON } from '../core/entities/body';
+import type { CelestialBodyJSON } from '../core/entities/body';
 import type { EntityJSON } from '../core/entities/entity';
 import { Entity } from '../core/entities/entity';
 import { scene } from '../renderer/index';

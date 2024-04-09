@@ -1,8 +1,8 @@
 import { config } from '../../core/metadata';
-import { Entity } from '../../core/entities/entity';
-import { Planet } from '../../core/entities/planet';
-import { Ship } from '../../core/entities/ship';
-import { Star } from '../../core/entities/star';
+import type { Entity } from '../../core/entities/entity';
+import type { Planet } from '../../core/entities/planet';
+import type { Ship } from '../../core/entities/ship';
+import type { Star } from '../../core/entities/star';
 import { toDegrees } from '../../core/utils';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
@@ -103,7 +103,7 @@ export function supportsMarkerType(nodeType: string): boolean {
 export let x: number = 0;
 export let y: number = 0;
 export let scale: number = 1;
-export let rotation: number = 0;
+export const rotation: number = 0;
 export let mode: 'in-system' | 'inter-system' = 'in-system';
 
 const modes: MapMode[] = ['in-system', 'inter-system'];

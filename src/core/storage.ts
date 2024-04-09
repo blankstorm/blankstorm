@@ -1,5 +1,5 @@
-import { ItemID, items as Items } from './generic/items';
-import type { ItemContainer, PartialItemContainer } from './generic/items';
+import { items as Items } from './generic/items';
+import type { ItemContainer, PartialItemContainer, ItemID } from './generic/items';
 
 export class Storage {
 	//public items: Map<ItemID, number> = new Map();

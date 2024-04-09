@@ -1,6 +1,7 @@
 import { HardpointRenderer } from './Hardpoint';
 import { ModelRenderer } from '../models';
-import { ShipType, genericShips } from '../../core/generic/ships';
+import type { ShipType } from '../../core/generic/ships';
+import { genericShips } from '../../core/generic/ships';
 import type { ShipJSON } from '../../core/entities/ship';
 import { createAndUpdate, entityRenderers, type Renderer, type RendererStatic } from './renderer';
 

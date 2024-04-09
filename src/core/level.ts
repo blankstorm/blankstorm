@@ -19,7 +19,7 @@ import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
 import { Berth } from './stations/berth';
 import { randomHex } from './utils';
-import { FleetJSON } from './fleet';
+import type { FleetJSON } from './fleet';
 
 export interface MoveInfo<T> {
 	id: string;

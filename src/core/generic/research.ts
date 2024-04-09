@@ -1,7 +1,7 @@
 import type { Player } from '../entities/player';
 import { config } from '../metadata';
 import type { Producible } from './production';
-import { ItemID } from './items';
+import type { ItemID } from './items';
 
 export interface Research extends Producible {
 	xp: number;

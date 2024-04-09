@@ -1,5 +1,5 @@
 import type { Level } from '../level';
-import { Producer } from '../generic/production';
+import type { Producer } from '../generic/production';
 import type { ShipType } from '../generic/ships';
 import { genericShips, shipTypes } from '../generic/ships';
 import type { StationPartJSON, StationPartOptions } from './part';

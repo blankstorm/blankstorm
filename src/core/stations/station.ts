@@ -2,7 +2,8 @@ import type { Level } from '../level';
 import type { CelestialBodyJSON } from '../entities/body';
 import { CelestialBody } from '../entities/body';
 import type { Player } from '../entities/player';
-import { StationPartJSON, StationPart } from './part';
+import type { StationPartJSON } from './part';
+import { StationPart } from './part';
 
 export interface StationJSON extends CelestialBodyJSON {
 	type: string;

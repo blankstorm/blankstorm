@@ -12,7 +12,7 @@ import type { Research } from './generic/research';
 import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import { config } from './metadata';
-import { Berth } from './stations/berth';
+import type { Berth } from './stations/berth';
 import { getRandomIntWithRecursiveProbability, greek, randomBoolean, randomCords, randomFloat, randomHex, randomInt, range } from './utils';
 
 export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };

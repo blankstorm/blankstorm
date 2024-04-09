@@ -1,10 +1,10 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { ItemID } from './generic/items';
 import { items as Items } from './generic/items';
-import { Ship } from './entities/ship';
-import { CelestialBody } from './entities/body';
-import { Player } from './entities/player';
-import { Level } from './level';
+import type { Ship } from './entities/ship';
+import type { CelestialBody } from './entities/body';
+import type { Player } from './entities/player';
+import type { Level } from './level';
 
 export interface FleetJSON {
 	position: number[];

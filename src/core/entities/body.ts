@@ -1,5 +1,5 @@
 import { Fleet, type FleetJSON } from '../fleet';
-import { ItemID } from '../generic/items';
+import type { ItemID } from '../generic/items';
 import type { Level } from '../level';
 import { Storage } from '../storage';
 import { randomCords, randomInt } from '../utils';

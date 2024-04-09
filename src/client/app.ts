@@ -1,5 +1,6 @@
 /* eslint-env node */
-import { app, shell, nativeTheme, ipcMain, BrowserWindow, Input } from 'electron';
+import type { Input } from 'electron';
+import { app, shell, nativeTheme, ipcMain, BrowserWindow } from 'electron';
 import { resolve, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';

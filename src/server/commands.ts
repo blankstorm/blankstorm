@@ -1,5 +1,6 @@
 import { getAccount } from '@blankstorm/api';
-import { Command, CommandExecutionContext, commands as _commands, execCommandString as _execCommandString } from '../core/commands';
+import type { Command, CommandExecutionContext } from '../core/commands';
+import { commands as _commands, execCommandString as _execCommandString } from '../core/commands';
 import { Client } from './Client';
 import type { Server } from './Server';
 

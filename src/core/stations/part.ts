@@ -1,7 +1,8 @@
 import type { Level } from '../level';
 import type { CelestialBodyJSON } from '../entities/body';
 import { CelestialBody } from '../entities/body';
-import { GenericStationPartID as GenericStationPartID, stationParts } from '../generic/station_part';
+import type { GenericStationPartID } from '../generic/station_part';
+import { stationParts } from '../generic/station_part';
 import type { Station } from './station';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 

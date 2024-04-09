@@ -1,4 +1,4 @@
-import { Fleet, FleetJSON } from '../fleet';
+import type { Fleet, FleetJSON } from '../fleet';
 import type { ResearchID } from '../generic/research';
 import { research } from '../generic/research';
 import type { Level } from '../level';
