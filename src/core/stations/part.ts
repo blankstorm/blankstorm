@@ -3,6 +3,7 @@ import type { CelestialBodyJSON } from '../entities/body';
 import { CelestialBody } from '../entities/body';
 import { GenericStationPartID as GenericStationPartID, stationParts } from '../generic/station_part';
 import type { Station } from './station';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 
 export interface StationPartJSON extends CelestialBodyJSON {
 	hp: number;
@@ -44,8 +45,8 @@ export class StationPart extends CelestialBody {
 		part.connections[otherConn] = this;
 
 		part.parent = this;
-		part.position = connection1.position.clone(); //.add(connection2.position);
-		part.rotation = connection1.rotation.clone(); //.add(connection2.rotation);
+		part.position = Vector3.FromArray(connection1.position); //.add(connection2.position);
+		part.rotation = Vector3.FromArray(connection1.rotation); //.add(connection2.rotation);
 	}
 
 	public removePart(part: StationPart) {
