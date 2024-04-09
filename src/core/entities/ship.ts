@@ -12,7 +12,7 @@ import { Entity } from './entity';
 import type { HardpointJSON } from './hardpoint';
 import { Hardpoint } from './hardpoint';
 import type { Player } from './player';
-import { genericHardpoints } from '..';
+import { genericHardpoints } from '../generic/hardpoints';
 
 export interface ShipJSON extends EntityJSON {
 	type: ShipType;
