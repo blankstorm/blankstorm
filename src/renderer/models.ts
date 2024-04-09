@@ -18,11 +18,11 @@ import config from './config';
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
  */
 export class ModelRenderer extends TransformNode {
-	#instance: TransformNode;
-	#selected = false;
-	#currentPath;
-	#createdInstance = false;
-	#pathGizmo?: LinesMesh;
+	protected _instance: TransformNode;
+	protected _selected = false;
+	protected _currentPath;
+	protected _createdInstance: boolean = false;
+	protected _pathGizmo?: LinesMesh;
 	rendererType: RendererType;
 
 	get generic(): { speed: number; agility: number } | undefined {
@@ -35,7 +35,7 @@ export class ModelRenderer extends TransformNode {
 	}
 
 	get selected() {
-		return this.#selected;
+		return this._selected;
 	}
 
 	select() {
@@ -47,7 +47,7 @@ export class ModelRenderer extends TransformNode {
 				.getHighlightLayerByName('highlight')
 				.addMesh(mesh as Mesh, Color3.Green());
 		}
-		this.#selected = true;
+		this._selected = true;
 	}
 
 	unselect() {
@@ -59,11 +59,11 @@ export class ModelRenderer extends TransformNode {
 				.getHighlightLayerByName('highlight')
 				.removeMesh(mesh as Mesh);
 		}
-		this.#selected = false;
+		this._selected = false;
 	}
 
 	get currentPath() {
-		return this.#currentPath;
+		return this._currentPath;
 	}
 
 	async followPath(path: Vector3[]) {
@@ -71,16 +71,16 @@ export class ModelRenderer extends TransformNode {
 		if (path.length == 0) {
 			return;
 		}
-		if (this.#pathGizmo && settings.get('show_path_gizmos')) {
-			this.#pathGizmo.dispose();
-			this.#pathGizmo = null;
+		if (this._pathGizmo && settings.get('show_path_gizmos')) {
+			this._pathGizmo.dispose();
+			this._pathGizmo = null;
 		}
-		this.#currentPath = path;
-		if (this.#pathGizmo) {
+		this._currentPath = path;
+		if (this._pathGizmo) {
 			console.warn('Path gizmo was already drawn and not disposed');
 		} else if (settings.get('show_path_gizmos')) {
-			this.#pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + randomHex(16), { points: path }, this.getScene());
-			this.#pathGizmo.color = Color3.Green();
+			this._pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + randomHex(16), { points: path }, this.getScene());
+			this._pathGizmo.color = Color3.Green();
 		}
 
 		const animation = new Animation('pathFollow', 'position', 60 * this.generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
@@ -106,20 +106,20 @@ export class ModelRenderer extends TransformNode {
 		const result = this.getScene().beginAnimation(this, 0, path.length * 60);
 		result.disposeOnEnd = true;
 		await result.waitAsync();
-		this.#currentPath = null;
+		this._currentPath = null;
 
-		if (this.#pathGizmo) {
-			this.#pathGizmo.dispose();
-			this.#pathGizmo = null;
+		if (this._pathGizmo) {
+			this._pathGizmo.dispose();
+			this._pathGizmo = null;
 		}
 	}
 
 	get instance() {
-		return this.#instance;
+		return this._instance;
 	}
 
 	get isInstanciated() {
-		return this.#createdInstance;
+		return this._createdInstance;
 	}
 
 	async createInstance(modelID) {
@@ -129,19 +129,19 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError(`Model "${modelID}" does not exist`);
 		}
 
-		this.#instance = genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0] as TransformNode;
-		this.#instance.id = this.id + ':instance';
-		this.#instance.parent = this;
-		this.#instance.rotation.y += Math.PI;
+		this._instance = genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0] as TransformNode;
+		this._instance.id = this.id + ':instance';
+		this._instance.parent = this;
+		this._instance.rotation.y += Math.PI;
 
-		this.#createdInstance = true;
+		this._createdInstance = true;
 
-		return this.#instance;
+		return this._instance;
 	}
 
 	async update({ name, position, rotation, parent, nodeType, type }: EntityJSON & { type?: string }, rendererType?: RendererType) {
 		this.name = name;
-		if (!this.#currentPath) {
+		if (!this._currentPath) {
 			this.position = Vector3.FromArray(position);
 			this.rotation = Vector3.FromArray(rotation);
 		}

@@ -13,18 +13,19 @@ import type { Ship } from './ship';
 
 export interface HardpointJSON extends EntityJSON {
 	info: HardpointInfo;
-	type: HardpointType;
 	reload: number;
 }
 
 export class Hardpoint extends Entity {
 	info: HardpointInfo;
-	type: HardpointType;
+	get type(): HardpointType {
+		return this.info.type;
+	}
 	reload: number;
 	declare owner: Ship;
-	constructor(id: string, level: Level) {
+	constructor(id: string, level: Level, info: HardpointInfo) {
 		super(id, level);
-
+		this.info = info;
 		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
 	}
 
@@ -42,7 +43,6 @@ export class Hardpoint extends Entity {
 	toJSON(): HardpointJSON {
 		return {
 			...super.toJSON(),
-			type: this.type,
 			info: this.info,
 			reload: this.reload,
 		};
@@ -50,7 +50,7 @@ export class Hardpoint extends Entity {
 
 	from(data: HardpointJSON, level: Level): void {
 		super.from(data, level);
-		this.type = data.type;
+		this.info = data.info;
 		this.reload = data.reload ?? this.generic.reload;
 	}
 

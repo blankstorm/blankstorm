@@ -42,10 +42,10 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Hardpoi
 	}
 
 	async update(data: HardpointJSON) {
-		if (this.rendererType != data.type) {
-			this._projectile = HardpointRenderer.projectiles.get(data.type);
+		if (this.rendererType != data.info.type) {
+			this._projectile = HardpointRenderer.projectiles.get(data.info.type);
 		}
-		await super.update(data, data.type);
+		await super.update(data, data.info.type);
 		if (this.isInstanciated && typeof data.info?.scale == 'number') {
 			this.instance.scalingDeterminant = data.info.scale;
 		}
