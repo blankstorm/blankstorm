@@ -16,9 +16,9 @@ export interface EntityJSON {
 	owner: string;
 	parent: string;
 	nodeType: string;
-	position: number[];
-	rotation: number[];
-	velocity: number[];
+	position: readonly number[];
+	rotation: readonly number[];
+	velocity: readonly number[];
 	isSelected: boolean;
 	isTargetable: boolean;
 	storage?: ItemContainer;

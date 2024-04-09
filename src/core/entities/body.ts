@@ -15,7 +15,7 @@ export class CelestialBody extends Entity {
 	public fleet: Fleet = new Fleet();
 	public radius = 0;
 	public option?: JQuery<HTMLElement>;
-	protected _storage?: Container = new Container();
+	protected _storage?: Container = new Container(1e10);
 
 	public get power(): number {
 		return this.fleet.power;
@@ -48,6 +48,7 @@ export class CelestialBody extends Entity {
 		return {
 			...super.toJSON(),
 			fleet: this.fleet.toJSON(),
+			storage: this.storage.container(),
 			radius: this.radius,
 		};
 	}
