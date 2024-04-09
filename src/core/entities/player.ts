@@ -60,10 +60,9 @@ export class Player extends Entity {
 		super.from(data, level);
 		this.xp = data.xp;
 		this.research = data.research;
-		if('fleet' in data) {
+		if ('fleet' in data) {
 			this.fleet.from(data.fleet);
 		}
-		
 	}
 
 	public toJSON(): PlayerJSON {
