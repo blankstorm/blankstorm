@@ -22,11 +22,8 @@ export class Hardpoint extends Entity {
 	type: HardpointType;
 	reload: number;
 	declare owner: Ship;
-	constructor(id: string, level: Level, { type, reload }: { type?: HardpointType; reload?: number } = {}) {
+	constructor(id: string, level: Level) {
 		super(id, level);
-
-		this.type = type;
-		this.reload = reload ?? this.generic.reload;
 
 		this.rotation.addInPlaceFromFloats(0, Math.PI, 0);
 	}
@@ -49,6 +46,12 @@ export class Hardpoint extends Entity {
 			info: this.info,
 			reload: this.reload,
 		};
+	}
+
+	from(data: HardpointJSON, level: Level): void {
+		super.from(data, level);
+		this.type = data.type;
+		this.reload = data.reload ?? this.generic.reload;
 	}
 
 	/**
@@ -85,9 +88,5 @@ export class Hardpoint extends Entity {
 			}
 			targetShip.remove();
 		}
-	}
-
-	static FromJSON(data: HardpointJSON, level: Level): Hardpoint {
-		return <Hardpoint>super.FromJSON(data, level, data);
 	}
 }

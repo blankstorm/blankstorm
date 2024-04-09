@@ -31,9 +31,9 @@ export class Station extends CelestialBody {
 	}
 
 	/**
-	 * @todo actually implement
+	 * @todo Implement
 	 */
-	public static FromJSON(data: StationJSON, level: Level): Station {
-		return <Station>super.FromJSON(data, level, {});
+	public from(data: StationJSON, level: Level): void {
+		super.from(data, level);
 	}
 }

@@ -1,16 +1,16 @@
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
-import type { Level } from './level';
 import { type Entity } from './entities/entity';
 import { Planet } from './entities/planet';
-import { Ship } from './entities/ship';
+import { generateFleetFromPower } from './entities/ship';
 import { Star } from './entities/star';
 import type { Item } from './generic/items';
 import { planetBiomes } from './generic/planets';
 import type { Research } from './generic/research';
 import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
+import type { Level } from './level';
 import { config } from './metadata';
 import type { Berth } from './stations/berth';
 import { getRandomIntWithRecursiveProbability, greek, randomBoolean, randomCords, randomFloat, randomHex, randomInt, range } from './utils';
@@ -135,7 +135,7 @@ export class System extends EventEmitter<{
 		return data;
 	}
 
-	static FromJSON(systemData: SystemJSON, level: Level, system?: System): System {
+	static From(systemData: SystemJSON, level: Level, system?: System): System {
 		system ||= new System(systemData.id, level);
 		system.name = systemData.name;
 		system.difficulty = systemData.difficulty;
@@ -162,15 +162,21 @@ export class System extends EventEmitter<{
 		system.name = name;
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		system.connections = new Array(connectionCount);
-		const star = new Star(null, level, { radius: randomInt(options.stars.radius_min, options.stars.radius_max) });
-		star.name = name;
-		star.system = system;
-		star.position = Vector3.Zero();
-		star.color = Color3.FromArray([
-			Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[0], options.stars.color_max[0]),
-			Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[1], options.stars.color_max[1]),
-			Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[2], options.stars.color_max[2]),
-		]);
+		const star = new Star(null, level);
+		star.from(
+			{
+				name,
+				system: system.id,
+				radius: randomInt(options.stars.radius_min, options.stars.radius_max),
+				position: [0, 0, 0],
+				color: [
+					Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[0], options.stars.color_max[0]),
+					Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[1], options.stars.color_max[1]),
+					Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[2], options.stars.color_max[2]),
+				],
+			},
+			level
+		);
 		const usePrefix = randomBoolean(),
 			planetCount = randomInt(options.planets.min, options.planets.max),
 			names = randomBoolean() ? greek.slice(0, planetCount) : range(1, planetCount + 1),
@@ -179,8 +185,7 @@ export class System extends EventEmitter<{
 			const radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			const planet = new Planet(null, level, {
 				radius,
-				fleet: { ships: Ship.GenerateFleetFromPower((options.difficulty * (i + 1)) ** 2) },
-				rewards: {},
+				fleet: { ships: generateFleetFromPower((options.difficulty * (i + 1)) ** 2) },
 			});
 
 			planet.name = usePrefix ? names[i] + ' ' + name : name + ' ' + names[i];

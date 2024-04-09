@@ -132,7 +132,7 @@ export class Server extends EventEmitter {
 		});
 
 		if (levelData) {
-			this.level = Level.FromJSON(levelData);
+			this.level = Level.From(levelData);
 		} else {
 			this.log.log('No level detected. Generating...');
 			this.level = new Level();

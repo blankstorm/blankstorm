@@ -24,16 +24,16 @@ export class Berth extends StationPart implements Producer {
 	}
 
 	public toJSON(): BerthJSON {
-		return Object.assign(super.toJSON(), {
+		return {
+			...super.toJSON(),
 			productionID: this.productionID,
 			productionTime: this.productionTime,
-		});
+		};
 	}
 
-	public static FromJSON(data: BerthJSON, level: Level): Berth {
-		const berth = <Berth>super.FromJSON(data, level);
-		berth.productionID = data.productionID;
-		berth.productionTime = data.productionTime;
-		return berth;
+	public from(data: BerthJSON, level: Level): void {
+		super.from(data, level);
+		this.productionID = data.productionID;
+		this.productionTime = data.productionTime;
 	}
 }

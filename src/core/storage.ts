@@ -1,61 +1,239 @@
+import type { Entity } from './entities/entity';
 import { items as Items } from './generic/items';
 import type { ItemContainer, PartialItemContainer, ItemID } from './generic/items';
 
-export class Storage {
-	//public items: Map<ItemID, number> = new Map();
+function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<keyof T, number> {
+	const entries = <[keyof T, number][]>Object.entries(items);
+	return new Map(entries);
+}
 
-	public constructor(
-		public max: number = 1,
-		public items: Map<ItemID, number> = new Map()
-	) {}
-
-	public get total(): number {
-		return [...this.items].reduce((total, [name, amount]) => total + amount * Items[name].weight, 0);
+export abstract class ItemStorage implements ItemContainer {
+	public get [Symbol.toStringTag](): string {
+		return 'ItemStorage';
 	}
 
-	public empty(filter: ItemID | ItemID[]) {
-		for (const name of this.items.keys()) {
-			if ((filter instanceof Array ? filter.includes(name) : filter == name) || !filter) this.items.set(name, 0);
-		}
+	public toString(): string {
+		return 'Storage' + JSON.stringify(this.items);
 	}
 
-	public count(item: ItemID): number {
-		return this.items.get(item);
-	}
+	public abstract max: number;
 
-	public addItem(item: ItemID, amount: number) {
-		this.items.set(item, this.items.get(item) + amount);
-	}
+	public abstract get items(): Record<ItemID, number>;
 
-	public addItems(items: Partial<Record<ItemID, number>>) {
-		for (const [id, amount] of Object.entries(items)) {
-			this.addItem(<ItemID>id, amount);
-		}
-	}
-
-	public removeItem(item: ItemID, amount?: number) {
-		this.items.set(item, typeof amount == 'number' ? this.items.get(item) - amount : 0);
-	}
-
-	public removeItems(items: Partial<Record<ItemID, number>>) {
-		items = { ...items };
-		for (const [id, amount] of Object.entries(items)) {
-			this.removeItem(<ItemID>id, amount);
-		}
-	}
-
-	public toJSON(): ItemContainer {
+	public container(): ItemContainer {
 		return {
-			items: <Record<ItemID, number>>Object.fromEntries(this.items),
+			items: this.items,
 			max: this.max,
 		};
 	}
 
-	public static FromJSON({ max, items }: PartialItemContainer, storage = new this()): Storage {
-		for (const id of <ItemID[]>Object.keys(Items)) {
-			storage.items.set(id, typeof items?.[id] == 'number' ? items[id] : 0);
+	public from({ max, items }: PartialItemContainer): this {
+		this.clear();
+		this.max = max;
+		for (const [id, amount] of map(items)) {
+			this.add(id, amount);
 		}
-		storage.max = max;
-		return storage;
+		return this;
+	}
+
+	public clear(...filter: ItemID[]) {
+		for (const id of this.keys()) {
+			if (!filter.length || filter.includes(id)) {
+				this.remove(id);
+			}
+		}
+	}
+
+	protected get total(): number {
+		let total = 0;
+		for (const [id, amount] of this.entries()) {
+			total += amount * Items[id].weight;
+		}
+		return total;
+	}
+
+	public count(item?: ItemID): number {
+		return item ? this.items[item] : this.total;
+	}
+
+	public abstract add(item: ItemID, amount: number): void;
+
+	public addItems(items: Partial<Record<ItemID, number>>) {
+		for (const [id, amount] of map(items)) {
+			this.add(id, amount);
+		}
+	}
+
+	public has(item: ItemID, amount: number = 1): boolean {
+		return this.count(item) >= amount;
+	}
+
+	public hasItems(items: Partial<Record<ItemID, number>>) {
+		for (const [id, amount] of map(items)) {
+			if (!this.has(id, amount)) {
+				return false;
+			}
+		}
+	}
+
+	public abstract remove(item: ItemID, amount?: number): void;
+
+	public removeItems(items: Partial<Record<ItemID, number>>) {
+		for (const [id, amount] of map(items)) {
+			this.remove(id, amount);
+		}
+	}
+
+	public entries(): IterableIterator<[ItemID, number]> {
+		return map(this.items).entries();
+	}
+
+	public keys(): IterableIterator<ItemID> {
+		return map(this.items).keys();
+	}
+
+	public values(): IterableIterator<number> {
+		return map(this.items).values();
+	}
+
+	public [Symbol.iterator](): IterableIterator<[ItemID, number]> {
+		return map(this.items).entries();
+	}
+
+	public static from<const T extends ItemStorage = ItemStorage>(this: new () => T, container: PartialItemContainer): T {
+		return new this().from(container);
+	}
+}
+
+export class Container extends ItemStorage {
+	public constructor(
+		public max: number = 1,
+		protected _items: Map<ItemID, number> = new Map()
+	) {
+		super();
+	}
+
+	public get items(): Record<ItemID, number> {
+		return <Record<ItemID, number>>Object.fromEntries<number>(this._items);
+	}
+
+	public add(item: ItemID, amount: number) {
+		this._items.set(item, this.count(item) + amount);
+	}
+
+	public remove(item: ItemID, amount?: number) {
+		this._items.set(item, typeof amount == 'number' ? this.count(item) - amount : 0);
+	}
+}
+
+export class StorageManager extends ItemStorage {
+	public constructor(protected storages: Set<ItemStorage> = new Set()) {
+		super();
+	}
+
+	public get items(): Record<ItemID, number> {
+		const items = <Record<ItemID, number>>Object.fromEntries(Object.keys(Items).map(i => [i, 0]));
+		for (const storage of this.storages) {
+			for (const name of <ItemID[]>Object.keys(Items)) {
+				items[name] += storage.count(name);
+			}
+		}
+		return items;
+	}
+
+	public get total(): number {
+		let total = 0;
+		for (const storage of this.storages) {
+			total += storage.count();
+		}
+		return total;
+	}
+
+	public get max(): number {
+		let total = 0;
+		for (const storage of this.storages) {
+			total += storage.max;
+		}
+		return total;
+	}
+
+	public add(item: ItemID, amount: number): void {
+		for (const storage of this.storages) {
+			const space = storage.max - storage.count();
+			if (space <= 0) {
+				continue;
+			}
+			if (!Object.hasOwn(Items, item)) {
+				console.warn('Failed to add invalid item to storage: ' + item);
+				continue;
+			}
+			const amountToStore = Math.min(space, amount);
+			storage.add(item, amountToStore);
+			amount -= amountToStore;
+		}
+	}
+
+	public remove(item: ItemID, amount?: number): void {
+		for (const storage of this.storages) {
+			const stored = Math.min(storage.count(item), amount);
+			storage.remove(item, stored);
+			amount -= stored;
+		}
+	}
+}
+
+export class EntityStorageManager extends ItemStorage {
+	public constructor(protected entities: Set<Entity> = new Set()) {
+		super();
+	}
+
+	public get items(): Record<ItemID, number> {
+		const items = <Record<ItemID, number>>Object.fromEntries(Object.keys(Items).map(i => [i, 0]));
+		for (const e of this.entities) {
+			for (const name of <ItemID[]>Object.keys(Items)) {
+				items[name] += e.storage.count(name);
+			}
+		}
+		return items;
+	}
+
+	public get total(): number {
+		let total = 0;
+		for (const e of this.entities) {
+			total += e.storage.count();
+		}
+		return total;
+	}
+
+	public get max(): number {
+		let total = 0;
+		for (const e of this.entities) {
+			total += e.storage.max;
+		}
+		return total;
+	}
+
+	public add(item: ItemID, amount: number): void {
+		for (const e of this.entities) {
+			const space = e.storage.max - e.storage.count();
+			if (space <= 0) {
+				continue;
+			}
+			if (!Object.hasOwn(Items, item)) {
+				console.warn('Failed to add invalid item to storage: ' + item);
+				continue;
+			}
+			const amountToStore = Math.min(space, amount);
+			e.storage.add(item, amountToStore);
+			amount -= amountToStore;
+		}
+	}
+
+	public remove(item: ItemID, amount?: number): void {
+		for (const e of this.entities) {
+			const stored = Math.min(e.storage.count(item), amount);
+			e.storage.remove(item, stored);
+			amount -= stored;
+		}
 	}
 }

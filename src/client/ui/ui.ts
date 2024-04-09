@@ -2,32 +2,32 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { login } from '@blankstorm/api';
 import $ from 'jquery';
+import type { Player } from '../../core/entities/player';
+import type { ItemID } from '../../core/generic/items';
 import { items as itemsData } from '../../core/generic/items';
 import type { ResearchID } from '../../core/generic/research';
 import { isResearchLocked, priceOfResearch, research as researchData } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
+import { Level } from '../../core/level';
 import { config, game_url, version, versions } from '../../core/metadata';
-import type { Player } from '../../core/entities/player';
+import { System } from '../../core/system';
 import { isHex, isJSON } from '../../core/utils';
 import * as renderer from '../../renderer';
 import { playsound } from '../audio';
 import * as client from '../client';
+import { isServer } from '../config';
 import * as locales from '../locales';
 import * as saves from '../saves';
 import { Save } from '../saves';
 import * as servers from '../servers';
 import * as settings from '../settings';
 import { account, action, player as getPlayer, system } from '../user';
-import { $svg, logger, minimize, upload } from '../utils';
+import { $svg, alert, logger, minimize, upload } from '../utils';
 import { Waypoint, updateAll as updateAllWaypoints } from '../waypoints';
 import { ItemUI } from './item';
 import * as map from './map';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
-import { alert } from '../utils';
-import { System } from '../../core/system';
-import { Level } from '../../core/level';
-import { isServer } from '../config';
 import { changeUI } from './utils';
 
 export const items: Map<string, ItemUI> = new Map();
@@ -77,20 +77,20 @@ export function update() {
 	if (system() instanceof System) {
 		const player: Player = getPlayer();
 		$('#waypoint-list div').detach();
-		$('svg.item-bar rect').attr('width', (player.fleet.totalItems / player.fleet.maxItems) * 100 || 0);
-		$('div.item-bar p.label').text(`${minimize(player.fleet.totalItems)} / ${minimize(player.fleet.maxItems)}`);
+		$('svg.item-bar rect').attr('width', (player.storage.count() / player.storage.max) * 100 || 0);
+		$('div.item-bar p.label').text(`${minimize(player.storage.count())} / ${minimize(player.storage.max)}`);
 
-		for (const [id, amount] of Object.entries(player.fleet.items)) {
+		for (const [id, amount] of player.storage) {
 			$(items.get(id)).find('.count').text(minimize(amount));
 		}
 
 		//update tech info
-		for (const [id, t] of Object.entries(researchData)) {
+		for (const [id, _research] of Object.entries(researchData)) {
 			const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
-				(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.fleet.items[id])}/${minimize(amount)}`,
+				(result, [id, amount]: [ItemID, number]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`,
 				''
 			);
-			const requires = Object.entries(t.requires).reduce(
+			const requires = Object.entries(_research.requires).reduce(
 				(result, [id, amount]) =>
 					result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 				''
@@ -99,10 +99,10 @@ export function update() {
 				.find('.upgrade tool-tip')
 				.html(
 					`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
-						player.research[id] >= t.max
+						player.research[id] >= _research.max
 							? `<strong>Max Level</strong>`
 							: `${player.research[id]} <svg><use href="_build.asset_dir/images/icons.svg#arrow-right"/></svg> ${player.research[id] + 1}`
-					}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(t.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
+					}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(_research.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
 						settings.get('tooltips') ? '<br>type: ' + id : ''
 					}`
 				);
@@ -112,7 +112,7 @@ export function update() {
 		//update ship info
 		for (const [id, ship] of Object.entries(genericShips)) {
 			const materials = Object.entries(ship.recipe).reduce(
-				(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.fleet.items[id])}/${minimize(amount)}`,
+				(result, [id, amount]: [ItemID, number]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`,
 				''
 			);
 			const requires = Object.entries(ship.requires).reduce(

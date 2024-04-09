@@ -1,7 +1,6 @@
 import { Fleet, type FleetJSON } from '../fleet';
-import type { ItemID } from '../generic/items';
 import type { Level } from '../level';
-import { Storage } from '../storage';
+import { Container } from '../storage';
 import { randomCords, randomInt } from '../utils';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
@@ -10,23 +9,22 @@ import { Ship } from './ship';
 export interface CelestialBodyJSON extends EntityJSON {
 	fleet: FleetJSON;
 	radius: number;
-	rewards: Record<ItemID, number>;
 }
 
 export class CelestialBody extends Entity {
-	fleet?: Fleet;
-	rewards: Storage;
-	radius = 0;
-	option?: JQuery<HTMLElement>;
+	public fleet: Fleet = new Fleet();
+	public radius = 0;
+	public option?: JQuery<HTMLElement>;
+	protected _storage?: Container = new Container();
 
-	get power(): number {
+	public get power(): number {
 		return this.fleet.power;
 	}
 
-	constructor(id: string, level: Level, { radius = 1, rewards = {}, fleet = { ships: [] } }) {
+	public constructor(id: string, level: Level, { radius = 1, fleet = { ships: [] } } = {}) {
 		super(id, level);
 		this.radius = radius;
-		this.rewards = Storage.FromJSON({ items: rewards, max: 1e10 });
+		this.fleet.position ||= randomCords(randomInt(radius + 5, radius * 1.2), true);
 		for (const shipOrType of fleet.ships) {
 			let ship: Ship;
 			if (shipOrType instanceof Ship) {
@@ -38,30 +36,30 @@ export class CelestialBody extends Entity {
 			ship.parent = ship.owner = this;
 			this.fleet.add(ship);
 		}
-		this.fleet.position ||= randomCords(randomInt(radius + 5, radius * 1.2), true);
 		setTimeout(() => level.emit('body_created', this.toJSON()));
 	}
 
-	remove() {
+	public remove() {
 		this.level.emit('body_removed', this.toJSON());
 		super.remove();
 	}
 
-	toJSON(): CelestialBodyJSON {
+	public toJSON(): CelestialBodyJSON {
 		return {
 			...super.toJSON(),
 			fleet: this.fleet.toJSON(),
-			rewards: this.rewards.toJSON().items,
 			radius: this.radius,
 		};
 	}
 
-	static FromJSON(data: CelestialBodyJSON, level: Level, constructorOptions): CelestialBody {
-		return <CelestialBody>super.FromJSON(data, level, {
-			...constructorOptions,
-			radius: data.radius,
-			rewards: data.rewards,
-			fleet: Fleet.FromJSON(data.fleet),
-		});
+	public from(data: Partial<CelestialBodyJSON>, level: Level): void {
+		super.from(data, level);
+		if ('storage' in data) {
+			this.storage.from({ items: data.storage.items, max: 1e10 });
+		}
+		if ('fleet' in data) {
+			this.fleet.from(data.fleet);
+		}
+		this.radius = data.radius || this.radius;
 	}
 }

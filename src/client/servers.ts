@@ -55,7 +55,7 @@ function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ..
 		if (!currentLevel) {
 			load(new Level());
 		}
-		Level.FromJSON(data[0], currentLevel);
+		Level.From(data[0], currentLevel);
 		currentLevel.sampleTick();
 	}
 

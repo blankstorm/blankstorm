@@ -8,21 +8,20 @@ export interface StarJSON extends CelestialBodyJSON {
 }
 
 export class Star extends CelestialBody {
-	color: Color3;
-	constructor(id: string, level: Level, options) {
+	public color: Color3;
+	public constructor(id: string, level: Level, options?) {
 		super(id, level, options);
 	}
 
-	toJSON(): StarJSON {
+	public toJSON(): StarJSON {
 		return {
 			...super.toJSON(),
 			color: this.color.asArray(),
 		};
 	}
 
-	static FromJSON(data: StarJSON, level: Level): Star {
-		const star = <Star>super.FromJSON(data, level, {});
-		star.color = Color3.FromArray(data.color) || Color3.Random();
-		return star;
+	public from(data: Partial<StarJSON>, level: Level): void {
+		super.from(data, level);
+		this.color = Color3.FromArray(data.color || this.color?.asArray());
 	}
 }

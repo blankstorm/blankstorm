@@ -69,15 +69,15 @@ export interface LevelEvents {
 	tick: [];
 }
 
-export class Level<S extends System = System> extends EventEmitter<LevelEvents> {
+export class Level extends EventEmitter<LevelEvents> {
 	public id: string = randomHex(16);
 	public name: string = '';
 	public version = version;
 	public date = new Date();
 	public difficulty = 1;
 	public entities: Set<Entity> = new Set();
-	public systems: Map<string, S> = new Map();
-	public rootSystem: S;
+	public systems: Map<string, System> = new Map();
+	public rootSystem: System;
 	protected _initPromise: Promise<Level>;
 	protected _performanceMonitor = new PerformanceMonitor(60);
 
@@ -148,19 +148,19 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 
 		switch (action) {
 			case 'create_item':
-				if (!data.recipe || !player.fleet.hasItems(data.recipe)) {
+				if (!data.recipe || !player.storage.hasItems(data.recipe)) {
 					return false;
 				}
 
-				player.fleet.removeItems(data.recipe);
-				player.fleet.addItems({ [data.id]: player.fleet.items[data.id] + 1 });
+				player.storage.removeItems(data.recipe);
+				player.storage.addItems({ [data.id]: player.storage.items[data.id] + 1 });
 				break;
 			case 'create_ship':
-				if (!player.fleet.hasItems(data.ship.recipe)) {
+				if (!player.storage.hasItems(data.ship.recipe)) {
 					return false;
 				}
 
-				player.fleet.removeItems(data.ship.recipe);
+				player.storage.removeItems(data.ship.recipe);
 				const ship = new Ship(null, player.level, { type: <ShipType>data.ship.id, power: player.power });
 				ship.parent = ship.owner = player;
 				player.fleet.add(ship);
@@ -170,11 +170,11 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 					return false;
 				}
 				const neededItems = priceOfResearch(<ResearchID>data.id, player.research[data.id]);
-				if (!player.fleet.hasItems(neededItems)) {
+				if (!player.storage.hasItems(neededItems)) {
 					return false;
 				}
 
-				player.fleet.removeItems(neededItems);
+				player.storage.removeItems(neededItems);
 				player.research[data.id]++;
 				player.xpPoints--;
 				break;
@@ -283,7 +283,7 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 	public toJSON(): LevelJSON {
 		return {
 			date: new Date().toJSON(),
-			systems: [...this.systems.values()].map(system => system.toJSON()) as ReturnType<S['toJSON']>[],
+			systems: [...this.systems.values()].map(system => system.toJSON()),
 			difficulty: this.difficulty,
 			version: this.version,
 			name: this.name,
@@ -319,7 +319,7 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 		return data;
 	}
 
-	public static FromJSON(levelData: LevelJSON, level?: Level): Level {
+	public static From(levelData: LevelJSON, level?: Level): Level {
 		if (levelData.version != version) {
 			throw new Error(`Can't load level data: wrong version`);
 		}
@@ -331,7 +331,7 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 		level.version = levelData.version;
 
 		for (const systemData of levelData.systems) {
-			System.FromJSON(systemData, level);
+			System.From(systemData, level);
 		}
 
 		/**
@@ -347,16 +347,16 @@ export class Level<S extends System = System> extends EventEmitter<LevelEvents> 
 		for (const data of entities) {
 			switch (data.nodeType) {
 				case 'Player':
-					Player.FromJSON(<PlayerJSON>data, level);
+					Player.From(<PlayerJSON>data, level);
 					break;
 				case 'Ship':
-					Ship.FromJSON(<ShipJSON>data, level);
+					Ship.From(<ShipJSON>data, level);
 					break;
 				case 'Star':
-					Star.FromJSON(<StarJSON>data, level);
+					Star.From(<StarJSON>data, level);
 					break;
 				case 'Planet':
-					Planet.FromJSON(<PlanetData>data, level);
+					Planet.From(<PlanetData>data, level);
 					break;
 				default:
 			}

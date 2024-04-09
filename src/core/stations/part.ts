@@ -28,7 +28,7 @@ export class StationPart extends CelestialBody {
 	}
 
 	public get generic() {
-		return StationPart.generic[this.type];
+		return stationParts[this.type];
 	}
 
 	public addPart(part: StationPart, thisConn: number, otherConn: number) {
@@ -74,10 +74,4 @@ export class StationPart extends CelestialBody {
 			this.removePart(connection);
 		}
 	}
-
-	public static FromJSON(data: StationPartJSON, level: Level): StationPart {
-		return <StationPart>super.FromJSON(data, level, data);
-	}
-
-	public static generic = stationParts;
 }

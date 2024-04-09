@@ -1,7 +1,9 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
+import type { ItemContainer } from '../generic/items';
 import type { Level } from '../level';
 import { findPath } from '../path';
+import type { ItemStorage } from '../storage';
 import type { System } from '../system';
 import { randomHex, resolveConstructors } from '../utils';
 
@@ -10,6 +12,7 @@ export type EntityConstructor<T extends Entity> = new (...args: ConstructorParam
 export interface EntityJSON {
 	id: string;
 	name: string;
+	system: string;
 	owner: string;
 	parent: string;
 	nodeType: string;
@@ -18,9 +21,14 @@ export interface EntityJSON {
 	velocity: number[];
 	isSelected: boolean;
 	isTargetable: boolean;
+	storage?: ItemContainer;
 }
 
 export class Entity extends EventEmitter {
+	public get [Symbol.toStringTag](): string {
+		return this.constructor.name;
+	}
+
 	protected _name: string;
 
 	public get name(): string {
@@ -65,6 +73,14 @@ export class Entity extends EventEmitter {
 
 	public parent?: Entity;
 	public owner?: Entity;
+
+	protected _storage?: ItemStorage;
+	public get storage(): ItemStorage {
+		if (!this._storage) {
+			throw new ReferenceError('Storage does not exist on ' + this);
+		}
+		return this._storage;
+	}
 
 	public isSelected = false;
 	public isTargetable = false;
@@ -128,6 +144,7 @@ export class Entity extends EventEmitter {
 		return {
 			id: this.id,
 			name: this.name,
+			system: this.system?.id,
 			owner: this.owner?.id,
 			parent: this.parent?.id,
 			nodeType: this.nodeType,
@@ -139,14 +156,20 @@ export class Entity extends EventEmitter {
 		};
 	}
 
-	public static FromJSON(data: EntityJSON, level: Level, constructorOptions: object): Entity {
+	public from(data: Partial<EntityJSON>, level: Level): void {
+		this.id = data.id || this.id;
+		this.name = data.name || this.name;
+		this.system = level.systems.get(data.system) || this.system;
+		this.position = Vector3.FromArray(data.position || this.position?.asArray());
+		this.rotation = Vector3.FromArray(data.rotation || this.rotation?.asArray());
+		this.velocity = Vector3.FromArray(data.velocity || this.velocity?.asArray());
+		this.parent = level.getEntityByID(data.parent) || this.parent;
+		this.owner = level.getEntityByID(data.owner) || this.owner;
+	}
+
+	public static From<const T extends Entity = Entity>(this: EntityConstructor<T>, data: EntityJSON, level: Level, constructorOptions?: object): T {
 		const entity = new this(data.id, level, constructorOptions);
-		entity.position = Vector3.FromArray(data.position || [0, 0, 0]);
-		entity.rotation = Vector3.FromArray(data.rotation || [0, 0, 0]);
-		entity.velocity = Vector3.FromArray(data.velocity || [0, 0, 0]);
-		entity.parent = level.getEntityByID(data.parent);
-		entity.owner = level.getEntityByID(data.owner);
-		entity.name = data.name;
+		entity.from(data, level);
 		return entity;
 	}
 }
