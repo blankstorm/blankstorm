@@ -42,6 +42,7 @@ const esbuildConfig = {
 							JSON.stringify({
 								main: outfile,
 								output: seaBlob,
+								disableExperimentalSEAWarning: true,
 							})
 						);
 						execSync('node --experimental-sea-config ' + seaConfig, { stdio: 'inherit' });
