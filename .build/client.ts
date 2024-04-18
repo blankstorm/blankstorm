@@ -1,7 +1,7 @@
 import * as esbuild from 'esbuild';
 import * as fs from 'node:fs';
 import path from 'node:path';
-import pkg from '../package.json' assert { type: 'json' };
+import $package from '../package.json' assert { type: 'json' };
 import * as electronBuilder from 'electron-builder';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -52,7 +52,7 @@ if (options.keep) {
 	fs.rmSync(options.output, { recursive: true, force: true });
 }
 
-const copyright = `Copyright © ${new Date().getFullYear()} ${pkg.author.slice(0, pkg.author.indexOf('<') - 1)}. All Rights Reserved.`;
+const copyright = `Copyright © ${new Date().getFullYear()} ${$package.author.slice(0, $package.author.indexOf('<') - 1)}. All Rights Reserved.`;
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
 	projectDir: dirname,
@@ -155,7 +155,7 @@ async function onBuildEnd() {
 	}
 }
 
-const esbuildConfig: esbuild.BuildOptions = {
+const esbuildConfig = {
 	entryPoints: ['index.ts', 'index.html', 'locales', 'styles'].flatMap(p => fromPath(path.join(input, p))),
 	assetNames: '[dir]/[name]',
 	outdir: options.output,
@@ -168,11 +168,11 @@ const esbuildConfig: esbuild.BuildOptions = {
 		'.html': 'copy',
 		'.json': 'copy',
 	},
-	define: { $build: JSON.stringify(buildOptions), $package: JSON.stringify(pkg) },
+	define: { $build: JSON.stringify(buildOptions), $package: JSON.stringify($package) },
 	plugins: [glslPlugin(), replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } }), counterPlugin(options.watch)],
-};
+} satisfies esbuild.BuildOptions;
 
-const esbuildAppConfig: esbuild.BuildOptions = {
+const esbuildAppConfig = {
 	...esbuildConfig,
 	entryPoints: ['app.ts', 'preload.ts'].map(p => path.join(input, p)),
 	packages: 'external',
@@ -186,7 +186,7 @@ const esbuildAppConfig: esbuild.BuildOptions = {
 			},
 		},
 	],
-};
+} satisfies esbuild.BuildOptions;
 
 const symlinkPath = path.join(input, buildOptions.asset_dir);
 if (fs.existsSync(symlinkPath)) {

@@ -3,7 +3,7 @@
 		"lib": ["ESNext", "DOM"],
 		"module": "ESNext",
 		"target": "ESNext",
-		"moduleResolution": "bundler",
+		"moduleResolution": "Bundler",
 		"outDir": "build/ts",
 		"resolveJsonModule": true,
 		"esModuleInterop": true,

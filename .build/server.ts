@@ -1,26 +1,28 @@
-import * as esbuild from 'esbuild';
-import { exec as pkg } from 'pkg';
+import { BuildOptions, context, build } from 'esbuild';
 import { parseArgs } from 'node:util';
 import { getOptions } from './options';
-import counterPlugin from './counter';
-import { getVersionInfo, renameOutput } from './utils';
+import { getVersionInfo } from './utils';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { dirname, extname } from 'node:path';
+import { inject } from 'postject';
+import $package from '../package.json' assert { type: 'json' };
 
 const { display: displayVersion } = getVersionInfo();
 
-const options = {
-	verbose: false,
-	watch: false,
-	mode: 'dev',
-	...parseArgs({
-		options: {
-			verbose: { type: 'boolean', short: 'v', default: false },
-			watch: { type: 'boolean', short: 'w', default: false },
-			mode: { type: 'string', short: 'm', default: 'dev' },
-		},
-	}).values,
-};
+const {
+	values: { watch, mode },
+} = parseArgs({
+	options: {
+		watch: { type: 'boolean', short: 'w', default: false },
+		mode: { type: 'string', short: 'm', default: 'dev' },
+	},
+});
 
-const outfile = 'build/server.js';
+const outfile = 'build/server.js',
+	seaConfig = 'build/sea.json',
+	seaPath = 'dist/blankstorm-server-' + displayVersion + extname(process.execPath),
+	seaBlob = 'build/server.blob';
 
 const esbuildConfig = {
 	entryPoints: ['src/server/cli.ts'],
@@ -28,29 +30,42 @@ const esbuildConfig = {
 	outfile,
 	platform: 'node',
 	keepNames: true,
-	define: { $build: JSON.stringify(getOptions(options.mode)) },
+	define: { $build: JSON.stringify(getOptions(mode)), $package: JSON.stringify($package) },
 	plugins: [
 		{
-			name: 'app-builder-server',
-			setup(build) {
-				build.onEnd(async () => {
-					await pkg([outfile, '--output', 'dist/server', '--target', 'latest-win,latest-linux,latest-macos']);
-					renameOutput({
-						'server-win.exe': `blankstorm-server-${displayVersion}.exe`,
-						'server-macos': `blankstorm-server-${displayVersion}-macos`,
-						'server-linux': `blankstorm-server-${displayVersion}-linux`,
-					});
+			name: 'server-sea',
+			setup({ onEnd }) {
+				onEnd(async () => {
+					try {
+						writeFileSync(
+							seaConfig,
+							JSON.stringify({
+								main: outfile,
+								output: seaBlob,
+							})
+						);
+						execSync('node --experimental-sea-config ' + seaConfig, { stdio: 'inherit' });
+						if (!existsSync(dirname(seaPath))) {
+							mkdirSync(dirname(seaPath));
+						}
+						copyFileSync(process.execPath, seaPath);
+						await inject(seaPath, 'NODE_SEA_BLOB', readFileSync(seaBlob), {
+							machoSegmentName: 'NODE_SEA',
+							sentinelFuse: 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
+						});
+					} catch (e) {
+						console.error(e);
+					}
 				});
 			},
 		},
-		counterPlugin(options.watch),
 	],
-} as esbuild.BuildOptions;
+} satisfies BuildOptions;
 
-if (options.watch) {
-	console.log('Watching...');
-	const ctx = await esbuild.context(esbuildConfig);
+if (watch) {
+	console.log('Watching for changes...');
+	const ctx = await context(esbuildConfig);
 	await ctx.watch();
 } else {
-	await esbuild.build(esbuildConfig);
+	await build(esbuildConfig);
 }
