@@ -9,9 +9,9 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/loaders/glTF/index';
+import { randomHex } from 'utilium';
 import * as settings from '../client/settings';
 import type { EntityJSON } from '../core/entities/entity';
-import { randomHex } from '../core/utils';
 import config from './config';
 
 /**

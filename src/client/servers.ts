@@ -1,17 +1,17 @@
+import type EventEmitter from 'eventemitter3';
 import $ from 'jquery';
-import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
-import { cookies, logger } from './utils';
-const fs = $app.require('fs');
-import { FileMap, isJSON } from '../core/utils';
-import { ServerListItem } from './ui/server';
+import { io } from 'socket.io-client';
+import { JSONFileMap, isJSON } from 'utilium';
+import { Level, type LevelEvents } from '../core/level';
 import { config, versions } from '../core/metadata';
 import type { PingInfo } from '../server/Server';
 import { sendMessage } from './chat';
+import { currentLevel, load, unload } from './client';
 import { path } from './config';
-import { Level, type LevelEvents } from '../core/level';
-import { currentLevel, unload, load } from './client';
-import type EventEmitter from 'eventemitter3';
+import { ServerListItem } from './ui/server';
+import { cookies, logger } from './utils';
+const fs = $app.require('fs');
 
 export type ServerData = {
 	id: string;
@@ -154,7 +154,7 @@ export function getID(rawUrl: string | URL): string {
 	return parseURL(rawUrl).host;
 }
 
-export let file: FileMap<ServerData>;
+export let file: JSONFileMap<ServerData>;
 
 export function init() {
 	const filePath = path + '/servers.json',
@@ -166,7 +166,7 @@ export function init() {
 		logger.warn('Invalid servers file (overwriting)');
 		fs.rmSync(filePath);
 	}
-	file = new FileMap(filePath, fs);
+	file = new JSONFileMap(filePath, { fs, ...config });
 
 	for (const server of data()) {
 		$<ServerListItem>(new ServerListItem(server));

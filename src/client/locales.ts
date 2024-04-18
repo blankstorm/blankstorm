@@ -1,8 +1,8 @@
-import { isJSON } from '../core/utils';
+import EventEmitter from 'eventemitter3';
+import $ from 'jquery';
+import { isJSON } from 'utilium';
 import { version } from '../core/metadata';
 import * as settings from './settings';
-import $ from 'jquery';
-import EventEmitter from 'eventemitter3';
 import { logger } from './utils';
 
 export interface Locale {

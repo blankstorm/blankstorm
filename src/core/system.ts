@@ -1,6 +1,7 @@
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
+import { getRandomIntWithRecursiveProbability, greekLetterNames, randomBoolean, randomFloat, randomHex, randomInt, range } from 'utilium';
 import { type Entity } from './entities/entity';
 import { Planet } from './entities/planet';
 import { generateFleetFromPower } from './entities/ship';
@@ -13,7 +14,7 @@ import type { SystemGenerationOptions } from './generic/system';
 import type { Level } from './level';
 import { config } from './metadata';
 import type { Berth } from './stations/berth';
-import { getRandomIntWithRecursiveProbability, greek, randomBoolean, randomCords, randomFloat, randomHex, randomInt, range } from './utils';
+import { randomCords } from './utils';
 
 export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
 
@@ -179,7 +180,7 @@ export class System extends EventEmitter<{
 		);
 		const usePrefix = randomBoolean(),
 			planetCount = randomInt(options.planets.min, options.planets.max),
-			names = randomBoolean() ? greek.slice(0, planetCount) : range(1, planetCount + 1),
+			names = randomBoolean() ? greekLetterNames.slice(0, planetCount) : range(1, planetCount + 1),
 			planets = [];
 		for (let i = 0; i < names.length; i++) {
 			const radius = randomInt(options.planets.radius_min, options.planets.radius_max);

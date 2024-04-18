@@ -1,13 +1,14 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Animation } from '@babylonjs/core/Animations/animation';
-import type { Scene } from '@babylonjs/core/scene';
-import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Material } from '@babylonjs/core/Materials/material';
-import { randomCords, randomFloat, randomHex, randomInt, wait } from '../../core/utils';
-import { ModelRenderer } from '../models';
-import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { Scene } from '@babylonjs/core/scene';
+import { randomFloat, randomHex, randomInt, wait } from 'utilium';
 import type { HardpointJSON } from '../../core/entities/hardpoint';
 import type { GenericProjectile } from '../../core/generic/hardpoints';
+import { randomCords } from '../../core/utils';
+import { ModelRenderer } from '../models';
+import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export interface CustomHardpointProjectileMaterial {
 	applies_to: string[];

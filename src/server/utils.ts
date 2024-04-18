@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import { isJSON } from '../core/utils';
 import EventEmitter from 'events';
+import * as fs from 'fs';
+import { isJSON } from 'utilium';
 
 export function readJSONFile(path) {
 	if (!fs.existsSync(path)) {

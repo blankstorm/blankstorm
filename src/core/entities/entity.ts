@@ -1,11 +1,11 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
+import { randomHex, resolveConstructors } from 'utilium';
 import type { ItemContainer } from '../generic/items';
 import type { Level } from '../level';
 import { findPath } from '../path';
 import type { ItemStorage } from '../storage';
 import type { System } from '../system';
-import { randomHex, resolveConstructors } from '../utils';
 
 export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 

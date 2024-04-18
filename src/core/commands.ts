@@ -1,9 +1,9 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { isJSON } from 'utilium';
 import type { Entity } from './entities/entity';
 import type { Player } from './entities/player';
 import { Ship } from './entities/ship';
 import { game_url } from './metadata';
-import { isJSON } from './utils';
 
 export interface CommandExecutionContext {
 	executor: Entity & { oplvl?: number };

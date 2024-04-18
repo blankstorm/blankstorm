@@ -2,14 +2,14 @@ import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
-import type { SystemJSON } from './system';
-import { System } from './system';
+import { randomHex } from 'utilium';
 import type { CelestialBodyJSON } from './entities/body';
 import type { Entity, EntityJSON } from './entities/entity';
 import { Planet, type PlanetData } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
 import { Ship, type ShipJSON } from './entities/ship';
 import { Star, type StarJSON } from './entities/star';
+import type { FleetJSON } from './fleet';
 import type { GenericProjectile } from './generic/hardpoints';
 import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
@@ -18,8 +18,8 @@ import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
 import { Berth } from './stations/berth';
-import { randomHex } from './utils';
-import type { FleetJSON } from './fleet';
+import type { SystemJSON } from './system';
+import { System } from './system';
 
 export interface MoveInfo<T> {
 	id: string;

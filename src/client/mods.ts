@@ -1,4 +1,4 @@
-import { isJSON } from '../core/utils';
+import { isJSON } from 'utilium';
 import { path } from './config';
 import { logger } from './utils';
 const fs = $app.require('fs');

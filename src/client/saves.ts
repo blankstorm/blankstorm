@@ -1,19 +1,18 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
-
-import { FolderMap, isJSON, randomCords } from '../core/utils';
-import { Ship } from '../core/entities/ship';
+import { FolderMap, isJSON } from 'utilium';
 import { Player } from '../core/entities/player';
-
-const fs = $app.require('fs');
-import { SaveListItem } from './ui/save';
+import { Ship } from '../core/entities/ship';
 import type { ShipType } from '../core/generic/ships';
-import { path } from './config';
-import * as chat from './chat';
-import { currentLevel } from './client';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
+import { randomCords } from '../core/utils';
+import * as chat from './chat';
+import { currentLevel } from './client';
+import { path } from './config';
+import { SaveListItem } from './ui/save';
 import { account } from './user';
+const fs = $app.require('fs');
 
 export class Save {
 	#data: LevelJSON;
@@ -87,7 +86,7 @@ export function init() {
 	if (!fs.existsSync(folderPath)) {
 		fs.mkdirSync(folderPath);
 	}
-	folder = new FolderMap(folderPath, fs, '.json');
+	folder = new FolderMap(folderPath, { fs, suffix: '.json' });
 	for (const [id, content] of folder) {
 		if (!isJSON(content)) {
 			continue;

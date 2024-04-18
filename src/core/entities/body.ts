@@ -1,7 +1,8 @@
+import { randomInt } from 'utilium';
 import { Fleet, type FleetJSON } from '../fleet';
 import type { Level } from '../level';
 import { Container } from '../storage';
-import { randomCords, randomInt } from '../utils';
+import { randomCords } from '../utils';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import { Ship } from './ship';

@@ -1,10 +1,10 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-
-import type { Level } from '../level';
+import { resolveConstructors, wait } from 'utilium';
 import type { GenericHardpoint, HardpointType } from '../generic/hardpoints';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { HardpointInfo } from '../generic/ships';
-import { resolveConstructors, wait, xpToLevel } from '../utils';
+import type { Level } from '../level';
+import { xpToLevel } from '../utils';
 import type { CelestialBody } from './body';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';

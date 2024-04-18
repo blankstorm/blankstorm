@@ -1,16 +1,16 @@
-import { config } from '../../core/metadata';
+import $ from 'jquery';
+import { toDegrees } from 'utilium';
 import type { Entity } from '../../core/entities/entity';
 import type { Planet } from '../../core/entities/planet';
 import type { Ship } from '../../core/entities/ship';
 import type { Star } from '../../core/entities/star';
-import { toDegrees } from '../../core/utils';
+import { config } from '../../core/metadata';
+import { System } from '../../core/system';
+import { currentLevel } from '../client';
+import * as settings from '../settings';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
 import { Waypoint } from '../waypoints';
-import * as settings from '../settings';
-import $ from 'jquery';
-import { System } from '../../core/system';
-import { currentLevel } from '../client';
 
 export type MapMode = 'in-system' | 'inter-system';
 
