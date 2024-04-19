@@ -54,7 +54,7 @@ export class Save {
 
 	load(): Level {
 		this.updateData();
-		return Level.From(this.data);
+		return Level.FromJSON(this.data);
 	}
 
 	remove() {

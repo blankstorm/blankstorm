@@ -131,20 +131,20 @@ export class Server extends EventEmitter {
 		});
 
 		if (levelData) {
-			this.level = Level.From(levelData);
+			this.level = Level.FromJSON(levelData);
 		} else {
 			this.log.log('No level detected. Generating...');
 			this.level = new Level();
 		}
 
-		for (const type of ['projectile_fire', 'tick', 'player_removed', 'entity_path_start'] as const) {
+		for (const type of ['projectile_fire', 'update', 'player_removed', 'entity_path_start'] as const) {
 			this.level.on(type, async (...args) => {
 				this.io.emit('event', type, ...args);
 			});
 		}
 
 		setInterval(() => {
-			this.level.tick();
+			this.level.update();
 		}, 1000 / coreConfig.tick_rate);
 
 		setInterval(() => {

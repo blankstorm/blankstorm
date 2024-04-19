@@ -18,6 +18,7 @@ import type { GenericShip, ShipType } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
+import type { Node } from './node';
 import type { Berth } from './stations/berth';
 import type { SystemJSON } from './system';
 import { System } from './system';
@@ -52,6 +53,8 @@ export interface LevelJSON {
 	entities: EntityJSON[];
 }
 
+const copy = ['difficulty', 'version', 'name', 'id'] as const;
+
 export interface LevelEvents {
 	body_created: [CelestialBodyJSON];
 	body_removed: [CelestialBodyJSON];
@@ -67,10 +70,10 @@ export interface LevelEvents {
 	player_reset: [PlayerJSON];
 	projectile_fire: [string, string, GenericProjectile];
 	ship_created: [ShipJSON];
-	tick: [];
+	update: [];
 }
 
-export class Level extends EventEmitter<LevelEvents> {
+export class Level extends EventEmitter<LevelEvents> implements Node<LevelJSON> {
 	public id: string = randomHex(16);
 	public name: string = '';
 	public version = version;
@@ -80,6 +83,10 @@ export class Level extends EventEmitter<LevelEvents> {
 	public systems: Map<string, System> = new Map();
 	public rootSystem: System;
 	protected _performanceMonitor = new PerformanceMonitor(60);
+
+	public async ready(): Promise<this> {
+		return this;
+	}
 
 	public constructor() {
 		super();
@@ -198,9 +205,9 @@ export class Level extends EventEmitter<LevelEvents> {
 		this._performanceMonitor.sampleFrame();
 	}
 
-	public tick() {
+	public update() {
 		this.sampleTick();
-		this.emit('tick');
+		this.emit('update');
 
 		for (const entity of this.entities) {
 			entity.update();
@@ -209,11 +216,58 @@ export class Level extends EventEmitter<LevelEvents> {
 
 	public toJSON(): LevelJSON {
 		return {
-			...pick(this, 'difficulty', 'version', 'name', 'id'),
+			...pick(this, copy),
 			date: new Date().toJSON(),
 			systems: [...this.systems.values()].map(system => system.toJSON()),
 			entities: [...this.entities].map(entity => entity.toJSON()),
 		};
+	}
+
+	public fromJSON(json: LevelJSON): void {
+		assignWithDefaults(this, pick(json, copy));
+		this.date = new Date(json.date);
+
+		for (const systemData of json.systems) {
+			System.From(systemData, this);
+		}
+
+		/**
+		 * Note: nodes is sorted to make sure celestialbodies are loaded before ships before players
+		 * This prevents `level.getNodeByID(shipData) as Ship` in the Player constructor from returning null
+		 * Which in turn prevents `ship.owner = ship.parent = this` from throwing an error
+		 */
+		const entities = json.entities;
+		entities.sort((node1, node2) => {
+			const priority = ['Star', 'Planet', 'Ship', 'Player'];
+			return priority.findIndex(t => t == node1.nodeType) < priority.findIndex(t => t == node2.nodeType) ? -1 : 1;
+		});
+		for (const data of entities) {
+			switch (data.nodeType) {
+				case 'Player':
+					Player.FromJSON(<PlayerJSON>data, this);
+					break;
+				case 'Ship':
+					Ship.FromJSON(<ShipJSON>data, this);
+					break;
+				case 'Star':
+					Star.FromJSON(<StarJSON>data, this);
+					break;
+				case 'Planet':
+					Planet.FromJSON(<PlanetData>data, this);
+					break;
+				default:
+			}
+		}
+	}
+
+	public static FromJSON(json: LevelJSON): Level {
+		if (json.version != version) {
+			throw new Error(`Can't load level data: wrong version`);
+		}
+
+		const level = new Level();
+		level.fromJSON(json);
+		return level;
 	}
 
 	public static async upgrade(data: LevelJSON) {
@@ -241,49 +295,5 @@ export class Level extends EventEmitter<LevelEvents> {
 				throw `Upgrading from ${versions.get(data.version).text} is not supported`;
 		}
 		return data;
-	}
-
-	public static From(levelData: LevelJSON, level?: Level): Level {
-		if (levelData.version != version) {
-			throw new Error(`Can't load level data: wrong version`);
-		}
-
-		level ??= new Level();
-		assignWithDefaults(level, pick(levelData, 'difficulty', 'id', 'name', 'version'));
-		level.date = new Date(levelData.date);
-
-		for (const systemData of levelData.systems) {
-			System.From(systemData, level);
-		}
-
-		/**
-		 * Note: nodes is sorted to make sure celestialbodies are loaded before ships before players
-		 * This prevents `level.getNodeByID(shipData) as Ship` in the Player constructor from returning null
-		 * Which in turn prevents `ship.owner = ship.parent = this` from throwing an error
-		 */
-		const entities = levelData.entities;
-		entities.sort((node1, node2) => {
-			const priority = ['Star', 'Planet', 'Ship', 'Player'];
-			return priority.findIndex(t => t == node1.nodeType) < priority.findIndex(t => t == node2.nodeType) ? -1 : 1;
-		});
-		for (const data of entities) {
-			switch (data.nodeType) {
-				case 'Player':
-					Player.FromJSON(<PlayerJSON>data, level);
-					break;
-				case 'Ship':
-					Ship.FromJSON(<ShipJSON>data, level);
-					break;
-				case 'Star':
-					Star.FromJSON(<StarJSON>data, level);
-					break;
-				case 'Planet':
-					Planet.FromJSON(<PlanetData>data, level);
-					break;
-				default:
-			}
-		}
-
-		return level;
 	}
 }

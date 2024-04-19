@@ -374,7 +374,7 @@ async function _init(): Promise<void> {
 	renderer.engine.runRenderLoop(update);
 	setInterval(() => {
 		if (!isPaused && !isServer && currentLevel instanceof Level) {
-			currentLevel.tick();
+			currentLevel.update();
 		}
 	}, 1000 / config.tick_rate);
 	isInitialized = true;
@@ -506,7 +506,7 @@ export function load(level: Level): boolean {
 }
 
 export function unload(): void {
-	for (const event of ['projectile_fire', 'tick', 'player_levelup', 'player_removed', 'entity_path_start', 'entity_death', 'fleet_items_change'] as const) {
+	for (const event of ['projectile_fire', 'update', 'player_levelup', 'player_removed', 'entity_path_start', 'entity_death', 'fleet_items_change'] as const) {
 		currentLevel.off(event);
 	}
 	pause();

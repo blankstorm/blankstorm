@@ -27,7 +27,7 @@ export interface EntityJSON {
 const copy = ['id', 'name', 'nodeType', 'isSelected', 'isTargetable'] as const;
 
 export class Entity extends EventEmitter<{
-	tick: [];
+	update: [];
 }> {
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
@@ -112,7 +112,7 @@ export class Entity extends EventEmitter<{
 
 		this.position.addInPlace(this.velocity);
 		this.velocity.scaleInPlace(0.9);
-		this.emit('tick');
+		this.emit('update');
 	}
 
 	public constructor(

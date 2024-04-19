@@ -51,11 +51,11 @@ function handleConnectionFailed({ message }: Error): void {
 }
 
 function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ...data: EventEmitter.EventArgs<LevelEvents, T>) {
-	if (type == 'tick') {
+	if (type == 'update') {
 		if (!currentLevel) {
 			load(new Level());
 		}
-		Level.From(data[0], currentLevel);
+		currentLevel.fromJSON(data[0]);
 		currentLevel.sampleTick();
 	}
 
