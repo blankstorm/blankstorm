@@ -137,25 +137,28 @@ export class System extends EventEmitter<{
 		return data;
 	}
 
-	static From(systemData: SystemJSON, level: Level, system?: System): System {
-		system ||= new System(systemData.id, level);
-		system.name = systemData.name;
-		system.difficulty = systemData.difficulty;
-		system.position = Vector2.FromArray(systemData.position);
+	public fromJSON(json: SystemJSON): void {
+		this.name = json.name;
+		this.difficulty = json.difficulty;
+		this.position = Vector2.FromArray(json.position);
 
-		for (const connection of systemData.connections) {
+		for (const connection of json.connections) {
 			switch (connection.type) {
 				case 'system':
-					system.connections.push(level.systems.get(connection.value));
+					this.connections.push(this.level.systems.get(connection.value));
 					break;
 				case 'position':
-					system.connections.push(Vector2.FromArray(connection.value));
+					this.connections.push(Vector2.FromArray(connection.value));
 					break;
 				default:
-					system.connections.push(connection.value);
+					this.connections.push(connection.value);
 			}
 		}
+	}
 
+	public static FromJSON(json: SystemJSON, level: Level): System {
+		const system = new System(json.id, level);
+		system.fromJSON(json);
 		return system;
 	}
 

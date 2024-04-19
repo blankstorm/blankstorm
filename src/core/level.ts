@@ -228,7 +228,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		this.date = new Date(json.date);
 
 		for (const systemData of json.systems) {
-			System.From(systemData, this);
+			System.FromJSON(systemData, this);
 		}
 
 		/**

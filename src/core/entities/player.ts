@@ -33,6 +33,7 @@ export class Player extends Entity {
 	public constructor(id: string, level: Level, fleet: (ShipJSON | Ship | ShipType)[]) {
 		super(id, level);
 		this.fleet.position = Vector3.Zero();
+		this.fleet.owner = this;
 		for (const shipData of fleet) {
 			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? level.getEntityByID<Ship>(shipData) : Ship.FromJSON(shipData, level);
 			ship.owner = this;
