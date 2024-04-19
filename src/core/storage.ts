@@ -189,9 +189,9 @@ export class EntityStorageManager extends ItemStorage {
 
 	public get items(): Record<ItemID, number> {
 		const items = <Record<ItemID, number>>Object.fromEntries(Object.keys(Items).map(i => [i, 0]));
-		for (const e of this.entities) {
+		for (const entity of this.entities) {
 			for (const name of <ItemID[]>Object.keys(Items)) {
-				items[name] += e.storage.count(name);
+				items[name] += entity.storage.count(name);
 			}
 		}
 		return items;
@@ -199,23 +199,23 @@ export class EntityStorageManager extends ItemStorage {
 
 	public get total(): number {
 		let total = 0;
-		for (const e of this.entities) {
-			total += e.storage.count();
+		for (const entity of this.entities) {
+			total += entity.storage.count();
 		}
 		return total;
 	}
 
 	public get max(): number {
 		let total = 0;
-		for (const e of this.entities) {
-			total += e.storage.max;
+		for (const entity of this.entities) {
+			total += entity.storage.max;
 		}
 		return total;
 	}
 
 	public add(item: ItemID, amount: number): void {
-		for (const e of this.entities) {
-			const space = e.storage.max - e.storage.count();
+		for (const entity of this.entities) {
+			const space = entity.storage.max - entity.storage.count();
 			if (space <= 0) {
 				continue;
 			}
@@ -224,15 +224,15 @@ export class EntityStorageManager extends ItemStorage {
 				continue;
 			}
 			const amountToStore = Math.min(space, amount);
-			e.storage.add(item, amountToStore);
+			entity.storage.add(item, amountToStore);
 			amount -= amountToStore;
 		}
 	}
 
 	public remove(item: ItemID, amount?: number): void {
-		for (const e of this.entities) {
-			const stored = Math.min(e.storage.count(item), amount);
-			e.storage.remove(item, stored);
+		for (const entity of this.entities) {
+			const stored = Math.min(entity.storage.count(item), amount);
+			entity.storage.remove(item, stored);
 			amount -= stored;
 		}
 	}
