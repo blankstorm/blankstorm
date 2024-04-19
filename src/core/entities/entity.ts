@@ -4,9 +4,9 @@ import { assignWithDefaults, pick, randomHex, resolveConstructors } from 'utiliu
 import type { ItemContainer } from '../generic/items';
 import type { Level } from '../level';
 import { findPath } from '../path';
-import type { ItemStorage } from '../storage';
+import type { ItemStorage } from '../components/storage';
 import type { System } from '../system';
-import type { Component } from '../component';
+import type { Component } from '../components/component';
 
 export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 

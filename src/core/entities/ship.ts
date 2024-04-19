@@ -4,7 +4,7 @@ import { genericHardpoints } from '../generic/hardpoints';
 import type { GenericShip, ShipType } from '../generic/ships';
 import { genericShips } from '../generic/ships';
 import type { Level } from '../level';
-import { Container } from '../storage';
+import { Container } from '../components/storage';
 import type { System } from '../system';
 import { randomCords } from '../utils';
 import type { CelestialBody } from './body';
@@ -146,7 +146,7 @@ export class Ship extends Entity {
 	public fromJSON(data: ShipJSON): void {
 		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, 'type', 'hp', 'jumpCooldown'));
-		this.storage.from(data.storage);
+		this.storage.fromJSON(data.storage);
 	}
 }
 

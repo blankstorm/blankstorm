@@ -1,13 +1,14 @@
-import type { Entity } from './entities/entity';
-import { items as Items } from './generic/items';
-import type { ItemContainer, PartialItemContainer, ItemID } from './generic/items';
+import type { Entity } from '../entities/entity';
+import { items as Items } from '../generic/items';
+import type { ItemContainer, PartialItemContainer, ItemID } from '../generic/items';
+import type { Component } from './component';
 
 function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<keyof T, number> {
 	const entries = <[keyof T, number][]>Object.entries(items);
 	return new Map(entries);
 }
 
-export abstract class ItemStorage implements ItemContainer {
+export abstract class ItemStorage implements ItemContainer, Component<ItemContainer> {
 	public get [Symbol.toStringTag](): string {
 		return 'ItemStorage';
 	}
@@ -20,14 +21,14 @@ export abstract class ItemStorage implements ItemContainer {
 
 	public abstract get items(): Record<ItemID, number>;
 
-	public container(): ItemContainer {
+	public toJSON(): ItemContainer {
 		return {
 			items: this.items,
 			max: this.max,
 		};
 	}
 
-	public from({ max, items }: PartialItemContainer): this {
+	public fromJSON({ max, items }: PartialItemContainer): this {
 		this.clear();
 		this.max = max;
 		for (const [id, amount] of map(items)) {
@@ -101,7 +102,7 @@ export abstract class ItemStorage implements ItemContainer {
 	}
 
 	public static from<const T extends ItemStorage = ItemStorage>(this: new () => T, container: PartialItemContainer): T {
-		return new this().from(container);
+		return new this().fromJSON(container);
 	}
 }
 

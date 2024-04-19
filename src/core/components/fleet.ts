@@ -1,16 +1,17 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { CelestialBody } from './entities/body';
-import type { Player } from './entities/player';
-import type { Ship } from './entities/ship';
-import type { Level } from './level';
+import type { CelestialBody } from '../entities/body';
+import type { Player } from '../entities/player';
+import type { Ship } from '../entities/ship';
+import type { Level } from '../level';
 import { EntityStorageManager } from './storage';
+import type { Component } from './component';
 
 export interface FleetJSON {
 	position: number[];
 	ships: string[];
 }
 
-export class Fleet extends Set<Ship> {
+export class Fleet extends Set<Ship> implements Component<FleetJSON> {
 	public owner: CelestialBody | Player;
 
 	public storage = new EntityStorageManager(this);
@@ -36,7 +37,7 @@ export class Fleet extends Set<Ship> {
 		};
 	}
 
-	public from({ position, ships }: FleetJSON): void {
+	public fromJSON({ position, ships }: FleetJSON): void {
 		this.position = Vector3.FromArray(position || [0, 0, 0]);
 		this.clear();
 		for (const id of ships) {
@@ -49,9 +50,9 @@ export class Fleet extends Set<Ship> {
 		}
 	}
 
-	public static From(data: FleetJSON): Fleet {
+	public static FromJSON(data: FleetJSON): Fleet {
 		const fleet = new Fleet();
-		fleet.from(data);
+		fleet.fromJSON(data);
 		return fleet;
 	}
 }

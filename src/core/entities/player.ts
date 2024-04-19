@@ -1,6 +1,6 @@
-import type { EntityStorageManager } from '../storage';
-import type { FleetJSON } from '../fleet';
-import { Fleet } from '../fleet';
+import type { EntityStorageManager } from '../components/storage';
+import type { FleetJSON } from '../components/fleet';
+import { Fleet } from '../components/fleet';
 import type { ResearchID } from '../generic/research';
 import { research } from '../generic/research';
 import type { Level } from '../level';
@@ -63,7 +63,7 @@ export class Player extends Entity {
 		assignWithDefaults(this, pick(data, 'xp', 'research'));
 		this.research = data.research;
 		if ('fleet' in data) {
-			this.fleet.from(data.fleet);
+			this.fleet.fromJSON(data.fleet);
 		}
 	}
 

@@ -1,7 +1,7 @@
 import { randomInt } from 'utilium';
-import { Fleet, type FleetJSON } from '../fleet';
+import { Fleet, type FleetJSON } from '../components/fleet';
 import type { Level } from '../level';
-import { Container } from '../storage';
+import { Container } from '../components/storage';
 import { randomCords } from '../utils';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
@@ -49,7 +49,7 @@ export class CelestialBody extends Entity {
 		return {
 			...super.toJSON(),
 			fleet: this.fleet.toJSON(),
-			storage: this.storage.container(),
+			storage: this.storage.toJSON(),
 			radius: this.radius,
 		};
 	}
@@ -57,10 +57,10 @@ export class CelestialBody extends Entity {
 	public fromJSON(data: Partial<CelestialBodyJSON>): void {
 		super.fromJSON(data);
 		if ('storage' in data) {
-			this.storage.from({ items: data.storage.items, max: 1e10 });
+			this.storage.fromJSON({ items: data.storage.items, max: 1e10 });
 		}
 		if ('fleet' in data) {
-			this.fleet.from(data.fleet);
+			this.fleet.fromJSON(data.fleet);
 		}
 		this.radius = data.radius || this.radius;
 	}
