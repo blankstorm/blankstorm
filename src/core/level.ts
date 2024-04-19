@@ -1,5 +1,6 @@
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
-import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex } from 'utilium';
@@ -17,7 +18,7 @@ import type { GenericShip, ShipType } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
-import { Berth } from './stations/berth';
+import type { Berth } from './stations/berth';
 import type { SystemJSON } from './system';
 import { System } from './system';
 
@@ -78,22 +79,10 @@ export class Level extends EventEmitter<LevelEvents> {
 	public entities: Set<Entity> = new Set();
 	public systems: Map<string, System> = new Map();
 	public rootSystem: System;
-	protected _initPromise: Promise<Level>;
 	protected _performanceMonitor = new PerformanceMonitor(60);
 
 	public constructor() {
 		super();
-
-		this._initPromise = this.init();
-	}
-
-	public async init(): Promise<Level> {
-		return this;
-	}
-
-	public async ready(): Promise<this> {
-		await Promise.allSettled([this._initPromise]);
-		return this;
 	}
 
 	public getEntityByID<N extends Entity = Entity>(id: string): N {
