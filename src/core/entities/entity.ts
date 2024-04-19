@@ -24,6 +24,8 @@ export interface EntityJSON {
 	storage?: ItemContainer;
 }
 
+const copy = ['id', 'name', 'nodeType', 'isSelected', 'isTargetable'] as const;
+
 export class Entity extends EventEmitter<{
 	tick: [];
 }> {
@@ -154,7 +156,7 @@ export class Entity extends EventEmitter<{
 
 	public toJSON(): EntityJSON {
 		return {
-			...pick(this, 'id', 'name', 'nodeType', 'isTargetable', 'isSelected'),
+			...pick(this, copy),
 			system: this.system?.id,
 			owner: this.owner?.id,
 			parent: this.parent?.id,
@@ -166,7 +168,7 @@ export class Entity extends EventEmitter<{
 
 	public fromJSON(data: Partial<EntityJSON>, level: Level): void {
 		const parsed = {
-			...pick(data, 'id', 'name'),
+			...pick(data, copy),
 			system: level.systems.get(data.system),
 			position: data.position && Vector3.FromArray(data.position),
 			rotation: data.rotation && Vector3.FromArray(data.rotation),

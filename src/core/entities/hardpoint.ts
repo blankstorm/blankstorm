@@ -64,7 +64,7 @@ export class Hardpoint extends Entity {
 		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
 		this.reload = this.generic.reload;
 		await wait(time);
-		const targetShip = (targetConstructors.includes('Ship') ? target : target.owner) as Ship;
+		const targetShip = (targetConstructors.includes('Ship') ? target : target.parent) as Ship;
 		targetShip.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
 		if (targetShip.hp <= 0) {
 			this.level.emit('entity_death', targetShip.toJSON());
