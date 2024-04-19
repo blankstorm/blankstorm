@@ -1,8 +1,7 @@
-import type { Level } from '../level';
 import type { PlanetBiome } from '../generic/planets';
+import type { Level } from '../level';
 import type { CelestialBodyJSON } from './body';
 import { CelestialBody } from './body';
-import { assignWithDefaults, pick } from 'utilium';
 
 export interface PlanetData extends CelestialBodyJSON {
 	biome: PlanetBiome;
