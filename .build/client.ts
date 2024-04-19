@@ -52,6 +52,7 @@ if (options.keep) {
 	fs.rmSync(options.output, { recursive: true, force: true });
 }
 
+const productName = 'Blankstorm Client';
 const copyright = `Copyright © ${new Date().getFullYear()} ${$package.author.slice(0, $package.author.indexOf('<') - 1)}. All Rights Reserved.`;
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
@@ -64,7 +65,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 		},
 		files: ['package.json', path.join(options.output, '**/*')],
 		appId: 'net.blankstorm',
-		productName: 'Blankstorm Client',
+		productName,
 		copyright,
 		icon: './icon.png',
 		nsis: {
@@ -131,11 +132,11 @@ async function onBuildEnd() {
 				console.log('Compressed: ' + platform);
 			}
 			renameOutput({
-				[`Blankstorm Client Setup ${fullVersion}.exe`]: `blankstorm-client-${displayVersion}.exe`,
-				[`Blankstorm Client-${fullVersion}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
-				[`blankstorm-client_${fullVersion}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
-				[`Blankstorm Client-${fullVersion}.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
-				[`Blankstorm Client-${fullVersion}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
+				[`${productName} Setup ${fullVersion}.exe`]: `blankstorm-client-${displayVersion}.exe`,
+				[`${productName}-${fullVersion}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
+				[`${$package.name}_${fullVersion}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
+				[`${productName}-${fullVersion}.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
+				[`${productName}-${fullVersion}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
 			});
 			deleteOutput([
 				'__snap-amd64',
