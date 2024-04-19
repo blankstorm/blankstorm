@@ -1,7 +1,7 @@
 import type { Entity } from '../entities/entity';
 import { items as Items } from '../generic/items';
 import type { ItemContainer, PartialItemContainer, ItemID } from '../generic/items';
-import type { Component } from './component';
+import { register, type Component } from './component';
 
 function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<keyof T, number> {
 	const entries = <[keyof T, number][]>Object.entries(items);
@@ -9,9 +9,6 @@ function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<key
 }
 
 export abstract class ItemStorage implements ItemContainer, Component<ItemContainer> {
-
-	public readonly component = 'item_storage';
-
 	public get [Symbol.toStringTag](): string {
 		return 'ItemStorage';
 	}
@@ -104,11 +101,12 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 		return map(this.items).entries();
 	}
 
-	public static from<const T extends ItemStorage = ItemStorage>(this: new () => T, container: PartialItemContainer): T {
+	public static FromJSON<const T extends ItemStorage = ItemStorage>(this: new () => T, container: PartialItemContainer): T {
 		return new this().fromJSON(container);
 	}
 }
 
+@register
 export class Container extends ItemStorage {
 	public constructor(
 		public max: number = 1,
@@ -130,6 +128,7 @@ export class Container extends ItemStorage {
 	}
 }
 
+@register
 export class StorageManager extends ItemStorage {
 	public constructor(protected storages: Set<ItemStorage> = new Set()) {
 		super();
@@ -186,6 +185,7 @@ export class StorageManager extends ItemStorage {
 	}
 }
 
+@register
 export class EntityStorageManager extends ItemStorage {
 	public constructor(protected entities: Set<Entity> = new Set()) {
 		super();

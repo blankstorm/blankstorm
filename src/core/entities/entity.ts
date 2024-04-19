@@ -6,7 +6,7 @@ import type { Level } from '../level';
 import { findPath } from '../path';
 import type { ItemStorage } from '../components/storage';
 import type { System } from '../system';
-import type { Component } from '../components/component';
+import { register, type Component } from '../components/component';
 
 export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 
@@ -27,15 +27,13 @@ export interface EntityJSON {
 
 const copy = ['id', 'name', 'entityType', 'isSelected', 'isTargetable'] as const satisfies ReadonlyArray<keyof Entity>;
 
+@register
 export class Entity
 	extends EventEmitter<{
 		update: [];
 	}>
 	implements Component<EntityJSON>
 {
-
-	public readonly component = 'entity';
-
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
 	}

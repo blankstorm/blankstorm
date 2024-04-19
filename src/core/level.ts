@@ -74,9 +74,6 @@ export interface LevelEvents {
 }
 
 export class Level extends EventEmitter<LevelEvents> implements Component<LevelJSON> {
-
-	public readonly component = 'level';
-
 	public id: string = randomHex(16);
 	public name: string = '';
 	public version = version;

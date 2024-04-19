@@ -45,7 +45,7 @@ export interface ActionData {
 export type SystemConnection = System | Vector2;
 
 export class System extends EventEmitter<{
-	null;
+	created: [];
 }> {
 	public name = '';
 
@@ -60,6 +60,7 @@ export class System extends EventEmitter<{
 		super();
 		this.id ||= randomHex(32);
 		this.level.systems.set(this.id, this);
+		this.emit('created');
 	}
 
 	public get entities(): Set<Entity> {
@@ -110,7 +111,7 @@ export class System extends EventEmitter<{
 		return [...this.entities].filter(e => e.isSelected);
 	}
 
-	toJSON(): SystemJSON {
+	public toJSON(): SystemJSON {
 		const data: SystemJSON = {
 			difficulty: this.difficulty,
 			name: this.name,

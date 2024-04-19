@@ -14,6 +14,7 @@ if (options.debug) {
 	logger.info('Debug mode enabled');
 	Object.assign(globalThis, {
 		client,
+		core: await import('../core'),
 		renderer: await import('../renderer'),
 		ui: await import('./ui'),
 		map: await import('./ui/map'),
