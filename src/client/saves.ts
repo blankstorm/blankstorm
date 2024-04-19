@@ -71,6 +71,7 @@ export async function createDefault(name: string): Promise<Level> {
 	const fleet = ['mosquito', 'cillus'].map((type: ShipType) => new Ship(null, level, type));
 	fleet[0].position.z += 4;
 	const player = new Player(account.id, level, fleet);
+	player.system = system;
 	player.name = account.username;
 	player.position = new Vector3(0, 0, -1000).add(randomCords(50, true));
 	player.rotation = Vector3.Zero();
