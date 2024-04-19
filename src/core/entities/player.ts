@@ -10,6 +10,7 @@ import type { ShipJSON } from './ship';
 import { Ship } from './ship';
 import { Vector3 } from '@babylonjs/core';
 import type { ShipType } from '../generic/ships';
+import { assignWithDefaults, pick } from 'utilium';
 
 export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;
@@ -59,7 +60,7 @@ export class Player extends Entity {
 
 	public from(data: PlayerJSON, level: Level): void {
 		super.from(data, level);
-		this.xp = data.xp;
+		assignWithDefaults(this, pick(data, 'xp', 'research'));
 		this.research = data.research;
 		if ('fleet' in data) {
 			this.fleet.from(data.fleet);
@@ -69,9 +70,8 @@ export class Player extends Entity {
 	public toJSON(): PlayerJSON {
 		return {
 			...super.toJSON(),
+			...pick(this, 'xp', 'research'),
 			fleet: this.fleet.toJSON(),
-			xp: this.xp,
-			research: this.research,
 		};
 	}
 }

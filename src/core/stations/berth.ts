@@ -4,6 +4,7 @@ import type { ShipType } from '../generic/ships';
 import { genericShips, shipTypes } from '../generic/ships';
 import type { StationPartJSON, StationPartOptions } from './part';
 import { StationPart } from './part';
+import { assignWithDefaults, pick } from 'utilium';
 
 export interface BerthJSON extends StationPartJSON {
 	productionID: ShipType;
@@ -26,14 +27,12 @@ export class Berth extends StationPart implements Producer {
 	public toJSON(): BerthJSON {
 		return {
 			...super.toJSON(),
-			productionID: this.productionID,
-			productionTime: this.productionTime,
+			...pick(this, 'productionID', 'productionTime'),
 		};
 	}
 
 	public from(data: BerthJSON, level: Level): void {
 		super.from(data, level);
-		this.productionID = data.productionID;
-		this.productionTime = data.productionTime;
+		assignWithDefaults(this, pick(data, 'productionID', 'productionTime'));
 	}
 }

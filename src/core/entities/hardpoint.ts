@@ -1,5 +1,5 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { resolveConstructors, wait } from 'utilium';
+import { assignWithDefaults, pick, resolveConstructors, wait } from 'utilium';
 import type { GenericHardpoint, HardpointType } from '../generic/hardpoints';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { HardpointInfo } from '../generic/ships';
@@ -16,6 +16,8 @@ export interface HardpointJSON extends EntityJSON {
 	scale: number;
 	reload: number;
 }
+
+const copy = ['type', 'scale', 'reload'] as const;
 
 export class Hardpoint extends Entity {
 	type: HardpointType;
@@ -41,17 +43,14 @@ export class Hardpoint extends Entity {
 	toJSON(): HardpointJSON {
 		return {
 			...super.toJSON(),
-			type: this.type,
-			scale: this.scale,
-			reload: this.reload,
+			...pick(this, copy),
 		};
 	}
 
 	from(data: Partial<HardpointJSON>, level: Level): void {
 		super.from(data, level);
-		this.type = data.type || this.type;
-		this.scale = data.scale || this.scale;
-		this.reload = data.reload ?? this.reload ?? this.generic.reload;
+		assignWithDefaults(this, pick(data, copy));
+		this.reload ??= this.generic.reload;
 	}
 
 	/**

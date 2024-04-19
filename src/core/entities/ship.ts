@@ -1,5 +1,5 @@
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
-import { randomInt } from 'utilium';
+import { assignWithDefaults, pick, randomInt } from 'utilium';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { GenericShip, ShipType } from '../generic/ships';
 import { genericShips } from '../generic/ships';
@@ -97,9 +97,7 @@ export class Ship extends Entity {
 
 	public from(data: ShipJSON, level: Level): void {
 		super.from(data, level);
-		this.type = data.type;
-		this.hp = data.hp;
-		this.jumpCooldown = data.jumpCooldown;
+		assignWithDefaults(this, pick(data, 'type', 'hp', 'jumpCooldown'));
 		this.storage.from(data.storage);
 	}
 }

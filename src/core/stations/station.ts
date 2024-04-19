@@ -4,6 +4,7 @@ import { CelestialBody } from '../entities/body';
 import type { Player } from '../entities/player';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
+import { pick } from 'utilium';
 
 export interface StationJSON extends CelestialBodyJSON {
 	type: string;
@@ -24,10 +25,11 @@ export class Station extends CelestialBody {
 	}
 
 	public toJSON() {
-		return Object.assign(super.toJSON(), {
-			id: this.id,
+		return {
+			...super.toJSON(),
+			...pick(this, 'id'),
 			components: this.core.toJSON(),
-		});
+		};
 	}
 
 	/**

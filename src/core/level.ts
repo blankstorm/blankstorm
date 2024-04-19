@@ -2,7 +2,7 @@ import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
-import { randomHex } from 'utilium';
+import { assignWithDefaults, pick, randomHex } from 'utilium';
 import type { CelestialBodyJSON } from './entities/body';
 import type { Entity, EntityJSON } from './entities/entity';
 import { Planet, type PlanetData } from './entities/planet';
@@ -281,12 +281,9 @@ export class Level extends EventEmitter<LevelEvents> {
 
 	public toJSON(): LevelJSON {
 		return {
+			...pick(this, 'difficulty', 'version', 'name', 'id'),
 			date: new Date().toJSON(),
 			systems: [...this.systems.values()].map(system => system.toJSON()),
-			difficulty: this.difficulty,
-			version: this.version,
-			name: this.name,
-			id: this.id,
 			entities: [...this.entities].map(entity => entity.toJSON()),
 		};
 	}
@@ -324,10 +321,8 @@ export class Level extends EventEmitter<LevelEvents> {
 		}
 
 		level ??= new Level();
-		level.id = levelData.id;
-		level.name = levelData.name;
+		assignWithDefaults(level, pick(levelData, 'difficulty', 'id', 'name', 'version'));
 		level.date = new Date(levelData.date);
-		level.version = levelData.version;
 
 		for (const systemData of levelData.systems) {
 			System.From(systemData, level);

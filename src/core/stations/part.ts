@@ -5,10 +5,12 @@ import type { GenericStationPartID } from '../generic/station_part';
 import { stationParts } from '../generic/station_part';
 import type { Station } from './station';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { pick } from 'utilium';
 
 export interface StationPartJSON extends CelestialBodyJSON {
 	hp: number;
 	type: string;
+	connections: string[];
 }
 
 export interface StationPartOptions {
@@ -61,11 +63,11 @@ export class StationPart extends CelestialBody {
 	}
 
 	public toJSON(): StationPartJSON {
-		return Object.assign(super.toJSON(), {
-			type: this.type,
-			hp: this.hp,
-			connections: this.connections.map(component => component.toJSON()),
-		});
+		return {
+			...super.toJSON(),
+			...pick(this, 'type', 'hp'),
+			connections: this.connections.map(component => component.id),
+		};
 	}
 
 	public remove() {

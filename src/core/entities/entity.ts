@@ -1,6 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
-import { randomHex, resolveConstructors } from 'utilium';
+import { assignWithDefaults, pick, randomHex, resolveConstructors } from 'utilium';
 import type { ItemContainer } from '../generic/items';
 import type { Level } from '../level';
 import { findPath } from '../path';
@@ -142,29 +142,27 @@ export class Entity extends EventEmitter {
 
 	public toJSON(): EntityJSON {
 		return {
-			id: this.id,
-			name: this.name,
+			...pick(this, 'id', 'name', 'nodeType', 'isTargetable', 'isSelected'),
 			system: this.system?.id,
 			owner: this.owner?.id,
 			parent: this.parent?.id,
-			nodeType: this.nodeType,
 			position: this.position.asArray(),
 			rotation: this.rotation.asArray(),
 			velocity: this.velocity.asArray(),
-			isTargetable: this.isTargetable,
-			isSelected: this.isSelected,
 		};
 	}
 
 	public from(data: Partial<EntityJSON>, level: Level): void {
-		this.id = data.id || this.id;
-		this.name = data.name || this.name;
-		this.system = level.systems.get(data.system) || this.system;
-		this.position = Vector3.FromArray(data.position || this.position?.asArray());
-		this.rotation = Vector3.FromArray(data.rotation || this.rotation?.asArray());
-		this.velocity = Vector3.FromArray(data.velocity || this.velocity?.asArray());
-		this.parent = level.getEntityByID(data.parent) || this.parent;
-		this.owner = level.getEntityByID(data.owner) || this.owner;
+		const parsed = {
+			...pick(data, 'id', 'name'),
+			system: level.systems.get(data.system),
+			position: data.position && Vector3.FromArray(data.position),
+			rotation: data.rotation && Vector3.FromArray(data.rotation),
+			velocity: data.velocity && Vector3.FromArray(data.velocity),
+			parent: data.parent && level.getEntityByID(data.parent),
+			owner: data.owner && level.getEntityByID(data.owner),
+		};
+		assignWithDefaults(this, parsed);
 	}
 
 	public static From<const T extends Entity = Entity>(this: EntityConstructor<T>, data: Partial<EntityJSON>, level: Level, constructorOptions?): T {
