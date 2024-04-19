@@ -33,33 +33,33 @@
 		"node": ">=18.0.0"
 	},
 	"dependencies": {
-		"@babylonjs/core": "^6.38.0",
-		"@babylonjs/loaders": "^6.38.0",
-		"@blankstorm/api": "^0.4.4",
+		"@babylonjs/core": "^7.3.1",
+		"@babylonjs/loaders": "^7.3.1",
+		"@blankstorm/api": "^0.5.4",
 		"eventemitter3": "^5.0.1",
-		"jquery": "^3.6.2",
+		"jquery": "^3.7.1",
 		"logzen": "^0.3.3",
-		"socket.io": "^4.6.1",
-		"socket.io-client": "^4.6.1",
+		"socket.io": "^4.7.5",
+		"socket.io-client": "^4.7.5",
 		"utilium": "^0.1.11"
 	},
 	"devDependencies": {
 		"@types/archiver": "^5.3.2",
-		"@types/jquery": "^3.5.16",
+		"@types/jquery": "^3.5.29",
 		"@types/node": "^20.2.1",
-		"@typescript-eslint/eslint-plugin": "^5.59.6",
-		"@typescript-eslint/parser": "^5.59.6",
+		"@typescript-eslint/eslint-plugin": "^7.7.0",
+		"@typescript-eslint/parser": "^7.7.0",
 		"archiver": "^5.3.1",
 		"electron": "^28.1.4",
 		"electron-builder": "^24.6.3",
-		"esbuild": "^0.17.14",
+		"esbuild": "^0.20.2",
 		"esbuild-plugin-glslx": "^0.0.4",
 		"esbuild-plugin-replace": "^1.4.0",
-		"eslint": "^8.24.0",
+		"eslint": "^8.57.0",
 		"mime-types": "^2.1.35",
 		"postject": "^1.0.0-alpha.6",
 		"prettier": "^3.2.5",
 		"tsx": "^4.7.0",
-		"typescript": "^5.0.4"
+		"typescript": "^5.4.5"
 	}
 }
