@@ -12,6 +12,9 @@ export interface FleetJSON {
 }
 
 export class Fleet extends Set<Ship> implements Component<FleetJSON> {
+
+	public readonly component = 'fleet';
+
 	public owner: CelestialBody | Player;
 
 	public storage = new EntityStorageManager(this);

@@ -33,6 +33,9 @@ export class Entity
 	}>
 	implements Component<EntityJSON>
 {
+
+	public readonly component = 'entity';
+
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
 	}

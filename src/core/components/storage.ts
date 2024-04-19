@@ -9,6 +9,9 @@ function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<key
 }
 
 export abstract class ItemStorage implements ItemContainer, Component<ItemContainer> {
+
+	public readonly component = 'item_storage';
+
 	public get [Symbol.toStringTag](): string {
 		return 'ItemStorage';
 	}
