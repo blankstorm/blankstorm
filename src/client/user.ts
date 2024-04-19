@@ -1,9 +1,9 @@
 import type { Account } from '@blankstorm/api';
+import type { Action, ActionParameters } from '../core';
 import type { Player } from '../core/entities/player';
-import { currentLevel } from './client';
-import { sendMessage } from './chat';
 import type { System } from '../core/system';
-import type { ActionArgs } from '../core';
+import { sendMessage } from './chat';
+import { currentLevel } from './client';
 
 export const account: Account = {
 	id: '_guest_',
@@ -28,6 +28,6 @@ export function system(): System {
 	return player()?.system;
 }
 
-export function action(...args: ActionArgs): Promise<boolean> {
-	return currentLevel.tryAction(account.id, ...args);
+export function action<T extends Action>(action: T, ...args: ActionParameters<T>): Promise<boolean> {
+	return currentLevel.tryAction<T>(account.id, action, ...args);
 }

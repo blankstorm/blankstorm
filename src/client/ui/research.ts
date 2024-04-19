@@ -15,7 +15,7 @@ export class ResearchUI extends HTMLDivElement {
 		$(this)
 			.find('.upgrade')
 			.on('click', async () => {
-				await action('do_research', research);
+				await action('research', research);
 			});
 
 		$(this).appendTo('div.lab');

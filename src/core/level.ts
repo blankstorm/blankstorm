@@ -3,15 +3,15 @@ import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
-import { assignWithDefaults, pick, randomHex } from 'utilium';
+import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
 import type { Component } from './components/component';
+import type { FleetJSON } from './components/fleet';
 import type { CelestialBodyJSON } from './entities/body';
 import type { Entity, EntityJSON } from './entities/entity';
 import { Planet, type PlanetData } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
 import { Ship, type ShipJSON } from './entities/ship';
 import { Star, type StarJSON } from './entities/star';
-import type { FleetJSON } from './components/fleet';
 import type { GenericProjectile } from './generic/hardpoints';
 import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
@@ -27,21 +27,6 @@ export interface MoveInfo<T> {
 	id: string;
 	target: T;
 }
-
-export interface ActionData {
-	create_item: Item;
-	create_ship: {
-		ship: GenericShip;
-		berth?: Berth;
-	};
-	do_research: Research;
-	warp: MoveInfo<System>[];
-	move: MoveInfo<Vector3>[];
-}
-
-export type ActionArgs = {
-	[A in keyof ActionData]: [action: A, data: ActionData[A]];
-}[keyof ActionData];
 
 export interface LevelJSON {
 	date: string;
@@ -131,62 +116,63 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		return <T>this._selectEntities(selector)[0];
 	}
 
-	public async tryAction(
-		id: string,
-		...args: ActionArgs //see https://stackoverflow.com/a/76335220/21961918
-	): Promise<boolean> {
-		const [action, data] = args;
+	public _try_create_item(player: Player, item: Item): boolean {
+		if (!item.recipe || !player.storage.hasItems(item.recipe)) {
+			return false;
+		}
+
+		player.storage.removeItems(item.recipe);
+		player.storage.addItems({ [item.id]: player.storage.items[item.id] + 1 });
+	}
+
+	public _try_create_ship(player: Player, generic: GenericShip, berth?: Berth): boolean {
+		if (!player.storage.hasItems(generic.recipe)) {
+			return false;
+		}
+
+		player.storage.removeItems(generic.recipe);
+		const ship = new Ship(null, player.level, <ShipType>generic.id);
+		ship.parent = ship.owner = player;
+		player.fleet.add(ship);
+	}
+
+	public _try_research(player: Player, data: Research): boolean {
+		if (player.research[data.id] >= data.max || isResearchLocked(<ResearchID>data.id, player)) {
+			return false;
+		}
+		const neededItems = priceOfResearch(<ResearchID>data.id, player.research[data.id]);
+		if (!player.storage.hasItems(neededItems)) {
+			return false;
+		}
+
+		player.storage.removeItems(neededItems);
+		player.research[data.id]++;
+	}
+
+	public _try_warp(player: Player, data: MoveInfo<System>[]): void {
+		for (const { id, target } of data) {
+			this.getEntityByID<Ship>(id).jumpTo(target);
+		}
+	}
+
+	public _try_move(player: Player, data: MoveInfo<Vector3>[]): void {
+		for (const { id, target } of data) {
+			this.getEntityByID<Entity>(id).moveTo(target);
+		}
+	}
+
+	public async tryAction<T extends Action>(id: string, action: T, ...args: ActionParameters<T>): Promise<boolean> {
 		const player = this.getEntityByID(id);
 
 		if (!(player instanceof Player)) {
 			return false;
 		}
 
-		switch (action) {
-			case 'create_item':
-				if (!data.recipe || !player.storage.hasItems(data.recipe)) {
-					return false;
-				}
-
-				player.storage.removeItems(data.recipe);
-				player.storage.addItems({ [data.id]: player.storage.items[data.id] + 1 });
-				break;
-			case 'create_ship':
-				if (!player.storage.hasItems(data.ship.recipe)) {
-					return false;
-				}
-
-				player.storage.removeItems(data.ship.recipe);
-				const ship = new Ship(null, player.level, <ShipType>data.ship.id);
-				ship.parent = ship.owner = player;
-				player.fleet.add(ship);
-				break;
-			case 'do_research':
-				if (player.research[id] >= data.max || isResearchLocked(<ResearchID>data.id, player)) {
-					return false;
-				}
-				const neededItems = priceOfResearch(<ResearchID>data.id, player.research[data.id]);
-				if (!player.storage.hasItems(neededItems)) {
-					return false;
-				}
-
-				player.storage.removeItems(neededItems);
-				player.research[data.id]++;
-				break;
-			case 'warp':
-				for (const { id, target } of data) {
-					this.getEntityByID<Ship>(id).jumpTo(target);
-				}
-				break;
-			case 'move':
-				for (const { id, target } of data) {
-					this.getEntityByID<Entity>(id).moveTo(target);
-				}
-				break;
-			default: //action does not exist
-				return false;
+		if (!('_try_' + action in this)) {
+			return false;
 		}
-		return true;
+
+		this['_try_' + action](player, ...args);
 	}
 
 	public async generateSystem(name: string, position: Vector2, options: SystemGenerationOptions = config.system_generation, system?: System) {
@@ -270,6 +256,10 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		return level;
 	}
 }
+
+export type Action = 'create_item' | 'create_ship' | 'research' | 'warp' | 'move';
+
+export type ActionParameters<T extends Action> = Shift<Parameters<Level[`_try_${T}`]>>;
 
 export function upgradeLevel(data: LevelJSON): LevelJSON {
 	switch (data.version) {
