@@ -86,7 +86,7 @@ export class System extends EventEmitter<{
 				return [...this.entities].filter(entity => entity.id == selector.substring(1));
 			case '.':
 				return [...this.entities].filter(entity => {
-					for (const type of entity.nodeTypes) {
+					for (const type of entity.entityTypes) {
 						if (type.toLowerCase().includes(selector.substring(1).toLowerCase())) {
 							return true;
 						}

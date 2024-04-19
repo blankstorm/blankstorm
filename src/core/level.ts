@@ -53,7 +53,7 @@ export interface LevelJSON {
 	entities: EntityJSON[];
 }
 
-const copy = ['difficulty', 'version', 'name', 'id'] as const;
+const copy = ['difficulty', 'version', 'name', 'id'] as const satisfies ReadonlyArray<keyof Level>;
 
 export interface LevelEvents {
 	body_created: [CelestialBodyJSON];
@@ -111,7 +111,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 				return [...this.entities].filter(entity => entity.id == selector.substring(1));
 			case '.':
 				return [...this.entities].filter(entity => {
-					for (const type of entity.nodeTypes) {
+					for (const type of entity.entityTypes) {
 						if (type.toLowerCase().includes(selector.substring(1).toLowerCase())) {
 							return true;
 						}
@@ -239,10 +239,10 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		const entities = json.entities;
 		entities.sort((node1, node2) => {
 			const priority = ['Star', 'Planet', 'Ship', 'Player'];
-			return priority.findIndex(t => t == node1.nodeType) < priority.findIndex(t => t == node2.nodeType) ? -1 : 1;
+			return priority.findIndex(t => t == node1.entityType) < priority.findIndex(t => t == node2.entityType) ? -1 : 1;
 		});
 		for (const data of entities) {
-			switch (data.nodeType) {
+			switch (data.entityType) {
 				case 'Player':
 					Player.FromJSON(<PlayerJSON>data, this);
 					break;

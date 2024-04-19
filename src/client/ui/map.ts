@@ -25,7 +25,7 @@ export class MapMarker {
 		if (this.target instanceof System) {
 			return this.target.selectEntity<Star>('.Star').color.toHexString();
 		}
-		switch (this.target.nodeType) {
+		switch (this.target.entityType) {
 			case 'Star':
 			case 'Waypoint':
 				return (<Star | Waypoint>this.target).color.toHexString();
@@ -42,7 +42,7 @@ export class MapMarker {
 		if (target instanceof System) {
 			internalMarker = $svg('circle');
 		} else {
-			switch (target.nodeType) {
+			switch (target.entityType) {
 				case 'Star':
 				case 'Planet':
 					internalMarker = $svg('circle');
@@ -54,7 +54,7 @@ export class MapMarker {
 					internalMarker = $svg('svg').append($svg('use'));
 					break;
 				default:
-					throw new TypeError('Unsupported nodeType for marker: ' + target.nodeType);
+					throw new TypeError('Unsupported nodeType for marker: ' + target.entityType);
 			}
 		}
 
@@ -69,7 +69,7 @@ export class MapMarker {
 
 	update() {
 		const isSystem = this.target instanceof System;
-		if (!isSystem && this.target.nodeType == 'Waypoint') {
+		if (!isSystem && this.target.entityType == 'Waypoint') {
 			this.gui.find('.internal-marker use').attr({
 				href: '_build.asset_dir/images/icons.svg#' + ('icon' in this.target ? this.target.icon : 'location-dot'),
 				transform: 'scale(.025)',
@@ -138,7 +138,7 @@ export function update(): void {
 	`);
 	$('#map .mode').text(modeNames[mode]);
 	for (const entity of system().entities) {
-		if (markers.has(entity.id) || !supportsMarkerType(entity.nodeType)) {
+		if (markers.has(entity.id) || !supportsMarkerType(entity.entityType)) {
 			continue;
 		}
 		if (entity instanceof Waypoint && entity.builtin) {

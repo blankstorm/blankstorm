@@ -17,7 +17,7 @@ export interface HardpointJSON extends EntityJSON {
 	reload: number;
 }
 
-const copy = ['type', 'scale', 'reload'] as const;
+const copy = ['type', 'scale', 'reload'] as const satisfies ReadonlyArray<keyof Hardpoint>;
 
 export class Hardpoint extends Entity {
 	public type: HardpointType;

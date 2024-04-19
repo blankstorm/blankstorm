@@ -116,7 +116,7 @@ export const cookies: Map<string, string> & { get _map(): Map<string, string> } 
 };
 
 export function getEntityIcon(entity: EntityJSON): string {
-	switch (entity.nodeType) {
+	switch (entity.entityType) {
 		case 'Planet':
 			return 'earth-americas';
 		case 'Star':

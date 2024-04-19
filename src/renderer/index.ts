@@ -176,12 +176,12 @@ export async function load(serializedNodes: EntityJSON[]) {
 	}
 
 	for (const data of serializedNodes) {
-		const type: string = data.nodeType;
+		const type: string = data.entityType;
 		if (!entityRenderers.has(type)) {
-			logger.warn(`rendering for node type "${data.nodeType}" is not supported`);
+			logger.warn(`rendering for node type "${data.entityType}" is not supported`);
 			continue;
 		}
-		const entity: Renderer = await createAndUpdate(entityRenderers.get(data.nodeType), data, scene);
+		const entity: Renderer = await createAndUpdate(entityRenderers.get(data.entityType), data, scene);
 		if (['Player', 'Client'].includes(type)) {
 			/**
 			 * @todo change this

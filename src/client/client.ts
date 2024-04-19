@@ -491,7 +491,7 @@ export function load(level: Level): boolean {
 		renderer.startFollowingPath(entityID, path);
 	});
 	level.on('entity_death', async (entity: EntityJSON) => {
-		if (entity.nodeType == 'Ship') {
+		if (entity.entityType == 'Ship') {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}
 	});

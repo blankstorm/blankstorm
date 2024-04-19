@@ -16,7 +16,7 @@ export interface EntityJSON {
 	system: string;
 	owner: string;
 	parent: string;
-	nodeType: string;
+	entityType: string;
 	position: readonly number[];
 	rotation: readonly number[];
 	velocity: readonly number[];
@@ -25,7 +25,7 @@ export interface EntityJSON {
 	storage?: ItemContainer;
 }
 
-const copy = ['id', 'name', 'nodeType', 'isSelected', 'isTargetable'] as const;
+const copy = ['id', 'name', 'entityType', 'isSelected', 'isTargetable'] as const satisfies ReadonlyArray<keyof Entity>;
 
 export class Entity
 	extends EventEmitter<{
@@ -47,11 +47,11 @@ export class Entity
 		this._name = name;
 	}
 
-	public get nodeType(): string {
+	public get entityType(): string {
 		return this.constructor.name;
 	}
 
-	public get nodeTypes(): string[] {
+	public get entityTypes(): string[] {
 		return resolveConstructors(this);
 	}
 
