@@ -54,8 +54,8 @@ export class CelestialBody extends Entity {
 		};
 	}
 
-	public from(data: Partial<CelestialBodyJSON>, level: Level): void {
-		super.from(data, level);
+	public fromJSON(data: Partial<CelestialBodyJSON>, level: Level): void {
+		super.fromJSON(data, level);
 		if ('storage' in data) {
 			this.storage.from({ items: data.storage.items, max: 1e10 });
 		}

@@ -1,4 +1,4 @@
-import { Vector2 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { assignWithDefaults, pick, randomInt } from 'utilium';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { GenericShip, ShipType } from '../generic/ships';
@@ -31,6 +31,54 @@ export class Ship extends Entity {
 	public isTargetable = true;
 
 	declare owner?: CelestialBody | Player;
+
+	public update() {
+		super.update();
+		if (this.hp <= 0) {
+			this.remove();
+			this.level.emit('entity_death', this.toJSON());
+			return;
+		}
+		for (const hardpoint of this.hardpoints) {
+			hardpoint.reload = Math.max(--hardpoint.reload, 0);
+
+			const targets = [...this.level.entities].filter(e => {
+				const distance = Vector3.Distance(e.absolutePosition, this.absolutePosition);
+				return e.isTargetable && e.owner != this.owner && distance < hardpoint.generic.range;
+			}, null);
+			const target = targets.reduce((previous, current) => {
+				const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), this.absolutePosition);
+				const currentDistance = Vector3.Distance(current.absolutePosition, this.absolutePosition);
+				return previousDistance < currentDistance ? previous : current;
+			}, null);
+
+			/**
+			 * @todo Add support for targeting stations
+			 */
+			if (!(target instanceof Ship)) {
+				continue;
+			}
+
+			const targetPoints = [...target.hardpoints, target].filter(targetHardpoint => {
+				const distance = Vector3.Distance(targetHardpoint.absolutePosition, hardpoint.absolutePosition);
+				return distance < hardpoint.generic.range;
+			});
+			const targetPoint = targetPoints.reduce((current, newPoint) => {
+				if (!current || !newPoint) {
+					return current;
+				}
+				const oldDistance = Vector3.Distance(current.absolutePosition, hardpoint.absolutePosition);
+				const newDistance = Vector3.Distance(newPoint.absolutePosition, hardpoint.absolutePosition);
+				return oldDistance < newDistance ? current : newPoint;
+			}, target);
+
+			if (hardpoint.reload <= 0) {
+				hardpoint.reload = hardpoint.generic.reload;
+				hardpoint.fire(targetPoint);
+			}
+		}
+		this.jumpCooldown = Math.max(--this.jumpCooldown, 0);
+	}
 
 	/**
 	 * @todo move distance related stuff to ship creation
@@ -95,8 +143,8 @@ export class Ship extends Entity {
 		};
 	}
 
-	public from(data: ShipJSON, level: Level): void {
-		super.from(data, level);
+	public fromJSON(data: ShipJSON, level: Level): void {
+		super.fromJSON(data, level);
 		assignWithDefaults(this, pick(data, 'type', 'hp', 'jumpCooldown'));
 		this.storage.from(data.storage);
 	}

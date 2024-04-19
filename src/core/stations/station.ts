@@ -35,7 +35,7 @@ export class Station extends CelestialBody {
 	/**
 	 * @todo Implement
 	 */
-	public from(data: StationJSON, level: Level): void {
-		super.from(data, level);
+	public fromJSON(data: StationJSON, level: Level): void {
+		super.fromJSON(data, level);
 	}
 }

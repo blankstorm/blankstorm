@@ -34,7 +34,7 @@ export class Player extends Entity {
 		super(id, level);
 		this.fleet.position = Vector3.Zero();
 		for (const shipData of fleet) {
-			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? level.getEntityByID<Ship>(shipData) : Ship.From(shipData, level);
+			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? level.getEntityByID<Ship>(shipData) : Ship.FromJSON(shipData, level);
 			ship.owner = this;
 			ship.position.addInPlace(this.absolutePosition);
 			this.fleet.add(ship);
@@ -58,8 +58,8 @@ export class Player extends Entity {
 		super.remove();
 	}
 
-	public from(data: PlayerJSON, level: Level): void {
-		super.from(data, level);
+	public fromJSON(data: PlayerJSON, level: Level): void {
+		super.fromJSON(data, level);
 		assignWithDefaults(this, pick(data, 'xp', 'research'));
 		this.research = data.research;
 		if ('fleet' in data) {

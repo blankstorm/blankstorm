@@ -20,8 +20,8 @@ export class Star extends CelestialBody {
 		};
 	}
 
-	public from(data: Partial<StarJSON>, level: Level): void {
-		super.from(data, level);
+	public fromJSON(data: Partial<StarJSON>, level: Level): void {
+		super.fromJSON(data, level);
 		this.color = Color3.FromArray(data.color || this.color?.asArray());
 	}
 }

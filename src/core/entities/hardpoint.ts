@@ -26,7 +26,7 @@ export class Hardpoint extends Entity {
 	declare owner: Ship;
 	constructor(id: string, level: Level, info: HardpointInfo) {
 		super(id, level);
-		this.from(info, level);
+		this.fromJSON(info, level);
 	}
 
 	get generic(): GenericHardpoint {
@@ -47,8 +47,8 @@ export class Hardpoint extends Entity {
 		};
 	}
 
-	from(data: Partial<HardpointJSON>, level: Level): void {
-		super.from(data, level);
+	fromJSON(data: Partial<HardpointJSON>, level: Level): void {
+		super.fromJSON(data, level);
 		assignWithDefaults(this, pick(data, copy));
 		this.reload ??= this.generic.reload;
 	}

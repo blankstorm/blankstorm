@@ -5,6 +5,7 @@ import { genericShips, shipTypes } from '../generic/ships';
 import type { StationPartJSON, StationPartOptions } from './part';
 import { StationPart } from './part';
 import { assignWithDefaults, pick } from 'utilium';
+import { Ship } from '../entities/ship';
 
 export interface BerthJSON extends StationPartJSON {
 	productionID: ShipType;
@@ -19,6 +20,19 @@ export class Berth extends StationPart implements Producer {
 		super(id, level, options);
 	}
 
+	public update(): void {
+		super.update();
+		this.productionTime = Math.max(this.productionTime - 1, 0);
+		if (this.productionTime != 0 || !this.productionID) {
+			return;
+		}
+		const ship = new Ship(null, this.level, this.productionID);
+		ship.position = this.absolutePosition;
+		ship.owner = this.station.owner;
+		this.productionID = null;
+		this.level.emit('ship_created', ship.toJSON());
+	}
+
 	public build(type: ShipType) {
 		this.productionID = type;
 		this.productionTime = +genericShips[type].productionTime;
@@ -31,8 +45,8 @@ export class Berth extends StationPart implements Producer {
 		};
 	}
 
-	public from(data: BerthJSON, level: Level): void {
-		super.from(data, level);
+	public fromJSON(data: BerthJSON, level: Level): void {
+		super.fromJSON(data, level);
 		assignWithDefaults(this, pick(data, 'productionID', 'productionTime'));
 	}
 }

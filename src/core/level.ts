@@ -214,68 +214,7 @@ export class Level extends EventEmitter<LevelEvents> {
 		this.emit('tick');
 
 		for (const entity of this.entities) {
-			if (Math.abs(entity.rotation.y) > Math.PI) {
-				entity.rotation.y += Math.sign(entity.rotation.y) * 2 * Math.PI;
-			}
-
-			entity.position.addInPlace(entity.velocity);
-			entity.velocity.scaleInPlace(0.9);
-
-			if (entity instanceof Ship) {
-				if (entity.hp <= 0) {
-					entity.remove();
-					this.emit('entity_death', entity.toJSON());
-					continue;
-				}
-				for (const hardpoint of entity.hardpoints) {
-					hardpoint.reload = Math.max(--hardpoint.reload, 0);
-
-					const targets = [...this.entities].filter(e => {
-						const distance = Vector3.Distance(e.absolutePosition, entity.absolutePosition);
-						return e.isTargetable && e.owner != entity.owner && distance < hardpoint.generic.range;
-					}, null);
-					const target = targets.reduce((previous, current) => {
-						const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), entity.absolutePosition);
-						const currentDistance = Vector3.Distance(current.absolutePosition, entity.absolutePosition);
-						return previousDistance < currentDistance ? previous : current;
-					}, null);
-
-					/**
-					 * @todo Add support for targeting stations
-					 */
-					if (target instanceof Ship) {
-						const targetPoints = [...target.hardpoints, target].filter(targetHardpoint => {
-							const distance = Vector3.Distance(targetHardpoint.absolutePosition, hardpoint.absolutePosition);
-							return distance < hardpoint.generic.range;
-						});
-						const targetPoint = targetPoints.reduce((current, newPoint) => {
-							if (!current || !newPoint) {
-								return current;
-							}
-							const oldDistance = Vector3.Distance(current.absolutePosition, hardpoint.absolutePosition);
-							const newDistance = Vector3.Distance(newPoint.absolutePosition, hardpoint.absolutePosition);
-							return oldDistance < newDistance ? current : newPoint;
-						}, target);
-
-						if (hardpoint.reload <= 0) {
-							hardpoint.reload = hardpoint.generic.reload;
-							hardpoint.fire(targetPoint);
-						}
-					}
-				}
-				entity.jumpCooldown = Math.max(--entity.jumpCooldown, 0);
-			}
-
-			if (entity instanceof Berth) {
-				entity.productionTime = Math.max(entity.productionTime - 1, 0);
-				if (entity.productionTime == 0 && entity.productionID) {
-					const ship = new Ship(null, this, entity.productionID);
-					ship.position = entity.absolutePosition;
-					ship.owner = entity.station.owner;
-					entity.productionID = null;
-					this.emit('ship_created', ship.toJSON());
-				}
-			}
+			entity.update();
 		}
 	}
 
@@ -341,16 +280,16 @@ export class Level extends EventEmitter<LevelEvents> {
 		for (const data of entities) {
 			switch (data.nodeType) {
 				case 'Player':
-					Player.From(<PlayerJSON>data, level);
+					Player.FromJSON(<PlayerJSON>data, level);
 					break;
 				case 'Ship':
-					Ship.From(<ShipJSON>data, level);
+					Ship.FromJSON(<ShipJSON>data, level);
 					break;
 				case 'Star':
-					Star.From(<StarJSON>data, level);
+					Star.FromJSON(<StarJSON>data, level);
 					break;
 				case 'Planet':
-					Planet.From(<PlanetData>data, level);
+					Planet.FromJSON(<PlanetData>data, level);
 					break;
 				default:
 			}

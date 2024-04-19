@@ -24,7 +24,9 @@ export interface EntityJSON {
 	storage?: ItemContainer;
 }
 
-export class Entity extends EventEmitter {
+export class Entity extends EventEmitter<{
+	tick: [];
+}> {
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
 	}
@@ -101,6 +103,16 @@ export class Entity extends EventEmitter {
 		return this.parent instanceof Entity ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
+	public update() {
+		if (Math.abs(this.rotation.y) > Math.PI) {
+			this.rotation.y += Math.sign(this.rotation.y) * 2 * Math.PI;
+		}
+
+		this.position.addInPlace(this.velocity);
+		this.velocity.scaleInPlace(0.9);
+		this.emit('tick');
+	}
+
 	public constructor(
 		public id: string = randomHex(32),
 		level: Level,
@@ -152,7 +164,7 @@ export class Entity extends EventEmitter {
 		};
 	}
 
-	public from(data: Partial<EntityJSON>, level: Level): void {
+	public fromJSON(data: Partial<EntityJSON>, level: Level): void {
 		const parsed = {
 			...pick(data, 'id', 'name'),
 			system: level.systems.get(data.system),
@@ -165,9 +177,9 @@ export class Entity extends EventEmitter {
 		assignWithDefaults(this, parsed);
 	}
 
-	public static From<const T extends Entity = Entity>(this: EntityConstructor<T>, data: Partial<EntityJSON>, level: Level, constructorOptions?): T {
+	public static FromJSON<const T extends Entity = Entity>(this: EntityConstructor<T>, data: Partial<EntityJSON>, level: Level, constructorOptions?): T {
 		const entity = new this(data.id, level, constructorOptions);
-		entity.from(data, level);
+		entity.fromJSON(data, level);
 		return entity;
 	}
 }

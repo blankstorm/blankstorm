@@ -21,8 +21,8 @@ export class Planet extends CelestialBody {
 		};
 	}
 
-	public from(data: PlanetData, level: Level): void {
-		super.from(data, level);
+	public fromJSON(data: PlanetData, level: Level): void {
+		super.fromJSON(data, level);
 		this.biome = data.biome;
 	}
 }

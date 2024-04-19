@@ -164,7 +164,7 @@ export class System extends EventEmitter<{
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		system.connections = new Array(connectionCount);
 		const star = new Star(null, level);
-		star.from(
+		star.fromJSON(
 			{
 				name,
 				system: system.id,
