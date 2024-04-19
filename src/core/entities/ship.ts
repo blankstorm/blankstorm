@@ -143,8 +143,8 @@ export class Ship extends Entity {
 		};
 	}
 
-	public fromJSON(data: ShipJSON, level: Level): void {
-		super.fromJSON(data, level);
+	public fromJSON(data: ShipJSON): void {
+		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, 'type', 'hp', 'jumpCooldown'));
 		this.storage.from(data.storage);
 	}

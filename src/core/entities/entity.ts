@@ -6,6 +6,7 @@ import type { Level } from '../level';
 import { findPath } from '../path';
 import type { ItemStorage } from '../storage';
 import type { System } from '../system';
+import type { Component } from '../component';
 
 export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 
@@ -26,9 +27,12 @@ export interface EntityJSON {
 
 const copy = ['id', 'name', 'nodeType', 'isSelected', 'isTargetable'] as const;
 
-export class Entity extends EventEmitter<{
-	update: [];
-}> {
+export class Entity
+	extends EventEmitter<{
+		update: [];
+	}>
+	implements Component<EntityJSON>
+{
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
 	}
@@ -166,22 +170,22 @@ export class Entity extends EventEmitter<{
 		};
 	}
 
-	public fromJSON(data: Partial<EntityJSON>, level: Level): void {
+	public fromJSON(data: Partial<EntityJSON>): void {
 		const parsed = {
 			...pick(data, copy),
-			system: level.systems.get(data.system),
+			system: this.level.systems.get(data.system),
 			position: data.position && Vector3.FromArray(data.position),
 			rotation: data.rotation && Vector3.FromArray(data.rotation),
 			velocity: data.velocity && Vector3.FromArray(data.velocity),
-			parent: data.parent && level.getEntityByID(data.parent),
-			owner: data.owner && level.getEntityByID(data.owner),
+			parent: data.parent && this.level.getEntityByID(data.parent),
+			owner: data.owner && this.level.getEntityByID(data.owner),
 		};
 		assignWithDefaults(this, parsed);
 	}
 
 	public static FromJSON<const T extends Entity = Entity>(this: EntityConstructor<T>, data: Partial<EntityJSON>, level: Level, constructorOptions?): T {
 		const entity = new this(data.id, level, constructorOptions);
-		entity.fromJSON(data, level);
+		entity.fromJSON(data);
 		return entity;
 	}
 }

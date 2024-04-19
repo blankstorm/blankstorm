@@ -20,35 +20,35 @@ export interface HardpointJSON extends EntityJSON {
 const copy = ['type', 'scale', 'reload'] as const;
 
 export class Hardpoint extends Entity {
-	type: HardpointType;
-	scale: number;
-	reload: number;
-	declare owner: Ship;
-	constructor(id: string, level: Level, info: HardpointInfo) {
+	public type: HardpointType;
+	public scale: number;
+	public reload: number;
+	public declare owner: Ship;
+	public constructor(id: string, level: Level, info: HardpointInfo) {
 		super(id, level);
-		this.fromJSON(info, level);
+		this.fromJSON(info);
 	}
 
-	get generic(): GenericHardpoint {
+	public get generic(): GenericHardpoint {
 		return genericHardpoints[this.type];
 	}
 
-	remove() {
+	public remove() {
 		super.remove();
 		if (this.owner) {
 			this.owner.hardpoints.delete(this);
 		}
 	}
 
-	toJSON(): HardpointJSON {
+	public toJSON(): HardpointJSON {
 		return {
 			...super.toJSON(),
 			...pick(this, copy),
 		};
 	}
 
-	fromJSON(data: Partial<HardpointJSON>, level: Level): void {
-		super.fromJSON(data, level);
+	public fromJSON(data: Partial<HardpointJSON>): void {
+		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, copy));
 		this.reload ??= this.generic.reload;
 	}

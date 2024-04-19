@@ -1,5 +1,5 @@
-export interface Node<TData = unknown> {
-	id: string;
+export interface Component<TData = unknown> {
+	id?: string;
 
 	update(): void;
 

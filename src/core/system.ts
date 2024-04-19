@@ -164,20 +164,17 @@ export class System extends EventEmitter<{
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		system.connections = new Array(connectionCount);
 		const star = new Star(null, level);
-		star.fromJSON(
-			{
-				name,
-				system: system.id,
-				radius: randomInt(options.stars.radius_min, options.stars.radius_max),
-				position: [0, 0, 0],
-				color: [
-					Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[0], options.stars.color_max[0]),
-					Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[1], options.stars.color_max[1]),
-					Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[2], options.stars.color_max[2]),
-				],
-			},
-			level
-		);
+		star.fromJSON({
+			name,
+			system: system.id,
+			radius: randomInt(options.stars.radius_min, options.stars.radius_max),
+			position: [0, 0, 0],
+			color: [
+				Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[0], options.stars.color_max[0]),
+				Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[1], options.stars.color_max[1]),
+				Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[2], options.stars.color_max[2]),
+			],
+		});
 		const usePrefix = randomBoolean(),
 			planetCount = randomInt(options.planets.min, options.planets.max),
 			names = randomBoolean() ? greekLetterNames.slice(0, planetCount) : range(1, planetCount + 1),

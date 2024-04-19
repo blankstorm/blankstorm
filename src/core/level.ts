@@ -4,6 +4,7 @@ import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex } from 'utilium';
+import type { Component } from './component';
 import type { CelestialBodyJSON } from './entities/body';
 import type { Entity, EntityJSON } from './entities/entity';
 import { Planet, type PlanetData } from './entities/planet';
@@ -18,7 +19,6 @@ import type { GenericShip, ShipType } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
-import type { Node } from './node';
 import type { Berth } from './stations/berth';
 import type { SystemJSON } from './system';
 import { System } from './system';
@@ -73,7 +73,7 @@ export interface LevelEvents {
 	update: [];
 }
 
-export class Level extends EventEmitter<LevelEvents> implements Node<LevelJSON> {
+export class Level extends EventEmitter<LevelEvents> implements Component<LevelJSON> {
 	public id: string = randomHex(16);
 	public name: string = '';
 	public version = version;

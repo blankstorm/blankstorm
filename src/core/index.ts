@@ -18,10 +18,9 @@ export * from './entities/star';
 export * from './stations/part';
 export * from './stations/station';
 
+export * from './component';
 export * from './level';
-export * from './node';
 
 export * from './commands';
 export * from './metadata';
 export * from './utils';
-

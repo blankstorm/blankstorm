@@ -58,8 +58,8 @@ export class Player extends Entity {
 		super.remove();
 	}
 
-	public fromJSON(data: PlayerJSON, level: Level): void {
-		super.fromJSON(data, level);
+	public fromJSON(data: PlayerJSON): void {
+		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, 'xp', 'research'));
 		this.research = data.research;
 		if ('fleet' in data) {

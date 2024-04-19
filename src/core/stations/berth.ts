@@ -45,8 +45,8 @@ export class Berth extends StationPart implements Producer {
 		};
 	}
 
-	public fromJSON(data: BerthJSON, level: Level): void {
-		super.fromJSON(data, level);
+	public fromJSON(data: BerthJSON): void {
+		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, 'productionID', 'productionTime'));
 	}
 }
