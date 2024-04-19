@@ -269,31 +269,11 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		level.fromJSON(json);
 		return level;
 	}
+}
 
-	public static async upgrade(data: LevelJSON) {
-		switch (data.version) {
-			case 'infdev_1':
-			case 'infdev_2':
-			case 'infdev_3':
-			case 'infdev_4':
-			case 'infdev_5':
-			case 'infdev_6':
-			case 'infdev_7':
-			case 'infdev_8':
-			case 'infdev_9':
-			case 'infdev_10':
-			case 'infdev_11':
-			case 'alpha_1.0.0':
-			case 'alpha_1.1.0':
-			case 'alpha_1.2.0':
-			case 'alpha_1.2.1':
-			case 'alpha_1.3.0':
-			case 'alpha_1.3.1':
-			case 'alpha_1.4.0':
-			case 'alpha_1.4.1':
-			case 'alpha_1.4.2':
-				throw `Upgrading from ${versions.get(data.version).text} is not supported`;
-		}
-		return data;
+export function upgradeLevel(data: LevelJSON): LevelJSON {
+	switch (data.version) {
+		default:
+			throw `Upgrading from ${versions.get(data.version).text} is not supported`;
 	}
 }
