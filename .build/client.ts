@@ -64,7 +64,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 			...electronBuilderVersions,
 		},
 		files: ['package.json', path.join(options.output, '**/*')],
-		appId: 'net.blankstorm',
+		appId: 'net.blankstorm.client',
 		productName,
 		copyright,
 		icon: './icon.png',
