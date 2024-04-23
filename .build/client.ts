@@ -19,7 +19,7 @@ const options = parseArgs({
 		options: {
 			verbose: { type: 'boolean', short: 'v', default: false },
 			watch: { type: 'boolean', short: 'w', default: false },
-			output: { type: 'string', short: 'o', default: 'build/client' },
+			output: { type: 'string', short: 'o', default: 'dist/build/client' },
 			'no-app': { type: 'boolean', default: false },
 			mode: { type: 'string', short: 'm', default: 'dev' },
 			debug: { type: 'boolean', default: false },
@@ -27,7 +27,7 @@ const options = parseArgs({
 		},
 	}).values,
 	input = path.posix.join(dirname, 'src/client'),
-	asset_path = path.posix.join(dirname, 'build/assets');
+	asset_path = path.posix.join(dirname, 'dist/build/assets');
 
 function fromPath(sourcePath: string): string[] {
 	if (!fs.statSync(sourcePath).isDirectory()) {
@@ -92,17 +92,17 @@ const buildOptions = getOptions(options.mode);
 function onBuildStart() {
 	try {
 		//build assets
-		for (const f of fs.readdirSync(path.join(dirname, 'assets'))) {
-			if (f.startsWith('.')) {
+		for (const entry of fs.readdirSync(path.join(dirname, 'assets'))) {
+			if (entry.startsWith('.')) {
 				continue;
 			}
-			console.log('Exporting assets: ' + f);
-			if (f == 'models') {
-				execSync('bash ' + path.join(dirname, 'assets/models/export.sh'), options.verbose ? { stdio: 'inherit' } : null);
+			console.log('Exporting assets: ' + entry);
+			if (entry == 'models') {
+				execSync(`bash ${path.join(dirname, 'assets/models/export.sh')} ${asset_path}/models`, options.verbose ? { stdio: 'inherit' } : null);
 				continue;
 			}
 
-			fs.cpSync(path.join(dirname, 'assets', f), path.join(asset_path, f), { recursive: true });
+			fs.cpSync(path.join(dirname, 'assets', entry), path.join(asset_path, entry), { recursive: true });
 		}
 		fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
 	} catch (e) {
@@ -181,9 +181,9 @@ const esbuildAppConfig = {
 		...esbuildConfig.plugins,
 		{
 			name: 'app-builder-client',
-			setup(build: esbuild.PluginBuild) {
-				build.onStart(onBuildStart);
-				build.onEnd(onBuildEnd);
+			setup({ onStart, onEnd }: esbuild.PluginBuild) {
+				onStart(onBuildStart);
+				onEnd(onBuildEnd);
 			},
 		},
 	],

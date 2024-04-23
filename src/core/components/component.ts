@@ -26,7 +26,6 @@ export function isComponent(value: unknown): value is Component {
 
 export const components = new Map<string, ComponentStatic>();
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function register<Class extends ComponentStatic>(target: Class, _context: ClassDecoratorContext) {
+export function register<Class extends ComponentStatic>(target: Class) {
 	components.set(target.name, target);
 }

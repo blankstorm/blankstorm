@@ -19,10 +19,10 @@ const {
 	},
 });
 
-const outfile = 'build/server.js',
-	seaConfig = 'build/sea.json',
+const outfile = 'dist/build/server.js',
+	seaConfig = 'dist/build/sea.json',
 	seaPath = 'dist/blankstorm-server-' + displayVersion + extname(process.execPath),
-	seaBlob = 'build/server.blob';
+	seaBlob = 'dist/build/server.blob';
 
 const esbuildConfig = {
 	entryPoints: ['src/server/cli.ts'],
