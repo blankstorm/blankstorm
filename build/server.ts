@@ -1,28 +1,55 @@
-import { BuildOptions, context, build } from 'esbuild';
-import { parseArgs } from 'node:util';
-import { getOptions } from './options';
-import { getVersionInfo } from './utils';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import type { BuildOptions } from 'esbuild';
+import { build, context } from 'esbuild';
 import { execSync } from 'node:child_process';
-import { dirname, extname } from 'node:path';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, extname, join } from 'node:path';
+import { parseArgs } from 'node:util';
 import { inject } from 'postject';
 import $package from '../package.json' assert { type: 'json' };
+import { getOptions } from './options';
+import { getVersionInfo } from './utils';
 
 const { display: displayVersion } = getVersionInfo();
 
 const {
-	values: { watch, mode },
+	values: { watch, mode, output },
 } = parseArgs({
 	options: {
 		watch: { type: 'boolean', short: 'w', default: false },
 		mode: { type: 'string', short: 'm', default: 'dev' },
+		output: { type: 'string', short: 'o', default: 'dist/build' },
 	},
 });
 
 const outfile = 'dist/build/server.js',
-	seaConfig = 'dist/build/sea.json',
-	seaPath = 'dist/blankstorm-server-' + displayVersion + extname(process.execPath),
-	seaBlob = 'dist/build/server.blob';
+	seaPath = 'dist/blankstorm-server-' + displayVersion + extname(process.execPath);
+
+async function buildSEA() {
+	const configPath = join(output, 'sea.json'),
+		blobPath = join(output, 'server.blob');
+
+	try {
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				main: outfile,
+				output: blobPath,
+				disableExperimentalSEAWarning: true,
+			})
+		);
+		execSync('node --experimental-sea-config ' + configPath, { stdio: 'inherit' });
+		if (!existsSync(dirname(seaPath))) {
+			mkdirSync(dirname(seaPath));
+		}
+		copyFileSync(process.execPath, seaPath);
+		await inject(seaPath, 'NODE_SEA_BLOB', readFileSync(blobPath), {
+			machoSegmentName: 'NODE_SEA',
+			sentinelFuse: 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
+		});
+	} catch (e) {
+		console.error(e);
+	}
+}
 
 const esbuildConfig = {
 	entryPoints: ['src/server/cli.ts'],
@@ -35,29 +62,7 @@ const esbuildConfig = {
 		{
 			name: 'server-sea',
 			setup({ onEnd }) {
-				onEnd(async () => {
-					try {
-						writeFileSync(
-							seaConfig,
-							JSON.stringify({
-								main: outfile,
-								output: seaBlob,
-								disableExperimentalSEAWarning: true,
-							})
-						);
-						execSync('node --experimental-sea-config ' + seaConfig, { stdio: 'inherit' });
-						if (!existsSync(dirname(seaPath))) {
-							mkdirSync(dirname(seaPath));
-						}
-						copyFileSync(process.execPath, seaPath);
-						await inject(seaPath, 'NODE_SEA_BLOB', readFileSync(seaBlob), {
-							machoSegmentName: 'NODE_SEA',
-							sentinelFuse: 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
-						});
-					} catch (e) {
-						console.error(e);
-					}
-				});
+				onEnd(buildSEA);
 			},
 		},
 	],

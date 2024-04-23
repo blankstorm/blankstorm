@@ -1,17 +1,16 @@
+import archiver from 'archiver';
+import * as electronBuilder from 'electron-builder';
 import * as esbuild from 'esbuild';
+import glslPlugin from 'esbuild-plugin-glslx';
+import { replace } from 'esbuild-plugin-replace';
+import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import path from 'node:path';
-import $package from '../package.json' assert { type: 'json' };
-import * as electronBuilder from 'electron-builder';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import $package from '../package.json' assert { type: 'json' };
 import { getOptions, getReplacements } from './options';
-import counterPlugin from './counter';
 import { deleteOutput, getVersionInfo, renameOutput } from './utils';
-import { replace } from 'esbuild-plugin-replace';
-import glslPlugin from 'esbuild-plugin-glslx';
-import archiver from 'archiver';
-import { execSync } from 'node:child_process';
 const dirname = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
 
@@ -125,7 +124,7 @@ async function onBuildEnd() {
 				}
 
 				console.log('Compressing: ' + platform);
-				const archive = archiver('zip', { zlib: { level: 9 } });
+				const archive = archiver('zip', { zlib: { level: 5 } });
 
 				archive.pipe(fs.createWriteStream(`dist/blankstorm-client-${displayVersion}-${platform}.zip`));
 				await archive.directory(dirPath, false).finalize();
@@ -144,11 +143,12 @@ async function onBuildEnd() {
 				'builder-effective-config.yaml',
 				'latest.yml',
 				'latest-mac.yml',
+				'latest-linux.yml',
 				'.icon-ico',
 				'tmp',
-				`Blankstorm Client Setup ${fullVersion}.exe.blockmap`,
-				`Blankstorm Client-${fullVersion}-mac.zip.blockmap`,
-				`Blankstorm Client-${fullVersion}.dmg.blockmap`,
+				`${productName} Setup ${fullVersion}.exe.blockmap`,
+				`${productName}-${fullVersion}-mac.zip.blockmap`,
+				`${productName}-${fullVersion}.dmg.blockmap`,
 			]);
 		}
 	} catch (e) {
@@ -170,7 +170,7 @@ const esbuildConfig = {
 		'.json': 'copy',
 	},
 	define: { $build: JSON.stringify(buildOptions), $package: JSON.stringify($package) },
-	plugins: [glslPlugin(), replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } }), counterPlugin(options.watch)],
+	plugins: [glslPlugin(), replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } })],
 } satisfies esbuild.BuildOptions;
 
 const esbuildAppConfig = {
