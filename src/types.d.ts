@@ -1,4 +1,4 @@
-import type { BuildOptions } from '../.build/options';
+import type { BuildOptions } from '../build/options';
 import type package from '../package.json';
 import type { ClientInit } from './client/client';
 
@@ -9,10 +9,12 @@ declare global {
 		require<const T extends 'fs' | 'node:url' | 'node:path'>(
 			id: T
 		): {
+			/* eslint-disable @typescript-eslint/consistent-type-imports */
 			fs: typeof import('fs');
 			'node:url': typeof import('node:url');
 			'node:path': typeof import('node:path');
 			[K: string]: typeof import(K);
+			/* eslint-enable @typescript-eslint/consistent-type-imports */
 		}[T];
 		options(): Promise<ClientInit>;
 		log(message: IOMessage): Promise<void>;
