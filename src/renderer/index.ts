@@ -21,12 +21,12 @@ import { version } from '../core/metadata';
 import { Camera } from './camera';
 import config from './config';
 import { initModels } from './models';
-import { EntityRenderer } from './entities/Entity';
-import type { HardpointRenderer } from './entities/Hardpoint';
-import { PlanetRenderer, PlanetRendererMaterial } from './entities/Planet';
-import { PlayerRenderer } from './entities/Player';
-import { ShipRenderer } from './entities/Ship';
-import { StarRenderer } from './entities/Star';
+import { EntityRenderer } from './entities/entity';
+import type { HardpointRenderer } from './entities/hardpoint';
+import { PlanetRenderer, PlanetRendererMaterial } from './entities/planet';
+import { PlayerRenderer } from './entities/player';
+import { ShipRenderer } from './entities/ship';
+import { StarRenderer } from './entities/star';
 import { createAndUpdate, entityRenderers, type Renderer } from './entities/renderer';
 import { logger } from './logger';
 

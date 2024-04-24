@@ -13,8 +13,8 @@ import config from '../config';
 import { cloudFragmentShader } from '../shaders/cloud.glslx';
 import { noiseFragmentShader } from '../shaders/noise.glslx';
 import * as planetShader from '../shaders/planet.glslx';
-import { CelestialBodyRenderer } from './CelestialBody';
-import type { HardpointProjectileHandlerOptions } from './Hardpoint';
+import { CelestialBodyRenderer } from './body';
+import type { HardpointProjectileHandlerOptions } from './hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export interface GenericPlanetRendererMaterial {

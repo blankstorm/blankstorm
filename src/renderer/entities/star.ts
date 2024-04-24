@@ -4,7 +4,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import type { StarJSON } from '../../core/entities/star';
 import config from '../config';
-import { CelestialBodyRenderer } from './CelestialBody';
+import { CelestialBodyRenderer } from './body';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class StarRenderer extends CelestialBodyRenderer implements Renderer<StarJSON> {

@@ -3,7 +3,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
 import type { StationJSON } from '../../core/stations/station';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
-import type { StationPartRenderer } from './StationPart';
+import type { StationPartRenderer } from './station_part';
 
 export class StationRenderer extends TransformNode implements Renderer<StationJSON> {
 	components: StationPartRenderer[] = [];

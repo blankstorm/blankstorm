@@ -4,7 +4,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
 import type { PlayerJSON } from '../../core/entities/player';
-import type { CustomHardpointProjectileMaterial } from './Hardpoint';
+import type { CustomHardpointProjectileMaterial } from './hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class PlayerRenderer extends TransformNode implements Renderer<PlayerJSON> {
