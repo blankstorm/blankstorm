@@ -29,6 +29,7 @@ import { ShipRenderer } from './entities/ship';
 import { StarRenderer } from './entities/star';
 import { createAndUpdate, entityRenderers, type Renderer } from './entities/renderer';
 import { logger } from './logger';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 
 export { logger };
 
@@ -71,6 +72,7 @@ export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: stri
 
 	messageHandler('scene');
 	scene = new Scene(engine);
+	scene.ambientColor = Color3.White();
 
 	messageHandler('camera');
 	camera = new Camera(scene);
@@ -279,12 +281,18 @@ export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
 export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: string): MoveInfo<Vector3>[] {
 	const returnData: MoveInfo<Vector3>[] = [];
 	for (const renderer of entities.values()) {
-		if (renderer instanceof EntityRenderer && renderer.selected && renderer.parent?.id == ownerID) {
-			xzPlane.position = renderer.absolutePosition.clone();
-			const { pickedPoint: target } = scene.pick(evt.clientX, evt.clientY, mesh => mesh == xzPlane);
-			if (target) {
-				returnData.push({ id: renderer.id, target });
-			}
+		if (!(renderer instanceof EntityRenderer)) {
+			continue;
+		}
+
+		if (!renderer.selected || renderer.parent?.id != ownerID) {
+			continue;
+		}
+
+		xzPlane.position = renderer.absolutePosition.clone();
+		const { pickedPoint: target } = scene.pick(evt.clientX, evt.clientY, mesh => mesh == xzPlane);
+		if (target) {
+			returnData.push({ id: renderer.id, target });
 		}
 	}
 
@@ -300,10 +308,9 @@ export async function startFollowingPath(entityID: string, path: IVector3Like[])
 }
 
 export function fireProjectile(hardpointID: string, targetID: string, options: GenericProjectile) {
-	const hardpointRenderer = scene.getTransformNodeById(hardpointID) as HardpointRenderer,
-		parent = hardpointRenderer?.parent?.parent as PlayerRenderer | PlanetRenderer,
-		targetRenderer = scene.getTransformNodeById(targetID);
-	hardpointRenderer.fireProjectile(targetRenderer, { ...options, materials: parent.customHardpointProjectileMaterials });
+	const hardpointRenderer = <HardpointRenderer>scene.getTransformNodeById(hardpointID),
+		{ customHardpointProjectileMaterials: materials } = <PlayerRenderer | PlanetRenderer>hardpointRenderer?.parent?.parent;
+	hardpointRenderer.fireProjectile(scene.getTransformNodeById(targetID), { ...options, materials });
 }
 
 export function attachControl(): void {
