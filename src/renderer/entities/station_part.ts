@@ -9,4 +9,4 @@ export class StationPartRenderer extends ModelRenderer implements Renderer<Stati
 	}
 }
 StationPartRenderer satisfies RendererStatic<StationPartRenderer>;
-entityRenderers.set('StationComponent', StationPartRenderer);
+entityRenderers.set('StationPart', StationPartRenderer);
