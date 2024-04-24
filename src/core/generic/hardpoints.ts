@@ -28,7 +28,7 @@ export const genericHardpoints = {
 		critFactor: 1.5,
 		targets: ['Ship', 'Station'],
 		projectile: {
-			id: 'laser_projectile',
+			id: 'laser',
 			count: 1,
 			interval: 0,
 			speed: 5,

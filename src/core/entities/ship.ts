@@ -35,8 +35,8 @@ export class Ship extends Entity {
 	public update() {
 		super.update();
 		if (this.hp <= 0) {
-			this.remove();
 			this.level.emit('entity_death', this.toJSON());
+			this.remove();
 			return;
 		}
 		for (const hardpoint of this.hardpoints) {

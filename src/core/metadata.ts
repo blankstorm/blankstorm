@@ -6,7 +6,7 @@ export const config = {
 	overwrite_invalid_json: true,
 	default_port: 1123,
 	region_size: 1e5,
-	tick_rate: 10,
+	tick_rate: 30,
 	level_max_size: 1000,
 	system_generation: {
 		difficulty: 1,

@@ -206,8 +206,8 @@ export async function update(levelData: LevelJSON) {
 	}
 
 	for (const entity of [...cache.entities, ...levelData.entities]) {
-		const data = levelData.entities.find(_body => _body.id == entity.id),
-			cached = cache.entities.find(_body => _body.id == entity.id);
+		const data = levelData.entities.find(_ => _.id == entity.id),
+			cached = cache.entities.find(_ => _.id == entity.id);
 		if (!cached) {
 			renderersToAdd.push(entity);
 			continue;

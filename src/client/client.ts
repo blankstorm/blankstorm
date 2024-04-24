@@ -478,6 +478,9 @@ export function load(level: Level): boolean {
 	currentLevel = level;
 	renderer.clear();
 	renderer.update(currentLevel.toJSON());
+	level.on('update', () => {
+		renderer.update(currentLevel.toJSON());
+	});
 	level.on('projectile_fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
 		renderer.fireProjectile(hardpointID, targetID, projectile);
 	});
