@@ -1,14 +1,16 @@
-import { HardpointRenderer } from './Hardpoint';
-import { ModelRenderer } from '../models';
+import type { Scene } from '@babylonjs/core/scene';
+import type { ShipJSON } from '../../core/entities/ship';
 import type { ShipType } from '../../core/generic/ships';
 import { genericShips } from '../../core/generic/ships';
-import type { ShipJSON } from '../../core/entities/ship';
+import { ModelRenderer } from '../models';
+import { HardpointRenderer } from './Hardpoint';
 import { createAndUpdate, entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class ShipRenderer extends ModelRenderer implements Renderer<ShipJSON> {
 	hardpoints: Map<string, HardpointRenderer> = new Map();
 	type: ShipType;
-	constructor(id, scene) {
+
+	constructor(id: string, scene: Scene) {
 		super(id, scene);
 	}
 

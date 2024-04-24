@@ -212,7 +212,7 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 		this.customHardpointProjectileMaterials = [
 			{
 				applies_to: ['laser'],
-				material: Object.assign(new StandardMaterial('player-laser-projectile-material'), { emissiveColor: Color3.Red() }),
+				material: Object.assign(new StandardMaterial('player-laser-projectile'), { emissiveColor: Color3.Red() }),
 			},
 		];
 	}

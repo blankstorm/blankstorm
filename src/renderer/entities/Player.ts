@@ -8,30 +8,32 @@ import type { CustomHardpointProjectileMaterial } from './Hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class PlayerRenderer extends TransformNode implements Renderer<PlayerJSON> {
-	velocity = Vector3.Zero();
-	customHardpointProjectileMaterials: CustomHardpointProjectileMaterial[];
+	velocity: Vector3 = Vector3.Zero();
+	fleetPosition: Vector3 = Vector3.Zero();
+	customHardpointProjectileMaterials: CustomHardpointProjectileMaterial[] = [
+		{
+			applies_to: ['laser'],
+			material: Object.assign(new StandardMaterial('player-laser-projectile'), {
+				emissiveColor: Color3.Teal(),
+				albedoColor: Color3.Teal(),
+			}),
+		},
+	];
 	constructor(id: string, scene: Scene) {
 		super(id, scene);
-		this.customHardpointProjectileMaterials = [
-			{
-				applies_to: ['laser'],
-				material: Object.assign(new StandardMaterial('player-laser-projectile-material', scene), {
-					emissiveColor: Color3.Teal(),
-					albedoColor: Color3.Teal(),
-				}),
-			},
-		];
 	}
 
-	async update({ name, position, rotation, velocity, parent }: PlayerJSON) {
+	async update({ name, position, rotation, velocity, parent, fleet }: PlayerJSON) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
 		this.velocity = Vector3.FromArray(velocity);
-		const _parent = this.getScene().getNodeById(parent);
-		if (_parent != this.parent) {
-			this.parent = _parent;
+		this.fleetPosition = Vector3.FromArray(fleet?.position);
+		for (const id of fleet?.ships || []) {
+			const ship = this.getScene().getNodeById(id);
+			ship.parent = this;
 		}
+		this.parent = this.getScene().getNodeById(parent);
 	}
 }
 PlayerRenderer satisfies RendererStatic<PlayerRenderer>;

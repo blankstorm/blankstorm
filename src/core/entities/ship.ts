@@ -1,10 +1,10 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { assignWithDefaults, pick, randomInt } from 'utilium';
+import { Container } from '../components/storage';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { GenericShip, ShipType } from '../generic/ships';
 import { genericShips } from '../generic/ships';
 import type { Level } from '../level';
-import { Container } from '../components/storage';
 import type { System } from '../system';
 import { randomCords } from '../utils';
 import type { CelestialBody } from './body';
@@ -31,6 +31,35 @@ export class Ship extends Entity {
 	public isTargetable = true;
 
 	declare owner?: CelestialBody | Player;
+
+	/**
+	 * @todo move distance related stuff to ship creation
+	 */
+	public constructor(id: string, level: Level, type?: ShipType) {
+		if (type && !genericShips[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
+		super(id, level);
+
+		const { power } = genericShips[type];
+
+		const distance = Math.log(randomInt(0, power || 1) ** 3 + 1);
+		this.position.addInPlace(randomCords(distance, true));
+
+		this.type = type;
+		this._storage = new Container(this.generic.storage);
+		this.hp = this.generic.hp;
+		this.jumpCooldown = this.generic.jump.cooldown;
+
+		for (const info of this.generic.hardpoints) {
+			if (!Object.hasOwn(genericHardpoints, info.type)) {
+				console.warn(`Hardpoint type "${info.type}" does not exist, skipping`);
+				continue;
+			}
+
+			const hardpoint = new Hardpoint(null, level, info);
+			hardpoint.parent = this;
+			this.hardpoints.add(hardpoint);
+		}
+	}
 
 	public update() {
 		super.update();
@@ -80,42 +109,13 @@ export class Ship extends Entity {
 		this.jumpCooldown = Math.max(--this.jumpCooldown, 0);
 	}
 
-	/**
-	 * @todo move distance related stuff to ship creation
-	 */
-	public constructor(id: string, level: Level, type?: ShipType) {
-		if (type && !genericShips[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
-		super(id, level);
-
-		const { power } = genericShips[type];
-
-		const distance = Math.log(randomInt(0, power || 1) ** 3 + 1);
-		this.position.addInPlace(randomCords(distance, true));
-
-		this.type = type;
-		this._storage = new Container(this.generic.storage);
-		this.hp = this.generic.hp;
-		this.jumpCooldown = this.generic.jump.cooldown;
-
-		for (const info of this.generic.hardpoints) {
-			if (!Object.hasOwn(genericHardpoints, info.type)) {
-				console.warn(`Hardpoint type "${info.type}" does not exist, skipping`);
-				continue;
-			}
-
-			const hardpoint = new Hardpoint(null, level, info);
-			hardpoint.parent = this;
-			this.hardpoints.add(hardpoint);
-		}
-	}
-
 	public get generic(): GenericShip {
 		return genericShips[this.type];
 	}
 
 	public remove() {
 		super.remove();
-		this.owner.fleet.delete(this);
+		this.owner?.fleet?.delete(this);
 	}
 
 	public jumpTo(targetSystem: System) {

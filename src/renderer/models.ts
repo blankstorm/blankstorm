@@ -122,7 +122,7 @@ export class ModelRenderer extends TransformNode {
 		return this._createdInstance;
 	}
 
-	async createInstance(modelID) {
+	async createInstance(modelID: string) {
 		//Async so we don't block while models are being instanciated
 
 		if (!genericMeshes.has(modelID)) {
@@ -150,10 +150,7 @@ export class ModelRenderer extends TransformNode {
 			this.rendererType = _type;
 			await this.createInstance(_type);
 		}
-		const _parent = this.getScene().getNodeById(parent);
-		if (_parent != this.parent) {
-			this.parent = _parent;
-		}
+		this.parent = this.getScene().getNodeById(parent);
 	}
 }
 
