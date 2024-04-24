@@ -10,7 +10,7 @@ export class Camera extends ArcRotateCamera {
 	constructor(scene: Scene) {
 		super('camera', -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), scene);
 		scene.activeCamera = this;
-		(this.inputs.attached.pointers as ArcRotateCameraPointersInput).buttons = [1];
+		(<ArcRotateCameraPointersInput>this.inputs.attached.pointers).buttons = [1];
 		Object.assign(this, config.player_camera);
 
 		scene.registerBeforeRender(() => {
@@ -26,9 +26,9 @@ export class Camera extends ArcRotateCamera {
 	}
 
 	addVelocity(vector = Vector3.Zero()) {
-		const direction = this.getDirection(vector).scale(1 / Math.PI);
+		const direction = this.getDirection(vector);
 		direction.y = 0;
-		direction.normalize();
+		direction.normalize().scaleInPlace(this.radius / 5);
 		this.velocity.addInPlace(direction);
 	}
 }
