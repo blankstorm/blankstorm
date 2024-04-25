@@ -386,10 +386,10 @@ export function registerListeners() {
 				});
 			});
 		});
-	$('canvas.game').on('focus', renderer.attachControl);
+	$('canvas.game').on('focus', () => renderer.getCamera().attachControl(true));
 	$('canvas.game').on('click', e => {
 		if (!client.isPaused) {
-			renderer.attachControl();
+			renderer.getCamera().attachControl(true);
 		}
 		if (!(client.currentLevel instanceof Level)) {
 			logger.warn('No active client level');

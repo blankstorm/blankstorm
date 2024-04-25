@@ -3,28 +3,24 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import type { StarJSON } from '../../core/entities/star';
-import { star_light } from '../config';
 import { CelestialBodyRenderer } from './body';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
+import { config } from '../../core/metadata';
 
 export class StarRenderer extends CelestialBodyRenderer implements Renderer<StarJSON> {
-	light: PointLight;
-	//get material(): StandardMaterial { return super.material as StandardMaterial }
-	constructor(id: string, scene: Scene) {
+	public light: PointLight;
+	public constructor(id: string, scene: Scene) {
 		super(id, scene);
 		this.light = new PointLight(id + '.light', this.position, scene);
-		Object.assign(this.light, star_light);
+		Object.assign(this.light, {
+			range: config.region_size * 2,
+			intensity: 1,
+		});
 		const material = (this.material = new StandardMaterial(id + '.mat', scene));
 		material.disableLighting = true;
-
-		/*maybe in the future:
-		material.emissiveTexture = new NoiseProceduralTexture(id + ".texture", config.mesh_segments, scene);
-		Object.assign(material.emissiveTexture, {animationSpeedFactor: 0.1, octaves: 8, persistence:0.8});
-		material.Fragment_Before_FragColor(`color = vec4(vec3(color.xyz),1.0);`);
-		*/
 	}
 
-	async update(data: StarJSON) {
+	public async update(data: StarJSON) {
 		await super.update(data);
 		(<StandardMaterial>this.material).emissiveColor = Color3.FromArray(data.color);
 	}

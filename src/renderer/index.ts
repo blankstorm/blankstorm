@@ -1,3 +1,5 @@
+import type { ArcRotateCameraPointersInput } from '@babylonjs/core';
+import { ArcRotateCamera } from '@babylonjs/core';
 import '@babylonjs/core/Animations/animatable';
 import '@babylonjs/core/Culling'; // For Ray side effects
 import { Engine } from '@babylonjs/core/Engines/engine';
@@ -5,6 +7,7 @@ import { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
 import { HighlightLayer } from '@babylonjs/core/Layers/highlightLayer';
 import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
@@ -13,22 +16,20 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import { Scene } from '@babylonjs/core/scene';
-import type { LevelJSON } from '../core/level';
-import type { MoveInfo } from '../core/system';
 import type { EntityJSON } from '../core/entities/entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
+import type { LevelJSON } from '../core/level';
 import { config, version } from '../core/metadata';
-import { Camera } from './camera';
-import { initModel } from './models';
+import type { MoveInfo } from '../core/system';
 import { EntityRenderer } from './entities/entity';
 import type { HardpointRenderer } from './entities/hardpoint';
 import { PlanetRenderer, PlanetRendererMaterial } from './entities/planet';
 import { PlayerRenderer } from './entities/player';
+import { createAndUpdate, entityRenderers, type Renderer } from './entities/renderer';
 import { ShipRenderer } from './entities/ship';
 import { StarRenderer } from './entities/star';
-import { createAndUpdate, entityRenderers, type Renderer } from './entities/renderer';
 import { logger } from './logger';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { initModel } from './models';
 
 export { logger };
 
@@ -46,10 +47,13 @@ function createEmptyCache(): LevelJSON {
 
 let skybox: Mesh,
 	xzPlane: Mesh,
-	camera: Camera,
+	camera: ArcRotateCamera,
 	cache: LevelJSON = createEmptyCache(),
 	hitboxes = false,
 	gl: GlowLayer;
+
+export const cameraVelocity: Vector3 = Vector3.Zero();
+
 export let engine: Engine, scene: Scene, hl: HighlightLayer, probe: ReflectionProbe;
 
 export function setHitboxes(value: boolean) {
@@ -74,7 +78,22 @@ export async function init(canvas: HTMLCanvasElement) {
 	scene.ambientColor = Color3.White();
 
 	logger.debug('Initializing camera');
-	camera = new Camera(scene);
+
+	camera = new ArcRotateCamera('camera', -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), scene);
+	scene.activeCamera = camera;
+	(<ArcRotateCameraPointersInput>camera.inputs.attached.pointers).buttons = [1];
+	Object.assign(camera, {
+		wheelPrecision: 5,
+		lowerRadiusLimit: 1,
+		upperRadiusLimit: 50,
+		minZ: 0.1,
+		radius: 10,
+	});
+
+	scene.registerBeforeRender(() => {
+		camera.target.addInPlace(cameraVelocity);
+		cameraVelocity.scaleInPlace(0.9);
+	});
 
 	scene.registerBeforeRender(() => {
 		const ratio = scene.getAnimationRatio();
@@ -228,6 +247,19 @@ export async function update(levelData: LevelJSON) {
 	return result;
 }
 
+export function resetCamera() {
+	camera.alpha = -Math.PI / 2;
+	camera.beta = Math.PI / 2;
+	cameraVelocity.setAll(0);
+}
+
+export function addCameraVelocity(vector = Vector3.Zero()) {
+	const direction = camera.getDirection(vector);
+	direction.y = 0;
+	direction.normalize().scaleInPlace(camera.radius / 5);
+	cameraVelocity.addInPlace(direction);
+}
+
 export function getCamera() {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Not initalized'));
@@ -310,8 +342,4 @@ export function fireProjectile(hardpointID: string, targetID: string, options: G
 	const hardpointRenderer = <HardpointRenderer>scene.getTransformNodeById(hardpointID),
 		{ customHardpointProjectileMaterials: materials } = <PlayerRenderer | PlanetRenderer>hardpointRenderer?.parent?.parent;
 	hardpointRenderer.fireProjectile(scene.getTransformNodeById(targetID), { ...options, materials });
-}
-
-export function attachControl(): void {
-	getCamera().attachControl(true);
 }

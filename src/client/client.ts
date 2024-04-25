@@ -290,16 +290,16 @@ async function _init(): Promise<void> {
 		],
 	});
 	settings.items.get('forward').addEventListener('trigger', () => {
-		renderer.getCamera().addVelocity(Vector3.Forward());
+		renderer.addCameraVelocity(Vector3.Forward());
 	});
 	settings.items.get('left').addEventListener('trigger', () => {
-		renderer.getCamera().addVelocity(Vector3.Left());
+		renderer.addCameraVelocity(Vector3.Left());
 	});
 	settings.items.get('right').addEventListener('trigger', () => {
-		renderer.getCamera().addVelocity(Vector3.Right());
+		renderer.addCameraVelocity(Vector3.Right());
 	});
 	settings.items.get('back').addEventListener('trigger', () => {
-		renderer.getCamera().addVelocity(Vector3.Backward());
+		renderer.addCameraVelocity(Vector3.Backward());
 	});
 	settings.items.get('chat').addEventListener('trigger', e => {
 		e.preventDefault();
@@ -419,7 +419,7 @@ function _update() {
 					.asArray()
 					.map(e => e.toFixed(1))
 					.join(', ')}) 
-				V: (${camera.velocity
+				V: (${renderer.cameraVelocity
 					.asArray()
 					.map(e => e.toFixed(1))
 					.join(', ')}) 
@@ -485,7 +485,7 @@ export function load(level: Level): boolean {
 		logger.debug('Triggered player_levelup (unimplemented)');
 	});
 	level.on('player_removed', async () => {
-		renderer.getCamera().reset();
+		renderer.resetCamera();
 	});
 	level.on('entity_path_start', async (entityID: string, path: IVector3Like[]) => {
 		renderer.startFollowingPath(entityID, path);
