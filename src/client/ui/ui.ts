@@ -74,79 +74,6 @@ export function init() {
 }
 
 export function update() {
-	if (system() instanceof System) {
-		const player: Player = getPlayer();
-		$('#waypoint-list div').detach();
-		$('svg.item-bar rect').attr('width', (player.storage.count() / player.storage.max) * 100 || 0);
-		$('div.item-bar p.label').text(`${minimize(player.storage.count())} / ${minimize(player.storage.max)}`);
-
-		for (const [id, amount] of player.storage) {
-			$(items.get(id)).find('.count').text(minimize(amount));
-		}
-
-		//update tech info
-		for (const [id, _research] of Object.entries(researchData)) {
-			const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
-				(result, [id, amount]: [ItemID, number]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`,
-				''
-			);
-			const requires = Object.entries(_research.requires).reduce(
-				(result, [id, amount]) =>
-					result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
-				''
-			);
-			$(research.get(id))
-				.find('.upgrade tool-tip')
-				.html(
-					`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
-						player.research[id] >= _research.max
-							? `<strong>Max Level</strong>`
-							: `${player.research[id]} <svg><use href="_build.asset_dir/images/icons.svg#arrow-right"/></svg> ${player.research[id] + 1}`
-					}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(_research.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
-						settings.get('tooltips') ? '<br>type: ' + id : ''
-					}`
-				);
-			$(research.get(id)).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
-		}
-
-		//update ship info
-		for (const [id, ship] of Object.entries(genericShips)) {
-			const materials = Object.entries(ship.recipe).reduce(
-				(result, [id, amount]: [ItemID, number]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`,
-				''
-			);
-			const requires = Object.entries(ship.requires).reduce(
-				(result, [id, tech]) =>
-					`${result}<br>${tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${tech}`}`,
-				''
-			);
-			$(ships.get(id))
-				.find('.add tool-tip')
-				.html(
-					`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
-						Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
-					}${requires}${settings.get('tooltips') ? '<br>' + id : ''}`
-				);
-
-			let locked = false;
-			for (const t in ship.requires) {
-				if (isResearchLocked(t as ResearchID, player)) locked = true;
-			}
-			$(ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
-		}
-
-		updateAllWaypoints();
-		map.update();
-
-		if (isServer) {
-			$('#pause .quit').text('Disconnect');
-			$('#pause .save').hide();
-		} else {
-			$('#pause .quit').text('Exit Game');
-			$('#pause .save').show();
-		}
-	}
-
 	$('.marker').hide();
 
 	$(':root').css('--font-size', settings.get('font_size') + 'px');
@@ -189,6 +116,81 @@ export function update() {
 					: 'fixed',
 		});
 	});
+
+	if (!(system() instanceof System)) {
+		return;
+	}
+
+	const player: Player = getPlayer();
+	$('#waypoint-list div').detach();
+	$('svg.item-bar rect').attr('width', (player.storage.count() / player.storage.max) * 100 || 0);
+	$('div.item-bar p.label').text(`${minimize(player.storage.count())} / ${minimize(player.storage.max)}`);
+
+	for (const [id, amount] of player.storage) {
+		$(items.get(id)).find('.count').text(minimize(amount));
+	}
+
+	//update tech info
+	for (const [id, _research] of Object.entries(researchData)) {
+		const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
+			(result, [id, amount]: [ItemID, number]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`,
+			''
+		);
+		const requires = Object.entries(_research.requires).reduce(
+			(result, [id, amount]) =>
+				result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
+			''
+		);
+		$(research.get(id))
+			.find('.upgrade tool-tip')
+			.html(
+				`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
+					player.research[id] >= _research.max
+						? `<strong>Max Level</strong>`
+						: `${player.research[id]} <svg><use href="_build.asset_dir/images/icons.svg#arrow-right"/></svg> ${player.research[id] + 1}`
+				}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(_research.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
+					settings.get('tooltips') ? '<br>type: ' + id : ''
+				}`
+			);
+		$(research.get(id)).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
+	}
+
+	//update ship info
+	for (const [id, ship] of Object.entries(genericShips)) {
+		const materials = Object.entries(ship.recipe).reduce(
+			(result, [id, amount]: [ItemID, number]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`,
+			''
+		);
+		const requires = Object.entries(ship.requires).reduce(
+			(result, [id, tech]) =>
+				`${result}<br>${tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${tech}`}`,
+			''
+		);
+		$(ships.get(id))
+			.find('.add tool-tip')
+			.html(
+				`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
+					Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
+				}${requires}${settings.get('tooltips') ? '<br>' + id : ''}`
+			);
+
+		let locked = false;
+		for (const t in ship.requires) {
+			if (isResearchLocked(t as ResearchID, player)) locked = true;
+		}
+		$(ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
+	}
+
+	updateAllWaypoints();
+	map.update();
+
+	if (isServer) {
+		$('#pause .quit').text('Disconnect');
+		$('#pause .save').hide();
+	} else {
+		$('#pause .quit').text('Exit Game');
+		$('#pause .save').show();
+	}
 }
 
 let lastUI = '#main';
