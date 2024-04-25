@@ -152,22 +152,26 @@ dialog.server {
 	text-align: left;
 }
 
-.ingame-menu-grid {
-	grid-template-columns: 1fr;
-	grid-auto-rows: 3em;
-	grid-auto-flow: row;
+.ingame-menu-flex {
+	flex-wrap: nowrap;
+	flex-direction: column;
+	align-items: center;
 	display: none;
 	overflow-y: scroll;
+}
+
+.ingame-menu-flex > * {
+	margin-bottom: 1em;
 }
 
 #ingame-temp-menu > div:not(.nav) {
 	text-align: center;
 	position: absolute;
 	top: 15%;
-	left: 2.5%;
+	left: 5%;
 	width: 90%;
 	height: 80%;
-	margin-top: 10px;
+	margin-top: 1em;
 }
 
 #ingame-temp-menu .nav {
@@ -294,4 +298,37 @@ div.screenshots img {
 	width: var(--settings-nav-button-width);
 	height: 35px;
 	margin-bottom: 1em;
+}
+
+#main button {
+	width: 350px;
+	height: 50px;
+}
+
+#main p {
+	position: absolute;
+	bottom: 1em;
+	width: fit-content;
+	height: 1em;
+}
+
+.dialog-button {
+	position: absolute;
+	bottom: 62.5px;
+	width: 150px;
+	height: 36.6px;
+}
+
+.dialog-button.left {
+	left: calc(50% - 75px);
+}
+
+.dialog-button.right {
+	left: calc(50% + 75px);
+}
+
+.dialog-title {
+	top: 3em;
+	width: 250px;
+	height: 2em;
 }

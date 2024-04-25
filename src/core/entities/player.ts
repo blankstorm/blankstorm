@@ -64,6 +64,7 @@ export class Player extends Entity {
 		assignWithDefaults(this, pick(data, 'xp', 'research'));
 		this.research = data.research;
 		if ('fleet' in data) {
+			this.fleet.owner = this;
 			this.fleet.fromJSON(data.fleet);
 		}
 	}

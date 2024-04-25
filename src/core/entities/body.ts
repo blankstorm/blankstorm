@@ -60,6 +60,7 @@ export class CelestialBody extends Entity {
 			this.storage.fromJSON({ items: data.storage.items, max: 1e10 });
 		}
 		if ('fleet' in data) {
+			this.fleet.owner = this;
 			this.fleet.fromJSON(data.fleet);
 		}
 		this.radius = data.radius || this.radius;

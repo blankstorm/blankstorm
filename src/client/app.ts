@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { type IOMessage, LogLevel, Logger } from 'logzen';
 import { existsSync, mkdirSync, appendFileSync } from 'fs';
 import type { ClientInit } from './client';
+import { version, versions } from '../core/metadata';
 
 const __dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
@@ -72,19 +73,24 @@ function init(): void {
 		return { action: 'deny' };
 	});
 	window.setFullScreenable(true);
+	window.center();
+	window.title = 'Blankstorm Client ' + versions.get(version).text;
 
 	const inputHandler = (ev, input: Input) => {
 		if (input.type == 'keyUp') {
 			return;
 		}
 		switch (input.key) {
+			case 'F5':
+				window.reload();
+				break;
+			case 'F11':
+				window.fullScreen = !window.fullScreen;
+				break;
 			case 'F12':
 				if (options.dev) {
 					window.webContents.toggleDevTools();
 				}
-				break;
-			case 'F11':
-				window.fullScreen = !window.fullScreen;
 				break;
 		}
 	};

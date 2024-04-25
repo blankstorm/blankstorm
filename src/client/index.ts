@@ -22,4 +22,5 @@ if (options.debug) {
 		$,
 	});
 }
+$('body').on('contextmenu', () => options.debug);
 await client.init(options);

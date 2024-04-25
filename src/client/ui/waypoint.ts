@@ -5,7 +5,7 @@ import { confirm } from '../utils';
 export class WaypointUI extends HTMLDivElement {
 	constructor(waypoint: Waypoint) {
 		super();
-		$('<span class="edit" style=text-align:center;;grid-column:2;><svg><use href="_build.asset_dir/images/icons.svg#pencil"/></svg></span>')
+		$('<span class="edit" style=text-align:center;grid-column:2;><svg><use href="_build.asset_dir/images/icons.svg#pencil"/></svg></span>')
 			.addClass('clickable')
 			.on('click', () => {
 				const dialog = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];

@@ -52,7 +52,7 @@ if (options.keep) {
 }
 
 const productName = 'Blankstorm Client';
-const copyright = `Copyright © ${new Date().getFullYear()} ${$package.author.slice(0, $package.author.indexOf('<') - 1)}. All Rights Reserved.`;
+const copyright = `Copyright © ${new Date().getFullYear()} ${$package.author.name}. All Rights Reserved.`;
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
 	projectDir: dirname,

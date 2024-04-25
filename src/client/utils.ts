@@ -5,13 +5,16 @@ import { Logger } from 'logzen';
 const { fileURLToPath } = $app.require('node:url');
 const path = $app.require('node:path');
 
-export const upload = (type, multiple = false) =>
-		new Promise(res =>
-			$<HTMLInputElement>(`<input type=file ${type ? `accept='${type}'` : ''} ${multiple ? 'multiple' : ''}>`)
-				.on('change', e => res(Array.from(e.target.files)[0]))
-				.trigger('click')
-		),
-	download = (data: BlobPart, name: string) => $(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click();
+export function upload(type: string, multiple = false): Promise<File> {
+	return new Promise<File>(resolve => {
+		$<HTMLInputElement>(`<input type=file ${type ? `accept='${type}'` : ''} ${multiple ? 'multiple' : ''}>`)
+			.on('change', e => resolve(Array.from(e.target.files)[0]))
+			.trigger('click');
+	});
+}
+export function download(data: BlobPart, name: string): void {
+	$(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click();
+}
 
 export const minimize = Intl.NumberFormat('en', { notation: 'compact' }).format;
 
@@ -24,8 +27,8 @@ export function fixPaths(text: string): string {
 }
 
 /* eslint-disable no-redeclare */
-export const alert = (text: string) =>
-	new Promise(resolve => {
+export function alert(text: string): Promise<boolean> {
+	return new Promise<boolean>(resolve => {
 		$('#alert .message').html(text.replaceAll('\n', '<br>'));
 		$('#alert .ok').on('click', () => {
 			$<HTMLDialogElement>('#alert')[0].close();
@@ -33,8 +36,9 @@ export const alert = (text: string) =>
 		});
 		$<HTMLDialogElement>('#alert')[0].showModal();
 	});
-export const confirm = (text: string) =>
-	new Promise(resolve => {
+}
+export function confirm(text: string): Promise<boolean> {
+	return new Promise<boolean>(resolve => {
 		$('#confirm .message').html(text.replaceAll('\n', '<br>'));
 		$('#confirm .ok').on('click', () => {
 			$<HTMLDialogElement>('#confirm')[0].close();
@@ -46,7 +50,7 @@ export const confirm = (text: string) =>
 		});
 		$<HTMLDialogElement>('#confirm')[0].showModal();
 	});
-
+}
 export function getByString(object: object, path: string, seperator = /[.[\]'"]/) {
 	return path
 		.split(seperator)

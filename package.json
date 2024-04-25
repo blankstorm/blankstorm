@@ -23,7 +23,11 @@
 	"keywords": [
 		"blankstorm"
 	],
-	"author": "James. P <jp@drvortex.dev> (https://drvortex.dev)",
+	"author": {
+		"name": "James P",
+		"email": "jp@drvortex.dev",
+		"url": "https://drvortex.dev"
+	},
 	"license": "See license.md",
 	"bugs": {
 		"url": "https://github.com/blankstorm/blankstorm/issues"
@@ -38,10 +42,10 @@
 		"@blankstorm/api": "^0.5.4",
 		"eventemitter3": "^5.0.1",
 		"jquery": "^3.7.1",
-		"logzen": "^0.3.3",
+		"logzen": "^0.3.8",
 		"socket.io": "^4.7.5",
 		"socket.io-client": "^4.7.5",
-		"utilium": "^0.1.11"
+		"utilium": "^0.2.1"
 	},
 	"devDependencies": {
 		"@types/archiver": "^5.3.2",

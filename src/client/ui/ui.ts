@@ -37,7 +37,6 @@ export const ships: Map<string, ShipUI> = new Map();
 export const research: Map<string, ResearchUI> = new Map();
 
 export function init() {
-	document.title = 'Blankstorm ' + versions.get(version).text;
 	$('#main .version a').text(versions.get(version).text).attr('href', `${game_url}/versions#${version}`);
 
 	for (const [id, item] of Object.entries(itemsData)) {
@@ -51,25 +50,23 @@ export function init() {
 	}
 	const size = config.system_generation.max_size;
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
-	const grid = $svg('g') as unknown as JQuery<HTMLElement>;
+	const grid = $svg<SVGGElement>('g');
 	grid.css('stroke', 'var(--bg-color)').appendTo('#map-markers');
 	for (let i = -size * 2; i < size * 2; i += 100) {
-		$svg('line')
-			.attr({
+		grid.append(
+			$svg('line').attr({
 				x1: -size * 2,
 				x2: size * 2,
 				y1: i,
 				y2: i,
-			})
-			.appendTo(grid);
-		$svg('line')
-			.attr({
+			}),
+			$svg('line').attr({
 				x1: i,
 				x2: i,
 				y1: -size * 2,
 				y2: size * 2,
 			})
-			.appendTo(grid);
+		);
 	}
 }
 
@@ -78,45 +75,6 @@ export function update() {
 
 	$(':root').css('--font-size', settings.get('font_size') + 'px');
 
-	$('[plot]').each((i, e) => {
-		const plot = $(e)
-			.attr('plot')
-			.replaceAll(/[\d.]+(px|em)/g, str => parseFloat(str) + str.slice(-2))
-			.split(',');
-
-		if (plot[0][0] === 'c' && !plot[0].startsWith('calc')) {
-			const left = `${plot[0].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[2]}/2))${plot[0].slice(1) ? ` + ${plot[0].slice(1)})` : ''}`;
-			$(e).css('left', left);
-		} else if (plot[0][0] === 'r') {
-			$(e).css('right', plot[0].slice(1));
-		} else if (plot[0][0] === 'l') {
-			$(e).css('left', plot[0].slice(1));
-		} else {
-			$(e).css('left', plot[0]);
-		}
-
-		if (plot[1][0] === 'c' && !plot[1].startsWith('calc')) {
-			const top = `${plot[1].slice(1) ? 'calc(' : ''}calc(50% - calc(${plot[3]}/2))${plot[1].slice(1) ? ` + ${plot[1].slice(1)})` : ''}`;
-			$(e).css('top', top);
-		} else if (plot[1][0] === 'b') {
-			$(e).css('bottom', plot[1].slice(1));
-		} else if (plot[1][0] === 't') {
-			$(e).css('top', plot[1].slice(1));
-		} else {
-			$(e).css('top', plot[1]);
-		}
-
-		$(e).css({
-			width: plot[2],
-			height: plot[3],
-			position: ['absolute', 'fixed', 'relative', 'sticky'].includes(plot[4])
-				? plot[4]
-				: /^(a|s|f|r)$/.test(plot[4])
-					? { a: 'absolute', f: 'fixed', r: 'relative', s: 'sticky' }[plot[4]]
-					: 'fixed',
-		});
-	});
-
 	if (!(system() instanceof System)) {
 		return;
 	}
@@ -124,7 +82,7 @@ export function update() {
 	const player: Player = getPlayer();
 	$('#waypoint-list div').detach();
 	$('svg.item-bar rect').attr('width', (player.storage.count() / player.storage.max) * 100 || 0);
-	$('div.item-bar p.label').text(`${minimize(player.storage.count())} / ${minimize(player.storage.max)}`);
+	$('div.item-bar .label').text(`${minimize(player.storage.count())} / ${minimize(player.storage.max)}`);
 
 	for (const [id, amount] of player.storage) {
 		$(items.get(id)).find('.count').text(minimize(amount));
@@ -345,10 +303,7 @@ export function registerListeners() {
 	$('#ingame-temp-menu div.nav button').on('click', e => {
 		const section = $(e.target).closest('button[section]').attr('section');
 		$(`#ingame-temp-menu > div:not(.nav)`).hide();
-		if (section == 'inventory') {
-			$('div.item-bar').show();
-		}
-		$('#ingame-temp-menu > div.' + section).css('display', 'grid');
+		$('#ingame-temp-menu > div.' + section).css('display', 'flex');
 	});
 	$('#map button.waypoints').on('click', () => {
 		$('#waypoint-list').show();

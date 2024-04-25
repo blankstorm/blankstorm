@@ -12,6 +12,7 @@ import { currentLevel } from './client';
 import { path } from './config';
 import { SaveListItem } from './ui/save';
 import { account } from './user';
+import { logger } from './utils';
 const fs = $app.require('fs');
 
 export class Save {
@@ -143,6 +144,7 @@ export function flush(): void {
 		chat.sendMessage('Game saved.');
 	} catch (err) {
 		chat.sendMessage('Failed to save game.');
+		logger.error(err);
 		throw err;
 	}
 	$('#pause .save').text('Save Game');

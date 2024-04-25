@@ -146,6 +146,9 @@ export class Ship extends Entity {
 		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, 'type', 'hp', 'jumpCooldown'));
 		this.storage.fromJSON(data.storage);
+		if ('fleet' in this.owner) {
+			this.owner.fleet.add(this);
+		}
 	}
 }
 

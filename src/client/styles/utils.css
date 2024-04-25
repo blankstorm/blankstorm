@@ -75,3 +75,15 @@ tool-tip {
 	align-items: center;
 	justify-content: center;
 }
+
+.center-x {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+.center-y {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+}

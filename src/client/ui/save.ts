@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { alert, confirm, download } from '../utils';
+import { alert, confirm, download, logger } from '../utils';
 import { versions } from '../../core/metadata';
 import type { Save } from '../saves';
 import { load } from '../client';
@@ -17,6 +17,7 @@ export class SaveListItem extends HTMLLIElement {
 				$('#loading_cover').hide();
 			} catch (e) {
 				alert('Failed to load save: ' + e);
+				logger.error(e);
 				throw e;
 			}
 		};
