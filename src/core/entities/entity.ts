@@ -1,12 +1,12 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, resolveConstructors } from 'utilium';
+import { register, type Component } from '../components/component';
+import type { ItemStorage } from '../components/storage';
 import type { ItemContainer } from '../generic/items';
 import type { Level } from '../level';
 import { findPath } from '../path';
-import type { ItemStorage } from '../components/storage';
 import type { System } from '../system';
-import { register, type Component } from '../components/component';
 
 export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 
@@ -54,22 +54,6 @@ export class Entity
 
 	public get entityTypes(): string[] {
 		return resolveConstructors(this);
-	}
-
-	protected _level: Level;
-	public get level(): Level {
-		return this._level;
-	}
-	public set level(value: Level) {
-		if (this._level) {
-			this._level.entities.delete(this);
-			this._level.emit('entity_removed', this.toJSON());
-		}
-		this._level = value;
-		if (value) {
-			value.entities.add(this);
-			setTimeout(() => value.emit('entity_added', this.toJSON()));
-		}
 	}
 
 	protected _system: string;
@@ -122,7 +106,7 @@ export class Entity
 
 	public constructor(
 		public id: string = randomHex(32),
-		level: Level,
+		public readonly level: Level,
 		constructorOptions?
 	) {
 		super();
@@ -130,12 +114,13 @@ export class Entity
 		if (constructorOptions) {
 			console.warn(`constructorOptions should not be passed to Node constructor`);
 		}
-		this.level = level;
+		level.entities.add(this);
 		setTimeout(() => level.emit('entity_created', this.toJSON()));
 	}
 
 	public remove() {
-		this.level = null;
+		this.level.entities.delete(this);
+		this.level.emit('entity_removed', this.toJSON());
 	}
 
 	/**
