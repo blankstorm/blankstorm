@@ -9,7 +9,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import { randomHex } from 'utilium';
 import type { PlanetData } from '../../core/entities/planet';
 import type { planetBiomes } from '../../core/generic/planets';
-import config from '../config';
+import { planet_material } from '../config';
 import { cloudFragmentShader } from '../shaders/cloud.glslx';
 import { noiseFragmentShader } from '../shaders/noise.glslx';
 import * as planetShader from '../shaders/planet.glslx';
@@ -72,11 +72,11 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: GenericPlanetRendererMaterial, scene: Scene) {
 		const sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
-		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, config.planet_material_map_size, shader, scene, null, true, true);
+		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, planet_material.map_size, shader, scene, null, true, true);
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
-		texture.setFloat('mapSize', config.planet_material_map_size);
-		texture.setFloat('maxResolution', options.maxResolution || config.planet_material_max_resolution);
+		texture.setFloat('mapSize', planet_material.map_size);
+		texture.setFloat('maxResolution', options.maxResolution || planet_material.max_resolution);
 		texture.setFloat('seed', options.seed);
 		texture.setVector2('lowerClamp', options.lowerClamp);
 		texture.setTexture('randomSampler', sampler);

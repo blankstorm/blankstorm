@@ -12,33 +12,34 @@ import '@babylonjs/loaders/glTF/index';
 import { randomHex } from 'utilium';
 import * as settings from '../client/settings';
 import type { EntityJSON } from '../core/entities/entity';
-import config from './config';
+import { realtime_filtering_quality } from './config';
+import { logger } from './logger';
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
  */
 export class ModelRenderer extends TransformNode {
 	protected _instance: TransformNode;
-	protected _selected = false;
-	protected _currentPath;
+	protected _selected: boolean = false;
+	protected _currentPath?: Vector3[];
 	protected _createdInstance: boolean = false;
 	protected _pathGizmo?: LinesMesh;
-	rendererType: RendererType;
+	public rendererType: string;
 
-	get generic(): { speed: number; agility: number } | undefined {
-		console.warn(`Accessed generic of a ModelRenderer that was not a ShipRenderer`);
+	public get generic(): { speed: number; agility: number } {
+		logger.warn(`Accessed generic of a ModelRenderer that was not a ShipRenderer`);
 		return { speed: 0, agility: 0 };
 	}
 
-	constructor(id: string, scene: Scene) {
+	public constructor(id: string, scene: Scene) {
 		super(id, scene);
 	}
 
-	get selected() {
+	public get selected(): boolean {
 		return this._selected;
 	}
 
-	select() {
+	public select(): void {
 		if (!this.isInstanciated) {
 			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
 		}
@@ -50,7 +51,7 @@ export class ModelRenderer extends TransformNode {
 		this._selected = true;
 	}
 
-	unselect() {
+	public unselect() {
 		if (!this.isInstanciated) {
 			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
 		}
@@ -62,11 +63,11 @@ export class ModelRenderer extends TransformNode {
 		this._selected = false;
 	}
 
-	get currentPath() {
+	public get currentPath() {
 		return this._currentPath;
 	}
 
-	async followPath(path: Vector3[]) {
+	public async followPath(path: Vector3[]) {
 		if (!Array.isArray(path)) throw new TypeError('path must be a Path');
 		if (path.length == 0) {
 			return;
@@ -114,15 +115,15 @@ export class ModelRenderer extends TransformNode {
 		}
 	}
 
-	get instance() {
+	public get instance() {
 		return this._instance;
 	}
 
-	get isInstanciated() {
+	public get isInstanciated() {
 		return this._createdInstance;
 	}
 
-	async createInstance(modelID: string) {
+	public async createInstance(modelID: string) {
 		//Async so we don't block while models are being instanciated
 
 		if (!genericMeshes.has(modelID)) {
@@ -139,7 +140,7 @@ export class ModelRenderer extends TransformNode {
 		return this._instance;
 	}
 
-	async update({ name, position, rotation, parent, entityType: nodeType, type }: EntityJSON & { type?: string }, rendererType?: RendererType) {
+	public async update({ name, position, rotation, parent, entityType: nodeType, type }: EntityJSON & { type?: string }, rendererType?: string) {
 		this.name = name;
 		if (!this._currentPath) {
 			this.position = Vector3.FromArray(position);
@@ -156,13 +157,13 @@ export class ModelRenderer extends TransformNode {
 
 export const genericMeshes: Map<string, AssetContainer> = new Map();
 
-export async function initModels(path: string, scene: Scene) {
+export async function initModel(path: string, scene: Scene) {
 	const container = await SceneLoader.LoadAssetContainerAsync(`${$build.asset_dir}/models/${path}.glb`, '', scene);
 	Object.assign(container.meshes[0], {
 		rotationQuaternion: null,
 		material: Object.assign(container.materials[0], {
 			realTimeFiltering: true,
-			realTimeFilteringQuality: config.realtime_filtering_quality,
+			realTimeFilteringQuality: realtime_filtering_quality,
 			reflectionTexture: scene.reflectionProbes[0].cubeTexture,
 		}),
 		position: Vector3.Zero(),
@@ -172,5 +173,3 @@ export async function initModels(path: string, scene: Scene) {
 	scene.reflectionProbes[0].renderList.push(container.meshes[1]);
 	genericMeshes.set(path, container);
 }
-
-export type RendererType = Parameters<typeof genericMeshes.get>[0];

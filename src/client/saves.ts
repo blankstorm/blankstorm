@@ -16,49 +16,50 @@ import { logger } from './utils';
 const fs = $app.require('fs');
 
 export class Save {
-	#data: LevelJSON;
+	protected _data: LevelJSON;
 
-	gui: JQuery<SaveListItem>;
+	public gui: JQuery<SaveListItem>;
 
-	constructor(data: LevelJSON) {
-		this.#data = data;
+	public constructor(data: LevelJSON) {
+		this._data = data;
 
 		set(this.id, this);
 
 		this.gui = $(new SaveListItem(this));
 	}
 
-	get id() {
-		return this.#data?.id;
+	public get id() {
+		return this._data?.id;
 	}
 
-	get data(): LevelJSON {
+	public get data(): LevelJSON {
 		if (folder.has(this.id)) {
-			this.#data = JSON.parse(folder.get(this.id));
+			this._data = JSON.parse(folder.get(this.id));
 		}
-		return this.#data;
+		return this._data;
 	}
 
-	set data(data: LevelJSON) {
-		this.#data = data;
+	public set data(data: LevelJSON) {
+		this._data = data;
 		this.updateData();
 	}
 
 	protected updateData() {
-		const date = new Date(this.#data.date);
-		this.#data.date = date.toJSON();
+		const date = new Date(this._data.date);
+		this._data.date = date.toJSON();
 		this.gui.find('.date').text(date.toLocaleString());
 
-		folder.set(this.id, JSON.stringify(this.#data));
+		folder.set(this.id, JSON.stringify(this._data));
 		set(this.id, this);
 	}
 
-	load(): Level {
+	public load(): Level {
 		this.updateData();
+		logger.info('Loading level from save ' + this.id);
 		return Level.FromJSON(this.data);
 	}
 
-	remove() {
+	public remove() {
 		remove(this.id);
 		this.gui.remove();
 	}
@@ -84,6 +85,7 @@ let folder: FolderMap;
 const map: Map<string, Save> = new Map();
 
 export function init() {
+	logger.debug('Initializing saves');
 	const folderPath = path + '/saves';
 	if (!fs.existsSync(folderPath)) {
 		fs.mkdirSync(folderPath);
@@ -91,15 +93,21 @@ export function init() {
 	folder = new FolderMap(folderPath, { fs, suffix: '.json' });
 	for (const [id, content] of folder) {
 		if (!isJSON(content)) {
+			logger.debug('Skipping invalid save: ' + id);
 			continue;
 		}
 
 		const data = JSON.parse(content);
 
-		if (!map.has(id)) {
-			new Save(data);
+		if (map.has(id)) {
+			logger.debug('Skipping already initialized save: ' + id);
+			continue;
 		}
+
+		logger.debug('Initializing save: ' + id);
+		new Save(data);
 	}
+	logger.info('Loaded ' + map.size + ' saves');
 }
 
 export function get(id: string): Save {

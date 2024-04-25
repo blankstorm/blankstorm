@@ -4,7 +4,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import type { CelestialBodyJSON } from '../../core/entities/body';
-import config from '../config';
+import { mesh_segments as segments } from '../config';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class CelestialBodyRenderer extends Mesh implements Renderer<CelestialBodyJSON> {
@@ -20,7 +20,7 @@ export class CelestialBodyRenderer extends Mesh implements Renderer<CelestialBod
 		this.name = name;
 		if (this.radius != radius) {
 			this.radius = radius;
-			CreateSphereVertexData({ diameter: radius * 2, segments: config.mesh_segments }).applyToMesh(this);
+			CreateSphereVertexData({ diameter: radius * 2, segments }).applyToMesh(this);
 		}
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);

@@ -17,10 +17,9 @@ import type { LevelJSON } from '../core/level';
 import type { MoveInfo } from '../core/system';
 import type { EntityJSON } from '../core/entities/entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
-import { version } from '../core/metadata';
+import { config, version } from '../core/metadata';
 import { Camera } from './camera';
-import config from './config';
-import { initModels } from './models';
+import { initModel } from './models';
 import { EntityRenderer } from './entities/entity';
 import type { HardpointRenderer } from './entities/hardpoint';
 import { PlanetRenderer, PlanetRendererMaterial } from './entities/planet';
@@ -63,18 +62,18 @@ function onCanvasResive() {
 	engine.resize();
 }
 
-export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: string) => void) {
-	messageHandler('engine');
+export async function init(canvas: HTMLCanvasElement) {
+	logger.debug('Initializing engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 	engine.resize();
 
 	addEventListener('resize', onCanvasResive);
 
-	messageHandler('scene');
+	logger.debug('Initializing scene');
 	scene = new Scene(engine);
 	scene.ambientColor = Color3.White();
 
-	messageHandler('camera');
+	logger.debug('Initializing camera');
 	camera = new Camera(scene);
 
 	scene.registerBeforeRender(() => {
@@ -95,8 +94,8 @@ export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: stri
 		}
 	});
 
-	messageHandler('skybox');
-	skybox = MeshBuilder.CreateBox('skybox', { size: config.skybox_size }, scene);
+	logger.debug('Initializing skybox');
+	skybox = MeshBuilder.CreateBox('skybox', { size: config.region_size * 2 }, scene);
 	const skyboxMaterial = new StandardMaterial('skybox.mat', scene);
 	skyboxMaterial.backFaceCulling = false;
 	skyboxMaterial.disableLighting = true;
@@ -106,26 +105,26 @@ export async function init(canvas: HTMLCanvasElement, messageHandler: (msg: stri
 	skybox.infiniteDistance = true;
 	skybox.isPickable = false;
 
-	messageHandler('glow layer');
+	logger.debug('Initializing glow layer');
 	gl = new GlowLayer('glowLayer', scene);
 	gl.intensity = 0.9;
 
-	messageHandler('highlight layer');
+	logger.debug('Initializing highlight layer');
 	hl = new HighlightLayer('highlight', scene);
 
-	xzPlane = MeshBuilder.CreatePlane('xzPlane', { size: config.plane_size }, scene);
+	xzPlane = MeshBuilder.CreatePlane('xzPlane', { size: config.region_size }, scene);
 	xzPlane.rotation.x = Math.PI / 2;
 	xzPlane.setEnabled(false);
 
-	messageHandler('reflection probe');
+	logger.debug('Initializing reflection probe');
 	probe = new ReflectionProbe('probe', 256, scene);
 
-	messageHandler('models');
+	logger.debug('Initializing models');
 
 	const models = ['apis', 'cillus', 'horizon', 'hurricane', 'inca', 'laser', 'laser_cannon_double', 'mosquito', 'pilsung', 'wind'];
 	for (const id of models) {
-		messageHandler(`models (${id}) (${models.indexOf(id) + 1}/${models.length})`);
-		await initModels(id, scene);
+		logger.debug(`Loading modules`);
+		await initModel(id, scene);
 	}
 }
 

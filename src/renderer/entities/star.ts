@@ -3,7 +3,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import type { StarJSON } from '../../core/entities/star';
-import config from '../config';
+import { star_light } from '../config';
 import { CelestialBodyRenderer } from './body';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
@@ -13,7 +13,7 @@ export class StarRenderer extends CelestialBodyRenderer implements Renderer<Star
 	constructor(id: string, scene: Scene) {
 		super(id, scene);
 		this.light = new PointLight(id + '.light', this.position, scene);
-		Object.assign(this.light, config.star_light);
+		Object.assign(this.light, star_light);
 		const material = (this.material = new StandardMaterial(id + '.mat', scene));
 		material.disableLighting = true;
 
