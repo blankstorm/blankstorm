@@ -26,7 +26,6 @@ export class Ship extends Entity {
 	public type: ShipType;
 	public hp: number;
 	public jumpCooldown: number;
-	protected _storage: Container = new Container();
 
 	public isTargetable = true;
 

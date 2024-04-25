@@ -54,7 +54,7 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 	}
 
 	public count(item?: ItemID): number {
-		return item ? this.items[item] : this.total;
+		return (item ? this.items[item] : this.total) || 0;
 	}
 
 	public abstract add(item: ItemID, amount: number): void;

@@ -3,7 +3,7 @@ import type { CelestialBody } from '../entities/body';
 import type { Player } from '../entities/player';
 import type { Ship } from '../entities/ship';
 import type { Level } from '../level';
-import { register } from './component';
+import { register, type Component } from './component';
 import { EntityStorageManager } from './storage';
 
 export interface FleetJSON {
@@ -12,7 +12,7 @@ export interface FleetJSON {
 }
 
 @register
-export class Fleet extends Set<Ship> {
+export class Fleet extends Set<Ship> implements Component<FleetJSON> {
 	public owner: CelestialBody | Player;
 
 	public storage = new EntityStorageManager(this);
