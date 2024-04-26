@@ -93,17 +93,17 @@ export float scalar_field(vec3 v, float seed, float resolution, sampler2D sample
 	return clamp(c, 0.0, 1.0);
 }
 
-export vec3 to_spherical(int face, vec2 uv, float width) {
-	width /= 2.0;
-	uv -= width;
-	vec3 point = vec3(0.0);
+export vec3 to_spherical(int face, vec2 uv) {
+	uv -= 0.5;
 
-	if (face == 0) { point = vec3(width, -uv.y, -uv.x); }
-	else if (face == 1) { point = vec3(-width, -uv.y, uv.x); }
-	else if (face == 2) { point = vec3(uv.x, width, uv.y); }
-	else if (face == 3) { point = vec3(uv.x, -width, -uv.y); }
-	else if (face == 4) { point = vec3(uv.x, -uv.y, width); }
-	else { point = vec3(-uv.x, -uv.y, -width); }
+	if (face == 0) { return vec3(0.5, -uv.y, -uv.x); }
+	if (face == 1) { return vec3(-0.5, -uv.y, uv.x); }
+	if (face == 2) { return vec3(uv.x, 0.5, uv.y); }
+	if (face == 3) { return vec3(uv.x, -0.5, -uv.y); }
+	if (face == 4) { return vec3(uv.x, -uv.y, 0.5); }
+	else { return vec3(-uv.x, -uv.y, -0.5); }
+}
 
-	return normalize(point);
+export vec3 to_spherical(int face, vec2 xy, float size) {
+	return to_spherical(face, xy / size);
 }

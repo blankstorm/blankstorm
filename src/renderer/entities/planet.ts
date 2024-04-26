@@ -20,7 +20,7 @@ export interface GenericPlanetRendererMaterial {
 	clouds: boolean;
 	upperColor: Color3;
 	lowerColor: Color3;
-	haloColor: Color3;
+	halo: Color3;
 	seed: number;
 	cloudSeed: number;
 	lowerClamp: Vector2;
@@ -29,14 +29,8 @@ export interface GenericPlanetRendererMaterial {
 	directNoise: boolean;
 	lowerClip: Vector2;
 	range: Vector2;
-	maxResolution?: number;
-	options?: Vector3;
+	resolution?: number;
 }
-
-const textureConfig = {
-	map_size: 1024,
-	max_resolution: 128,
-};
 
 export class PlanetRendererMaterial extends ShaderMaterial {
 	generationOptions: GenericPlanetRendererMaterial;
@@ -65,17 +59,18 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		this.cloudTexture = this.generateTexture(id, { fragmentSource: cloudFragmentShader }, { ...options, directNoise: true, lowerClip: Vector2.Zero() }, scene);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
-		this.setColor3('haloColor', options.haloColor);
+		this.setColor3('haloColor', options.halo);
 	}
 
 	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: GenericPlanetRendererMaterial, scene: Scene) {
 		const sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
-		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, textureConfig.map_size, shader, scene, null, true, true);
+		const size = 1024;
+		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, size, shader, scene, null, true, true);
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
-		texture.setFloat('mapSize', textureConfig.map_size);
-		texture.setFloat('maxResolution', options.maxResolution || textureConfig.max_resolution);
+		texture.setFloat('size', size);
+		texture.setFloat('resolution', options.resolution || 128);
 		texture.setFloat('seed', options.seed);
 		texture.setVector2('lowerClamp', options.lowerClamp);
 		texture.setTexture('sampler', sampler);
@@ -102,7 +97,7 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 		clouds: false, //true,
 		upperColor: new Color3(0.2, 2.0, 0.2),
 		lowerColor: new Color3(0, 0.2, 1.0),
-		haloColor: new Color3(0, 0.2, 1.0),
+		halo: new Color3(0, 0.2, 1.0),
 		seed: 0.3,
 		cloudSeed: 0.6,
 		lowerClamp: new Vector2(0.6, 1),
@@ -115,12 +110,12 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 	volcanic: {
 		upperColor: new Color3(0.9, 0.45, 0.45),
 		lowerColor: new Color3(1.0, 0, 0),
-		haloColor: new Color3(1.0, 0, 0.3),
+		halo: new Color3(1.0, 0, 0.3),
 		seed: 0.3,
 		cloudSeed: 0.6,
 		clouds: false,
 		lowerClamp: new Vector2(0, 1),
-		maxResolution: 256,
+		resolution: 256,
 		cloudAlbedo: 0,
 		groundAlbedo: 1.0,
 		directNoise: false,
@@ -130,12 +125,12 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 	jungle: {
 		upperColor: new Color3(0.1, 0.3, 0.7),
 		lowerColor: new Color3(0, 1.0, 0.1),
-		haloColor: new Color3(0.5, 1.0, 0.5),
+		halo: new Color3(0.5, 1.0, 0.5),
 		seed: 0.4,
 		cloudSeed: 0.7,
 		clouds: false, //true,
 		lowerClamp: new Vector2(0, 1),
-		maxResolution: 512,
+		resolution: 512,
 		cloudAlbedo: 1.0,
 		groundAlbedo: 1.1,
 		directNoise: false,
@@ -145,12 +140,12 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 	ice: {
 		upperColor: new Color3(1.0, 1.0, 1.0),
 		lowerColor: new Color3(0.7, 0.7, 0.9),
-		haloColor: new Color3(1.0, 1.0, 1.0),
+		halo: new Color3(1.0, 1.0, 1.0),
 		seed: 0.8,
 		cloudSeed: 0.4,
 		clouds: false, //true,
 		lowerClamp: new Vector2(0, 1),
-		maxResolution: 256,
+		resolution: 256,
 		cloudAlbedo: 1.0,
 		groundAlbedo: 1.1,
 		directNoise: false,
@@ -160,12 +155,12 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 	desert: {
 		upperColor: new Color3(0.9, 0.3, 0),
 		lowerColor: new Color3(1.0, 0.5, 0.1),
-		haloColor: new Color3(1.0, 0.5, 0.1),
+		halo: new Color3(1.0, 0.5, 0.1),
 		seed: 0.18,
 		cloudSeed: 0.6,
 		clouds: false,
 		lowerClamp: new Vector2(0.3, 1),
-		maxResolution: 512,
+		resolution: 512,
 		cloudAlbedo: 1.0,
 		groundAlbedo: 1.0,
 		directNoise: false,
@@ -175,12 +170,12 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 	islands: {
 		upperColor: new Color3(0.4, 2.0, 0.4),
 		lowerColor: new Color3(0, 0.2, 2.0),
-		haloColor: new Color3(0, 0.2, 2.0),
+		halo: new Color3(0, 0.2, 2.0),
 		seed: 0.15,
 		cloudSeed: 0.6,
 		clouds: false, //true,
 		lowerClamp: new Vector2(0.6, 1),
-		maxResolution: 512,
+		resolution: 512,
 		cloudAlbedo: 1.0,
 		groundAlbedo: 1.2,
 		directNoise: false,
@@ -194,7 +189,7 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 		lowerClamp: new Vector2(0.6, 1),
 		cloudAlbedo: 0.9,
 		range: new Vector2(0.3, 0.35),
-		haloColor: new Color3(0, 0, 0),
+		halo: new Color3(0, 0, 0),
 		seed: 0.5,
 		clouds: false,
 		groundAlbedo: 0.7,

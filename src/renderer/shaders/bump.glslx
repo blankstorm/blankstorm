@@ -7,15 +7,14 @@ uniform vec3 upperColor;
 uniform vec3 lowerColor;
 uniform float face;
 uniform sampler2D sampler;
-uniform float mapSize;
-uniform float maxResolution;
+uniform float resolution;
 uniform float seed;
 uniform vec2 lowerClamp;
 
 export void fragmentSource() {
-	vec3 spherical = to_spherical(int(face), vUV * mapSize, mapSize);
+	vec3 spherical = to_spherical(int(face), vUV);
 
-	float luminance = scalar_field(spherical, seed, maxResolution, sampler);
+	float luminance = scalar_field(spherical, seed, resolution, sampler);
 
 	if (luminance < 0.3) 
 	{
