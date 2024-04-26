@@ -46,12 +46,15 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 			needAlphaBlending: true,
 		});
 		scene.onActiveCameraChanged.add(() => {
-			this.setVector3('cameraPosition', scene.activeCamera.position);
+			this.setVector3('camera', scene.activeCamera.position);
 		});
 		this.generationOptions = options;
 
-		this.setVector3('cameraPosition', scene.activeCamera?.position || Vector3.Zero());
-		this.setVector3('lightPosition', Vector3.Zero());
+		this.setInt('clouds', +options.clouds);
+		this.setFloat('groundAlbedo', options.groundAlbedo);
+		this.setFloat('cloudAlbedo', options.cloudAlbedo);
+		this.setVector3('camera', scene.activeCamera?.position || Vector3.Zero());
+		this.setVector3('light', Vector3.Zero());
 
 		this.noiseTexture = this.generateTexture(id, { fragmentSource: noiseFragmentShader }, options, scene);
 		this.setTexture('textureSampler', this.noiseTexture);
@@ -59,7 +62,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		this.cloudTexture = this.generateTexture(id, { fragmentSource: cloudFragmentShader }, { ...options, directNoise: true, lowerClip: Vector2.Zero() }, scene);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
-		this.setColor3('haloColor', options.halo);
+		this.setColor3('halo', options.halo);
 	}
 
 	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: GenericPlanetRendererMaterial, scene: Scene) {
@@ -75,7 +78,8 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		texture.setVector2('lowerClamp', options.lowerClamp);
 		texture.setTexture('sampler', sampler);
 		texture.setVector2('range', options.range);
-		texture.setVector3('options', new Vector3(options.directNoise ? 1 : 0, options.lowerClip.x, options.lowerClip.y));
+		texture.setVector2('lowerClip', new Vector2(options.lowerClip.x, options.lowerClip.y));
+		texture.setInt('directNoise', +options.directNoise);
 		texture.refreshRate = 0;
 		return texture;
 	}

@@ -158,9 +158,7 @@ export async function render() {
 
 		entity.rotation.y += 0.0001 * ratio * entity.material.rotationFactor;
 		entity.material.setMatrix('rotation', Matrix.RotationY(entity.material.matrixAngle));
-		entity.material.matrixAngle -= 0.0004 * ratio;
-		const options = entity.material.generationOptions;
-		entity.material.setVector3('options', new Vector3(+options.clouds, options.groundAlbedo, options.cloudAlbedo));
+		entity.material.matrixAngle -= 0.0004 * ratio;		
 	}
 
 	scene.render();
