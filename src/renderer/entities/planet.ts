@@ -78,7 +78,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		texture.setVector2('lowerClamp', options.lowerClamp);
 		texture.setTexture('sampler', sampler);
 		texture.setVector2('range', options.range);
-		texture.setVector2('lowerClip', new Vector2(options.lowerClip.x, options.lowerClip.y));
+		texture.setVector2('lowerClip', options.lowerClip);
 		texture.setInt('directNoise', +options.directNoise);
 		texture.refreshRate = 0;
 		return texture;
