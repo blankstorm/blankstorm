@@ -8,9 +8,9 @@ import type { CustomHardpointProjectileMaterial } from './hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class PlayerRenderer extends TransformNode implements Renderer<PlayerJSON> {
-	velocity: Vector3 = Vector3.Zero();
-	fleetPosition: Vector3 = Vector3.Zero();
-	customHardpointProjectileMaterials: CustomHardpointProjectileMaterial[] = [
+	public velocity: Vector3 = Vector3.Zero();
+	public fleetPosition: Vector3 = Vector3.Zero();
+	public customHardpointProjectileMaterials: CustomHardpointProjectileMaterial[] = [
 		{
 			applies_to: ['laser'],
 			material: Object.assign(new StandardMaterial('player-laser-projectile'), {
@@ -19,11 +19,11 @@ export class PlayerRenderer extends TransformNode implements Renderer<PlayerJSON
 			}),
 		},
 	];
-	constructor(id: string, scene: Scene) {
+	public constructor(id: string, scene: Scene) {
 		super(id, scene);
 	}
 
-	async update({ name, position, rotation, velocity, parent, fleet }: PlayerJSON) {
+	public async update({ name, position, rotation, velocity, parent, fleet }: PlayerJSON) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);

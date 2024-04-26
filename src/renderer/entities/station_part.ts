@@ -4,7 +4,7 @@ import { ModelRenderer } from '../models';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class StationPartRenderer extends ModelRenderer implements Renderer<StationPartJSON> {
-	constructor(id: string, scene: Scene) {
+	public constructor(id: string, scene: Scene) {
 		super(id, scene);
 	}
 }

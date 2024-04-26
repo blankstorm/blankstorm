@@ -7,15 +7,15 @@ import type { CelestialBodyJSON } from '../../core/entities/body';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class CelestialBodyRenderer extends Mesh implements Renderer<CelestialBodyJSON> {
-	radius = 0;
-	fleetPosition = Vector3.Zero();
+	public radius = 0;
+	public fleetPosition = Vector3.Zero();
 
 	// note: using ...args: ConstructorParmeters<Mesh> doesn't work since Mesh is imported as an interface, namespace, and class
-	constructor(name: string, scene?: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean) {
+	public constructor(name: string, scene?: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean) {
 		super(name, scene, parent, source, doNotCloneChildren, clonePhysicsImpostor);
 	}
 
-	async update({ name, radius, position, rotation, parent, fleet }: CelestialBodyJSON) {
+	public async update({ name, radius, position, rotation, parent, fleet }: CelestialBodyJSON) {
 		this.name = name;
 		if (this.radius != radius) {
 			this.radius = radius;

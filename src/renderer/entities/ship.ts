@@ -7,18 +7,18 @@ import { HardpointRenderer } from './hardpoint';
 import { createAndUpdate, entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class ShipRenderer extends ModelRenderer implements Renderer<ShipJSON> {
-	hardpoints: Map<string, HardpointRenderer> = new Map();
-	type: ShipType;
+	public hardpoints: Map<string, HardpointRenderer> = new Map();
+	public type: ShipType;
 
-	constructor(id: string, scene: Scene) {
+	public constructor(id: string, scene: Scene) {
 		super(id, scene);
 	}
 
-	override get generic() {
+	public override get generic() {
 		return genericShips[this.type];
 	}
 
-	async update(data: ShipJSON) {
+	public async update(data: ShipJSON) {
 		await super.update(data);
 		for (const hardpointData of [...data.hardpoints]) {
 			if (this.hardpoints.has(hardpointData.id)) {

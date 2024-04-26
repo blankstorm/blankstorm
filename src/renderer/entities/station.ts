@@ -6,14 +6,14 @@ import { entityRenderers, type Renderer, type RendererStatic } from './renderer'
 import type { StationPartRenderer } from './station_part';
 
 export class StationRenderer extends TransformNode implements Renderer<StationJSON> {
-	components: StationPartRenderer[] = [];
-	core: StationPartRenderer;
+	public components: StationPartRenderer[] = [];
+	public core: StationPartRenderer;
 
-	constructor(id: string, scene: Scene) {
+	public constructor(id: string, scene: Scene) {
 		super(id, scene);
 	}
 
-	async update({ name, position, rotation, parent }: StationJSON) {
+	public async update({ name, position, rotation, parent }: StationJSON) {
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
