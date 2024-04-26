@@ -21,16 +21,10 @@ import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { LevelJSON } from '../core/level';
 import { config, version } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
-import { EntityRenderer } from './entities/entity';
-import type { HardpointRenderer } from './entities/hardpoint';
-import { PlanetRenderer, PlanetRendererMaterial } from './entities/planet';
-import { PlayerRenderer } from './entities/player';
-import { createAndUpdate, entityRenderers, type Renderer } from './entities/renderer';
-import { ShipRenderer } from './entities/ship';
-import { StarRenderer } from './entities/star';
+import type { HardpointRenderer, Renderer } from './entities';
+import { CelestialBodyRenderer, PlanetRenderer, PlanetRendererMaterial, PlayerRenderer, ShipRenderer, createAndUpdate, entityRenderers } from './entities';
 import { logger } from './logger';
-import { initModel } from './models';
-
+import { ModelRenderer, initModel } from './models';
 export { logger };
 
 function createEmptyCache(): LevelJSON {
@@ -50,11 +44,11 @@ let skybox: Mesh,
 	camera: ArcRotateCamera,
 	cache: LevelJSON = createEmptyCache(),
 	hitboxes = false,
-	gl: GlowLayer;
+	glow: GlowLayer;
 
 export const cameraVelocity: Vector3 = Vector3.Zero();
 
-export let engine: Engine, scene: Scene, hl: HighlightLayer, probe: ReflectionProbe;
+export let engine: Engine, scene: Scene, highlight: HighlightLayer, probe: ReflectionProbe;
 
 export function setHitboxes(value: boolean) {
 	hitboxes = !!value;
@@ -62,16 +56,12 @@ export function setHitboxes(value: boolean) {
 
 const entities: Map<string, Renderer<EntityJSON>> = new Map();
 
-function onCanvasResive() {
-	engine.resize();
-}
-
 export async function init(canvas: HTMLCanvasElement) {
 	logger.debug('Initializing engine');
 	engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
 	engine.resize();
 
-	addEventListener('resize', onCanvasResive);
+	addEventListener('resize', () => engine.resize());
 
 	logger.debug('Initializing scene');
 	scene = new Scene(engine);
@@ -90,48 +80,25 @@ export async function init(canvas: HTMLCanvasElement) {
 		radius: 10,
 	});
 
-	scene.registerBeforeRender(() => {
-		camera.target.addInPlace(cameraVelocity);
-		cameraVelocity.scaleInPlace(0.9);
-	});
-
-	scene.registerBeforeRender(() => {
-		const ratio = scene.getAnimationRatio();
-		for (const entity of entities.values()) {
-			if (!(entity instanceof PlanetRenderer)) {
-				continue;
-			}
-			if (!(entity?.material instanceof PlanetRendererMaterial)) {
-				continue;
-			}
-
-			entity.rotation.y += 0.0001 * ratio * entity.material.rotationFactor;
-			entity.material.setMatrix('rotation', Matrix.RotationY(entity.material.matrixAngle));
-			entity.material.matrixAngle -= 0.0004 * ratio;
-			const options = entity.material.generationOptions;
-			entity.material.setVector3('options', new Vector3(+options.clouds, options.groundAlbedo, options.cloudAlbedo));
-		}
-	});
-
 	logger.debug('Initializing skybox');
-	skybox = MeshBuilder.CreateBox('skybox', { size: config.region_size * 2 }, scene);
-	const skyboxMaterial = new StandardMaterial('skybox.mat', scene);
-	skyboxMaterial.backFaceCulling = false;
-	skyboxMaterial.disableLighting = true;
-	skyboxMaterial.reflectionTexture = CubeTexture.CreateFromImages(Array(6).fill($build.asset_dir + '/images/skybox.png'), scene);
-	skyboxMaterial.reflectionTexture.coordinatesMode = 5;
-	skybox.material = skyboxMaterial;
+	skybox = MeshBuilder.CreateBox('skybox', { size: config.region_size / 10 }, scene);
+	const skyMaterial = new StandardMaterial('skybox.mat', scene);
+	skyMaterial.backFaceCulling = false;
+	skyMaterial.disableLighting = true;
+	skyMaterial.reflectionTexture = CubeTexture.CreateFromImages(Array(6).fill($build.asset_dir + '/images/skybox.png'), scene);
+	skyMaterial.reflectionTexture.coordinatesMode = 5;
+	skybox.material = skyMaterial;
 	skybox.infiniteDistance = true;
 	skybox.isPickable = false;
 
 	logger.debug('Initializing glow layer');
-	gl = new GlowLayer('glowLayer', scene);
-	gl.intensity = 0.9;
+	glow = new GlowLayer('glowLayer', scene);
+	glow.intensity = 0.9;
 
 	logger.debug('Initializing highlight layer');
-	hl = new HighlightLayer('highlight', scene);
+	highlight = new HighlightLayer('highlight', scene);
 
-	xzPlane = MeshBuilder.CreatePlane('xzPlane', { size: config.region_size }, scene);
+	xzPlane = MeshBuilder.CreatePlane('xzPlane', { size: config.region_size / 10 }, scene);
 	xzPlane.rotation.x = Math.PI / 2;
 	xzPlane.setEnabled(false);
 
@@ -159,14 +126,41 @@ export async function render() {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
+	// hitboxes
 	for (const mesh of scene.meshes) {
-		if (mesh instanceof PlanetRenderer || mesh instanceof StarRenderer) mesh.showBoundingBox = hitboxes;
-		if (mesh.parent instanceof EntityRenderer) {
+		if (mesh instanceof CelestialBodyRenderer) {
+			mesh.showBoundingBox = hitboxes;
+			continue;
+		}
+
+		if (mesh?.parent instanceof ModelRenderer) {
 			for (const child of mesh.getChildMeshes()) {
 				child.showBoundingBox = hitboxes;
 			}
 		}
-		//if (mesh != skybox && isHex(mesh.id)) mesh.showBoundingBox = hitboxes;
+	}
+
+	// camera
+	camera.target.addInPlace(cameraVelocity);
+	camera.alpha %= Math.PI * 2;
+	camera.beta %= Math.PI * 2;
+	cameraVelocity.scaleInPlace(0.9);
+
+	// planet rotations
+	const ratio = scene.getAnimationRatio();
+	for (const entity of entities.values()) {
+		if (!(entity instanceof PlanetRenderer)) {
+			continue;
+		}
+		if (!(entity?.material instanceof PlanetRendererMaterial)) {
+			continue;
+		}
+
+		entity.rotation.y += 0.0001 * ratio * entity.material.rotationFactor;
+		entity.material.setMatrix('rotation', Matrix.RotationY(entity.material.matrixAngle));
+		entity.material.matrixAngle -= 0.0004 * ratio;
+		const options = entity.material.generationOptions;
+		entity.material.setVector3('options', new Vector3(+options.clouds, options.groundAlbedo, options.cloudAlbedo));
 	}
 
 	scene.render();
@@ -312,7 +306,7 @@ export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
 export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: string): MoveInfo<Vector3>[] {
 	const returnData: MoveInfo<Vector3>[] = [];
 	for (const renderer of entities.values()) {
-		if (!(renderer instanceof EntityRenderer)) {
+		if (!(renderer instanceof ModelRenderer)) {
 			continue;
 		}
 
@@ -332,7 +326,7 @@ export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: st
 
 export async function startFollowingPath(entityID: string, path: IVector3Like[]) {
 	const renderer = entities.get(entityID);
-	if (!(renderer instanceof EntityRenderer)) {
+	if (!(renderer instanceof ModelRenderer)) {
 		throw logger.error(new TypeError(`Node ${entityID} is not an entity`));
 	}
 	await renderer.followPath(path.map(({ x, y, z }) => new Vector3(x, y, z)));

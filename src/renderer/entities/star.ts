@@ -11,12 +11,12 @@ export class StarRenderer extends CelestialBodyRenderer implements Renderer<Star
 	public light: PointLight;
 	public constructor(id: string, scene: Scene) {
 		super(id, scene);
-		this.light = new PointLight(id + '.light', this.position, scene);
+		this.light = new PointLight(id + ':light', this.position, scene);
 		Object.assign(this.light, {
-			range: config.region_size * 2,
+			range: config.region_size / 10,
 			intensity: 1,
 		});
-		const material = (this.material = new StandardMaterial(id + '.mat', scene));
+		const material = (this.material = new StandardMaterial(id + ':material', scene));
 		material.disableLighting = true;
 	}
 
