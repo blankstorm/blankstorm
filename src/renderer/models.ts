@@ -12,7 +12,6 @@ import '@babylonjs/loaders/glTF/index';
 import { randomHex } from 'utilium';
 import * as settings from '../client/settings';
 import type { EntityJSON } from '../core/entities/entity';
-import { realtime_filtering_quality } from './config';
 import { logger } from './logger';
 
 /**
@@ -163,7 +162,7 @@ export async function initModel(path: string, scene: Scene) {
 		rotationQuaternion: null,
 		material: Object.assign(container.materials[0], {
 			realTimeFiltering: true,
-			realTimeFilteringQuality: realtime_filtering_quality,
+			realTimeFilteringQuality: 32,
 			reflectionTexture: scene.reflectionProbes[0].cubeTexture,
 		}),
 		position: Vector3.Zero(),
