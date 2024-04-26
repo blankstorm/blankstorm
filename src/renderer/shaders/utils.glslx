@@ -80,15 +80,15 @@ float scalar_field_factor(vec3 v, float resolution, sampler2D seed) {
 	return prand_cos_mix((v + 1.0) / 2.0 * resolution, seed) * 2.0 - 1.0;
 }
 
-export float scalar_field(vec3 v, float seed, float resolution, sampler2D sampler) {
+export float scalar_field(vec3 point, float seed, float resolution, sampler2D sampler) {
 	float c = seed;
 	// c = seed * Product 1 + helper(v, resolution / 2 ^ [[5..0]], seed) * 0.8 / 2^[[0..5]]
-	c *= 1.0 + scalar_field_factor(v, resolution / 32.0, sampler) * 0.8;
-	c *= 1.0 + scalar_field_factor(v, resolution / 16.0, sampler) * 0.4;
-	c *= 1.0 + scalar_field_factor(v, resolution / 8.0, sampler) * 0.2;
-	c *= 1.0 + scalar_field_factor(v, resolution / 4.0, sampler) * 0.1;
-	c *= 1.0 + scalar_field_factor(v, resolution / 2.0, sampler) * 0.05;
-	c *= 1.0 + scalar_field_factor(v, resolution, sampler) * 0.025;
+	c *= 1.0 + scalar_field_factor(point, resolution / 32.0, sampler) * 0.8;
+	c *= 1.0 + scalar_field_factor(point, resolution / 16.0, sampler) * 0.4;
+	c *= 1.0 + scalar_field_factor(point, resolution / 8.0, sampler) * 0.2;
+	c *= 1.0 + scalar_field_factor(point, resolution / 4.0, sampler) * 0.1;
+	c *= 1.0 + scalar_field_factor(point, resolution / 2.0, sampler) * 0.05;
+	c *= 1.0 + scalar_field_factor(point, resolution, sampler) * 0.025;
 
 	return clamp(c, 0.0, 1.0);
 }
@@ -106,4 +106,27 @@ export vec3 to_spherical(int face, vec2 uv) {
 
 export vec3 to_spherical(int face, vec2 xy, float size) {
 	return to_spherical(face, xy / size);
+}
+
+export float scalar_field(int face, vec2 uv, float seed, float resolution, sampler2D sampler) {
+	return scalar_field(to_spherical(face, uv), seed, resolution, sampler);
+}
+
+export vec4 apply_luminance(float luminance, vec2 range, vec3 lowerColor, vec3 upperColor, vec2 lower_clamp) {
+	if (luminance < range.x)
+	{
+		float scale = luminance / range.x;
+		return vec4(lowerColor, 1.0) * clamp(scale, lower_clamp.x, lower_clamp.y);
+	}
+	else if (luminance < range.y)
+	{
+		float scale_left = (luminance - range.x) / (range.y - range.x);
+		float scale_right = (luminance - range.x) / (1.0 - range.x);
+		return vec4(lowerColor, 1.0) * (1.0 - scale_left) + vec4(upperColor, 1.0) * scale_right;
+	}
+	else
+	{
+		float scale = (luminance - range.x) / (1.0 - range.x);
+		return vec4(upperColor, 1.0) * scale;
+	}
 }

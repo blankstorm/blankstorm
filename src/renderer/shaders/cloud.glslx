@@ -9,8 +9,6 @@ uniform float resolution;
 uniform float seed;
 
 export void cloudFragmentShader() {
-	vec3 spherical = to_spherical(int(face), vUV);
-
-	float color = scalar_field(spherical, seed, resolution, sampler);
+	float color = scalar_field(int(face), vUV, seed, resolution, sampler);
 	gl_FragColor = vec4(vec3(color), 1.0);
 }

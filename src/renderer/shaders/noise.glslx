@@ -14,36 +14,14 @@ uniform vec3 options;
 uniform vec2 range;
 
 export void noiseFragmentShader() {
-	vec3 spherical = to_spherical(int(face), vUV);
-
-	float luminance = scalar_field(spherical, seed, resolution, sampler);
+	float luminance = scalar_field(int(face), vUV, seed, resolution, sampler);
 	if (luminance < options.y)
 	{
 		luminance *= options.z;
 	}
-	luminance = clamp(luminance, 0., 1.);
+	luminance = clamp(luminance, 0.0, 1.0);
 
-	if (options.x > 0.)
-	{
-		gl_FragColor = vec4(luminance, luminance, luminance, 1.0);
-	}
-	else
-	{
-		if (luminance < range.x)
-		{
-			float scale0 = luminance / range.x;
-			gl_FragColor = vec4(lowerColor, 1.0) * clamp(scale0, lowerClamp.x, lowerClamp.y);
-		}
-		else if (luminance < range.y)
-		{
-			float scaleLeft1 = (luminance - range.x) / (range.y - range.x);
-			float scaleRight1 = (luminance - range.x) / (1.0 - range.x);
-			gl_FragColor = vec4(lowerColor, 1.0) * (1.0 - scaleLeft1) + vec4(upperColor, 1.0) * scaleRight1;
-		}
-		else
-		{
-			float scale2 = (luminance - range.x) / (1.0 - range.x);
-			gl_FragColor = vec4(upperColor, 1.0) * scale2;
-		}
-	}
+	gl_FragColor = options.x > 0.0
+		? vec4(luminance, luminance, luminance, 1.0)
+		: apply_luminance(luminance, range, lowerColor, upperColor, lowerClamp);
 }
