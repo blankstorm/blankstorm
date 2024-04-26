@@ -33,7 +33,7 @@ export interface GenericPlanetRendererMaterial {
 	options?: Vector3;
 }
 
-export const textureConfig = {
+const textureConfig = {
 	map_size: 1024,
 	max_resolution: 128,
 };
