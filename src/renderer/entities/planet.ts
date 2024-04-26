@@ -35,7 +35,10 @@ export interface PlanetMaterialOptions {
 export class PlanetMaterial extends ShaderMaterial {
 	rotationFactor = Math.random();
 	matrixAngle = 0;
-	constructor(public readonly generationOptions: PlanetMaterialOptions, scene: Scene) {
+	constructor(
+		public readonly generationOptions: PlanetMaterialOptions,
+		public scene: Scene
+	) {
 		const id = randomHex(8);
 		super('Planet:material:' + id, scene, planetShader, {
 			attributes: ['position', 'normal', 'uv'],
@@ -61,10 +64,10 @@ export class PlanetMaterial extends ShaderMaterial {
 
 	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: Partial<PlanetMaterialOptions> = {}) {
 		options = { ...this.generationOptions, ...options };
-		const sampler = new DynamicTexture('Planet:sampler:' + id, 512, this.getScene(), false, Texture.NEAREST_SAMPLINGMODE);
+		const sampler = new DynamicTexture('Planet:sampler:' + id, 512, this.scene, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
 		const size = 1024;
-		const texture = new ProceduralTexture('Planet:texture:' + id, size, shader, this.getScene(), null, true, true);
+		const texture = new ProceduralTexture('Planet:texture:' + id, size, shader, this.scene, null, true, true);
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
 		texture.setFloat('size', size);
