@@ -14,7 +14,7 @@ uniform vec2 lowerClip;
 uniform int directNoise;
 uniform vec2 range;
 
-export void noiseFragmentShader() {
+export void fragmentSource() {
 	float luminance = scalar_field(int(face), vUV, seed, resolution, sampler);
 	if (luminance < lowerClip.x)
 	{

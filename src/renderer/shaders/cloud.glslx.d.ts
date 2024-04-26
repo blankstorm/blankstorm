@@ -1,1 +1,1 @@
-export const cloudFragmentShader: string;
+export const fragmentSource: string;

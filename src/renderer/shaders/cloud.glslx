@@ -8,7 +8,7 @@ uniform sampler2D sampler;
 uniform float resolution;
 uniform float seed;
 
-export void cloudFragmentShader() {
+export void fragmentSource() {
 	float color = scalar_field(int(face), vUV, seed, resolution, sampler);
 	gl_FragColor = vec4(vec3(color), 1.0);
 }

@@ -8,9 +8,9 @@ import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
 import { randomHex } from 'utilium';
 import type { PlanetData } from '../../core/entities/planet';
-import type { planetBiomes } from '../../core/generic/planets';
-import { cloudFragmentShader } from '../shaders/cloud.glslx';
-import { noiseFragmentShader } from '../shaders/noise.glslx';
+import type { PlanetBiome } from '../../core/generic/planets';
+import * as cloudShader from '../shaders/cloud.glslx';
+import * as noiseShader from '../shaders/noise.glslx';
 import * as planetShader from '../shaders/planet.glslx';
 import { CelestialBodyRenderer } from './body';
 import type { HardpointProjectileHandlerOptions } from './hardpoint';
@@ -33,9 +33,9 @@ export interface PlanetMaterialOptions {
 }
 
 export class PlanetMaterial extends ShaderMaterial {
-	rotationFactor = Math.random();
-	matrixAngle = 0;
-	constructor(
+	public rotationFactor = Math.random();
+	public matrixAngle = 0;
+	public constructor(
 		public readonly generationOptions: PlanetMaterialOptions,
 		public scene: Scene
 	) {
@@ -45,24 +45,21 @@ export class PlanetMaterial extends ShaderMaterial {
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
 			needAlphaBlending: true,
 		});
-		scene.onActiveCameraChanged.add(() => {
-			this.setVector3('camera', scene.activeCamera.position);
-		});
 
 		this.setInt('clouds', +generationOptions.clouds);
 		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
 		this.setFloat('cloudAlbedo', generationOptions.cloudAlbedo);
-		this.setVector3('camera', scene.activeCamera?.position || Vector3.Zero());
+		this.setVector3('camera', scene.activeCamera.position || Vector3.Zero());
 		this.setVector3('light', Vector3.Zero());
 
-		this.setTexture('textureSampler', this.generateTexture(id, { fragmentSource: noiseFragmentShader }));
+		this.setTexture('textureSampler', this.generateTexture(id, noiseShader));
 
-		this.setTexture('cloudSampler', this.generateTexture(id, { fragmentSource: cloudFragmentShader }, { directNoise: true, lowerClip: Vector2.Zero() }));
+		this.setTexture('cloudSampler', this.generateTexture(id, cloudShader, { directNoise: true, lowerClip: Vector2.Zero() }));
 
 		this.setColor3('halo', generationOptions.halo);
 	}
 
-	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: Partial<PlanetMaterialOptions> = {}) {
+	public generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: Partial<PlanetMaterialOptions> = {}) {
 		options = { ...this.generationOptions, ...options };
 		const sampler = new DynamicTexture('Planet:sampler:' + id, 512, this.scene, false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
@@ -82,7 +79,7 @@ export class PlanetMaterial extends ShaderMaterial {
 		return texture;
 	}
 
-	updateRandom(texture: DynamicTexture) {
+	public updateRandom(texture: DynamicTexture) {
 		if (!(texture instanceof DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
 		const context = texture.getContext(),
 			imageData = context.getImageData(0, 0, 512, 512);
@@ -94,7 +91,7 @@ export class PlanetMaterial extends ShaderMaterial {
 	}
 }
 
-const biomes: Record<(typeof planetBiomes)[number], PlanetMaterialOptions> = {
+const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 	earthlike: {
 		clouds: true,
 		upperColor: new Color3(0.2, 2.0, 0.2),
@@ -201,9 +198,9 @@ const biomes: Record<(typeof planetBiomes)[number], PlanetMaterialOptions> = {
 };
 
 export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
-	biome = '';
-	customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
-	constructor(id: string, scene: Scene) {
+	public biome: PlanetBiome;
+	public customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
+	public constructor(id: string, scene: Scene) {
 		super(id, scene);
 		this.customHardpointProjectileMaterials = [
 			{
@@ -213,7 +210,7 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 		];
 	}
 
-	async update(data: PlanetData) {
+	public async update(data: PlanetData) {
 		await super.update(data);
 		if (this.biome != data.biome) {
 			if (Object.keys(biomes).includes(data.biome)) {
