@@ -32,65 +32,6 @@ export interface PlanetMaterialOptions {
 	resolution?: number;
 }
 
-export class PlanetMaterial extends ShaderMaterial {
-	public rotationFactor = Math.random();
-	public matrixAngle = 0;
-	public constructor(
-		public readonly generationOptions: PlanetMaterialOptions,
-		public scene: Scene
-	) {
-		const id = randomHex(8);
-		super('Planet:material:' + id, scene, planetShader, {
-			attributes: ['position', 'normal', 'uv'],
-			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
-			needAlphaBlending: true,
-		});
-
-		this.setInt('clouds', +generationOptions.clouds);
-		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
-		this.setFloat('cloudAlbedo', generationOptions.cloudAlbedo);
-		this.setVector3('camera', scene.activeCamera.position || Vector3.Zero());
-		this.setVector3('light', Vector3.Zero());
-
-		this.setTexture('textureSampler', this.generateTexture(id, noiseShader));
-
-		this.setTexture('cloudSampler', this.generateTexture(id, cloudShader, { directNoise: true, lowerClip: Vector2.Zero() }));
-
-		this.setColor3('halo', generationOptions.halo);
-	}
-
-	public generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: Partial<PlanetMaterialOptions> = {}) {
-		options = { ...this.generationOptions, ...options };
-		const sampler = new DynamicTexture('Planet:sampler:' + id, 512, this.scene, false, Texture.NEAREST_SAMPLINGMODE);
-		this.updateRandom(sampler);
-		const size = 1024;
-		const texture = new ProceduralTexture('Planet:texture:' + id, size, shader, this.scene, null, true, true);
-		texture.setColor3('upperColor', options.upperColor);
-		texture.setColor3('lowerColor', options.lowerColor);
-		texture.setFloat('size', size);
-		texture.setFloat('resolution', options.resolution || 128);
-		texture.setFloat('seed', options.seed);
-		texture.setVector2('lowerClamp', options.lowerClamp);
-		texture.setTexture('sampler', sampler);
-		texture.setVector2('range', options.range);
-		texture.setVector2('lowerClip', options.lowerClip);
-		texture.setInt('directNoise', +options.directNoise);
-		texture.refreshRate = 0;
-		return texture;
-	}
-
-	public updateRandom(texture: DynamicTexture) {
-		if (!(texture instanceof DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
-		const context = texture.getContext(),
-			imageData = context.getImageData(0, 0, 512, 512);
-		for (let i = 0; i < 1048576; i++) {
-			imageData.data[i] = (Math.random() * 256) | 0;
-		}
-		context.putImageData(imageData, 0, 0);
-		texture.update();
-	}
-}
-
 const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 	earthlike: {
 		clouds: true,
@@ -197,6 +138,65 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 	},
 };
 
+export class PlanetMaterial extends ShaderMaterial {
+	public rotationFactor = Math.random();
+	public matrixAngle = 0;
+	public constructor(
+		public readonly generationOptions: PlanetMaterialOptions,
+		public scene: Scene
+	) {
+		const id = randomHex(8);
+		super('Planet:material:' + id, scene, planetShader, {
+			attributes: ['position', 'normal', 'uv'],
+			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
+			needAlphaBlending: true,
+		});
+
+		this.setInt('clouds', +generationOptions.clouds);
+		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
+		this.setFloat('cloudAlbedo', generationOptions.cloudAlbedo);
+		this.setVector3('camera', scene.activeCamera.position || Vector3.Zero());
+		this.setVector3('light', Vector3.Zero());
+
+		this.setTexture('textureSampler', this.generateTexture(id, noiseShader));
+
+		this.setTexture('cloudSampler', this.generateTexture(id, cloudShader, { directNoise: true, lowerClip: Vector2.Zero() }));
+
+		this.setColor3('halo', generationOptions.halo);
+	}
+
+	public generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: Partial<PlanetMaterialOptions> = {}) {
+		options = { ...this.generationOptions, ...options };
+		const sampler = new DynamicTexture('Planet:sampler:' + id, 512, this.scene, false, Texture.NEAREST_SAMPLINGMODE);
+		this.updateRandom(sampler);
+		const size = 1024;
+		const texture = new ProceduralTexture('Planet:texture:' + id, size, shader, this.scene, null, true, true);
+		texture.setColor3('upperColor', options.upperColor);
+		texture.setColor3('lowerColor', options.lowerColor);
+		texture.setFloat('size', size);
+		texture.setFloat('resolution', options.resolution || 128);
+		texture.setFloat('seed', options.seed);
+		texture.setVector2('lowerClamp', options.lowerClamp);
+		texture.setTexture('sampler', sampler);
+		texture.setVector2('range', options.range);
+		texture.setVector2('lowerClip', options.lowerClip);
+		texture.setInt('directNoise', +options.directNoise);
+		texture.refreshRate = 0;
+		return texture;
+	}
+
+	public updateRandom(texture: DynamicTexture) {
+		if (!(texture instanceof DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
+		const context = texture.getContext(),
+			imageData = context.getImageData(0, 0, 512, 512);
+		for (let i = 0; i < 1048576; i++) {
+			imageData.data[i] = (Math.random() * 256) | 0;
+		}
+		context.putImageData(imageData, 0, 0);
+		texture.update();
+	}
+}
+
 export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
 	public biome: PlanetBiome;
 	public customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
@@ -212,14 +212,14 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 
 	public async update(data: PlanetData) {
 		await super.update(data);
-		if (this.biome != data.biome) {
-			if (Object.keys(biomes).includes(data.biome)) {
-				this.biome = data.biome;
-				this.material = new PlanetMaterial(biomes[data.biome], this.getScene());
-			} else {
-				throw new ReferenceError(`Biome "${data.biome}" does not exist`);
-			}
+		if (this.biome == data.biome) {
+			return;
 		}
+		if (!(data.biome in biomes)) {
+			throw new ReferenceError('Planet biome does not exist: ' + data.biome);
+		}
+		this.biome = data.biome;
+		this.material = new PlanetMaterial(biomes[data.biome], this.getScene());
 	}
 }
 PlanetRenderer satisfies RendererStatic<PlanetRenderer>;
