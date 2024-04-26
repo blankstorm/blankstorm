@@ -4,14 +4,14 @@ precision highp float;
 varying vec2 vUV;
 
 uniform float face;
-uniform sampler2D randomSampler;
+uniform sampler2D sampler;
 uniform float mapSize;
 uniform float maxResolution;
 uniform float seed;
 
 export void cloudFragmentShader() {
-	vec3 spherical = sphericalCoord(face, vUV * mapSize, mapSize);
+	vec3 spherical = to_spherical(int(face), vUV * mapSize, mapSize);
 
-	float color = scalarField(spherical, seed, maxResolution, randomSampler);
+	float color = scalar_field(spherical, seed, maxResolution, sampler);
 	gl_FragColor = vec4(vec3(color), 1.0);
 }

@@ -59,15 +59,10 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		this.setVector3('cameraPosition', scene.activeCamera?.position || Vector3.Zero());
 		this.setVector3('lightPosition', Vector3.Zero());
 
-		this.noiseTexture = this.generateTexture(
-			id,
-			{ fragmentSource: noiseFragmentShader },
-			{ ...options, options: new Vector3(options.directNoise ? 1.0 : 0, options.lowerClip.x, options.lowerClip.y) },
-			scene
-		);
+		this.noiseTexture = this.generateTexture(id, { fragmentSource: noiseFragmentShader }, options, scene);
 		this.setTexture('textureSampler', this.noiseTexture);
 
-		this.cloudTexture = this.generateTexture(id, { fragmentSource: cloudFragmentShader }, { ...options, options: new Vector3(1.0, 0, 0) }, scene);
+		this.cloudTexture = this.generateTexture(id, { fragmentSource: cloudFragmentShader }, { ...options, directNoise: true, lowerClip: Vector2.Zero() }, scene);
 		this.setTexture('cloudSampler', this.cloudTexture);
 
 		this.setColor3('haloColor', options.haloColor);
@@ -83,9 +78,9 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		texture.setFloat('maxResolution', options.maxResolution || textureConfig.max_resolution);
 		texture.setFloat('seed', options.seed);
 		texture.setVector2('lowerClamp', options.lowerClamp);
-		texture.setTexture('randomSampler', sampler);
+		texture.setTexture('sampler', sampler);
 		texture.setVector2('range', options.range);
-		texture.setVector3('options', options.options);
+		texture.setVector3('options', new Vector3(options.directNoise ? 1 : 0, options.lowerClip.x, options.lowerClip.y));
 		texture.refreshRate = 0;
 		return texture;
 	}
