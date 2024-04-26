@@ -250,7 +250,7 @@ export function resetCamera() {
 export function addCameraVelocity(vector = Vector3.Zero()) {
 	const direction = camera.getDirection(vector);
 	direction.y = 0;
-	direction.normalize().scaleInPlace(camera.radius / 5);
+	direction.normalize().scaleInPlace(camera.radius / 10);
 	cameraVelocity.addInPlace(direction);
 }
 

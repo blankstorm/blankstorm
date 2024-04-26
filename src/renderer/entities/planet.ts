@@ -94,7 +94,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 
 const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMaterial> = {
 	earthlike: {
-		clouds: false, //true,
+		clouds: true,
 		upperColor: new Color3(0.2, 2.0, 0.2),
 		lowerColor: new Color3(0, 0.2, 1.0),
 		halo: new Color3(0, 0.2, 1.0),
@@ -128,7 +128,7 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 		halo: new Color3(0.5, 1.0, 0.5),
 		seed: 0.4,
 		cloudSeed: 0.7,
-		clouds: false, //true,
+		clouds: true,
 		lowerClamp: new Vector2(0, 1),
 		resolution: 512,
 		cloudAlbedo: 1.0,
@@ -143,7 +143,7 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 		halo: new Color3(1.0, 1.0, 1.0),
 		seed: 0.8,
 		cloudSeed: 0.4,
-		clouds: false, //true,
+		clouds: true,
 		lowerClamp: new Vector2(0, 1),
 		resolution: 256,
 		cloudAlbedo: 1.0,
@@ -173,7 +173,7 @@ const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMateria
 		halo: new Color3(0, 0.2, 2.0),
 		seed: 0.15,
 		cloudSeed: 0.6,
-		clouds: false, //true,
+		clouds: true,
 		lowerClamp: new Vector2(0.6, 1),
 		resolution: 512,
 		cloudAlbedo: 1.0,
