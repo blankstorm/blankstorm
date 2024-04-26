@@ -26,27 +26,19 @@ export void vertexSource() {
 	_normal = normal;
 }
 
-float computeFresnelTerm(vec3 viewDirection, vec3 worldNormal, float bias, float power)
-{
-	float fresnelTerm = pow(bias + abs(dot(viewDirection, worldNormal)), power);
-	return clamp(fresnelTerm, 0.0, 1.0);
-}
-
 export void fragmentSource() {
 	vec3 worldNormal = normalize(vec3(world * vec4(_normal, 0.0)));
 	vec3 color = textureCube(textureSampler, _normal).rgb * groundAlbedo;
 	vec3 cloud = textureCube(cloudSampler, vec3(rotation * vec4(_normal, 0.0))).rgb * cloudAlbedo;
 
 	// diffuse
-	float ndl = max(0.0, dot(worldNormal, normalize(light - worldPosition))) + 0.05;
-
-	ndl = min(asin(ndl), 1.0);
+	float ndl = min(asin(max(0.0, dot(worldNormal, normalize(light - worldPosition))) + 0.05), 1.0);
 
 	// Fresnel
-	float fresnelTerm = computeFresnelTerm(normalize(camera - worldPosition), worldNormal, 0.65, 16.0);
+	float fresnel = clamp(pow(0.65 + abs(dot(normalize(camera - worldPosition), worldNormal)), 16.0), 0.0, 1.0);
 
 	// Emissive
-	vec3 emissiveColor = halo * (1.0 - fresnelTerm) * clamp(1.0 - ndl, 0.2, 1.0);
+	vec3 emissive = halo * (1.0 - fresnel) * clamp(1.0 - ndl, 0.2, 1.0);
 
 	// Clouds
 	float cloudLuminance = 0.0;
@@ -61,5 +53,5 @@ export void fragmentSource() {
 		color += cloud * (cloudLuminance - .5) / .5;
 	}
 
-	gl_FragColor = vec4(color * ndl * fresnelTerm + emissiveColor, fresnelTerm);
+	gl_FragColor = vec4(color * ndl * fresnel + emissive, fresnel);
 }
