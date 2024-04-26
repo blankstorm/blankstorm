@@ -16,7 +16,7 @@ import { CelestialBodyRenderer } from './body';
 import type { HardpointProjectileHandlerOptions } from './hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
-export interface GenericPlanetRendererMaterial {
+export interface PlanetMaterialOptions {
 	clouds: boolean;
 	upperColor: Color3;
 	lowerColor: Color3;
@@ -32,15 +32,12 @@ export interface GenericPlanetRendererMaterial {
 	resolution?: number;
 }
 
-export class PlanetRendererMaterial extends ShaderMaterial {
-	generationOptions: GenericPlanetRendererMaterial;
+export class PlanetMaterial extends ShaderMaterial {
 	rotationFactor = Math.random();
 	matrixAngle = 0;
-	noiseTexture: ProceduralTexture;
-	cloudTexture: ProceduralTexture;
-	constructor(options: GenericPlanetRendererMaterial, scene: Scene) {
+	constructor(public readonly generationOptions: PlanetMaterialOptions, scene: Scene) {
 		const id = randomHex(8);
-		super('PlanetMaterial.' + id, scene, planetShader, {
+		super('Planet:material:' + id, scene, planetShader, {
 			attributes: ['position', 'normal', 'uv'],
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
 			needAlphaBlending: true,
@@ -48,28 +45,26 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 		scene.onActiveCameraChanged.add(() => {
 			this.setVector3('camera', scene.activeCamera.position);
 		});
-		this.generationOptions = options;
 
-		this.setInt('clouds', +options.clouds);
-		this.setFloat('groundAlbedo', options.groundAlbedo);
-		this.setFloat('cloudAlbedo', options.cloudAlbedo);
+		this.setInt('clouds', +generationOptions.clouds);
+		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
+		this.setFloat('cloudAlbedo', generationOptions.cloudAlbedo);
 		this.setVector3('camera', scene.activeCamera?.position || Vector3.Zero());
 		this.setVector3('light', Vector3.Zero());
 
-		this.noiseTexture = this.generateTexture(id, { fragmentSource: noiseFragmentShader }, options, scene);
-		this.setTexture('textureSampler', this.noiseTexture);
+		this.setTexture('textureSampler', this.generateTexture(id, { fragmentSource: noiseFragmentShader }));
 
-		this.cloudTexture = this.generateTexture(id, { fragmentSource: cloudFragmentShader }, { ...options, directNoise: true, lowerClip: Vector2.Zero() }, scene);
-		this.setTexture('cloudSampler', this.cloudTexture);
+		this.setTexture('cloudSampler', this.generateTexture(id, { fragmentSource: cloudFragmentShader }, { directNoise: true, lowerClip: Vector2.Zero() }));
 
-		this.setColor3('halo', options.halo);
+		this.setColor3('halo', generationOptions.halo);
 	}
 
-	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: GenericPlanetRendererMaterial, scene: Scene) {
-		const sampler = new DynamicTexture('CelestialBodyMaterial.sampler.' + id, 512, scene, false, Texture.NEAREST_SAMPLINGMODE);
+	generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: Partial<PlanetMaterialOptions> = {}) {
+		options = { ...this.generationOptions, ...options };
+		const sampler = new DynamicTexture('Planet:sampler:' + id, 512, this.getScene(), false, Texture.NEAREST_SAMPLINGMODE);
 		this.updateRandom(sampler);
 		const size = 1024;
-		const texture = new ProceduralTexture('CelestialBodyMaterial.texture.' + id, size, shader, scene, null, true, true);
+		const texture = new ProceduralTexture('Planet:texture:' + id, size, shader, this.getScene(), null, true, true);
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
 		texture.setFloat('size', size);
@@ -96,7 +91,7 @@ export class PlanetRendererMaterial extends ShaderMaterial {
 	}
 }
 
-const biomes: Record<(typeof planetBiomes)[number], GenericPlanetRendererMaterial> = {
+const biomes: Record<(typeof planetBiomes)[number], PlanetMaterialOptions> = {
 	earthlike: {
 		clouds: true,
 		upperColor: new Color3(0.2, 2.0, 0.2),
@@ -220,7 +215,7 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 		if (this.biome != data.biome) {
 			if (Object.keys(biomes).includes(data.biome)) {
 				this.biome = data.biome;
-				this.material = new PlanetRendererMaterial(biomes[data.biome], this.getScene());
+				this.material = new PlanetMaterial(biomes[data.biome], this.getScene());
 			} else {
 				throw new ReferenceError(`Biome "${data.biome}" does not exist`);
 			}

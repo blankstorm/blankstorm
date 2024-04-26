@@ -22,7 +22,7 @@ import type { LevelJSON } from '../core/level';
 import { config, version } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
 import type { HardpointRenderer, Renderer } from './entities';
-import { CelestialBodyRenderer, PlanetRenderer, PlanetRendererMaterial, PlayerRenderer, ShipRenderer, createAndUpdate, entityRenderers } from './entities';
+import { CelestialBodyRenderer, PlanetRenderer, PlanetMaterial, PlayerRenderer, ShipRenderer, createAndUpdate, entityRenderers } from './entities';
 import { logger } from './logger';
 import { ModelRenderer, initModel } from './models';
 export { logger };
@@ -152,7 +152,7 @@ export async function render() {
 		if (!(entity instanceof PlanetRenderer)) {
 			continue;
 		}
-		if (!(entity?.material instanceof PlanetRendererMaterial)) {
+		if (!(entity?.material instanceof PlanetMaterial)) {
 			continue;
 		}
 
