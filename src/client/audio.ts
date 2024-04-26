@@ -7,7 +7,6 @@ export const sounds = new Map(
 		warp_end: 'sfx/warp_end',
 		laser_fire: 'sfx/laser_fire',
 		laser_hit: 'sfx/laser_hit',
-		ui: 'sfx/ui',
 	})
 );
 

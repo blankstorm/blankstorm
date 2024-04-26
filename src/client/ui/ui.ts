@@ -458,7 +458,4 @@ export function registerListeners() {
 		}
 		update();
 	});
-	$('button').on('click', () => {
-		playsound('ui', +settings.get('sfx'));
-	});
 }
