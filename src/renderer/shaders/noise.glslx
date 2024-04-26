@@ -23,6 +23,6 @@ export void noiseFragmentShader() {
 	luminance = clamp(luminance, 0.0, 1.0);
 
 	gl_FragColor = directNoise > 0
-		? vec4(luminance, luminance, luminance, 1.0)
+		? vec4(vec3(luminance), 1.0)
 		: apply_luminance(luminance, range, lowerColor, upperColor, lowerClamp);
 }
