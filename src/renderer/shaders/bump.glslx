@@ -15,6 +15,6 @@ const vec2 range = vec2(0.3, 0.4);
 
 export void fragmentSource() {
 	float luminance = luminance_at(spherical(face, vUV), base, resolution, seed);
-
-	gl_FragColor = luminance_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
+	vec3 color = luminance_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
+	gl_FragColor = vec4(color, 1.0);
 }

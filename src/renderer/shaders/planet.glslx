@@ -1,5 +1,7 @@
 precision highp float;
 
+#include "utils.glslx"
+
 // Attributes
 attribute vec3 position;
 attribute vec3 normal;
@@ -9,13 +11,20 @@ uniform mat4 world;
 uniform mat4 worldViewProjection;
 uniform mat4 rotation;
 uniform vec3 camera;
-uniform samplerCube textureSampler;
-uniform samplerCube cloudSampler;
 uniform int clouds;
 uniform float groundAlbedo;
 uniform float cloudAlbedo;
 uniform vec3 halo;
 uniform vec3 light;
+uniform vec3 upperColor;
+uniform vec3 lowerColor;
+uniform float base;
+uniform float resolution;
+uniform float seed;
+uniform vec2 lowerClamp;
+uniform vec2 lowerClip;
+uniform int directNoise;
+uniform vec2 range;
 
 varying vec3 worldPosition;
 varying vec3 _normal;
@@ -28,8 +37,15 @@ export void vertexSource() {
 
 export void fragmentSource() {
 	vec3 worldNormal = normalize(vec3(world * vec4(_normal, 0.0)));
-	vec3 color = textureCube(textureSampler, _normal).rgb * groundAlbedo;
-	vec3 cloud = textureCube(cloudSampler, vec3(rotation * vec4(_normal, 0.0))).rgb * cloudAlbedo;
+
+	// ground
+	float luminance = luminance_at(_normal, base, resolution, seed);
+	luminance = clamp(luminance < lowerClip.x ? luminance * lowerClip.y : luminance, 0.0, 1.0);
+	vec3 color = directNoise > 0 ? vec3(luminance) : luminance_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
+	color *= groundAlbedo;
+
+	// clouds
+	vec3 cloud = vec3(luminance_at(vec3(rotation * vec4(_normal, 0.0)), base, resolution, seed) * cloudAlbedo);
 
 	// diffuse
 	float ndl = min(asin(max(0.0, dot(worldNormal, normalize(light - worldPosition))) + 0.05), 1.0);

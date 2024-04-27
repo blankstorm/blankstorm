@@ -1,4 +1,3 @@
-import { ProceduralTexture } from '@babylonjs/core/Materials/Textures/Procedurals/proceduralTexture';
 import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
@@ -7,8 +6,6 @@ import type { Scene } from '@babylonjs/core/scene';
 import { randomHex } from 'utilium';
 import type { PlanetData } from '../../core/entities/planet';
 import type { PlanetBiome } from '../../core/generic/planets';
-import * as cloudShader from '../shaders/cloud.glslx';
-import * as noiseShader from '../shaders/noise.glslx';
 import * as planetShader from '../shaders/planet.glslx';
 import { CelestialBodyRenderer } from './body';
 import type { HardpointProjectileHandlerOptions } from './hardpoint';
@@ -150,37 +147,24 @@ export class PlanetMaterial extends ShaderMaterial {
 			needAlphaBlending: true,
 		});
 
+		const size = 1024, seed = Math.random();
+
 		this.setInt('clouds', +generationOptions.clouds);
 		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
 		this.setFloat('cloudAlbedo', generationOptions.cloudAlbedo);
 		this.setVector3('camera', scene.activeCamera.position || Vector3.Zero());
 		this.setVector3('light', Vector3.Zero());
-
-		this.setTexture('textureSampler', this.generateTexture(id, noiseShader));
-
-		this.setTexture('cloudSampler', this.generateTexture(id, cloudShader, { directNoise: true, lowerClip: Vector2.Zero() }));
-
 		this.setColor3('halo', generationOptions.halo);
-	}
-
-	public generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: Partial<PlanetMaterialOptions> = {}) {
-		options = { ...this.generationOptions, ...options };
-		const size = 1024,
-			seed = Math.random();
-		const texture: ProceduralTexture & { _seed?: number } = new ProceduralTexture('Planet:texture:' + id, size, shader, this.scene, null, true, true);
-		texture._seed = seed;
-		texture.setColor3('upperColor', options.upperColor);
-		texture.setColor3('lowerColor', options.lowerColor);
-		texture.setFloat('size', size);
-		texture.setFloat('resolution', options.resolution || 128);
-		texture.setFloat('base', options.base);
-		texture.setFloat('seed', seed);
-		texture.setVector2('lowerClamp', options.lowerClamp);
-		texture.setVector2('range', options.range);
-		texture.setVector2('lowerClip', options.lowerClip);
-		texture.setInt('directNoise', +options.directNoise);
-		texture.refreshRate = 0;
-		return texture;
+		this.setColor3('upperColor', generationOptions.upperColor);
+		this.setColor3('lowerColor', generationOptions.lowerColor);
+		this.setFloat('size', size);
+		this.setFloat('resolution', generationOptions.resolution || 128);
+		this.setFloat('base', generationOptions.base);
+		this.setFloat('seed', seed);
+		this.setVector2('lowerClamp', generationOptions.lowerClamp);
+		this.setVector2('range', generationOptions.range);
+		this.setVector2('lowerClip', generationOptions.lowerClip);
+		this.setInt('directNoise', +generationOptions.directNoise);
 	}
 }
 
