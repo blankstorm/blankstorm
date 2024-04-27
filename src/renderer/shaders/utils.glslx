@@ -76,23 +76,6 @@ float prand_cos_mix(vec3 point, float seed) {
 	return mix(c2.x, c2.y, a.z);
 }
 
-float scalar_field_factor(vec3 v, float resolution, sampler2D seed) {
-	return prand_cos_mix((v + 1.0) / 2.0 * resolution, seed) * 2.0 - 1.0;
-}
-
-export float scalar_field(vec3 point, float seed, float resolution, sampler2D sampler) {
-	float c = seed;
-	// c = seed * Product 1 + helper(v, resolution / 2 ^ [[5..0]], seed) * 0.8 / 2^[[0..5]]
-	c *= 1.0 + scalar_field_factor(point, resolution / 32.0, sampler) * 0.8;
-	c *= 1.0 + scalar_field_factor(point, resolution / 16.0, sampler) * 0.4;
-	c *= 1.0 + scalar_field_factor(point, resolution / 8.0, sampler) * 0.2;
-	c *= 1.0 + scalar_field_factor(point, resolution / 4.0, sampler) * 0.1;
-	c *= 1.0 + scalar_field_factor(point, resolution / 2.0, sampler) * 0.05;
-	c *= 1.0 + scalar_field_factor(point, resolution, sampler) * 0.025;
-
-	return clamp(c, 0.0, 1.0);
-}
-
 export vec3 to_spherical(int face, vec2 uv) {
 	uv -= 0.5;
 
@@ -112,8 +95,25 @@ export vec3 to_spherical(int face, vec2 xy, float size) {
 	return to_spherical(face, xy / size);
 }
 
-export float scalar_field(int face, vec2 uv, float seed, float resolution, sampler2D sampler) {
-	return scalar_field(to_spherical(face, uv), seed, resolution, sampler);
+float scalar_field_factor(vec3 v, float resolution, float seed) {
+	return prand_cos_mix((v + 1.0) / 2.0 * resolution, seed) * 2.0 - 1.0;
+}
+
+export float scalar_field(vec3 point, float base, float resolution, float seed) {
+	float c = base;
+	// c = seed * Product 1 + helper(v, resolution / 2 ^ [[5..0]], seed) * 0.8 / 2^[[0..5]]
+	c *= 1.0 + scalar_field_factor(point, resolution / 32.0, seed) * 0.8;
+	c *= 1.0 + scalar_field_factor(point, resolution / 16.0, seed) * 0.4;
+	c *= 1.0 + scalar_field_factor(point, resolution / 8.0, seed) * 0.2;
+	c *= 1.0 + scalar_field_factor(point, resolution / 4.0, seed) * 0.1;
+	c *= 1.0 + scalar_field_factor(point, resolution / 2.0, seed) * 0.05;
+	c *= 1.0 + scalar_field_factor(point, resolution, seed) * 0.025;
+
+	return clamp(c, 0.0, 1.0);
+}
+
+export float scalar_field(int face, vec2 uv, float base, float resolution, float seed) {
+	return scalar_field(to_spherical(face, uv), base, resolution, seed);
 }
 
 export vec4 apply_luminance(float luminance, vec2 range, vec3 lowerColor, vec3 upperColor, vec2 lower_clamp) {

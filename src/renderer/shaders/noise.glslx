@@ -6,7 +6,7 @@ varying vec2 vUV;
 uniform vec3 upperColor;
 uniform vec3 lowerColor;
 uniform int face;
-uniform sampler2D sampler;
+uniform float base;
 uniform float resolution;
 uniform float seed;
 uniform vec2 lowerClamp;
@@ -15,7 +15,7 @@ uniform int directNoise;
 uniform vec2 range;
 
 export void fragmentSource() {
-	float luminance = scalar_field(face, vUV, seed, resolution, sampler);
+	float luminance = scalar_field(face, vUV, base, resolution, seed);
 	if (luminance < lowerClip.x)
 	{
 		luminance *= lowerClip.y;

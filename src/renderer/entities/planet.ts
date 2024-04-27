@@ -1,6 +1,4 @@
 import { ProceduralTexture } from '@babylonjs/core/Materials/Textures/Procedurals/proceduralTexture';
-import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
-import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
@@ -21,7 +19,7 @@ export interface PlanetMaterialOptions {
 	upperColor: Color3;
 	lowerColor: Color3;
 	halo: Color3;
-	seed: number;
+	base: number;
 	cloudSeed: number;
 	lowerClamp: Vector2;
 	groundAlbedo: number;
@@ -38,7 +36,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		upperColor: new Color3(0.2, 2.0, 0.2),
 		lowerColor: new Color3(0, 0.2, 1.0),
 		halo: new Color3(0, 0.2, 1.0),
-		seed: 0.3,
+		base: 0.3,
 		cloudSeed: 0.6,
 		lowerClamp: new Vector2(0.6, 1),
 		groundAlbedo: 1,
@@ -51,7 +49,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		upperColor: new Color3(0.9, 0.45, 0.45),
 		lowerColor: new Color3(1.0, 0, 0),
 		halo: new Color3(1.0, 0, 0.3),
-		seed: 0.3,
+		base: 0.3,
 		cloudSeed: 0.6,
 		clouds: false,
 		lowerClamp: new Vector2(0, 1),
@@ -66,7 +64,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		upperColor: new Color3(0.1, 0.3, 0.7),
 		lowerColor: new Color3(0, 1.0, 0.1),
 		halo: new Color3(0.5, 1.0, 0.5),
-		seed: 0.4,
+		base: 0.4,
 		cloudSeed: 0.7,
 		clouds: true,
 		lowerClamp: new Vector2(0, 1),
@@ -81,7 +79,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		upperColor: new Color3(1.0, 1.0, 1.0),
 		lowerColor: new Color3(0.7, 0.7, 0.9),
 		halo: new Color3(1.0, 1.0, 1.0),
-		seed: 0.8,
+		base: 0.8,
 		cloudSeed: 0.4,
 		clouds: true,
 		lowerClamp: new Vector2(0, 1),
@@ -96,7 +94,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		upperColor: new Color3(0.9, 0.3, 0),
 		lowerColor: new Color3(1.0, 0.5, 0.1),
 		halo: new Color3(1.0, 0.5, 0.1),
-		seed: 0.18,
+		base: 0.18,
 		cloudSeed: 0.6,
 		clouds: false,
 		lowerClamp: new Vector2(0.3, 1),
@@ -111,7 +109,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		upperColor: new Color3(0.4, 2.0, 0.4),
 		lowerColor: new Color3(0, 0.2, 2.0),
 		halo: new Color3(0, 0.2, 2.0),
-		seed: 0.15,
+		base: 0.15,
 		cloudSeed: 0.6,
 		clouds: true,
 		lowerClamp: new Vector2(0.6, 1),
@@ -130,7 +128,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		cloudAlbedo: 0.7,
 		range: new Vector2(0.3, 0.35),
 		halo: new Color3(0, 0, 0),
-		seed: 0.5,
+		base: 0.5,
 		clouds: false,
 		groundAlbedo: 0.6,
 		directNoise: true,
@@ -167,33 +165,22 @@ export class PlanetMaterial extends ShaderMaterial {
 
 	public generateTexture(id: string, shader: string | Partial<{ fragmentSource: string; vertexSource: string }>, options: Partial<PlanetMaterialOptions> = {}) {
 		options = { ...this.generationOptions, ...options };
-		const sampler = new DynamicTexture('Planet:sampler:' + id, 512, this.scene, false, Texture.NEAREST_SAMPLINGMODE);
-		this.updateRandom(sampler);
-		const size = 1024;
-		const texture = new ProceduralTexture('Planet:texture:' + id, size, shader, this.scene, null, true, true);
+		const size = 1024,
+			seed = Math.random();
+		const texture: ProceduralTexture & { _seed?: number } = new ProceduralTexture('Planet:texture:' + id, size, shader, this.scene, null, true, true);
+		texture._seed = seed;
 		texture.setColor3('upperColor', options.upperColor);
 		texture.setColor3('lowerColor', options.lowerColor);
 		texture.setFloat('size', size);
 		texture.setFloat('resolution', options.resolution || 128);
-		texture.setFloat('seed', options.seed);
+		texture.setFloat('base', options.base);
+		texture.setFloat('seed', seed);
 		texture.setVector2('lowerClamp', options.lowerClamp);
-		texture.setTexture('sampler', sampler);
 		texture.setVector2('range', options.range);
 		texture.setVector2('lowerClip', options.lowerClip);
 		texture.setInt('directNoise', +options.directNoise);
 		texture.refreshRate = 0;
 		return texture;
-	}
-
-	public updateRandom(texture: DynamicTexture) {
-		if (!(texture instanceof DynamicTexture)) throw new TypeError(`Can't update texture: not a dynamic texture`);
-		const context = texture.getContext(),
-			imageData = context.getImageData(0, 0, 512, 512);
-		for (let i = 0; i < 1048576; i++) {
-			imageData.data[i] = (Math.random() * 256) | 0;
-		}
-		context.putImageData(imageData, 0, 0);
-		texture.update();
 	}
 }
 

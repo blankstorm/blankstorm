@@ -4,11 +4,11 @@ precision highp float;
 varying vec2 vUV;
 
 uniform int face;
-uniform sampler2D sampler;
 uniform float resolution;
+uniform float base;
 uniform float seed;
 
 export void fragmentSource() {
-	float color = scalar_field(face, vUV, seed, resolution, sampler);
+	float color = scalar_field(face, vUV, base, resolution, seed);
 	gl_FragColor = vec4(vec3(color), 1.0);
 }
