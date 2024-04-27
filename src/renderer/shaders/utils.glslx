@@ -96,12 +96,16 @@ export float scalar_field(vec3 point, float seed, float resolution, sampler2D sa
 export vec3 to_spherical(int face, vec2 uv) {
 	uv -= 0.5;
 
-	if (face == 0) { return vec3(0.5, -uv.y, -uv.x); }
-	if (face == 1) { return vec3(-0.5, -uv.y, uv.x); }
-	if (face == 2) { return vec3(uv.x, 0.5, uv.y); }
-	if (face == 3) { return vec3(uv.x, -0.5, -uv.y); }
-	if (face == 4) { return vec3(uv.x, -uv.y, 0.5); }
-	else { return vec3(-uv.x, -uv.y, -0.5); }
+	vec3 p = vec3(0.0);
+
+	if (face == 0) { p = vec3(0.5, -uv.y, -uv.x); }
+	if (face == 1) { p = vec3(-0.5, -uv.y, uv.x); }
+	if (face == 2) { p = vec3(uv.x, 0.5, uv.y); }
+	if (face == 3) { p = vec3(uv.x, -0.5, -uv.y); }
+	if (face == 4) { p = vec3(uv.x, -uv.y, 0.5); }
+	else { p = vec3(-uv.x, -uv.y, -0.5); }
+
+	return normalize(p);
 }
 
 export vec3 to_spherical(int face, vec2 xy, float size) {
