@@ -23,35 +23,6 @@ export vec4 prand(mat4 seed) {
 	return vec4(prand(seed[0]), prand(seed[1]), prand(seed[2]), prand(seed[3]));
 }
 
-float prand_sample(float x, float y, float z, sampler2D sampler) {
-	vec3 p = vec3(x, y, z);
-	return texture2D(sampler, vec2(prand(p.xy), prand(p.yz))).g;
-}
-
-float prand_cos_mix(vec3 point, sampler2D sampler) {
-	vec3 f = floor(point);
-	vec3 g = f + 1.0;
-	vec3 a = (1.0 - cos(fract(point) * PI)) * 0.5;
-
-	vec4 x = vec4(
-		prand_sample(f.x, f.y, f.z, sampler),
-		prand_sample(f.x, g.y, f.z, sampler),
-		prand_sample(f.x, f.y, g.z, sampler),
-		prand_sample(f.x, g.y, g.z, sampler)
-	);
-
-	vec4 y = vec4(
-		prand_sample(g.x, f.y, f.z, sampler),
-		prand_sample(g.x, g.y, f.z, sampler),
-		prand_sample(g.x, f.y, g.z, sampler),
-		prand_sample(g.x, g.y, g.z, sampler)
-	);
-
-	vec4 c4 = mix(x, y, a.x);
-	vec2 c2 = mix(c4.xz, c4.yw, a.y);
-	return mix(c2.x, c2.y, a.z);
-}
-
 float prand_cos_mix(vec3 point, float seed) {
 	vec3 f = floor(point);
 	vec3 g = f + 1.0;
@@ -76,7 +47,7 @@ float prand_cos_mix(vec3 point, float seed) {
 	return mix(c2.x, c2.y, a.z);
 }
 
-export vec3 to_spherical(int face, vec2 uv) {
+export vec3 spherical(int face, vec2 uv) {
 	uv -= 0.5;
 
 	vec3 p = vec3(0.0);
@@ -91,32 +62,28 @@ export vec3 to_spherical(int face, vec2 uv) {
 	return normalize(p);
 }
 
-export vec3 to_spherical(int face, vec2 xy, float size) {
-	return to_spherical(face, xy / size);
+export vec3 spherical(int face, vec2 xy, float size) {
+	return spherical(face, xy / size);
 }
 
-float scalar_field_factor(vec3 v, float resolution, float seed) {
+float luminance_factor(vec3 v, float resolution, float seed) {
 	return prand_cos_mix((v + 1.0) / 2.0 * resolution, seed) * 2.0 - 1.0;
 }
 
-export float scalar_field(vec3 point, float base, float resolution, float seed) {
+export float luminance_at(vec3 point, float base, float resolution, float seed) {
 	float c = base;
 	// c = seed * Product 1 + helper(v, resolution / 2 ^ [[5..0]], seed) * 0.8 / 2^[[0..5]]
-	c *= 1.0 + scalar_field_factor(point, resolution / 32.0, seed) * 0.8;
-	c *= 1.0 + scalar_field_factor(point, resolution / 16.0, seed) * 0.4;
-	c *= 1.0 + scalar_field_factor(point, resolution / 8.0, seed) * 0.2;
-	c *= 1.0 + scalar_field_factor(point, resolution / 4.0, seed) * 0.1;
-	c *= 1.0 + scalar_field_factor(point, resolution / 2.0, seed) * 0.05;
-	c *= 1.0 + scalar_field_factor(point, resolution, seed) * 0.025;
+	c *= 1.0 + luminance_factor(point, resolution / 32.0, seed) * 0.8;
+	c *= 1.0 + luminance_factor(point, resolution / 16.0, seed) * 0.4;
+	c *= 1.0 + luminance_factor(point, resolution / 8.0, seed) * 0.2;
+	c *= 1.0 + luminance_factor(point, resolution / 4.0, seed) * 0.1;
+	c *= 1.0 + luminance_factor(point, resolution / 2.0, seed) * 0.05;
+	c *= 1.0 + luminance_factor(point, resolution, seed) * 0.025;
 
 	return clamp(c, 0.0, 1.0);
 }
 
-export float scalar_field(int face, vec2 uv, float base, float resolution, float seed) {
-	return scalar_field(to_spherical(face, uv), base, resolution, seed);
-}
-
-export vec4 apply_luminance(float luminance, vec2 range, vec3 lowerColor, vec3 upperColor, vec2 lower_clamp) {
+export vec4 luminance_to_color(float luminance, vec2 range, vec3 lowerColor, vec3 upperColor, vec2 lower_clamp) {
 	if (luminance < range.x)
 	{
 		float scale = luminance / range.x;

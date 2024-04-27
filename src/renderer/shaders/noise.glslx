@@ -15,7 +15,7 @@ uniform int directNoise;
 uniform vec2 range;
 
 export void fragmentSource() {
-	float luminance = scalar_field(face, vUV, base, resolution, seed);
+	float luminance = luminance_at(spherical(face, vUV), base, resolution, seed);
 	if (luminance < lowerClip.x)
 	{
 		luminance *= lowerClip.y;
@@ -24,5 +24,5 @@ export void fragmentSource() {
 
 	gl_FragColor = directNoise > 0
 		? vec4(vec3(luminance), 1.0)
-		: apply_luminance(luminance, range, lowerColor, upperColor, lowerClamp);
+		: luminance_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
 }
