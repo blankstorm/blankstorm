@@ -47,21 +47,6 @@ float prand_cos_mix(vec3 point, float seed) {
 	return mix(c2.x, c2.y, a.z);
 }
 
-export vec3 spherical(int face, vec2 uv) {
-	uv -= 0.5;
-
-	vec3 p = vec3(0.0);
-
-	if (face == 0) { p = vec3(0.5, -uv.y, -uv.x); }
-	if (face == 1) { p = vec3(-0.5, -uv.y, uv.x); }
-	if (face == 2) { p = vec3(uv.x, 0.5, uv.y); }
-	if (face == 3) { p = vec3(uv.x, -0.5, -uv.y); }
-	if (face == 4) { p = vec3(uv.x, -uv.y, 0.5); }
-	if (face == 5) { p = vec3(-uv.x, -uv.y, -0.5); }
-
-	return normalize(p);
-}
-
 float prand_at_part(vec3 point, float resolution, float seed) {
 	return prand_cos_mix((point + 1.0) / 2.0 * resolution, seed) * 2.0 - 1.0;
 }
