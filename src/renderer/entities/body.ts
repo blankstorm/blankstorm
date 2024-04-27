@@ -19,7 +19,7 @@ export class CelestialBodyRenderer extends Mesh implements Renderer<CelestialBod
 		this.name = name;
 		if (this.radius != radius) {
 			this.radius = radius;
-			CreateSphereVertexData({ diameter: radius * 2, segments: 32 }).applyToMesh(this);
+			CreateSphereVertexData({ diameter: radius * 2, segments: 64 }).applyToMesh(this);
 		}
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);

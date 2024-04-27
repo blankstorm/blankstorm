@@ -1,22 +1,22 @@
 const float PI = 3.14159265358979;
 
-const vec4 randomMagic = vec4(12.9898, 78.233, 42.798, 89.5139);
-const float randomMagicA = 43758.5453;
+const vec4 prand_magic = vec4(12.9898, 78.233, 42.798, 89.5139);
+const float prand_magic_2 = 43758.5453;
 
 export float prand(float seed) {
-	return fract(sin(seed * randomMagic.x) * randomMagicA);
+	return fract(sin(seed * prand_magic.x) * prand_magic_2);
 }
 
 export float prand(vec2 seed) {
-	return fract(sin(dot(seed, randomMagic.xy)) * randomMagicA);
+	return fract(sin(dot(seed, prand_magic.xy)) * prand_magic_2);
 }
 
 export float prand(vec3 seed) {
-	return fract(sin(dot(seed, randomMagic.xyz)) * randomMagicA);
+	return fract(sin(dot(seed, prand_magic.xyz)) * prand_magic_2);
 }
 
 export float prand(vec4 seed) {
-	return fract(sin(dot(seed, randomMagic)) * randomMagicA);
+	return fract(sin(dot(seed, prand_magic)) * prand_magic_2);
 }
 
 export vec4 prand(mat4 seed) {
@@ -62,37 +62,37 @@ export vec3 spherical(int face, vec2 uv) {
 	return normalize(p);
 }
 
-float luminance_factor(vec3 point, float resolution, float seed) {
+float prand_at_part(vec3 point, float resolution, float seed) {
 	return prand_cos_mix((point + 1.0) / 2.0 * resolution, seed) * 2.0 - 1.0;
 }
 
-export float luminance_at(vec3 point, float base, float resolution, float seed) {
+export float prand_at(vec3 point, float base, float resolution, float seed) {
 	float factor = 1.0
-		+ luminance_factor(point, resolution / 32.0, seed) * 0.8
-		+ luminance_factor(point, resolution / 16.0, seed) * 0.4
-		+ luminance_factor(point, resolution / 8.0, seed) * 0.2
-		+ luminance_factor(point, resolution / 4.0, seed) * 0.1
-		+ luminance_factor(point, resolution / 2.0, seed) * 0.05
-		+ luminance_factor(point, resolution, seed) * 0.025;
+		+ prand_at_part(point, resolution / 32.0, seed) * 0.8
+		+ prand_at_part(point, resolution / 16.0, seed) * 0.4
+		+ prand_at_part(point, resolution / 8.0, seed) * 0.2
+		+ prand_at_part(point, resolution / 4.0, seed) * 0.1
+		+ prand_at_part(point, resolution / 2.0, seed) * 0.05
+		+ prand_at_part(point, resolution, seed) * 0.025;
 
 	return clamp(factor * base, 0.0, 1.0);
 }
 
-export vec3 luminance_to_color(float luminance, vec2 range, vec3 lowerColor, vec3 upperColor, vec2 lower_clamp) {
-	if (luminance < range.x)
+export vec3 prand_to_color(float value, vec2 range, vec3 lowerColor, vec3 upperColor, vec2 lower_clamp) {
+	if (value < range.x)
 	{
-		float scale = luminance / range.x;
+		float scale = value / range.x;
 		return lowerColor * clamp(scale, lower_clamp.x, lower_clamp.y);
 	}
-	else if (luminance < range.y)
+	else if (value < range.y)
 	{
-		float scale_left = (luminance - range.x) / (range.y - range.x);
-		float scale_right = (luminance - range.x) / (1.0 - range.x);
+		float scale_left = (value - range.x) / (range.y - range.x);
+		float scale_right = (value - range.x) / (1.0 - range.x);
 		return lowerColor * (1.0 - scale_left) + upperColor * scale_right;
 	}
 	else
 	{
-		float scale = (luminance - range.x) / (1.0 - range.x);
+		float scale = (value - range.x) / (1.0 - range.x);
 		return upperColor * scale;
 	}
 }

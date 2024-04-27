@@ -147,7 +147,8 @@ export class PlanetMaterial extends ShaderMaterial {
 			needAlphaBlending: true,
 		});
 
-		const size = 1024, seed = Math.random();
+		const size = 1024,
+			seed = Math.random();
 
 		this.setInt('clouds', +generationOptions.clouds);
 		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);

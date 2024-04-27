@@ -29,23 +29,28 @@ uniform vec2 range;
 varying vec3 worldPosition;
 varying vec3 _normal;
 
+const vec3 cloud_magic = vec3(0.3, 0.59, 0.11);
+
 export void vertexSource() {
 	gl_Position = worldViewProjection * vec4(position, 1.0);
 	worldPosition = vec3(world * vec4(position, 1.0));
 	_normal = normal;
+
+	// bump
+	float depth = prand_at(normal, base, resolution, seed) - 0.5;
+	vec3 bump = normal * depth;
+	gl_Position = worldViewProjection * vec4(position + bump, 1.0);
+
 }
 
 export void fragmentSource() {
 	vec3 worldNormal = normalize(vec3(world * vec4(_normal, 0.0)));
 
 	// ground
-	float luminance = luminance_at(_normal, base, resolution, seed);
+	float luminance = prand_at(_normal, base, resolution, seed);
 	luminance = clamp(luminance < lowerClip.x ? luminance * lowerClip.y : luminance, 0.0, 1.0);
-	vec3 color = directNoise > 0 ? vec3(luminance) : luminance_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
+	vec3 color = directNoise > 0 ? vec3(luminance) : prand_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
 	color *= groundAlbedo;
-
-	// clouds
-	vec3 cloud = vec3(luminance_at(vec3(rotation * vec4(_normal, 0.0)), base, resolution, seed) * cloudAlbedo);
 
 	// diffuse
 	float ndl = min(asin(max(0.0, dot(worldNormal, normalize(light - worldPosition))) + 0.05), 1.0);
@@ -57,16 +62,13 @@ export void fragmentSource() {
 	vec3 emissive = halo * (1.0 - fresnel) * clamp(1.0 - ndl, 0.2, 1.0);
 
 	// Clouds
-	float cloudLuminance = 0.0;
-
 	if (clouds > 0)
 	{
-		cloudLuminance = dot(cloud, vec3(0.3, 0.59, 0.11));
-	}
-
-	if (cloudLuminance >= 0.5)
-	{
-		color += cloud * (cloudLuminance - 0.5) / 0.5;
+		vec3 cloud = vec3(prand_at(vec3(rotation * vec4(_normal, 0.0)), base, resolution, seed) * cloudAlbedo);
+		float value = dot(cloud, cloud_magic);
+		if(value >= 0.5) {
+			color += cloud * (value - 0.5) / 0.5;
+		}
 	}
 
 	gl_FragColor = vec4(color * ndl * fresnel + emissive, fresnel);
