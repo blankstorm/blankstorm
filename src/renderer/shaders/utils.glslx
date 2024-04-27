@@ -57,7 +57,7 @@ export vec3 spherical(int face, vec2 uv) {
 	if (face == 2) { p = vec3(uv.x, 0.5, uv.y); }
 	if (face == 3) { p = vec3(uv.x, -0.5, -uv.y); }
 	if (face == 4) { p = vec3(uv.x, -uv.y, 0.5); }
-	else { p = vec3(-uv.x, -uv.y, -0.5); }
+	if (face == 5) { p = vec3(-uv.x, -uv.y, -0.5); }
 
 	return normalize(p);
 }
