@@ -12,15 +12,16 @@ import type { HardpointProjectileHandlerOptions } from './hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export interface PlanetMaterialOptions {
-	clouds: boolean;
+	clouds?: {
+		albedo: number;
+		base: number;
+	};
 	upperColor: Color3;
 	lowerColor: Color3;
 	halo: Color3;
 	base: number;
-	cloud_base: number;
 	lowerClamp: Vector2;
 	groundAlbedo: number;
-	cloudAlbedo: number;
 	directNoise: boolean;
 	lowerClip: Vector2;
 	range: Vector2;
@@ -29,29 +30,27 @@ export interface PlanetMaterialOptions {
 
 const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 	earthlike: {
-		clouds: true,
 		upperColor: new Color3(0.2, 2.0, 0.2),
 		lowerColor: new Color3(0, 0.2, 1.0),
 		halo: new Color3(0, 0.2, 1.0),
 		base: 0.3,
-		cloud_base: 0.6,
 		lowerClamp: new Vector2(0.6, 1),
 		groundAlbedo: 1,
-		cloudAlbedo: 0.9,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
 		range: new Vector2(0.3, 0.35),
+		clouds: {
+			base: 0.6,
+			albedo: 0.9,
+		},
 	},
 	volcanic: {
 		upperColor: new Color3(0.9, 0.45, 0.45),
 		lowerColor: new Color3(1.0, 0, 0),
 		halo: new Color3(1.0, 0, 0.3),
 		base: 0.3,
-		cloud_base: 0.6,
-		clouds: false,
 		lowerClamp: new Vector2(0, 1),
 		resolution: 256,
-		cloudAlbedo: 0,
 		groundAlbedo: 0.75,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
@@ -62,41 +61,40 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		lowerColor: new Color3(0, 1.0, 0.1),
 		halo: new Color3(0.5, 1.0, 0.5),
 		base: 0.4,
-		cloud_base: 0.7,
-		clouds: true,
 		lowerClamp: new Vector2(0, 1),
 		resolution: 512,
-		cloudAlbedo: 0.9,
 		groundAlbedo: 0.85,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
 		range: new Vector2(0.2, 0.4),
+		clouds: {
+			base: 0.7,
+			albedo: 0.9,
+		},
 	},
 	ice: {
 		upperColor: new Color3(1.0, 1.0, 1.0),
 		lowerColor: new Color3(0.7, 0.7, 0.9),
 		halo: new Color3(1.0, 1.0, 1.0),
 		base: 0.8,
-		cloud_base: 0.4,
-		clouds: true,
 		lowerClamp: new Vector2(0, 1),
 		resolution: 256,
-		cloudAlbedo: 0.8,
 		groundAlbedo: 0.85,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
 		range: new Vector2(0.3, 0.4),
+		clouds: {
+			base: 0.4,
+			albedo: 0.8,
+		},
 	},
 	desert: {
 		upperColor: new Color3(0.9, 0.3, 0),
 		lowerColor: new Color3(1.0, 0.5, 0.1),
 		halo: new Color3(1.0, 0.5, 0.1),
 		base: 0.18,
-		cloud_base: 0.6,
-		clouds: false,
 		lowerClamp: new Vector2(0.3, 1),
 		resolution: 512,
-		cloudAlbedo: 0.9,
 		groundAlbedo: 0.75,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
@@ -107,26 +105,24 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		lowerColor: new Color3(0, 0.2, 2.0),
 		halo: new Color3(0, 0.2, 2.0),
 		base: 0.15,
-		cloud_base: 0.6,
-		clouds: true,
 		lowerClamp: new Vector2(0.6, 1),
 		resolution: 512,
-		cloudAlbedo: 0.9,
 		groundAlbedo: 0.95,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
 		range: new Vector2(0.2, 0.3),
+		clouds: {
+			base: 0.6,
+			albedo: 0.9,
+		},
 	},
 	moon: {
 		upperColor: new Color3(2.0, 1.0, 0),
 		lowerColor: new Color3(0, 0.2, 1.0),
-		cloud_base: 0.6,
 		lowerClamp: new Vector2(0.6, 1),
-		cloudAlbedo: 0.7,
 		range: new Vector2(0.3, 0.35),
 		halo: new Color3(0, 0, 0),
 		base: 0.5,
-		clouds: false,
 		groundAlbedo: 0.6,
 		directNoise: true,
 		lowerClip: new Vector2(0.5, 0.9),
@@ -150,23 +146,26 @@ export class PlanetMaterial extends ShaderMaterial {
 		const size = 1024,
 			seed = Math.random();
 
-		this.setInt('clouds', +generationOptions.clouds);
-		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
-		this.setFloat('cloudAlbedo', generationOptions.cloudAlbedo);
 		this.setVector3('camera', scene.activeCamera.position || Vector3.Zero());
 		this.setVector3('light', Vector3.Zero());
+		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
 		this.setColor3('halo', generationOptions.halo);
 		this.setColor3('upperColor', generationOptions.upperColor);
 		this.setColor3('lowerColor', generationOptions.lowerColor);
 		this.setFloat('size', size);
 		this.setFloat('resolution', generationOptions.resolution || 128);
 		this.setFloat('base', generationOptions.base);
-		this.setFloat('cloud_base', generationOptions.cloud_base);
+
 		this.setFloat('seed', seed);
 		this.setVector2('lowerClamp', generationOptions.lowerClamp);
 		this.setVector2('range', generationOptions.range);
 		this.setVector2('lowerClip', generationOptions.lowerClip);
 		this.setInt('directNoise', +generationOptions.directNoise);
+
+		// clouds
+		this.setInt('clouds', +('clouds' in generationOptions));
+		this.setFloat('cloud_albedo', generationOptions.clouds?.albedo);
+		this.setFloat('cloud_base', generationOptions.clouds?.base);
 	}
 }
 
