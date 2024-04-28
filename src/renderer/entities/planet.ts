@@ -3,7 +3,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
-import { randomHex } from 'utilium';
+import { assignWithDefaults, pick, randomHex } from 'utilium';
 import type { PlanetData } from '../../core/entities/planet';
 import type { PlanetBiome } from '../../core/generic/planets';
 import * as planetShader from '../shaders/planet.glslx';
@@ -134,6 +134,7 @@ export class PlanetMaterial extends ShaderMaterial {
 	public matrixAngle = 0;
 	public constructor(
 		public readonly generationOptions: PlanetMaterialOptions,
+		public readonly seed: number,
 		public scene: Scene
 	) {
 		const id = randomHex(8);
@@ -143,8 +144,7 @@ export class PlanetMaterial extends ShaderMaterial {
 			needAlphaBlending: true,
 		});
 
-		const size = 1024,
-			seed = Math.random();
+		const size = 1024;
 
 		this.setVector3('camera', scene.activeCamera.position || Vector3.Zero());
 		this.setVector3('light', Vector3.Zero());
@@ -171,6 +171,7 @@ export class PlanetMaterial extends ShaderMaterial {
 
 export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
 	public biome: PlanetBiome;
+	public seed: number;
 	public customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
 	public constructor(id: string, scene: Scene) {
 		super(id, scene);
@@ -190,8 +191,8 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 		if (!(data.biome in biomes)) {
 			throw new ReferenceError('Planet biome does not exist: ' + data.biome);
 		}
-		this.biome = data.biome;
-		this.material = new PlanetMaterial(biomes[data.biome], this.getScene());
+		assignWithDefaults(this, pick(data, 'biome', 'seed'));
+		this.material = new PlanetMaterial(biomes[data.biome], this.seed, this.getScene());
 	}
 }
 PlanetRenderer satisfies RendererStatic<PlanetRenderer>;
