@@ -17,7 +17,7 @@ export interface PlanetMaterialOptions {
 	lowerColor: Color3;
 	halo: Color3;
 	base: number;
-	cloudSeed: number;
+	cloud_base: number;
 	lowerClamp: Vector2;
 	groundAlbedo: number;
 	cloudAlbedo: number;
@@ -34,7 +34,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		lowerColor: new Color3(0, 0.2, 1.0),
 		halo: new Color3(0, 0.2, 1.0),
 		base: 0.3,
-		cloudSeed: 0.6,
+		cloud_base: 0.6,
 		lowerClamp: new Vector2(0.6, 1),
 		groundAlbedo: 1,
 		cloudAlbedo: 0.9,
@@ -47,7 +47,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		lowerColor: new Color3(1.0, 0, 0),
 		halo: new Color3(1.0, 0, 0.3),
 		base: 0.3,
-		cloudSeed: 0.6,
+		cloud_base: 0.6,
 		clouds: false,
 		lowerClamp: new Vector2(0, 1),
 		resolution: 256,
@@ -62,7 +62,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		lowerColor: new Color3(0, 1.0, 0.1),
 		halo: new Color3(0.5, 1.0, 0.5),
 		base: 0.4,
-		cloudSeed: 0.7,
+		cloud_base: 0.7,
 		clouds: true,
 		lowerClamp: new Vector2(0, 1),
 		resolution: 512,
@@ -77,7 +77,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		lowerColor: new Color3(0.7, 0.7, 0.9),
 		halo: new Color3(1.0, 1.0, 1.0),
 		base: 0.8,
-		cloudSeed: 0.4,
+		cloud_base: 0.4,
 		clouds: true,
 		lowerClamp: new Vector2(0, 1),
 		resolution: 256,
@@ -92,7 +92,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		lowerColor: new Color3(1.0, 0.5, 0.1),
 		halo: new Color3(1.0, 0.5, 0.1),
 		base: 0.18,
-		cloudSeed: 0.6,
+		cloud_base: 0.6,
 		clouds: false,
 		lowerClamp: new Vector2(0.3, 1),
 		resolution: 512,
@@ -107,7 +107,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		lowerColor: new Color3(0, 0.2, 2.0),
 		halo: new Color3(0, 0.2, 2.0),
 		base: 0.15,
-		cloudSeed: 0.6,
+		cloud_base: 0.6,
 		clouds: true,
 		lowerClamp: new Vector2(0.6, 1),
 		resolution: 512,
@@ -120,7 +120,7 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 	moon: {
 		upperColor: new Color3(2.0, 1.0, 0),
 		lowerColor: new Color3(0, 0.2, 1.0),
-		cloudSeed: 0.6,
+		cloud_base: 0.6,
 		lowerClamp: new Vector2(0.6, 1),
 		cloudAlbedo: 0.7,
 		range: new Vector2(0.3, 0.35),
@@ -161,6 +161,7 @@ export class PlanetMaterial extends ShaderMaterial {
 		this.setFloat('size', size);
 		this.setFloat('resolution', generationOptions.resolution || 128);
 		this.setFloat('base', generationOptions.base);
+		this.setFloat('cloud_base', generationOptions.cloud_base);
 		this.setFloat('seed', seed);
 		this.setVector2('lowerClamp', generationOptions.lowerClamp);
 		this.setVector2('range', generationOptions.range);
