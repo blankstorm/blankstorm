@@ -1,6 +1,7 @@
+import { pick } from 'utilium';
 import type { Entity } from '../entities/entity';
+import type { ItemContainer, ItemID, PartialItemContainer } from '../generic/items';
 import { items as Items } from '../generic/items';
-import type { ItemContainer, PartialItemContainer, ItemID } from '../generic/items';
 import { register, type Component } from './component';
 
 function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<keyof T, number> {
@@ -22,10 +23,7 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 	public abstract get items(): Record<ItemID, number>;
 
 	public toJSON(): ItemContainer {
-		return {
-			items: this.items,
-			max: this.max,
-		};
+		return pick(this, 'items', 'max');
 	}
 
 	public fromJSON({ max, items }: PartialItemContainer): this {

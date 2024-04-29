@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { logger as coreLogger } from '../core';
 import * as client from './client';
 import { logger } from './utils';
 
@@ -22,5 +23,6 @@ if (options.debug) {
 		$,
 	});
 }
+coreLogger.on('send', $app.log);
 $('body').on('contextmenu', () => options.debug);
 await client.init(options);

@@ -130,7 +130,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 
 		player.storage.removeItems(generic.recipe);
 		const ship = new Ship(null, player.level);
-		ship.type = generic.id
+		ship.type = generic.id;
 		ship.parent = ship.owner = player;
 		player.fleet.add(ship);
 	}

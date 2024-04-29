@@ -76,22 +76,22 @@ export class Entity
 		return this._storage;
 	}
 
-	public isSelected = false;
-	public isTargetable = false;
+	public isSelected: boolean = false;
+	public isTargetable: boolean = false;
 
-	public position = Vector3.Zero();
-	public rotation = Vector3.Zero();
-	public velocity = Vector3.Zero();
+	public position: Vector3 = Vector3.Zero();
+	public rotation: Vector3 = Vector3.Zero();
+	public velocity: Vector3 = Vector3.Zero();
 
-	public get absolutePosition() {
+	public get absolutePosition(): Vector3 {
 		return this.parent instanceof Entity ? this.parent.absolutePosition.add(this.position) : this.position;
 	}
 
-	public get absoluteRotation() {
+	public get absoluteRotation(): Vector3 {
 		return this.parent instanceof Entity ? this.parent.absoluteRotation.add(this.rotation) : this.rotation;
 	}
 
-	public get absoluteVelocity() {
+	public get absoluteVelocity(): Vector3 {
 		return this.parent instanceof Entity ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
@@ -105,7 +105,7 @@ export class Entity
 
 		setTimeout(() => {
 			this.emit('created');
-			level.emit('entity_created', this.toJSON())
+			level.emit('entity_created', this.toJSON());
 		});
 	}
 

@@ -68,7 +68,7 @@ export async function createDefault(name: string): Promise<Level> {
 	level.name = name;
 	await level.ready();
 	const system = await level.generateSystem('Kurassh', Vector2.Zero());
-	
+
 	const player = new Player(account.id, level);
 	player.fleet.addFromStrings('mosquito', 'cillus');
 	player.fleet.at(0).position.z += 4;
@@ -76,6 +76,7 @@ export async function createDefault(name: string): Promise<Level> {
 	player.name = account.username;
 	player.position = new Vector3(0, 0, -1000).add(randomCords(50, true));
 	player.rotation = Vector3.Zero();
+
 	level.rootSystem = system;
 	return level;
 }

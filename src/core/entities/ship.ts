@@ -23,7 +23,6 @@ export interface ShipJSON extends EntityJSON {
 
 export class Ship extends Entity {
 	public hardpoints: Set<Hardpoint> = new Set();
-	protected _loaded: boolean = false;
 	public type: ShipType;
 	public hp: number;
 	public jumpCooldown: number;
@@ -130,15 +129,14 @@ export class Ship extends Entity {
 		}
 
 		this.system = targetSystem;
-		this.jumpCooldown = this.generic.jump.cooldown + 0;
+		this.jumpCooldown = +this.generic.jump.cooldown;
 	}
 
 	public toJSON() {
 		return {
 			...super.toJSON(),
-			type: this.type,
+			...pick(this, 'type', 'jumpCooldown'),
 			hp: +this.hp.toFixed(3),
-			jumpCooldown: +this.jumpCooldown.toFixed(),
 			hardpoints: [...this.hardpoints].map(hp => hp.toJSON()),
 		};
 	}

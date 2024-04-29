@@ -1,4 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Logger } from 'logzen';
+
+export const logger = new Logger({ noGlobalConsole: true });
 
 export function randomCords(dis = 1, y0?: boolean): Vector3 {
 	const angle = Math.random() * Math.PI * 2,
