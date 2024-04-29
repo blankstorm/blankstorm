@@ -31,15 +31,13 @@ export class Ship extends Entity {
 
 	declare owner?: CelestialBody | Player;
 
-	constructor(id: string, level: Level) {
-		super(id, level);
-		this.on('created', () => this._load());
-	}
-
 	/**
 	 * @todo move distance related stuff to ship creation
 	 */
-	protected _load() {
+	constructor(id: string, level: Level, type?: ShipType) {
+		super(id, level);
+
+		this.type = type;
 		const { power, hp, jump, storage, hardpoints } = genericShips[this.type];
 
 		this.position.addInPlace(randomCords(Math.log(randomInt(0, power || 1) ** 3 + 1), true));
@@ -136,7 +134,7 @@ export class Ship extends Entity {
 		return {
 			...super.toJSON(),
 			...pick(this, 'type', 'jumpCooldown'),
-			hp: +this.hp.toFixed(3),
+			hp: +this.hp?.toFixed(3),
 			hardpoints: [...this.hardpoints].map(hp => hp.toJSON()),
 		};
 	}

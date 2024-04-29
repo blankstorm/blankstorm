@@ -26,8 +26,7 @@ export class Berth extends StationPart implements Producer {
 		if (this.productionTime != 0 || !this.productionID) {
 			return;
 		}
-		const ship = new Ship(null, this.level);
-		ship.type = this.productionID;
+		const ship = new Ship(null, this.level, this.productionID);
 		ship.position = this.absolutePosition;
 		ship.owner = this.station.owner;
 		this.productionID = null;

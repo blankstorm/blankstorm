@@ -25,10 +25,9 @@ export class CelestialBody extends Entity {
 	public toJSON(): CelestialBodyJSON {
 		return {
 			...super.toJSON(),
+			...pick(this, 'radius', 'seed'),
 			fleet: this.fleet.toJSON(),
 			storage: this.storage.toJSON(),
-			radius: this.radius,
-			seed: this.seed,
 		};
 	}
 

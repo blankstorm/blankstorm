@@ -3,7 +3,7 @@ import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
-import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
+import { assignWithDefaults, pick, randomHex, wait, type Shift } from 'utilium';
 import type { Component } from './components/component';
 import type { FleetJSON } from './components/fleet';
 import type { Entity, EntityJSON } from './entities/entity';
@@ -82,10 +82,6 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		return this;
 	}
 
-	public constructor() {
-		super();
-	}
-
 	public getEntityByID<N extends Entity = Entity>(id: string): N {
 		for (const entity of this.entities) {
 			if (entity.id == id) return <N>entity;
@@ -140,8 +136,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 
 		player.storage.removeItems(generic.recipe);
-		const ship = new Ship(null, player.level);
-		ship.type = generic.id;
+		const ship = new Ship(null, player.level, generic.id);
 		ship.parent = ship.owner = player;
 		player.fleet.add(ship);
 	}
@@ -211,11 +206,22 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	}
 
 	public toJSON(): LevelJSON {
+		const entities: EntityJSON[] = [...this.entities].map(e => e.toJSON());
+		/**
+		 * Note: Sorted to make sure bodies are loaded before ships before players
+		 * This prevents `level.getEntityByID(...)` from returning null
+		 * Which in turn prevents `.owner = .parent = this` from throwing an error
+		 */
+		entities.sort((a, b) => {
+			const priority = ['Star', 'Planet', 'Hardpoint', 'Ship', 'Player'];
+			return priority.indexOf(a.entityType) < priority.indexOf(b.entityType) ? -1 : 1;
+		});
+
 		return {
 			...pick(this, copy),
 			date: new Date().toJSON(),
 			systems: [...this.systems.values()].map(system => system.toJSON()),
-			entities: [...this.entities].map(entity => entity.toJSON()),
+			entities,
 		};
 	}
 
@@ -227,17 +233,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 			System.FromJSON(systemData, this);
 		}
 
-		/**
-		 * Note: nodes is sorted to make sure celestialbodies are loaded before ships before players
-		 * This prevents `level.getNodeByID(shipData) as Ship` in the Player constructor from returning null
-		 * Which in turn prevents `ship.owner = ship.parent = this` from throwing an error
-		 */
-		const entities = json.entities;
-		entities.sort((node1, node2) => {
-			const priority = ['Star', 'Planet', 'Ship', 'Player'];
-			return priority.findIndex(t => t == node1.entityType) < priority.findIndex(t => t == node2.entityType) ? -1 : 1;
-		});
-		for (const data of entities) {
+		for (const data of json.entities) {
 			switch (data.entityType) {
 				case 'Player':
 					Player.FromJSON(<PlayerJSON>data, this);

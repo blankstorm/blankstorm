@@ -18,7 +18,7 @@ import { logger } from './logger';
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
  */
 export class ModelRenderer extends TransformNode {
-	protected _instance: TransformNode;
+	protected _instance: Mesh;
 	protected _selected: boolean = false;
 	protected _currentPath?: Vector3[];
 	protected _createdInstance: boolean = false;
@@ -42,10 +42,10 @@ export class ModelRenderer extends TransformNode {
 		if (!this.isInstanciated) {
 			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
 		}
-		for (const mesh of this.getChildMeshes()) {
+		for (const mesh of this.getChildMeshes<Mesh>()) {
 			this.getScene()
 				.getHighlightLayerByName('highlight')
-				.addMesh(mesh as Mesh, Color3.Green());
+				.addMesh(mesh, Color3.Green());
 		}
 		this._selected = true;
 	}
@@ -54,10 +54,10 @@ export class ModelRenderer extends TransformNode {
 		if (!this.isInstanciated) {
 			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
 		}
-		for (const mesh of this.getChildMeshes()) {
+		for (const mesh of this.getChildMeshes<Mesh>()) {
 			this.getScene()
 				.getHighlightLayerByName('highlight')
-				.removeMesh(mesh as Mesh);
+				.removeMesh(mesh);
 		}
 		this._selected = false;
 	}
@@ -129,7 +129,7 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError(`Model "${modelID}" does not exist`);
 		}
 
-		this._instance = genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0] as TransformNode;
+		this._instance = <Mesh>genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0];
 		this._instance.id = this.id + ':instance';
 		this._instance.parent = this;
 		this._instance.rotation.y += Math.PI;

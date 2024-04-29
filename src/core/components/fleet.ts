@@ -48,8 +48,7 @@ export class Fleet extends Set<Ship> implements Component<FleetJSON> {
 
 	public addFromStrings(...types: ShipType[]): void {
 		for (const type of types) {
-			const ship = new Ship(null, this.level);
-			ship.type = type;
+			const ship = new Ship(null, this.level, type);
 			this.add(ship);
 		}
 	}
