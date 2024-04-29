@@ -43,9 +43,7 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
 		}
 		for (const mesh of this.getChildMeshes<Mesh>()) {
-			this.getScene()
-				.getHighlightLayerByName('highlight')
-				.addMesh(mesh, Color3.Green());
+			this.getScene().getHighlightLayerByName('highlight').addMesh(mesh, Color3.Green());
 		}
 		this._selected = true;
 	}
@@ -55,9 +53,7 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
 		}
 		for (const mesh of this.getChildMeshes<Mesh>()) {
-			this.getScene()
-				.getHighlightLayerByName('highlight')
-				.removeMesh(mesh);
+			this.getScene().getHighlightLayerByName('highlight').removeMesh(mesh);
 		}
 		this._selected = false;
 	}
