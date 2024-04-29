@@ -22,7 +22,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 			},
 			oplvl: 0,
 		},
-		removed: {
+		remove: {
 			exec({ executor }, selector) {
 				const entities = executor.level.selectEntities(selector).filter(entity => entity.entityTypes.includes('Entitiy'));
 				entities.forEach(e => e.remove());
@@ -42,7 +42,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 			},
 			oplvl: 3,
 		},
-		'data get': {
+		data_get: {
 			/*exec({ executor }, selector, path = '') {
 				const node = executor.level.getNodeBySelector(selector);
 				const data = node.getByString(path),
@@ -57,7 +57,7 @@ export const commands: Map<string, Partial<Command>> = new Map(
 			},*/
 			oplvl: 3,
 		},
-		'data set': {
+		data_set: {
 			/*exec({ executor }, selector, path, value) {
 				return 'This command is not implemented';
 				let node = executor.level.getNodeBySelector(selector);
