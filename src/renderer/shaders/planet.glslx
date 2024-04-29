@@ -5,27 +5,29 @@ precision highp float;
 // Attributes
 attribute vec3 position;
 attribute vec3 normal;
-attribute vec2 uv;
 
 uniform mat4 world;
 uniform mat4 worldViewProjection;
 uniform mat4 rotation;
 uniform vec3 camera;
-uniform int clouds;
-uniform float groundAlbedo;
-uniform float cloud_albedo;
-uniform vec3 halo;
 uniform vec3 light;
-uniform vec3 upperColor;
-uniform vec3 lowerColor;
+
 uniform float base;
 uniform float resolution;
 uniform float seed;
+
+uniform float groundAlbedo;
+uniform vec3 halo;
+uniform vec3 upperColor;
+uniform vec3 lowerColor;
 uniform vec2 lowerClamp;
 uniform vec2 lowerClip;
-uniform int directNoise;
+uniform bool directNoise;
 uniform vec2 range;
-uniform float cloud_base;
+
+uniform bool clouds_enabled;
+uniform float clouds_base;
+uniform float clouds_albedo;
 
 varying vec3 worldPosition;
 varying vec3 _normal;
@@ -41,7 +43,6 @@ export void vertexSource() {
 	float depth = prand_at(normal, base, resolution, seed) - 0.5;
 	vec3 bump = normal * depth;
 	gl_Position = worldViewProjection * vec4(position + bump, 1.0);
-
 }
 
 export void fragmentSource() {
@@ -50,7 +51,7 @@ export void fragmentSource() {
 	// ground
 	float luminance = prand_at(_normal, base, resolution, seed);
 	luminance = clamp(luminance < lowerClip.x ? luminance * lowerClip.y : luminance, 0.0, 1.0);
-	vec3 color = directNoise > 0 ? vec3(luminance) : prand_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
+	vec3 color = directNoise ? vec3(luminance) : prand_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
 	color *= groundAlbedo;
 
 	// diffuse
@@ -63,11 +64,11 @@ export void fragmentSource() {
 	vec3 emissive = halo * (1.0 - fresnel) * clamp(1.0 - ndl, 0.2, 1.0);
 
 	// Clouds
-	if (clouds > 0)
+	if (clouds_enabled)
 	{
-		vec3 cloud = vec3(prand_at(vec3(rotation * vec4(_normal, 0.0)), cloud_base, resolution, seed) * cloud_albedo);
+		vec3 cloud = vec3(prand_at(vec3(rotation * vec4(_normal, 0.0)), clouds_base, resolution, seed) * clouds_albedo);
 		float value = dot(cloud, cloud_magic);
-		if(value >= 0.5) {
+		if (value >= 0.5) {
 			color += cloud * (value - 0.5) / 0.5;
 		}
 	}

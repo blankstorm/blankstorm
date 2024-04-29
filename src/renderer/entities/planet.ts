@@ -139,33 +139,32 @@ export class PlanetMaterial extends ShaderMaterial {
 	) {
 		const id = randomHex(8);
 		super('Planet:material:' + id, scene, planetShader, {
-			attributes: ['position', 'normal', 'uv'],
+			attributes: ['position', 'normal'],
 			uniforms: ['world', 'worldView', 'worldViewProjection', 'view', 'projection'],
 			needAlphaBlending: true,
 		});
 
-		const size = 1024;
-
 		this.setVector3('camera', scene.activeCamera.position || Vector3.Zero());
 		this.setVector3('light', Vector3.Zero());
+		this.setFloat('resolution', generationOptions.resolution || 128);
+		this.setFloat('base', generationOptions.base);
+		this.setFloat('seed', seed);
+
 		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
 		this.setColor3('halo', generationOptions.halo);
 		this.setColor3('upperColor', generationOptions.upperColor);
 		this.setColor3('lowerColor', generationOptions.lowerColor);
-		this.setFloat('size', size);
-		this.setFloat('resolution', generationOptions.resolution || 128);
-		this.setFloat('base', generationOptions.base);
-
-		this.setFloat('seed', seed);
 		this.setVector2('lowerClamp', generationOptions.lowerClamp);
 		this.setVector2('range', generationOptions.range);
 		this.setVector2('lowerClip', generationOptions.lowerClip);
 		this.setInt('directNoise', +generationOptions.directNoise);
 
 		// clouds
-		this.setInt('clouds', +('clouds' in generationOptions));
-		this.setFloat('cloud_albedo', generationOptions.clouds?.albedo);
-		this.setFloat('cloud_base', generationOptions.clouds?.base);
+		if ('clouds' in generationOptions) {
+			this.setInt('clouds_enabled', +true);
+			this.setFloat('clouds_albedo', generationOptions.clouds.albedo);
+			this.setFloat('clouds_base', generationOptions.clouds.base);
+		}
 	}
 }
 
