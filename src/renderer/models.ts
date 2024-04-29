@@ -18,7 +18,7 @@ import { logger } from './logger';
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
  */
 export class ModelRenderer extends TransformNode {
-	protected _instance: Mesh;
+	protected _instance: TransformNode;
 	protected _selected: boolean = false;
 	protected _currentPath?: Vector3[];
 	protected _createdInstance: boolean = false;
@@ -125,7 +125,7 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError(`Model "${modelID}" does not exist`);
 		}
 
-		this._instance = <Mesh>genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0];
+		this._instance = <TransformNode>genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0];
 		this._instance.id = this.id + ':instance';
 		this._instance.parent = this;
 		this._instance.rotation.y += Math.PI;
