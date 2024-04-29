@@ -18,12 +18,13 @@ uniform float seed;
 
 uniform float groundAlbedo;
 uniform vec3 halo;
-uniform vec3 upperColor;
-uniform vec3 lowerColor;
 uniform vec2 lowerClamp;
 uniform vec2 lowerClip;
 uniform bool directNoise;
-uniform vec2 range;
+
+uniform int num_colors;
+uniform vec3 colors[5];
+uniform float range[5];
 
 uniform bool clouds_enabled;
 uniform float clouds_base;
@@ -51,7 +52,7 @@ export void fragmentSource() {
 	// ground
 	float luminance = prand_at(_normal, base, resolution, seed);
 	luminance = clamp(luminance < lowerClip.x ? luminance * lowerClip.y : luminance, 0.0, 1.0);
-	vec3 color = directNoise ? vec3(luminance) : to_color(luminance, range, lowerColor, upperColor, lowerClamp);
+	vec3 color = directNoise ? vec3(luminance) : to_color(luminance, range, colors, lowerClamp);
 	color *= groundAlbedo;
 
 	// diffuse

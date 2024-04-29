@@ -10,43 +10,42 @@ import * as planetShader from '../shaders/planet.glslx';
 import { CelestialBodyRenderer } from './body';
 import type { HardpointProjectileHandlerOptions } from './hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
+import { logger } from '../logger';
 
 export interface PlanetMaterialOptions {
-	clouds?: {
-		albedo: number;
-		base: number;
-	};
-	upperColor: Color3;
-	lowerColor: Color3;
+	colors: Color3[];
+	range: number[];
 	halo: Color3;
 	base: number;
 	lowerClamp: Vector2;
 	groundAlbedo: number;
 	directNoise: boolean;
 	lowerClip: Vector2;
-	range: Vector2;
 	resolution?: number;
+	clouds?: {
+		albedo: number;
+		base: number;
+	};
 }
 
 const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 	earthlike: {
-		upperColor: new Color3(0.2, 2.0, 0.2),
-		lowerColor: new Color3(0, 0.2, 1.0),
+		colors: [new Color3(0, 0.2, 1.0), new Color3(0.2, 0.8, 0.2)],
+		range: [0.3, 0.35],
 		halo: new Color3(0, 0.2, 1.0),
 		base: 0.3,
 		lowerClamp: new Vector2(0.6, 1),
 		groundAlbedo: 1,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
-		range: new Vector2(0.3, 0.35),
 		clouds: {
 			base: 0.6,
 			albedo: 0.9,
 		},
 	},
 	volcanic: {
-		upperColor: new Color3(0.9, 0.45, 0.45),
-		lowerColor: new Color3(1.0, 0, 0),
+		colors: [new Color3(1.0, 0, 0), new Color3(0.9, 0.45, 0.45)],
+		range: [0.3, 0.4],
 		halo: new Color3(1.0, 0, 0.3),
 		base: 0.3,
 		lowerClamp: new Vector2(0, 1),
@@ -54,11 +53,9 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		groundAlbedo: 0.75,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
-		range: new Vector2(0.3, 0.4),
 	},
 	jungle: {
-		upperColor: new Color3(0.1, 0.3, 0.7),
-		lowerColor: new Color3(0, 1.0, 0.1),
+		colors: [new Color3(0, 0.9, 0.1), new Color3(0.1, 0.3, 0.7)],
 		halo: new Color3(0.5, 1.0, 0.5),
 		base: 0.4,
 		lowerClamp: new Vector2(0, 1),
@@ -66,15 +63,14 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		groundAlbedo: 0.85,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
-		range: new Vector2(0.2, 0.4),
+		range: [0.2, 0.4],
 		clouds: {
 			base: 0.7,
 			albedo: 0.9,
 		},
 	},
 	ice: {
-		upperColor: new Color3(1.0, 1.0, 1.0),
-		lowerColor: new Color3(0.7, 0.7, 0.9),
+		colors: [new Color3(0.7, 0.7, 0.9), new Color3(1.0, 1.0, 1.0)],
 		halo: new Color3(1.0, 1.0, 1.0),
 		base: 0.8,
 		lowerClamp: new Vector2(0, 1),
@@ -82,15 +78,14 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		groundAlbedo: 0.85,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
-		range: new Vector2(0.3, 0.4),
+		range: [0.3, 0.4],
 		clouds: {
 			base: 0.4,
 			albedo: 0.8,
 		},
 	},
 	desert: {
-		upperColor: new Color3(0.9, 0.3, 0),
-		lowerColor: new Color3(1.0, 0.5, 0.1),
+		colors: [new Color3(1.0, 0.5, 0.1), new Color3(0.9, 0.3, 0)],
 		halo: new Color3(1.0, 0.5, 0.1),
 		base: 0.18,
 		lowerClamp: new Vector2(0.3, 1),
@@ -98,11 +93,10 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		groundAlbedo: 0.75,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
-		range: new Vector2(0.3, 0.4),
+		range: [0.3, 0.4],
 	},
 	islands: {
-		upperColor: new Color3(0.4, 2.0, 0.4),
-		lowerColor: new Color3(0, 0.2, 2.0),
+		colors: [new Color3(0, 0.2, 2.0), new Color3(0.4, 2.0, 0.4)],
 		halo: new Color3(0, 0.2, 2.0),
 		base: 0.15,
 		lowerClamp: new Vector2(0.6, 1),
@@ -110,17 +104,16 @@ const biomes: Record<PlanetBiome, PlanetMaterialOptions> = {
 		groundAlbedo: 0.95,
 		directNoise: false,
 		lowerClip: new Vector2(0, 0),
-		range: new Vector2(0.2, 0.3),
+		range: [0.2, 0.3],
 		clouds: {
 			base: 0.6,
 			albedo: 0.9,
 		},
 	},
 	moon: {
-		upperColor: new Color3(2.0, 1.0, 0),
-		lowerColor: new Color3(0, 0.2, 1.0),
+		colors: [new Color3(0, 0.2, 1.0), new Color3(1.0, 1.0, 0)],
 		lowerClamp: new Vector2(0.6, 1),
-		range: new Vector2(0.3, 0.35),
+		range: [0.3, 0.35],
 		halo: new Color3(0, 0, 0),
 		base: 0.5,
 		groundAlbedo: 0.6,
@@ -152,34 +145,36 @@ export class PlanetMaterial extends ShaderMaterial {
 
 		this.setFloat('groundAlbedo', generationOptions.groundAlbedo);
 		this.setColor3('halo', generationOptions.halo);
-		this.setColor3('upperColor', generationOptions.upperColor);
-		this.setColor3('lowerColor', generationOptions.lowerColor);
+
+		if (generationOptions.colors.length != generationOptions.range.length) {
+			logger.warn('Planet renderer colors and range length mismatch');
+		}
+		this.setInt('num_colors', generationOptions.colors.length);
+		this.setColor3Array('colors', generationOptions.colors);
+		this.setFloats('range', generationOptions.range);
+
 		this.setVector2('lowerClamp', generationOptions.lowerClamp);
-		this.setVector2('range', generationOptions.range);
 		this.setVector2('lowerClip', generationOptions.lowerClip);
 		this.setInt('directNoise', +generationOptions.directNoise);
 
 		// clouds
-		if ('clouds' in generationOptions) {
-			this.setInt('clouds_enabled', +true);
-			this.setFloat('clouds_albedo', generationOptions.clouds.albedo);
-			this.setFloat('clouds_base', generationOptions.clouds.base);
-		}
+		this.setInt('clouds_enabled', +('clouds' in generationOptions));
+		this.setFloat('clouds_albedo', generationOptions.clouds?.albedo);
+		this.setFloat('clouds_base', generationOptions.clouds?.base);
 	}
 }
 
 export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
 	public biome: PlanetBiome;
 	public seed: number;
-	public customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'];
+	public customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'] = [
+		{
+			applies_to: ['laser'],
+			material: Object.assign(new StandardMaterial('player-laser-projectile'), { emissiveColor: Color3.Red() }),
+		},
+	];
 	public constructor(id: string, scene: Scene) {
 		super(id, scene);
-		this.customHardpointProjectileMaterials = [
-			{
-				applies_to: ['laser'],
-				material: Object.assign(new StandardMaterial('player-laser-projectile'), { emissiveColor: Color3.Red() }),
-			},
-		];
 	}
 
 	public async update(data: PlanetData) {
