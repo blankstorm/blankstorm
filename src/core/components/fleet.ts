@@ -49,7 +49,7 @@ export class Fleet extends Set<Ship> implements Component<FleetJSON> {
 	public addFromStrings(...types: ShipType[]): void {
 		for (const type of types) {
 			const ship = new Ship(null, this.level, type);
-			ship.owner = this.owner;
+			ship.parent = ship.owner = this.owner;
 			this.add(ship);
 		}
 	}
@@ -72,8 +72,7 @@ export class Fleet extends Set<Ship> implements Component<FleetJSON> {
 			}
 			ship.position.addInPlace(this.position);
 
-			ship.parent = this.owner;
-			ship.owner = this.owner;
+			ship.parent = ship.owner = this.owner;
 			this.add(ship);
 		}
 	}

@@ -11,6 +11,8 @@ import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import type { HardpointJSON } from './hardpoint';
 import { Hardpoint } from './hardpoint';
+import type { CelestialBody } from './body';
+import type { Player } from './player';
 
 export interface ShipJSON extends EntityJSON {
 	type: ShipType;

@@ -21,6 +21,10 @@ export class Player extends Entity {
 		return this.fleet.power;
 	}
 
+	get owner(): this {
+		return this;
+	}
+
 	public get storage(): EntityStorageManager {
 		return this.fleet.storage;
 	}

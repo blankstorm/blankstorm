@@ -28,7 +28,7 @@ export class Berth extends StationPart implements Producer {
 		}
 		const ship = new Ship(null, this.level, this.productionID);
 		ship.position = this.absolutePosition;
-		ship.owner = this.station.owner;
+		ship.parent = ship.owner = this.station.owner;
 		this.productionID = null;
 		this.level.emit('ship_created', ship.toJSON());
 	}
