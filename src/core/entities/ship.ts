@@ -7,12 +7,10 @@ import { genericShips } from '../generic/ships';
 import type { Level } from '../level';
 import type { System } from '../system';
 import { randomCords } from '../utils';
-import type { CelestialBody } from './body';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import type { HardpointJSON } from './hardpoint';
 import { Hardpoint } from './hardpoint';
-import type { Player } from './player';
 
 export interface ShipJSON extends EntityJSON {
 	type: ShipType;
@@ -29,10 +27,8 @@ export class Ship extends Entity {
 
 	public isTargetable = true;
 
-	declare owner?: CelestialBody | Player;
-
 	/**
-	 * @todo move distance related stuff to ship creation
+	 * @todo move distance related stuff to ship creation (i.e. berth)
 	 */
 	constructor(id: string, level: Level, type?: ShipType) {
 		super(id, level);

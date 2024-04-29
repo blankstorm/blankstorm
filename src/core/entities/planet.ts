@@ -1,4 +1,4 @@
-import { pick } from 'utilium';
+import { assignWithDefaults, pick } from 'utilium';
 import type { PlanetBiome } from '../generic/planets';
 import type { CelestialBodyJSON } from './body';
 import { CelestialBody } from './body';
@@ -19,6 +19,6 @@ export class Planet extends CelestialBody {
 
 	public fromJSON(data: PlanetData): void {
 		super.fromJSON(data);
-		this.biome = data.biome;
+		assignWithDefaults(this, pick(data, 'biome'));
 	}
 }

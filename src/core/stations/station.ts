@@ -1,10 +1,9 @@
-import type { Level } from '../level';
+import { pick } from 'utilium';
 import type { CelestialBodyJSON } from '../entities/body';
 import { CelestialBody } from '../entities/body';
-import type { Player } from '../entities/player';
+import type { Level } from '../level';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
-import { pick } from 'utilium';
 
 export interface StationJSON extends CelestialBodyJSON {
 	parts: StationPartJSON[];
@@ -15,7 +14,6 @@ export class Station extends CelestialBody {
 	public readonly core: StationPart;
 
 	public isTargetable = true;
-	declare owner?: CelestialBody | Player;
 	public constructor(id: string, level: Level) {
 		super(id, level);
 

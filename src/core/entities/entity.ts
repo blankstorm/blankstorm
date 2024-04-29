@@ -7,6 +7,8 @@ import type { ItemContainer } from '../generic/items';
 import type { Level } from '../level';
 import { findPath } from '../path';
 import type { System } from '../system';
+import type { CelestialBody } from './body';
+import type { Player } from './player';
 
 export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
 
@@ -57,6 +59,10 @@ export class Entity
 		return resolveConstructors(this);
 	}
 
+	public isType<T extends Entity>(...types: string[]): this is T {
+		return types.some(type => this.entityTypes.includes(type));
+	}
+
 	protected _system: string;
 	public get system(): System {
 		return this.level.systems.get(this._system);
@@ -66,7 +72,15 @@ export class Entity
 	}
 
 	public parent?: Entity;
-	public owner?: Entity;
+
+	protected _owner: CelestialBody | Player;
+	public get owner(): CelestialBody | Player {
+		return this._owner;
+	}
+
+	public set owner(value: CelestialBody | Player) {
+		this._owner = value;
+	}
 
 	protected _storage?: ItemStorage;
 	public get storage(): ItemStorage {

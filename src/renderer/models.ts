@@ -146,7 +146,11 @@ export class ModelRenderer extends TransformNode {
 			this.rendererType = _type;
 			await this.createInstance(_type);
 		}
-		this.parent = this.getScene().getNodeById(parent);
+
+		const maybeParent = this.getScene().getNodeById(parent);
+		if (maybeParent) {
+			this.parent = maybeParent;
+		}
 	}
 }
 

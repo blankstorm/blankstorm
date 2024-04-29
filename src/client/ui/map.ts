@@ -25,14 +25,17 @@ export class MapMarker {
 		if (this.target instanceof System) {
 			return this.target.selectEntity<Star>('.Star').color.toHexString();
 		}
-		switch (this.target.entityType) {
-			case 'Star':
-			case 'Waypoint':
-				return (<Star | Waypoint>this.target).color.toHexString();
-			case 'Planet':
-				return biomeColor((<Planet>this.target).biome);
-			case 'Ship':
-				return account.id == (<Ship>this.target).owner.id ? '#0f0' : '#f00';
+
+		if (this.target.isType<Star | Waypoint>('Star', 'Waypoint')) {
+			return this.target.color.toHexString();
+		}
+
+		if (this.target.isType<Planet>('Planet')) {
+			biomeColor(this.target.biome);
+		}
+
+		if (this.target.isType<Ship>('Ship')) {
+			return account.id == (<Ship>this.target).owner.id ? '#0f0' : '#f00';
 		}
 	}
 

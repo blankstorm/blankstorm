@@ -3,7 +3,7 @@ import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
-import { assignWithDefaults, pick, randomHex, wait, type Shift } from 'utilium';
+import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
 import type { Component } from './components/component';
 import type { FleetJSON } from './components/fleet';
 import type { Entity, EntityJSON } from './entities/entity';
