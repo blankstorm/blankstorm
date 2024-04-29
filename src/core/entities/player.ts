@@ -36,11 +36,6 @@ export class Player extends Entity {
 		this.level.emit('player_reset', this.toJSON());
 	}
 
-	public remove() {
-		this.level.emit('player_removed', this.toJSON());
-		super.remove();
-	}
-
 	public fromJSON(data: PlayerJSON): void {
 		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, 'xp', 'research'));

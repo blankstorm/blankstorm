@@ -22,11 +22,6 @@ export class CelestialBody extends Entity {
 		return this.fleet.power;
 	}
 
-	public remove() {
-		this.level.emit('body_removed', this.toJSON());
-		super.remove();
-	}
-
 	public toJSON(): CelestialBodyJSON {
 		return {
 			...super.toJSON(),

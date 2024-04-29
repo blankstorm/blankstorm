@@ -6,7 +6,6 @@ import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
 import type { Component } from './components/component';
 import type { FleetJSON } from './components/fleet';
-import type { CelestialBodyJSON } from './entities/body';
 import type { Entity, EntityJSON } from './entities/entity';
 import { Planet, type PlanetData } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
@@ -41,7 +40,6 @@ export interface LevelJSON {
 const copy = ['difficulty', 'version', 'name', 'id'] as const satisfies ReadonlyArray<keyof Level>;
 
 export interface LevelEvents {
-	body_removed: [CelestialBodyJSON];
 	entity_added: [EntityJSON];
 	entity_removed: [EntityJSON];
 	entity_death: [EntityJSON];
@@ -49,12 +47,25 @@ export interface LevelEvents {
 	entity_created: [EntityJSON];
 	fleet_items_change: [FleetJSON, Record<ItemID, number>];
 	player_levelup: [PlayerJSON];
-	player_removed: [PlayerJSON];
 	player_reset: [PlayerJSON];
 	projectile_fire: [string, string, GenericProjectile];
 	ship_created: [ShipJSON];
 	update: [];
 }
+
+export const levelEventNames = [
+	'entity_added',
+	'entity_removed',
+	'entity_death',
+	'entity_path_start',
+	'entity_created',
+	'fleet_items_change',
+	'player_levelup',
+	'player_reset',
+	'projectile_fire',
+	'ship_created',
+	'update',
+] as const;
 
 export class Level extends EventEmitter<LevelEvents> implements Component<LevelJSON> {
 	public id: string = randomHex(16);

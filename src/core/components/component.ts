@@ -1,4 +1,5 @@
 import type { Level } from '../level';
+import { logger } from '../utils';
 
 export interface Component<TJSON = unknown> {
 	//readonly component: string;
@@ -27,5 +28,6 @@ export function isComponent(value: unknown): value is Component {
 export const components = new Map<string, ComponentStatic>();
 
 export function register<Class extends ComponentStatic>(target: Class) {
+	logger.debug('Registered component: ' + target.name);
 	components.set(target.name, target);
 }

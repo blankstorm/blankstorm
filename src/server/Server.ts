@@ -9,7 +9,7 @@ import { getAccount } from '@blankstorm/api';
 import { version, config as coreConfig } from '../core/metadata';
 import type { VersionID } from '../core/metadata';
 import { execCommandString } from './commands';
-import { Level } from '../core/level';
+import { Level, levelEventNames } from '../core/level';
 import type { LevelJSON } from '../core/level';
 
 import { Logger } from 'logzen';
@@ -137,7 +137,7 @@ export class Server extends EventEmitter {
 			this.level = new Level();
 		}
 
-		for (const type of ['projectile_fire', 'update', 'player_removed', 'entity_path_start'] as const) {
+		for (const type of levelEventNames) {
 			this.level.on(type, async (...args) => {
 				this.io.emit('event', type, ...args);
 			});
