@@ -1,19 +1,17 @@
-import type { Server } from './Server';
-import { Player } from '../core/entities/player';
-import type { PlayerJSON } from '../core/entities/player';
 import type { Socket } from 'socket.io';
-import type { Ship } from '../core/entities/ship';
+import type { PlayerJSON } from '../core/entities/player';
+import { Player } from '../core/entities/player';
+import type { Server } from './Server';
 
 export class Client extends Player {
-	socket: Socket;
 	lastMessager?: Client;
 	sentPackets = 0;
 	constructor(
 		id: string,
 		public server: Server,
-		{ fleet, socket }: { fleet: Ship[]; socket: Socket }
+		public readonly socket: Socket
 	) {
-		super(id, server.level, fleet);
+		super(id, server.level);
 		this.socket = socket;
 	}
 

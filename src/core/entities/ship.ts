@@ -23,6 +23,7 @@ export interface ShipJSON extends EntityJSON {
 
 export class Ship extends Entity {
 	public hardpoints: Set<Hardpoint> = new Set();
+	protected _loaded: boolean = false;
 	public type: ShipType;
 	public hp: number;
 	public jumpCooldown: number;
@@ -31,30 +32,30 @@ export class Ship extends Entity {
 
 	declare owner?: CelestialBody | Player;
 
+	constructor(id: string, level: Level) {
+		super(id, level);
+		this.on('created', () => this._load());
+	}
+
 	/**
 	 * @todo move distance related stuff to ship creation
 	 */
-	public constructor(id: string, level: Level, type?: ShipType) {
-		if (type && !genericShips[type]) throw new ReferenceError(`Ship type ${type} does not exist`);
-		super(id, level);
+	protected _load() {
+		const { power, hp, jump, storage, hardpoints } = genericShips[this.type];
 
-		const { power } = genericShips[type];
+		this.position.addInPlace(randomCords(Math.log(randomInt(0, power || 1) ** 3 + 1), true));
 
-		const distance = Math.log(randomInt(0, power || 1) ** 3 + 1);
-		this.position.addInPlace(randomCords(distance, true));
+		this._storage = new Container(storage);
+		this.hp = hp;
+		this.jumpCooldown = jump.cooldown;
 
-		this.type = type;
-		this._storage = new Container(this.generic.storage);
-		this.hp = this.generic.hp;
-		this.jumpCooldown = this.generic.jump.cooldown;
-
-		for (const info of this.generic.hardpoints) {
+		for (const info of hardpoints) {
 			if (!Object.hasOwn(genericHardpoints, info.type)) {
-				console.warn(`Hardpoint type "${info.type}" does not exist, skipping`);
+				console.warn('Hardpoint type does not exist (skipping): ' + info.type);
 				continue;
 			}
 
-			const hardpoint = new Hardpoint(null, level, info);
+			const hardpoint = new Hardpoint(null, this.level, info);
 			hardpoint.parent = this;
 			this.hardpoints.add(hardpoint);
 		}
@@ -144,6 +145,9 @@ export class Ship extends Entity {
 
 	public fromJSON(data: ShipJSON): void {
 		super.fromJSON(data);
+		if (!Object.hasOwn(genericShips, data.type)) {
+			throw new ReferenceError('Ship type does not exist: ' + data.type);
+		}
 		assignWithDefaults(this, pick(data, 'type', 'hp', 'jumpCooldown'));
 		this.storage.fromJSON(data.storage);
 		if ('fleet' in this.owner) {

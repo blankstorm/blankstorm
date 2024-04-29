@@ -11,6 +11,7 @@ export interface HardpointInfo {
 }
 
 export interface GenericShip extends Producible {
+	id: ShipType;
 	hp: number;
 	speed: number;
 	agility: number;

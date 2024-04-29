@@ -7,33 +7,34 @@ import { StationPart } from './part';
 import { pick } from 'utilium';
 
 export interface StationJSON extends CelestialBodyJSON {
-	type: string;
-	components: StationPartJSON;
+	parts: StationPartJSON[];
 }
 
 export class Station extends CelestialBody {
-	public parts: StationPart[] = [];
+	public parts: Set<StationPart> = new Set();
 	public readonly core: StationPart;
 
 	public isTargetable = true;
 	declare owner?: CelestialBody | Player;
-	public constructor(id: string, level: Level, options: ConstructorParameters<typeof CelestialBody>[2]) {
-		super(id, level, options);
+	public constructor(id: string, level: Level) {
+		super(id, level);
 
-		this.core = new StationPart(null, level, { type: 'core' });
+		this.core = new StationPart(null, level);
+		this.core.type = 'core';
 		this.core.station = this.core.parent = this;
 	}
 
-	public toJSON() {
+	public toJSON(): StationJSON {
 		return {
 			...super.toJSON(),
 			...pick(this, 'id'),
-			components: this.core.toJSON(),
+			parts: [...this.parts].map(part => part.toJSON()),
 		};
 	}
 
 	/**
 	 * @todo Implement
+	 * This includes rebuilding the part connections.
 	 */
 	public fromJSON(data: StationJSON): void {
 		super.fromJSON(data);

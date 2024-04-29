@@ -5,16 +5,12 @@ import type { GenericStationPartID } from '../generic/station_part';
 import { stationParts } from '../generic/station_part';
 import type { Station } from './station';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { pick } from 'utilium';
+import { assignWithDefaults, pick } from 'utilium';
 
 export interface StationPartJSON extends CelestialBodyJSON {
 	hp: number;
-	type: string;
-	connections: string[];
-}
-
-export interface StationPartOptions {
 	type: GenericStationPartID;
+	connections: string[];
 }
 
 export class StationPart extends CelestialBody {
@@ -22,11 +18,8 @@ export class StationPart extends CelestialBody {
 	public station: Station;
 	public connections: StationPart[] = [];
 	public type: GenericStationPartID;
-	public constructor(id: string, level: Level, { type }: StationPartOptions) {
-		super(id, level, { radius: 1 });
-
-		this.type = type;
-		this.hp = this.generic.hp;
+	public constructor(id: string, level: Level) {
+		super(id, level);
 	}
 
 	public get generic() {
@@ -34,22 +27,22 @@ export class StationPart extends CelestialBody {
 	}
 
 	public addPart(part: StationPart, thisConn: number, otherConn: number) {
-		const connection1 = this.generic.connecters.at(thisConn),
-			connection2 = part.generic.connecters.at(otherConn);
-		if (!connection1) {
-			throw new ReferenceError(`Connecter "${thisConn}" does not exist`);
+		const thisConnecter = this.generic.connecters.at(thisConn),
+			otherConnecter = part.generic.connecters.at(otherConn);
+		if (!thisConnecter) {
+			throw new ReferenceError('Connecter does not exist: ' + thisConn);
 		}
-		if (!connection2) {
-			throw new ReferenceError(`Subcomponent connecter "${otherConn}" does not exist`);
+		if (!otherConnecter) {
+			throw new ReferenceError('Subcomponent connecter does not exist' + otherConn);
 		}
 
-		this.station.parts.push(part);
+		this.station.parts.add(part);
 		this.connections[thisConn] = part;
 		part.connections[otherConn] = this;
 
 		part.parent = this;
-		part.position = Vector3.FromArray(connection1.position); //.add(connection2.position);
-		part.rotation = Vector3.FromArray(connection1.rotation); //.add(connection2.rotation);
+		part.position = Vector3.FromArray(thisConnecter.position); //.add(otherConnecter.position);
+		part.rotation = Vector3.FromArray(thisConnecter.rotation); //.add(otherConnecter.rotation);
 	}
 
 	public removePart(part: StationPart) {
@@ -66,12 +59,18 @@ export class StationPart extends CelestialBody {
 		return {
 			...super.toJSON(),
 			...pick(this, 'type', 'hp'),
-			connections: this.connections.map(component => component.id),
+			connections: this.connections.map(part => part.id),
 		};
 	}
 
+	public fromJSON(data: Partial<StationPartJSON>): void {
+		super.fromJSON(data);
+		assignWithDefaults(this, pick(data, 'hp', 'type'));
+		this.hp ||= this.generic.hp;
+	}
+
 	public remove() {
-		this.station.parts.splice(this.station.parts.indexOf(this), 1);
+		this.station.parts.delete(this);
 		for (const connection of this.connections) {
 			this.removePart(connection);
 		}

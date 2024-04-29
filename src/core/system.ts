@@ -184,15 +184,13 @@ export class System extends EventEmitter<{
 			names = randomBoolean() ? greekLetterNames.slice(0, planetCount) : range(1, planetCount + 1),
 			planets = [];
 		for (let i = 0; i < names.length; i++) {
-			const radius = randomInt(options.planets.radius_min, options.planets.radius_max);
-			const planet = new Planet(null, level, {
-				radius,
-				fleet: { ships: generateFleetFromPower((options.difficulty * (i + 1)) ** 2) },
-			});
+			const planet = new Planet(null, level);
+			planet.radius = randomInt(options.planets.radius_min, options.planets.radius_max);
+			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));
 
 			planet.name = usePrefix ? names[i] + ' ' + name : name + ' ' + names[i];
 			planet.system = system;
-			planet.position = randomCords(randomInt((star.radius + radius) * 1.5, options.planets.distance_max), true);
+			planet.position = randomCords(randomInt((star.radius + planet.radius) * 1.5, options.planets.distance_max), true);
 			planet.biome = planetBiomes[randomInt(0, 5)];
 
 			planets[i] = planet;

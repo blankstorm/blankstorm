@@ -31,6 +31,7 @@ const copy = ['id', 'name', 'entityType', 'isSelected', 'isTargetable'] as const
 export class Entity
 	extends EventEmitter<{
 		update: [];
+		created: [];
 	}>
 	implements Component<EntityJSON>
 {
@@ -94,6 +95,20 @@ export class Entity
 		return this.parent instanceof Entity ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
+	public constructor(
+		public id: string = randomHex(32),
+		public readonly level: Level
+	) {
+		super();
+		this.id ||= randomHex(32);
+		level.entities.add(this);
+
+		setTimeout(() => {
+			this.emit('created');
+			level.emit('entity_created', this.toJSON())
+		});
+	}
+
 	public update() {
 		if (Math.abs(this.rotation.y) > Math.PI) {
 			this.rotation.y += Math.sign(this.rotation.y) * 2 * Math.PI;
@@ -102,20 +117,6 @@ export class Entity
 		this.position.addInPlace(this.velocity);
 		this.velocity.scaleInPlace(0.9);
 		this.emit('update');
-	}
-
-	public constructor(
-		public id: string = randomHex(32),
-		public readonly level: Level,
-		constructorOptions?
-	) {
-		super();
-		this.id ||= randomHex(32);
-		if (constructorOptions) {
-			console.warn(`constructorOptions should not be passed to Node constructor`);
-		}
-		level.entities.add(this);
-		setTimeout(() => level.emit('entity_created', this.toJSON()));
 	}
 
 	public remove() {
@@ -169,8 +170,8 @@ export class Entity
 		assignWithDefaults(this, parsed);
 	}
 
-	public static FromJSON<const T extends Entity = Entity>(this: EntityConstructor<T>, data: Partial<EntityJSON>, level: Level, constructorOptions?): T {
-		const entity = new this(data.id, level, constructorOptions);
+	public static FromJSON<const T extends Entity = Entity>(this: EntityConstructor<T>, data: Partial<EntityJSON>, level: Level): T {
+		const entity = new this(data.id, level);
 		entity.fromJSON(data);
 		return entity;
 	}

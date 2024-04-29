@@ -264,7 +264,7 @@ export class Server extends EventEmitter {
 			throw 'Already connected';
 		}
 
-		const client = new Client(clientData.id, this, { socket, fleet: [] });
+		const client = new Client(clientData.id, this, socket);
 		client.name = clientData.username;
 		this.clients.set(socket.id, client);
 		this.log.log(`${client.name} connected with socket id ${socket.id}`);

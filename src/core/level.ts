@@ -15,7 +15,7 @@ import { Star, type StarJSON } from './entities/star';
 import type { GenericProjectile } from './generic/hardpoints';
 import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
-import type { GenericShip, ShipType } from './generic/ships';
+import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
@@ -41,7 +41,6 @@ export interface LevelJSON {
 const copy = ['difficulty', 'version', 'name', 'id'] as const satisfies ReadonlyArray<keyof Level>;
 
 export interface LevelEvents {
-	body_created: [CelestialBodyJSON];
 	body_removed: [CelestialBodyJSON];
 	entity_added: [EntityJSON];
 	entity_removed: [EntityJSON];
@@ -49,7 +48,6 @@ export interface LevelEvents {
 	entity_path_start: [string, IVector3Like[]];
 	entity_created: [EntityJSON];
 	fleet_items_change: [FleetJSON, Record<ItemID, number>];
-	player_created: [PlayerJSON];
 	player_levelup: [PlayerJSON];
 	player_removed: [PlayerJSON];
 	player_reset: [PlayerJSON];
@@ -131,7 +129,8 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 
 		player.storage.removeItems(generic.recipe);
-		const ship = new Ship(null, player.level, <ShipType>generic.id);
+		const ship = new Ship(null, player.level);
+		ship.type = generic.id
 		ship.parent = ship.owner = player;
 		player.fleet.add(ship);
 	}

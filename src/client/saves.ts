@@ -2,8 +2,6 @@ import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
 import { FolderMap, isJSON } from 'utilium';
 import { Player } from '../core/entities/player';
-import { Ship } from '../core/entities/ship';
-import type { ShipType } from '../core/generic/ships';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
 import { randomCords } from '../core/utils';
@@ -70,9 +68,10 @@ export async function createDefault(name: string): Promise<Level> {
 	level.name = name;
 	await level.ready();
 	const system = await level.generateSystem('Kurassh', Vector2.Zero());
-	const fleet = ['mosquito', 'cillus'].map((type: ShipType) => new Ship(null, level, type));
-	fleet[0].position.z += 4;
-	const player = new Player(account.id, level, fleet);
+	
+	const player = new Player(account.id, level);
+	player.fleet.addFromStrings('mosquito', 'cillus');
+	player.fleet.at(0).position.z += 4;
 	player.system = system;
 	player.name = account.username;
 	player.position = new Vector3(0, 0, -1000).add(randomCords(50, true));

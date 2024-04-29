@@ -1,16 +1,11 @@
-import type { EntityStorageManager } from '../components/storage';
+import { assignWithDefaults, pick } from 'utilium';
 import type { FleetJSON } from '../components/fleet';
 import { Fleet } from '../components/fleet';
+import type { EntityStorageManager } from '../components/storage';
 import type { ResearchID } from '../generic/research';
 import { research } from '../generic/research';
-import type { Level } from '../level';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
-import type { ShipJSON } from './ship';
-import { Ship } from './ship';
-import { Vector3 } from '@babylonjs/core';
-import type { ShipType } from '../generic/ships';
-import { assignWithDefaults, pick } from 'utilium';
 
 export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;
@@ -20,7 +15,7 @@ export interface PlayerJSON extends EntityJSON {
 
 export class Player extends Entity {
 	public research = <Record<ResearchID, number>>Object.fromEntries(Object.keys(research).map((k: ResearchID) => [k, 0]));
-	public fleet: Fleet = new Fleet();
+	public fleet: Fleet = new Fleet(this);
 	public xp = 0;
 	public get power(): number {
 		return this.fleet.power;
@@ -28,19 +23,6 @@ export class Player extends Entity {
 
 	public get storage(): EntityStorageManager {
 		return this.fleet.storage;
-	}
-
-	public constructor(id: string, level: Level, fleet: (ShipJSON | Ship | ShipType)[]) {
-		super(id, level);
-		this.fleet.position = Vector3.Zero();
-		this.fleet.owner = this;
-		for (const shipData of fleet) {
-			const ship = shipData instanceof Ship ? shipData : typeof shipData == 'string' ? level.getEntityByID<Ship>(shipData) : Ship.FromJSON(shipData, level);
-			ship.owner = this;
-			ship.position.addInPlace(this.absolutePosition);
-			this.fleet.add(ship);
-		}
-		setTimeout(() => level.emit('player_created', this.toJSON()));
 	}
 
 	public reset() {
