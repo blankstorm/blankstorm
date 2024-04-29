@@ -109,7 +109,6 @@ export async function init(canvas: HTMLCanvasElement) {
 
 	const models = ['apis', 'cillus', 'horizon', 'hurricane', 'inca', 'laser', 'laser_cannon_double', 'mosquito', 'pilsung', 'wind'];
 	for (const id of models) {
-		logger.debug('Loading model: ' + id);
 		await initModel(id, scene);
 	}
 }

@@ -31,6 +31,10 @@ export class PlayerRenderer extends TransformNode implements Renderer<PlayerJSON
 		this.fleetPosition = Vector3.FromArray(fleet?.position);
 		for (const id of fleet?.ships || []) {
 			const ship = this.getScene().getNodeById(id);
+			if (!ship) {
+				continue;
+			}
+
 			ship.parent = this;
 		}
 		this.parent = this.getScene().getNodeById(parent);

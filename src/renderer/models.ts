@@ -135,13 +135,13 @@ export class ModelRenderer extends TransformNode {
 		return this._instance;
 	}
 
-	public async update({ name, position, rotation, parent, entityType: nodeType, type }: EntityJSON & { type?: string }, rendererType?: string) {
+	public async update({ name, position, rotation, parent, entityType, type }: EntityJSON & { type?: string }, rendererType?: string) {
 		this.name = name;
 		if (!this._currentPath) {
 			this.position = Vector3.FromArray(position);
 			this.rotation = Vector3.FromArray(rotation);
 		}
-		const _type = rendererType || type || nodeType;
+		const _type = rendererType || type || entityType;
 		if (this.rendererType != _type) {
 			this.rendererType = _type;
 			await this.createInstance(_type);
@@ -167,4 +167,5 @@ export async function initModel(path: string, scene: Scene) {
 	});
 	scene.reflectionProbes[0].renderList.push(container.meshes[1]);
 	genericMeshes.set(path, container);
+	logger.debug('Loaded model asset: ' + path);
 }

@@ -179,7 +179,14 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 
 	public async update(data: PlanetData) {
 		await super.update(data);
-		if (this.biome == data.biome) {
+		for (const id of data.fleet.ships) {
+			const ship = this.getScene().getNodeById(id);
+			if (!ship) {
+				continue;
+			}
+			ship.parent = this;
+		}
+		if (this.biome == data.biome && this.seed == data.seed) {
 			return;
 		}
 		if (!(data.biome in biomes)) {
