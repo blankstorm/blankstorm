@@ -63,21 +63,17 @@ export float prand_at(vec3 point, float base, float resolution, float seed) {
 	return clamp(factor * base, 0.0, 1.0);
 }
 
-export vec3 prand_to_color(float value, vec2 range, vec3 lowerColor, vec3 upperColor, vec2 lower_clamp) {
-	if (value < range.x)
-	{
-		float scale = value / range.x;
-		return lowerColor * clamp(scale, lower_clamp.x, lower_clamp.y);
+export vec3 to_color(float value, vec2 range, vec3 lowerColor, vec3 upperColor, vec2 lower_clamp) {
+	if (value < range.x) {
+		return lowerColor * clamp(value / range.x, lower_clamp.x, lower_clamp.y);
 	}
-	else if (value < range.y)
-	{
-		float scale_left = (value - range.x) / (range.y - range.x);
-		float scale_right = (value - range.x) / (1.0 - range.x);
-		return lowerColor * (1.0 - scale_left) + upperColor * scale_right;
+
+	vec3 upper = upperColor * (value - range.x) / (1.0 - range.x);
+
+	if (value >= range.y) {
+		return upper;
 	}
-	else
-	{
-		float scale = (value - range.x) / (1.0 - range.x);
-		return upperColor * scale;
-	}
+
+	float scale_left = (value - range.x) / (range.y - range.x);
+	return lowerColor * (1.0 - scale_left) + upper;
 }

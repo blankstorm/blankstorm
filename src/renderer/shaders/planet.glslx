@@ -51,7 +51,7 @@ export void fragmentSource() {
 	// ground
 	float luminance = prand_at(_normal, base, resolution, seed);
 	luminance = clamp(luminance < lowerClip.x ? luminance * lowerClip.y : luminance, 0.0, 1.0);
-	vec3 color = directNoise ? vec3(luminance) : prand_to_color(luminance, range, lowerColor, upperColor, lowerClamp);
+	vec3 color = directNoise ? vec3(luminance) : to_color(luminance, range, lowerColor, upperColor, lowerClamp);
 	color *= groundAlbedo;
 
 	// diffuse
