@@ -187,7 +187,7 @@ export class System extends EventEmitter<{
 			const planet = new Planet(null, level);
 			planet.radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));
-			planet.fleet.position = randomCords(randomInt(planet.radius + 5, planet.radius * 1.2), true);
+			planet.fleet.position = randomCords(randomInt(planet.radius + 5, planet.radius * 1.25), true);
 
 			planet.name = usePrefix ? names[i] + ' ' + name : name + ' ' + names[i];
 			planet.system = system;

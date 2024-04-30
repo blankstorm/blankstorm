@@ -5,18 +5,18 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
 import { randomFloat, randomHex, randomInt, wait } from 'utilium';
 import type { HardpointJSON } from '../../core/entities/hardpoint';
-import type { GenericProjectile } from '../../core/generic/hardpoints';
+import { genericHardpoints, type GenericProjectile, type HardpointType } from '../../core/generic/hardpoints';
 import { randomCords } from '../../core/utils';
 import { ModelRenderer } from '../models';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
-export interface CustomHardpointProjectileMaterial {
+export interface ProjectileMaterial {
 	applies_to: string[];
 	material: Material;
 }
 
 export interface FireProjectileOptions extends GenericProjectile {
-	materials: { applies_to: string[]; material: Material }[];
+	materials: ProjectileMaterial[];
 }
 
 export interface HardpointProjectileHandlerOptions extends FireProjectileOptions {
@@ -61,6 +61,7 @@ const projectiles: Record<string, HardpointProjectileHandler> = {
 export class HardpointRenderer extends ModelRenderer implements Renderer<HardpointJSON> {
 	public projectiles: Set<Renderer> = new Set();
 	protected _projectile: HardpointProjectileHandler;
+	public declare rendererType: HardpointType;
 	public constructor(id: string, scene: Scene) {
 		super(id, scene);
 	}
@@ -68,7 +69,7 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Hardpoi
 	public fireProjectile(target: TransformNode, rawOptions: FireProjectileOptions) {
 		const options: HardpointProjectileHandlerOptions = rawOptions;
 		options.material = rawOptions.materials.find(({ applies_to = [], material }) => {
-			if (applies_to.includes(this.rendererType) && material) {
+			if (applies_to.includes(genericHardpoints[this.rendererType].projectile.id) && material) {
 				return material;
 			}
 		}, this)?.material;
@@ -79,10 +80,12 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Hardpoi
 		if (this.rendererType != data.type) {
 			this._projectile = projectiles[data.type];
 		}
-		await super.update(data, data.type);
-		if (this.isInstanciated && typeof data?.scale == 'number') {
-			this.instance.scalingDeterminant = data.scale;
+		await super.update(data);
+		if (!this.isInstanciated) {
+			return;
 		}
+		this.instance.scaling.setAll(data.scale);
+		this.instance.scalingDeterminant = data.scale;
 	}
 }
 HardpointRenderer satisfies RendererStatic<HardpointRenderer>;

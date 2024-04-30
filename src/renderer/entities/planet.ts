@@ -167,7 +167,7 @@ export class PlanetMaterial extends ShaderMaterial {
 export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
 	public biome: PlanetBiome;
 	public seed: number;
-	public customHardpointProjectileMaterials: HardpointProjectileHandlerOptions['materials'] = [
+	public projectileMaterials: HardpointProjectileHandlerOptions['materials'] = [
 		{
 			applies_to: ['laser'],
 			material: Object.assign(new StandardMaterial('player-laser-projectile'), { emissiveColor: Color3.Red() }),

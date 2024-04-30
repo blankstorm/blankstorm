@@ -326,6 +326,6 @@ export async function startFollowingPath(entityID: string, path: IVector3Like[])
 
 export function fireProjectile(hardpointID: string, targetID: string, options: GenericProjectile) {
 	const hardpoint = <HardpointRenderer>scene.getTransformNodeById(hardpointID);
-	const { customHardpointProjectileMaterials: materials } = <PlayerRenderer | PlanetRenderer>hardpoint?.parent?.parent;
+	const { projectileMaterials: materials } = <PlayerRenderer | PlanetRenderer>hardpoint?.parent?.parent;
 	hardpoint.fireProjectile(scene.getTransformNodeById(targetID), { ...options, materials });
 }

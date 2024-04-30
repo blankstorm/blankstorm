@@ -20,7 +20,7 @@ export interface GenericHardpoint {
 }
 
 export const genericHardpoints = {
-	laser: {
+	laser_cannon_double: {
 		damage: 1,
 		reload: 10,
 		range: 200,

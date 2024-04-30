@@ -135,13 +135,13 @@ export class ModelRenderer extends TransformNode {
 		return this._instance;
 	}
 
-	public async update({ name, position, rotation, parent, entityType, type }: EntityJSON & { type?: string }, rendererType?: string) {
+	public async update({ name, position, rotation, parent, entityType, type }: EntityJSON & { type?: string }) {
 		this.name = name;
 		if (!this._currentPath) {
 			this.position = Vector3.FromArray(position);
 			this.rotation = Vector3.FromArray(rotation);
 		}
-		const _type = rendererType || type || entityType;
+		const _type = type || entityType;
 		if (this.rendererType != _type) {
 			this.rendererType = _type;
 			await this.createInstance(_type);

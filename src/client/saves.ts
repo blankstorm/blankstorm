@@ -71,7 +71,7 @@ export async function createDefault(name: string): Promise<Level> {
 
 	const player = new Player(account.id, level);
 	player.fleet.addFromStrings('mosquito', 'cillus');
-	player.fleet.at(0).position.z += 4;
+	player.fleet.at(0).position.z += 7.5;
 	player.system = system;
 	player.name = account.username;
 	player.position = new Vector3(0, 0, -1000).add(randomCords(50, true));
