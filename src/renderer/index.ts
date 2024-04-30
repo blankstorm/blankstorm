@@ -188,7 +188,7 @@ export async function load(serializedNodes: EntityJSON[]) {
 
 	for (const data of serializedNodes) {
 		if (!entityRenderers.has(data.entityType)) {
-			logger.warn(`rendering for node type "${data.entityType}" is not supported`);
+			logger.warn('rendering for entity type is not supported: ' + data.entityType);
 			continue;
 		}
 		const entity: Renderer = await createAndUpdate(entityRenderers.get(data.entityType), data, scene);
@@ -218,6 +218,10 @@ export async function update(levelData: LevelJSON) {
 	for (const entity of [...cache.entities, ...levelData.entities]) {
 		const data = levelData.entities.find(_ => _.id == entity.id),
 			cached = cache.entities.find(_ => _.id == entity.id);
+
+		if (!entityRenderers.has(data.entityType)) {
+			continue;
+		}
 
 		if (!cached) {
 			renderersToAdd.push(entity);

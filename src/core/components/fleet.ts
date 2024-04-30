@@ -1,24 +1,22 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { CelestialBody } from '../entities/body';
+import { Entity, type EntityJSON } from '../entities/entity';
 import type { Player } from '../entities/player';
 import { Ship } from '../entities/ship';
 import type { ShipType } from '../generic/ships';
-import type { Level } from '../level';
-import { register, type Component } from './component';
+import { register } from './component';
 import { EntityStorageManager } from './storage';
 
-export interface FleetJSON {
-	owner: string;
-	position: number[];
+export interface FleetJSON extends EntityJSON {
 	ships: string[];
 }
 
 @register
-export class Fleet extends Set<Ship> implements Component<FleetJSON> {
-	public storage = new EntityStorageManager(this);
+export class Fleet extends Entity implements Set<Ship> {
+	protected _storage = new EntityStorageManager(this);
 
-	public get level(): Level {
-		return this.owner.level;
+	public get storage(): EntityStorageManager {
+		return this._storage;
 	}
 
 	public position: Vector3 = Vector3.Zero();
@@ -31,11 +29,56 @@ export class Fleet extends Set<Ship> implements Component<FleetJSON> {
 		return total;
 	}
 
-	public constructor(
-		public owner?: CelestialBody | Player,
-		values?: readonly Ship[] | Iterable<Ship> | null
-	) {
-		super(values);
+	public constructor(owner?: CelestialBody | Player) {
+		super(null, owner.level);
+		this.owner = owner;
+		this.parent = owner;
+		this.ships = new Set();
+	}
+
+	protected ships: Set<Ship> = new Set();
+
+	public get size() {
+		return this.ships.size;
+	}
+
+	public add(value: Ship): this {
+		value.owner = this.owner;
+		value.parent = this;
+		this.ships.add(value);
+		return this;
+	}
+
+	public clear(): void {
+		this.ships.clear();
+	}
+
+	public delete(value: Ship): boolean {
+		return this.ships.delete(value);
+	}
+
+	public has(value: Ship): boolean {
+		return this.ships.has(value);
+	}
+
+	public forEach(cb: (value: Ship, value2: Ship, set: Set<Ship>) => void, thisArg?): void {
+		this.ships.forEach(cb, thisArg);
+	}
+
+	public entries(): IterableIterator<[Ship, Ship]> {
+		return this.ships.entries();
+	}
+
+	public keys(): IterableIterator<Ship> {
+		return this.ships.keys();
+	}
+
+	public values(): IterableIterator<Ship> {
+		return this.ships.values();
+	}
+
+	[Symbol.iterator](): IterableIterator<Ship> {
+		return this.ships[Symbol.iterator]();
 	}
 
 	public at(index: number): Ship {
@@ -49,38 +92,26 @@ export class Fleet extends Set<Ship> implements Component<FleetJSON> {
 	public addFromStrings(...types: ShipType[]): void {
 		for (const type of types) {
 			const ship = new Ship(null, this.level, type);
-			ship.parent = ship.owner = this.owner;
 			this.add(ship);
 		}
 	}
 
 	public toJSON(): FleetJSON {
 		return {
-			owner: this.owner?.id,
-			position: this.position.asArray(),
+			...super.toJSON(),
 			ships: Array.from(this).map(s => s.id),
 		};
 	}
 
-	public fromJSON({ position, ships }: FleetJSON): void {
-		this.position = Vector3.FromArray(position || [0, 0, 0]);
+	public fromJSON(data: FleetJSON): void {
+		super.fromJSON(data);
 		this.clear();
-		for (const id of ships) {
+		for (const id of data.ships) {
 			const ship = this.owner.level.getEntityByID<Ship>(id);
 			if (!ship) {
 				throw new ReferenceError('Ship does not exist: ' + id);
 			}
-			ship.position.addInPlace(this.position);
-
-			ship.parent = ship.owner = this.owner;
 			this.add(ship);
 		}
-	}
-
-	public static FromJSON(data: FleetJSON, level: Level): Fleet {
-		const fleet = new Fleet();
-		fleet.owner = level.getEntityByID(data.owner);
-		fleet.fromJSON(data);
-		return fleet;
 	}
 }

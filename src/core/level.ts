@@ -49,7 +49,6 @@ export interface LevelEvents {
 	player_levelup: [PlayerJSON];
 	player_reset: [PlayerJSON];
 	projectile_fire: [string, string, GenericProjectile];
-	ship_created: [ShipJSON];
 	update: [];
 }
 
@@ -63,7 +62,6 @@ export const levelEventNames = [
 	'player_levelup',
 	'player_reset',
 	'projectile_fire',
-	'ship_created',
 	'update',
 ] as const;
 
@@ -137,7 +135,6 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 
 		player.storage.removeItems(generic.recipe);
 		const ship = new Ship(null, player.level, generic.id);
-		ship.parent = ship.owner = player;
 		player.fleet.add(ship);
 	}
 
