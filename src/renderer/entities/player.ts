@@ -1,15 +1,11 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { Scene } from '@babylonjs/core/scene';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { PlayerJSON } from '../../core/entities/player';
+import { EntityRenderer } from './entity';
 import type { CustomHardpointProjectileMaterial } from './hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
-export class PlayerRenderer extends TransformNode implements Renderer<PlayerJSON> {
-	public velocity: Vector3 = Vector3.Zero();
-	public fleetPosition: Vector3 = Vector3.Zero();
+export class PlayerRenderer extends EntityRenderer implements Renderer<PlayerJSON> {
 	public customHardpointProjectileMaterials: CustomHardpointProjectileMaterial[] = [
 		{
 			applies_to: ['laser'],
@@ -19,26 +15,6 @@ export class PlayerRenderer extends TransformNode implements Renderer<PlayerJSON
 			}),
 		},
 	];
-	public constructor(id: string, scene: Scene) {
-		super(id, scene);
-	}
-
-	public async update({ name, position, rotation, velocity, parent, fleet }: PlayerJSON) {
-		this.name = name;
-		this.position = Vector3.FromArray(position);
-		this.rotation = Vector3.FromArray(rotation);
-		this.velocity = Vector3.FromArray(velocity);
-		this.fleetPosition = Vector3.FromArray(fleet?.position);
-		for (const id of fleet?.ships || []) {
-			const ship = this.getScene().getNodeById(id);
-			if (!ship) {
-				continue;
-			}
-
-			ship.parent = this;
-		}
-		this.parent = this.getScene().getNodeById(parent);
-	}
 }
 PlayerRenderer satisfies RendererStatic<PlayerRenderer>;
 entityRenderers.set('Player', PlayerRenderer);

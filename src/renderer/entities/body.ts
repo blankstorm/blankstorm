@@ -1,30 +1,19 @@
-import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import type { Node } from '@babylonjs/core/node';
-import type { Scene } from '@babylonjs/core/scene';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { CelestialBodyJSON } from '../../core/entities/body';
+import { EntityRenderer } from './entity';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
-export class CelestialBodyRenderer extends Mesh implements Renderer<CelestialBodyJSON> {
+export class CelestialBodyRenderer extends EntityRenderer implements Renderer<CelestialBodyJSON> {
 	public radius = 0;
-	public fleetPosition = Vector3.Zero();
+	public mesh: Mesh = new Mesh('CelestialBodyRenderer:mesh', null, this);
 
-	// note: using ...args: ConstructorParmeters<Mesh> doesn't work since Mesh is imported as an interface, namespace, and class
-	public constructor(name: string, scene?: Scene, parent?: Node, source?: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor?: boolean) {
-		super(name, scene, parent, source, doNotCloneChildren, clonePhysicsImpostor);
-	}
-
-	public async update({ name, radius, position, rotation, parent, fleet }: CelestialBodyJSON) {
-		this.name = name;
-		if (this.radius != radius) {
-			this.radius = radius;
-			CreateSphereVertexData({ diameter: radius * 2, segments: 64 }).applyToMesh(this);
+	public async update(data: CelestialBodyJSON) {
+		await super.update(data);
+		if (this.radius != data.radius) {
+			this.radius = data.radius;
+			CreateSphereVertexData({ diameter: data.radius * 2, segments: 64 }).applyToMesh(this.mesh);
 		}
-		this.position = Vector3.FromArray(position);
-		this.rotation = Vector3.FromArray(rotation);
-		this.fleetPosition = Vector3.FromArray(fleet?.position);
-		this.parent = this.getScene().getNodeById(parent);
 	}
 }
 CelestialBodyRenderer satisfies RendererStatic<CelestialBodyRenderer>;

@@ -173,19 +173,9 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 			material: Object.assign(new StandardMaterial('player-laser-projectile'), { emissiveColor: Color3.Red() }),
 		},
 	];
-	public constructor(id: string, scene: Scene) {
-		super(id, scene);
-	}
 
 	public async update(data: PlanetData) {
 		await super.update(data);
-		for (const id of data.fleet.ships) {
-			const ship = this.getScene().getNodeById(id);
-			if (!ship) {
-				continue;
-			}
-			ship.parent = this;
-		}
 		if (this.biome == data.biome && this.seed == data.seed) {
 			return;
 		}
@@ -193,7 +183,7 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 			throw new ReferenceError('Planet biome does not exist: ' + data.biome);
 		}
 		assignWithDefaults(this, pick(data, 'biome', 'seed'));
-		this.material = new PlanetMaterial(biomes[data.biome], this.seed, this.getScene());
+		this.mesh.material = new PlanetMaterial(biomes[data.biome], this.seed, this.getScene());
 	}
 }
 PlanetRenderer satisfies RendererStatic<PlanetRenderer>;

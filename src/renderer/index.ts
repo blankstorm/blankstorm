@@ -22,7 +22,7 @@ import type { LevelJSON } from '../core/level';
 import { config, version } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
 import type { HardpointRenderer, Renderer } from './entities';
-import { CelestialBodyRenderer, PlanetRenderer, PlanetMaterial, PlayerRenderer, ShipRenderer, createAndUpdate, entityRenderers } from './entities';
+import { EntityRenderer, PlanetMaterial, PlanetRenderer, PlayerRenderer, ShipRenderer, createAndUpdate, entityRenderers } from './entities';
 import { logger } from './logger';
 import { ModelRenderer, initModel } from './models';
 export { logger };
@@ -43,7 +43,6 @@ let skybox: Mesh,
 	xzPlane: Mesh,
 	camera: ArcRotateCamera,
 	cache: LevelJSON = createEmptyCache(),
-	hitboxes = false,
 	glow: GlowLayer;
 
 export const cameraVelocity: Vector3 = Vector3.Zero();
@@ -51,7 +50,13 @@ export const cameraVelocity: Vector3 = Vector3.Zero();
 export let engine: Engine, scene: Scene, highlight: HighlightLayer, probe: ReflectionProbe;
 
 export function setHitboxes(value: boolean) {
-	hitboxes = !!value;
+	for (const node of scene.transformNodes) {
+		if (node instanceof EntityRenderer || node instanceof ModelRenderer) {
+			for (const mesh of node.getChildMeshes()) {
+				mesh.showBoundingBox = value;
+			}
+		}
+	}
 }
 
 const entities: Map<string, Renderer<EntityJSON>> = new Map();
@@ -125,20 +130,6 @@ export async function render() {
 		throw new ReferenceError('Renderer not initalized');
 	}
 
-	// hitboxes
-	for (const mesh of scene.meshes) {
-		if (mesh instanceof CelestialBodyRenderer) {
-			mesh.showBoundingBox = hitboxes;
-			continue;
-		}
-
-		if (mesh?.parent instanceof ModelRenderer) {
-			for (const child of mesh.getChildMeshes()) {
-				child.showBoundingBox = hitboxes;
-			}
-		}
-	}
-
 	// camera
 	camera.target.addInPlace(cameraVelocity);
 	camera.alpha %= Math.PI * 2;
@@ -151,13 +142,13 @@ export async function render() {
 		if (!(entity instanceof PlanetRenderer)) {
 			continue;
 		}
-		if (!(entity?.material instanceof PlanetMaterial)) {
+		if (!(entity.mesh?.material instanceof PlanetMaterial)) {
 			continue;
 		}
 
-		entity.rotation.y += 0.0001 * ratio * entity.material.rotationFactor;
-		entity.material.setMatrix('rotation', Matrix.RotationY(entity.material.matrixAngle));
-		entity.material.matrixAngle -= 0.0004 * ratio;
+		entity.rotation.y += 0.0001 * ratio * entity.mesh.material.rotationFactor;
+		entity.mesh.material.setMatrix('rotation', Matrix.RotationY(entity.mesh.material.matrixAngle));
+		entity.mesh.material.matrixAngle -= 0.0004 * ratio;
 	}
 
 	scene.render();
