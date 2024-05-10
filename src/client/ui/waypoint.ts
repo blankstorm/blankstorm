@@ -67,16 +67,7 @@ export class WaypointUI extends HTMLDivElement {
 		this.marker.filter('p').css('text-shadow', '1px 1px 1px #000');
 		this.update();
 
-		target.on('update', () => {
-			this.update();
-		});
-	}
-
-	protected _update() {
-		this.li.find('.icon use').attr('href', $build.asset_dir + '/images/icons.svg#' + this.target.icon);
-		this.marker.find('use').attr('href', $build.asset_dir + '/images/icons.svg#' + this.target.icon);
-		this.li.find('.icon svg').css('fill', this.target.color);
-		this.li.find('.name').text(this.target.name);
+		target.on('update', () => this.update());
 	}
 
 	public update(): void {
@@ -93,11 +84,15 @@ export class WaypointUI extends HTMLDivElement {
 					? `${this.target.name} - ${minimize(Vector3.Distance(player().position, this.target.position))} km`
 					: ''
 			);
-		this.marker[this.screenPos.z > 1 && this.screenPos.z < 1.15 ? 'hide' : 'show']();
+
+		this.li.find('.icon use').attr('href', $build.asset_dir + '/images/icons.svg#' + this.target.icon);
+		this.marker.find('use').attr('href', $build.asset_dir + '/images/icons.svg#' + this.target.icon);
+		this.li.find('.icon svg').css('fill', this.target.color);
+		this.li.find('.name').text(this.target.name);
 
 		if (this.target.system.id == system().id) {
 			this.li.appendTo('#waypoint-list');
-			this.marker.show();
+			this.marker[this.screenPos.z > 1 && this.screenPos.z < 1.15 ? 'hide' : 'show']();
 		} else {
 			this.li.detach();
 			this.marker.hide();
