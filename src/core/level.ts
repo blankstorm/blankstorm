@@ -84,8 +84,6 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		for (const entity of this.entities) {
 			if (entity.id == id) return <N>entity;
 		}
-
-		return null;
 	}
 
 	protected _selectEntities(selector: string): Entity[] {

@@ -4,13 +4,13 @@ import type { Entity } from '../../core/entities/entity';
 import type { Planet } from '../../core/entities/planet';
 import type { Ship } from '../../core/entities/ship';
 import type { Star } from '../../core/entities/star';
+import type { Waypoint } from '../../core/entities/waypoint';
 import { config } from '../../core/metadata';
 import { System } from '../../core/system';
 import { currentLevel } from '../client';
 import * as settings from '../settings';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
-import { Waypoint } from '../waypoints';
 
 export type MapMode = 'in-system' | 'inter-system';
 
@@ -26,8 +26,12 @@ export class MapMarker {
 			return this.target.selectEntity<Star>('.Star').color.toHexString();
 		}
 
-		if (this.target.isType<Star | Waypoint>('Star', 'Waypoint')) {
+		if (this.target.isType<Star>('Star')) {
 			return this.target.color.toHexString();
+		}
+
+		if (this.target.isType<Waypoint>('Waypoint')) {
+			return this.target.color;
 		}
 
 		if (this.target.isType<Planet>('Planet')) {
@@ -87,13 +91,13 @@ export class MapMarker {
 			[isCircle ? 'cy' : 'y']: y, // scale,
 		});
 		if (isCircle) {
-			marker.attr('r', 'radius' in this.target ? <number>this.target.radius : 25);
+			marker.attr('r', 'radius' in this.target ? (this.target.radius as number) : 25);
 		}
 		(<JQuery>(marker.is('svg') ? marker : this.gui)).css({
 			rotate: (!isSystem ? this.target.absoluteRotation.y : 0) + 'rad',
 			fill: this.color,
 		});
-		(isSystem ? this.target : this.target.level).id == system().id && this.mode == mode ? this.gui.show() : this.gui.hide();
+		(isSystem ? this.target : this.target.system).id == system().id && this.mode == mode ? this.gui.show() : this.gui.hide();
 	}
 }
 
@@ -144,7 +148,7 @@ export function update(): void {
 		if (markers.has(entity.id) || !supportsMarkerType(entity.entityType)) {
 			continue;
 		}
-		if (entity instanceof Waypoint && entity.builtin) {
+		if (entity.isType<Waypoint>('Waypoint') && entity.builtin) {
 			continue;
 		}
 		const marker = new MapMarker(entity);

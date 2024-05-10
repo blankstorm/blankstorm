@@ -1,5 +1,4 @@
 import { assignWithDefaults, pick } from 'utilium';
-import type { FleetJSON } from '../components/fleet';
 import { Fleet } from '../components/fleet';
 import type { EntityStorageManager } from '../components/storage';
 import type { ResearchID } from '../generic/research';
@@ -9,7 +8,7 @@ import { Entity } from './entity';
 
 export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;
-	fleet: FleetJSON;
+	fleet: string;
 	xp: number;
 }
 
@@ -43,18 +42,13 @@ export class Player extends Entity {
 	public fromJSON(data: PlayerJSON): void {
 		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, 'xp', 'research'));
-		this.research = data.research;
-		if ('fleet' in data) {
-			this.fleet.owner = this;
-			this.fleet.fromJSON(data.fleet);
-		}
 	}
 
 	public toJSON(): PlayerJSON {
 		return {
 			...super.toJSON(),
 			...pick(this, 'xp', 'research'),
-			fleet: this.fleet.toJSON(),
+			fleet: this.fleet.id,
 		};
 	}
 }

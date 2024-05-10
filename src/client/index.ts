@@ -17,7 +17,7 @@ if (options.debug) {
 		client,
 		core: await import('../core'),
 		renderer: await import('../renderer'),
-		ui: await import('./ui'),
+		ui: await import('./ui/ui'),
 		map: await import('./ui/map'),
 		user: await import('./user'),
 		$,

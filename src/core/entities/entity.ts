@@ -29,14 +29,13 @@ export interface EntityJSON {
 
 const copy = ['id', 'name', 'entityType', 'isSelected', 'isTargetable'] as const satisfies ReadonlyArray<keyof Entity>;
 
+interface EntityEvents {
+	update: [];
+	created: [];
+}
+
 @register
-export class Entity
-	extends EventEmitter<{
-		update: [];
-		created: [];
-	}>
-	implements Component<EntityJSON>
-{
+export class Entity<TEvents extends object = any> extends EventEmitter<EntityEvents | TEvents> implements Component<EntityJSON> {
 	public get [Symbol.toStringTag](): string {
 		return this.constructor.name;
 	}

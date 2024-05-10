@@ -24,7 +24,6 @@ import * as ui from './ui/ui';
 import { changeUI } from './ui/utils';
 import * as user from './user';
 import { alert, cookies, fixPaths, logger, minimize } from './utils';
-import { waypoints } from './waypoints';
 
 export interface ClientInit {
 	/**
@@ -407,7 +406,6 @@ function _update() {
 	}
 	const camera = renderer.getCamera();
 	camera.angularSensibilityX = camera.angularSensibilityY = 2000 / +settings.get('sensitivity');
-	waypoints;
 	$('#hud p.level').text(Math.floor(xpToLevel(user.player().xp)));
 	$('#hud svg.xp rect').attr('width', (xpToLevel(user.player().xp) % 1) * 100 + '%');
 	$('#debug .left').html(`

@@ -1,9 +1,9 @@
-import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { login } from '@blankstorm/api';
 import $ from 'jquery';
 import { isHex, isJSON } from 'utilium';
 import type { Player } from '../../core/entities/player';
+import { Waypoint } from '../../core/entities/waypoint';
 import type { ItemID } from '../../core/generic/items';
 import { items as itemsData } from '../../core/generic/items';
 import type { ResearchID } from '../../core/generic/research';
@@ -13,7 +13,6 @@ import { Level } from '../../core/level';
 import { config, game_url, version, versions } from '../../core/metadata';
 import { System } from '../../core/system';
 import * as renderer from '../../renderer';
-import { playsound } from '../audio';
 import * as client from '../client';
 import { isServer } from '../config';
 import * as locales from '../locales';
@@ -23,18 +22,20 @@ import * as servers from '../servers';
 import * as settings from '../settings';
 import { account, action, player as getPlayer, system } from '../user';
 import { $svg, alert, logger, minimize, upload } from '../utils';
-import { Waypoint, updateAll as updateAllWaypoints } from '../waypoints';
 import { ItemUI } from './item';
 import * as map from './map';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 import { changeUI } from './utils';
+import { WaypointUI } from './waypoint';
 
 export const items: Map<string, ItemUI> = new Map();
 
 export const ships: Map<string, ShipUI> = new Map();
 
 export const research: Map<string, ResearchUI> = new Map();
+
+export const waypoints: Map<string, WaypointUI> = new Map();
 
 export function init() {
 	$('#main .version a').text(versions.get(version).text).attr('href', `${game_url}/versions#${version}`);
@@ -80,7 +81,6 @@ export function update() {
 	}
 
 	const player: Player = getPlayer();
-	$('#waypoint-list div').detach();
 	$('svg.item-bar rect').attr('width', (player.storage.count() / player.storage.max) * 100 || 0);
 	$('div.item-bar .label').text(`${minimize(player.storage.count())} / ${minimize(player.storage.max)}`);
 
@@ -139,7 +139,14 @@ export function update() {
 		$(ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
 	}
 
-	updateAllWaypoints();
+	$('#waypoint-list div').detach();
+	for (const waypoint of system().selectEntities<Waypoint>('.Waypoint')) {
+		if (!waypoints.has(waypoint.id)) {
+			waypoints.set(waypoint.id, new WaypointUI(waypoint));
+		}
+
+		waypoints.get(waypoint.id).update();
+	}
 	map.update();
 
 	if (isServer) {
@@ -352,9 +359,9 @@ export function registerListeners() {
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 			alert(locales.text`error.waypoint.range`);
 		} else {
-			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, false, false, client.currentLevel);
+			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, client.currentLevel);
 			waypoint.name = name;
-			waypoint.color = Color3.FromHexString(color);
+			waypoint.color = color;
 			waypoint.position = new Vector3(x, y, z);
 			$<HTMLDialogElement>('#waypoint-dialog')[0].close();
 		}

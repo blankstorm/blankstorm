@@ -99,8 +99,8 @@ export class System extends EventEmitter<{
 		}
 	}
 
-	public selectEntities(...selectors: string[]): Entity[] {
-		return selectors.flatMap(selector => this._selectEntities(selector));
+	public selectEntities<T extends Entity = Entity>(...selectors: string[]): T[] {
+		return selectors.flatMap(selector => this._selectEntities(selector)) as T[];
 	}
 
 	public selectEntity<T extends Entity = Entity>(selector: string): T {
