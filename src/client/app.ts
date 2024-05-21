@@ -67,13 +67,13 @@ async function init(): Promise<void> {
 	});
 
 	window.menuBarVisible = false;
+	window.fullScreenable = true;
 	await window.loadFile(join(__dirname, 'index.html'));
 
 	window.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
 		return { action: 'deny' };
 	});
-	window.setFullScreenable(true);
 	window.center();
 }
 
