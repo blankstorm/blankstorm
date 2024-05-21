@@ -1,13 +1,12 @@
 /* eslint-env node */
-import type { Input } from 'electron';
-import { app, shell, nativeTheme, ipcMain, BrowserWindow } from 'electron';
-import { resolve, join } from 'node:path';
-import { parseArgs } from 'node:util';
+import { BrowserWindow, app, ipcMain, nativeTheme, shell } from 'electron';
+import { appendFileSync, existsSync, mkdirSync } from 'fs';
+import { LogLevel, Logger, type IOMessage } from 'logzen';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type IOMessage, LogLevel, Logger } from 'logzen';
-import { existsSync, mkdirSync, appendFileSync } from 'fs';
-import type { ClientInit } from './client';
+import { parseArgs } from 'node:util';
 import { version, versions } from '../core/metadata';
+import type { ClientInit } from './client';
 
 const __dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
@@ -53,7 +52,7 @@ ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, computed: nu
 
 nativeTheme.themeSource = 'dark';
 
-function init(): void {
+async function init(): Promise<void> {
 	const window: BrowserWindow = new BrowserWindow({
 		width: 16 * initialScale,
 		height: 9 * initialScale,
@@ -63,10 +62,12 @@ function init(): void {
 			preload: join(__dirname, 'preload.mjs'),
 			nodeIntegration: true,
 		},
+		title: 'Blankstorm Client ' + versions.get(version).text,
+		backgroundColor: '#000',
 	});
 
-	window.removeMenu();
-	window.loadFile(join(__dirname, 'index.html'));
+	window.menuBarVisible = false;
+	await window.loadFile(join(__dirname, 'index.html'));
 
 	window.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);
@@ -74,37 +75,8 @@ function init(): void {
 	});
 	window.setFullScreenable(true);
 	window.center();
-	window.title = 'Blankstorm Client ' + versions.get(version).text;
-
-	const inputHandler = (ev, input: Input) => {
-		if (input.type == 'keyUp') {
-			return;
-		}
-		switch (input.key) {
-			case 'F5':
-				window.reload();
-				break;
-			case 'F11':
-				window.fullScreen = !window.fullScreen;
-				break;
-			case 'F12':
-				if (options.dev) {
-					window.webContents.toggleDevTools();
-				}
-				break;
-		}
-	};
-
-	window.webContents.on('before-input-event', inputHandler);
-	window.webContents.on('devtools-opened', () => {
-		window.webContents.devToolsWebContents.on('before-input-event', inputHandler);
-	});
 }
 
 app.whenReady().then(init);
 
-app.on('window-all-closed', () => {
-	if (process.platform !== 'darwin') {
-		app.quit();
-	}
-});
+app.on('window-all-closed', app.quit);
