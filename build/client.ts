@@ -2,14 +2,13 @@ import archiver from 'archiver';
 import * as electronBuilder from 'electron-builder';
 import * as esbuild from 'esbuild';
 import glslPlugin from 'esbuild-plugin-glslx';
-import { replace } from 'esbuild-plugin-replace';
 import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import $package from '../package.json' assert { type: 'json' };
-import { deleteOutput, getVersionInfo, renameOutput } from './utils';
+import { defines, deleteOutput, getVersionInfo, renameOutput } from './common';
 const dirname = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
 
@@ -51,7 +50,6 @@ if (options.keep) {
 }
 
 const productName = 'Blankstorm Client';
-const copyright = `Copyright © ${new Date().getFullYear()} ${$package.author.name}. All Rights Reserved.`;
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
 	projectDir: dirname,
@@ -64,7 +62,6 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 		files: ['package.json', path.join(options.output, '**/*')],
 		appId: 'net.blankstorm.client',
 		productName,
-		copyright,
 		icon: './icon.png',
 		nsis: {
 			oneClick: false,
@@ -166,8 +163,8 @@ const esbuildConfig = {
 		'.html': 'copy',
 		'.json': 'copy',
 	},
-	define: { $debug: JSON.stringify(options.mode == 'dev' || options.mode == 'development'), $package: JSON.stringify($package) },
-	plugins: [glslPlugin(), replace({ include: /\.(css|html|ts)$/, values: { _copyright: copyright } })],
+	define: defines(options.mode),
+	plugins: [glslPlugin()],
 } satisfies esbuild.BuildOptions;
 
 const esbuildAppConfig = {

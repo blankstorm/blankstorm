@@ -68,6 +68,7 @@ async function _init(): Promise<void> {
 		return;
 	}
 
+	$<HTMLParagraphElement>('p.copyright').text(`Copyright © ${new Date().getFullYear()} ${$package.author.name}. All Rights Reserved.`);
 	const canvas = $<HTMLCanvasElement>('canvas.game');
 
 	_initLog('Loading saves...');

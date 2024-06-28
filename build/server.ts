@@ -5,8 +5,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { dirname, extname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { inject } from 'postject';
-import $package from '../package.json' assert { type: 'json' };
-import { getVersionInfo } from './utils';
+import { defines, getVersionInfo } from './common';
 
 const { display: displayVersion } = getVersionInfo();
 
@@ -56,7 +55,7 @@ const esbuildConfig = {
 	outfile,
 	platform: 'node',
 	keepNames: true,
-	define: { $debug: JSON.stringify(mode == 'dev' || mode == 'development'), $package: JSON.stringify($package) },
+	define: defines(mode),
 	plugins: [
 		{
 			name: 'server-sea',

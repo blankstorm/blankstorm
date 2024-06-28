@@ -16,7 +16,9 @@ export interface VersionInfo {
 }
 
 export function getVersionInfo(fullVersion: string = pkg.version): VersionInfo {
-	const { groups: { type, subversion, version } } = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion);
+	const {
+		groups: { type, subversion, version },
+	} = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion);
 	const shortVersion = type ? '0.' + subversion : version + '.0';
 	return {
 		fullVersion,
@@ -49,4 +51,14 @@ export function deleteOutput(deletes: string[], outPath = 'dist') {
 	for (const file of deletes) {
 		fs.rmSync(path.join(outPath, file), { recursive: true, force: true });
 	}
+}
+
+export function defines(mode: string): {
+	$debug: string;
+	$package: string;
+} {
+	return {
+		$debug: JSON.stringify(mode == 'dev' || mode == 'development'),
+		$package: JSON.stringify($package),
+	};
 }
