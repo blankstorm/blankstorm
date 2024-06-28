@@ -14,15 +14,16 @@ export interface VersionInfo {
 		shortVersionWindows: string;
 	};
 }
+
 export function getVersionInfo(fullVersion: string = pkg.version): VersionInfo {
-	const { groups: match } = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion);
-	const shortVersion = match.type ? '0.' + match.subversion : match.version + '.0';
+	const { groups: { type, subversion, version } } = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion);
+	const shortVersion = type ? '0.' + subversion : version + '.0';
 	return {
 		fullVersion,
-		version: match.version,
-		subversion: match.subversion,
-		type: match.type,
-		display: ['alpha', 'beta'].includes(match.type) ? `${match.type}-${match.subversion}` : match.version,
+		version,
+		subversion,
+		type,
+		display: ['alpha', 'beta'].includes(type) ? `${type}-${subversion}` : version,
 		electronBuilder: {
 			version: pkg.version,
 			shortVersion,

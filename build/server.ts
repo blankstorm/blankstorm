@@ -19,7 +19,6 @@ const {
 		output: { type: 'string', short: 'o', default: 'dist/build' },
 	},
 });
-const $debug = JSON.stringify(mode == 'dev' || mode == 'development');
 
 const outfile = 'dist/build/server.js',
 	seaPath = 'dist/blankstorm-server-' + displayVersion + extname(process.execPath);
@@ -57,7 +56,7 @@ const esbuildConfig = {
 	outfile,
 	platform: 'node',
 	keepNames: true,
-	define: { $debug, $package: JSON.stringify($package) },
+	define: { $debug: JSON.stringify(mode == 'dev' || mode == 'development'), $package: JSON.stringify($package) },
 	plugins: [
 		{
 			name: 'server-sea',

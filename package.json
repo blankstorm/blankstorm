@@ -1,5 +1,5 @@
 {
-	"name": "@blankstorm/root",
+	"name": "blankstorm",
 	"version": "1.0.0-alpha-1.4.4",
 	"private": true,
 	"description": "Blankstorm",
@@ -62,7 +62,7 @@
 		"eslint": "^8.57.0",
 		"postject": "^1.0.0-alpha.6",
 		"prettier": "^3.2.5",
-		"tsx": "^4.7.0",
+		"tsx": "^4.15.8",
 		"typescript": "^5.4.5"
 	}
 }
