@@ -78,7 +78,7 @@ export class MapMarker {
 		const isSystem = this.target instanceof System;
 		if (!isSystem && this.target.entityType == 'Waypoint') {
 			this.gui.find('.internal-marker use').attr({
-				href: '_build.asset_dir/images/icons.svg#' + ('icon' in this.target ? this.target.icon : 'location-dot'),
+				href: 'assets/images/icons.svg#' + ('icon' in this.target ? this.target.icon : 'location-dot'),
 				transform: 'scale(.025)',
 			});
 		}

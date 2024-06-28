@@ -9,23 +9,22 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import $package from '../package.json' assert { type: 'json' };
-import { getOptions, getReplacements } from './options';
 import { deleteOutput, getVersionInfo, renameOutput } from './utils';
 const dirname = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
 
 const options = parseArgs({
-		options: {
-			verbose: { type: 'boolean', short: 'v', default: false },
-			watch: { type: 'boolean', short: 'w', default: false },
-			output: { type: 'string', short: 'o', default: 'dist/build/client' },
-			'no-app': { type: 'boolean', default: false },
-			mode: { type: 'string', short: 'm', default: 'dev' },
-			debug: { type: 'boolean', default: false },
-			keep: { type: 'boolean', short: 'k', default: false },
-		},
-	}).values,
-	input = path.posix.join(dirname, 'src/client'),
+	options: {
+		verbose: { type: 'boolean', short: 'v', default: false },
+		watch: { type: 'boolean', short: 'w', default: false },
+		output: { type: 'string', short: 'o', default: 'dist/build/client' },
+		'no-app': { type: 'boolean', default: false },
+		mode: { type: 'string', short: 'm', default: 'dev' },
+		debug: { type: 'boolean', default: false },
+		keep: { type: 'boolean', short: 'k', default: false },
+	},
+}).values;
+const input = path.posix.join(dirname, 'src/client'),
 	asset_path = path.posix.join(dirname, 'dist/build/assets');
 
 function fromPath(sourcePath: string): string[] {
@@ -86,8 +85,6 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 	},
 };
 
-const buildOptions = getOptions(options.mode);
-
 function onBuildStart() {
 	try {
 		//build assets
@@ -103,7 +100,7 @@ function onBuildStart() {
 
 			fs.cpSync(path.join(dirname, 'assets', entry), path.join(asset_path, entry), { recursive: true });
 		}
-		fs.cpSync(asset_path, path.join(options.output, buildOptions.asset_dir), { recursive: true });
+		fs.cpSync(asset_path, path.join(options.output, 'assets'), { recursive: true });
 	} catch (e) {
 		if (!('status' in e)) {
 			console.error(e);
@@ -169,8 +166,8 @@ const esbuildConfig = {
 		'.html': 'copy',
 		'.json': 'copy',
 	},
-	define: { $build: JSON.stringify(buildOptions), $package: JSON.stringify($package) },
-	plugins: [glslPlugin(), replace({ include: /\.(css|html|ts)$/, values: { ...getReplacements(buildOptions), _copyright: copyright } })],
+	define: { $debug: JSON.stringify(options.mode == 'dev' || options.mode == 'development'), $package: JSON.stringify($package) },
+	plugins: [glslPlugin(), replace({ include: /\.(css|html|ts)$/, values: { _copyright: copyright } })],
 } satisfies esbuild.BuildOptions;
 
 const esbuildAppConfig = {
@@ -189,7 +186,7 @@ const esbuildAppConfig = {
 	],
 } satisfies esbuild.BuildOptions;
 
-const symlinkPath = path.join(input, buildOptions.asset_dir);
+const symlinkPath = path.join(input, 'assets');
 if (fs.existsSync(symlinkPath)) {
 	if (fs.statSync(symlinkPath).isDirectory()) {
 		fs.rmSync(symlinkPath, { recursive: true, force: true });

@@ -10,7 +10,7 @@ import { scene } from '../../renderer';
 export class WaypointListItemUI extends HTMLDivElement {
 	constructor(public readonly target: Waypoint) {
 		super();
-		$('<span class="edit" style=text-align:center;grid-column:2;><svg><use href="_build.asset_dir/images/icons.svg#pencil"/></svg></span>')
+		$('<span class="edit" style=text-align:center;grid-column:2;><svg><use href="assets/images/icons.svg#pencil"/></svg></span>')
 			.addClass('clickable')
 			.on('click', () => {
 				const dialog = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
@@ -18,14 +18,14 @@ export class WaypointListItemUI extends HTMLDivElement {
 				dialog.showModal();
 			})
 			.appendTo(this);
-		$('<span class="trash" style=text-align:center;grid-column:3;><svg><use href="_build.asset_dir/images/icons.svg#trash"/></svg></span>')
+		$('<span class="trash" style=text-align:center;grid-column:3;><svg><use href="assets/images/icons.svg#trash"/></svg></span>')
 			.addClass('clickable')
 			.on('click', async () => {
 				const yes = await confirm('Are you sure?');
 				if (yes) target.remove();
 			})
 			.appendTo(this);
-		$(`<span class="icon" style=text-align:center;grid-column:4;><svg style="fill:${target.color}"><use href="_build.asset_dir/images/icons.svg#${
+		$(`<span class="icon" style=text-align:center;grid-column:4;><svg style="fill:${target.color}"><use href="assets/images/icons.svg#${
 			target.icon || 'location-dot'
 		}" /></svg></span>
 		<span class="name" style=text-align:left;grid-column:5>${target.name}</span>
@@ -56,7 +56,7 @@ export class WaypointUI extends HTMLDivElement {
 	public constructor(public readonly target: Waypoint) {
 		super();
 		this.li = $(new WaypointListItemUI(target));
-		const svg = $svg('svg').append($svg('use').attr('href', $build.asset_dir + '/images/icons.svg#location-dot'));
+		const svg = $svg('svg').append($svg('use').attr('href', 'assets/images/icons.svg#location-dot'));
 		this.marker = $<HTMLDivElement>('<div><p style=justify-self:center></p></div>')
 			.append(svg)
 			.addClass('marker ingame')
@@ -85,8 +85,8 @@ export class WaypointUI extends HTMLDivElement {
 					: ''
 			);
 
-		this.li.find('.icon use').attr('href', $build.asset_dir + '/images/icons.svg#' + this.target.icon);
-		this.marker.find('use').attr('href', $build.asset_dir + '/images/icons.svg#' + this.target.icon);
+		this.li.find('.icon use').attr('href', 'assets/images/icons.svg#' + this.target.icon);
+		this.marker.find('use').attr('href', 'assets/images/icons.svg#' + this.target.icon);
 		this.li.find('.icon svg').css('fill', this.target.color);
 		this.li.find('.name').text(this.target.name);
 

@@ -20,7 +20,7 @@ export class BerthUI extends HTMLDivElement {
 				.text(locales.text(`entity.${type}.name`))
 				.appendTo(select);
 		}
-		$(`<p><tool-tip></tool-tip><svg style=font-size:1.5em><use href="_build.asset_dir/images/icons.svg#circle-plus"/></svg></p>`)
+		$(`<p><tool-tip></tool-tip><svg style=font-size:1.5em><use href="assets/images/icons.svg#circle-plus"/></svg></p>`)
 			.addClass('non-active add add-or-upgrade-icon')
 			.on('click', async () => {
 				await action('create_ship', genericShips[select.val() as ShipType], berth);

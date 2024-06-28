@@ -8,9 +8,9 @@ export class ShipUI extends HTMLDivElement {
 		super();
 
 		$(`
-			<span class="locked locked-icon"><svg style=font-size:1.5em><use href="_build.asset_dir/images/icons.svg#lock"/></svg></span>
+			<span class="locked locked-icon"><svg style=font-size:1.5em><use href="assets/images/icons.svg#lock"/></svg></span>
 			<span class=name style=text-align:center>${locales.text(`entity.${ship.id}.name`)}</span>
-			<span class="add add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href="_build.asset_dir/images/icons.svg#circle-plus"/></svg></span>
+			<span class="add add-or-upgrade-icon"><tool-tip></tool-tip><svg style=font-size:1.5em><use href="assets/images/icons.svg#circle-plus"/></svg></span>
 		`).appendTo(this);
 		$(this)
 			.find('.add')

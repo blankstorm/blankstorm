@@ -1,9 +1,8 @@
-import type { BuildOptions } from '../build/options';
 import type package from '../package.json';
 import type { ClientInit } from './client/client';
 
 declare global {
-	const $build: BuildOptions;
+	const $debug: boolean;
 	const $package: typeof package;
 	const $app: {
 		require<const T extends 'fs' | 'node:url' | 'node:path'>(

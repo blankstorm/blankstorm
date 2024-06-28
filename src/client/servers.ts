@@ -84,7 +84,7 @@ export async function ping(id: string): Promise<PingInfo> {
 	const server: ServerData = get(id);
 	const url = parseURL(server.url);
 	const info = gui(id).find('.info');
-	info.find('span').html('<svg><use href="_build.asset_dir/images/icons.svg#arrows-rotate"/></svg>').find('svg').addClass('server-ping-rotate');
+	info.find('span').html('<svg><use href="assets/images/icons.svg#arrows-rotate"/></svg>').find('svg').addClass('server-ping-rotate');
 	const beforeTime = performance.now();
 	try {
 		const res = await fetch(`${url.origin}/ping`);
@@ -95,11 +95,11 @@ export async function ping(id: string): Promise<PingInfo> {
 			info.find('tool-tip').html(`${url.hostname}<br><br>${versions.get(ping.version).text || ping.version}<br><br>${ping.message}`);
 			return ping;
 		} catch (e) {
-			info.find('span').html('<svg><use href="_build.asset_dir/images/icons.svg#xmark"/></svg>');
+			info.find('span').html('<svg><use href="assets/images/icons.svg#xmark"/></svg>');
 			info.find('tool-tip').html('Invalid response');
 		}
 	} catch (e) {
-		info.find('span').html('<svg><use href="_build.asset_dir/images/icons.svg#xmark"/></svg>');
+		info.find('span').html('<svg><use href="assets/images/icons.svg#xmark"/></svg>');
 		info.find('tool-tip').html(`Can't connect to server`);
 	} finally {
 		info.find('span svg').removeClass('server-ping-rotate');

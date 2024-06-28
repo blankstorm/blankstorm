@@ -6,7 +6,6 @@ import { dirname, extname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { inject } from 'postject';
 import $package from '../package.json' assert { type: 'json' };
-import { getOptions } from './options';
 import { getVersionInfo } from './utils';
 
 const { display: displayVersion } = getVersionInfo();
@@ -20,6 +19,7 @@ const {
 		output: { type: 'string', short: 'o', default: 'dist/build' },
 	},
 });
+const $debug = JSON.stringify(mode == 'dev' || mode == 'development');
 
 const outfile = 'dist/build/server.js',
 	seaPath = 'dist/blankstorm-server-' + displayVersion + extname(process.execPath);
@@ -57,7 +57,7 @@ const esbuildConfig = {
 	outfile,
 	platform: 'node',
 	keepNames: true,
-	define: { $build: JSON.stringify(getOptions(mode)), $package: JSON.stringify($package) },
+	define: { $debug, $package: JSON.stringify($package) },
 	plugins: [
 		{
 			name: 'server-sea',

@@ -157,7 +157,7 @@ export class ModelRenderer extends TransformNode {
 export const genericMeshes: Map<string, AssetContainer> = new Map();
 
 export async function initModel(path: string, scene: Scene) {
-	const container = await SceneLoader.LoadAssetContainerAsync(`${$build.asset_dir}/models/${path}.glb`, '', scene);
+	const container = await SceneLoader.LoadAssetContainerAsync(`assets/models/${path}.glb`, '', scene);
 	Object.assign(container.meshes[0], {
 		rotationQuaternion: null,
 		material: Object.assign(container.materials[0], {

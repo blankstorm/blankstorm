@@ -1,5 +1,5 @@
 {
-	"name": "blankstorm",
+	"name": "@blankstorm/root",
 	"version": "1.0.0-alpha-1.4.4",
 	"private": true,
 	"description": "Blankstorm",
@@ -24,7 +24,7 @@
 		"blankstorm"
 	],
 	"author": {
-		"name": "James P",
+		"name": "James Prevett",
 		"email": "jp@drvortex.dev",
 		"url": "https://drvortex.dev"
 	},
