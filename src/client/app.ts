@@ -34,8 +34,8 @@ if (!existsSync(logDir)) {
 }
 
 const latestLog = join(logDir, 'latest.log');
-if(existsSync(latestLog)) {
-	truncateSync(latestLog)
+if (existsSync(latestLog)) {
+	truncateSync(latestLog);
 }
 
 const logFile = join(logDir, new Date().toISOString().replaceAll(':', '.') + '.log');
