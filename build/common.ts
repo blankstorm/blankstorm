@@ -1,6 +1,6 @@
 import path from 'node:path';
 import * as fs from 'node:fs';
-import pkg from '../package.json' assert { type: 'json' };
+import $package from '../package.json' assert { type: 'json' };
 
 export interface VersionInfo {
 	fullVersion: string;
@@ -15,7 +15,7 @@ export interface VersionInfo {
 	};
 }
 
-export function getVersionInfo(fullVersion: string = pkg.version): VersionInfo {
+export function getVersionInfo(fullVersion: string = $package.version): VersionInfo {
 	const {
 		groups: { type, subversion, version },
 	} = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion);
@@ -27,7 +27,7 @@ export function getVersionInfo(fullVersion: string = pkg.version): VersionInfo {
 		type,
 		display: ['alpha', 'beta'].includes(type) ? `${type}-${subversion}` : version,
 		electronBuilder: {
-			version: pkg.version,
+			version: $package.version,
 			shortVersion,
 			shortVersionWindows: shortVersion,
 		},
