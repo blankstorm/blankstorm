@@ -2,7 +2,7 @@ import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
 import { getRandomIntWithRecursiveProbability, greekLetterNames, randomBoolean, randomFloat, randomHex, randomInt, range } from 'utilium';
-import { type Entity } from './entities/entity';
+import { filterEntities, type Entity } from './entities/entity';
 import { Planet } from './entities/planet';
 import { generateFleetFromPower } from './entities/ship';
 import { Star } from './entities/star';
@@ -63,52 +63,27 @@ export class System extends EventEmitter<{
 		this.emit('created');
 	}
 
-	public get entities(): Set<Entity> {
+	public entities(): Set<Entity>;
+	public entities<T extends Entity = Entity>(selector: string): Set<T>;
+	public entities(selector?: string): Set<Entity> {
 		const entities = [...this.level.entities].filter(e => e.system == this);
-		return new Set(entities);
+		return selector ? filterEntities(entities, selector) : new Set(entities);
 	}
 
 	public getEntityByID<N extends Entity = Entity>(id: string): N {
-		for (const entity of this.entities) {
+		for (const entity of this.entities()) {
 			if (entity.id == id) return <N>entity;
 		}
 
 		return null;
 	}
 
-	protected _selectEntities(selector: string): Entity[] {
-		if (typeof selector != 'string') throw new TypeError('selector must be of type string');
-		switch (selector[0]) {
-			case '*':
-				return [...this.entities];
-			case '@':
-				return [...this.entities].filter(entity => entity.name == selector.substring(1));
-			case '#':
-				return [...this.entities].filter(entity => entity.id == selector.substring(1));
-			case '.':
-				return [...this.entities].filter(entity => {
-					for (const type of entity.entityTypes) {
-						if (type.toLowerCase().includes(selector.substring(1).toLowerCase())) {
-							return true;
-						}
-					}
-					return false;
-				});
-			default:
-				throw 'Invalid selector';
-		}
+	public entity<T extends Entity = Entity>(selector: string): T {
+		return this.entities<T>(selector).values().next().value;
 	}
 
-	public selectEntities<T extends Entity = Entity>(...selectors: string[]): T[] {
-		return selectors.flatMap(selector => this._selectEntities(selector)) as T[];
-	}
-
-	public selectEntity<T extends Entity = Entity>(selector: string): T {
-		return <T>this._selectEntities(selector)[0];
-	}
-
-	public get selected() {
-		return [...this.entities].filter(e => e.isSelected);
+	public get selectedEntities(): Entity[] {
+		return [...this.entities()].filter(e => e.isSelected);
 	}
 
 	public toJSON(): SystemJSON {

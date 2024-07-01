@@ -24,15 +24,17 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		},
 		remove: {
 			exec({ executor }, selector) {
-				const entities = executor.level.selectEntities(selector).filter(entity => entity.entityTypes.includes('Entitiy'));
-				entities.forEach(e => e.remove());
-				return `Removed ${entities.length} entities`;
+				const entities = executor.level.selectEntities(selector);
+				for (const entity of entities) {
+					entity.remove();
+				}
+				return `Removed ${entities.size} entities`;
 			},
 			oplvl: 3,
 		},
 		spawn: {
 			exec({ executor }, type, selector, extra) {
-				const parent: Player = executor.level.selectEntity(selector);
+				const parent: Player = executor.level.entity(selector);
 				const spawned = new Ship(null, executor.level, type);
 				spawned.parent = spawned.owner = parent;
 				if (isJSON(extra)) {
@@ -70,12 +72,12 @@ export const commands: Map<string, Partial<Command>> = new Map(
 		 */
 		tp: {
 			exec({ executor }, selector, x, y, z) {
-				const nodes = executor.level.selectEntities(selector),
+				const entities = executor.level.selectEntities(selector),
 					location = new Vector3(+x || 0, +y || 0, +z || 0);
-				nodes.forEach(entity => {
+				entities.forEach(entity => {
 					entity.position = location;
 				});
-				return 'Teleported ' + nodes.length;
+				return 'Teleported ' + entities.size;
 			},
 			oplvl: 3,
 		},

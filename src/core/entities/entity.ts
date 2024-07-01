@@ -190,3 +190,35 @@ export class Entity
 		return entity;
 	}
 }
+
+export function filterEntities(entities: Iterable<Entity>, selector: string): Set<Entity> {
+	if (typeof selector != 'string') {
+		throw new TypeError('selector must be of type string');
+	}
+
+	if (selector == '*') {
+		return new Set(entities);
+	}
+
+	const selected = new Set<Entity>();
+	for (const entity of entities) {
+		switch (selector[0]) {
+			case '@':
+				if (entity.name == selector.slice(1)) selected.add(entity);
+				break;
+			case '#':
+				if (entity.id == selector.slice(1)) selected.add(entity);
+				break;
+			case '.':
+				for (const type of entity.entityTypes) {
+					if (type.toLowerCase().includes(selector.slice(1).toLowerCase())) {
+						selected.add(entity);
+					}
+				}
+				break;
+			default:
+				throw 'Invalid selector';
+		}
+	}
+	return selected;
+}

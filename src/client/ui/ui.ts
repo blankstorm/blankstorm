@@ -140,7 +140,7 @@ export function update() {
 	}
 
 	$('#waypoint-list div').detach();
-	for (const waypoint of system().selectEntities<Waypoint>('.Waypoint')) {
+	for (const waypoint of system().entities<Waypoint>('.Waypoint')) {
 		if (!waypoints.has(waypoint.id)) {
 			waypoints.set(waypoint.id, new WaypointUI(waypoint));
 		}

@@ -23,7 +23,7 @@ export class MapMarker {
 
 	get color(): string {
 		if (this.target instanceof System) {
-			return this.target.selectEntity<Star>('.Star').color.toHexString();
+			return this.target.entity<Star>('.Star').color.toHexString();
 		}
 
 		if (this.target.isType<Star>('Star')) {
@@ -144,7 +144,7 @@ export function update(): void {
 		<span>${system().connections.length} hyperspace connection(s)</span>
 	`);
 	$('#map .mode').text(modeNames[mode]);
-	for (const entity of system().entities) {
+	for (const entity of system().entities()) {
 		if (markers.has(entity.id) || !supportsMarkerType(entity.entityType)) {
 			continue;
 		}

@@ -6,7 +6,7 @@ import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
 import type { Component } from './components/component';
 import type { FleetJSON } from './components/fleet';
-import type { Entity, EntityJSON } from './entities/entity';
+import { filterEntities, type Entity, type EntityJSON } from './entities/entity';
 import { Planet, type PlanetData } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
 import { Ship, type ShipJSON } from './entities/ship';
@@ -86,35 +86,12 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 	}
 
-	protected _selectEntities(selector: string): Entity[] {
-		if (typeof selector != 'string') throw new TypeError('selector must be of type string');
-		switch (selector[0]) {
-			case '*':
-				return [...this.entities];
-			case '@':
-				return [...this.entities].filter(entity => entity.name == selector.substring(1));
-			case '#':
-				return [...this.entities].filter(entity => entity.id == selector.substring(1));
-			case '.':
-				return [...this.entities].filter(entity => {
-					for (const type of entity.entityTypes) {
-						if (type.toLowerCase().includes(selector.substring(1).toLowerCase())) {
-							return true;
-						}
-					}
-					return false;
-				});
-			default:
-				throw 'Invalid selector';
-		}
+	public selectEntities(selector: string): Set<Entity> {
+		return filterEntities(this.entities, selector);
 	}
 
-	public selectEntities(...selectors: string[]): Entity[] {
-		return selectors.flatMap(selector => this._selectEntities(selector));
-	}
-
-	public selectEntity<T extends Entity = Entity>(selector: string): T {
-		return <T>this._selectEntities(selector)[0];
+	public entity<T extends Entity = Entity>(selector: string): T {
+		return this.selectEntities(selector).values().next().value;
 	}
 
 	public _try_create_item(player: Player, item: Item): boolean {
