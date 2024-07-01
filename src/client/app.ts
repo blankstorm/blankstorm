@@ -1,6 +1,6 @@
 /* eslint-env node */
 import { BrowserWindow, app, ipcMain, nativeTheme, shell } from 'electron';
-import { appendFileSync, existsSync, mkdirSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, truncateSync } from 'fs';
 import { LogLevel, Logger, type IOMessage } from 'logzen';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,8 +32,17 @@ if (!existsSync(logDir)) {
 	// This also creates the data directory if it doesn't exist
 	mkdirSync(logDir, { recursive: true });
 }
+
+const latestLog = join(logDir, 'latest.log');
+if(existsSync(latestLog)) {
+	truncateSync(latestLog)
+}
+
 const logFile = join(logDir, new Date().toISOString().replaceAll(':', '.') + '.log');
-logger.on('entry', entry => appendFileSync(logFile, entry + '\n'));
+logger.on('entry', entry => {
+	appendFileSync(latestLog, entry + '\n');
+	appendFileSync(logFile, entry + '\n');
+});
 
 if (options.quiet || !options.dev) {
 	logger.detach(console, [LogLevel.DEBUG, LogLevel.LOG, LogLevel.INFO]);

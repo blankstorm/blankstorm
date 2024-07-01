@@ -1,4 +1,3 @@
-import { Engine } from '@babylonjs/core/Engines/engine';
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { getAccount, type Account } from '@blankstorm/api';
@@ -428,7 +427,6 @@ function _update() {
 	const { usedJSHeapSize: used = 0, jsHeapSizeLimit: limit = 0, totalJSHeapSize: total = 0 } = globalThis.performance?.memory || {},
 		glInfo = renderer.engine.getGlInfo();
 	$('#debug .right').html(`
-			<span>Babylon v${Engine.Version} | jQuery v${$.fn.jquery}</span><br>
 			<span>${glInfo.version}</span><br>
 			<span>${glInfo.renderer}</span><br>
 			<span>${`${(used / 1000000).toFixed()}MB/${(limit / 1000000).toFixed()}MB (${(total / 1000000).toFixed()}MB Allocated)`}</span><br>

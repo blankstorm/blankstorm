@@ -15,7 +15,7 @@ export const size = mods.size;
 export const ids: typeof mods.keys = mods.keys.bind(mods);
 
 export function load(data: ModData): void {
-	logger.log('Loaded mod: ' + data.id);
+	logger.debug('Loaded mod: ' + data.id);
 }
 
 export function init(): void {

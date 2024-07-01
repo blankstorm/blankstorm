@@ -5,12 +5,11 @@ import { Player } from '../core/entities/player';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
 import { randomCords } from '../core/utils';
-import * as chat from './chat';
 import { currentLevel } from './client';
 import { path } from './config';
 import { SaveListItem } from './ui/save';
 import { account } from './user';
-import { logger } from './utils';
+import { alert, logger } from './utils';
 const fs = $app.require('fs');
 
 export class Save {
@@ -64,6 +63,7 @@ export class Save {
 }
 
 export async function createDefault(name: string): Promise<Level> {
+	logger.debug(`Created default level "${name}"`);
 	const level = new Level();
 	level.name = name;
 	await level.ready();
@@ -128,11 +128,6 @@ export function has(key: string): boolean {
 	return folder.has(key);
 }
 
-export function clear(): void {
-	folder.clear();
-	return map.clear();
-}
-
 function remove(key: string): boolean {
 	folder.delete(key);
 	return map.delete(key);
@@ -140,6 +135,9 @@ function remove(key: string): boolean {
 
 export { remove as delete };
 
+/**
+ * Writes a level to the save file
+ */
 export function flush(): void {
 	if (!(currentLevel instanceof Level)) {
 		throw 'You must have a valid save selected.';
@@ -149,9 +147,9 @@ export function flush(): void {
 		const save = get(currentLevel.id);
 		save.data = currentLevel.toJSON();
 		set(currentLevel.id, save);
-		chat.sendMessage('Game saved.');
+		logger.debug('Saved level ' + currentLevel.id);
 	} catch (err) {
-		chat.sendMessage('Failed to save game.');
+		alert('Failed to save.');
 		logger.error(err);
 		throw err;
 	}
