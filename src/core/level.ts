@@ -7,10 +7,8 @@ import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
 import type { Component } from './components/component';
 import type { FleetJSON } from './components/fleet';
 import { filterEntities, type Entity, type EntityJSON } from './entities/entity';
-import { Planet, type PlanetData } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
 import { Ship, type ShipJSON } from './entities/ship';
-import { Star, type StarJSON } from './entities/star';
 import type { GenericProjectile } from './generic/hardpoints';
 import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
@@ -21,6 +19,7 @@ import { config, version, versions } from './metadata';
 import type { Berth } from './stations/berth';
 import type { SystemJSON } from './system';
 import { System } from './system';
+import { NaturalBody, type NaturalBodyJSON } from './entities/natural';
 
 export interface MoveInfo<T> {
 	id: string;
@@ -213,11 +212,8 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 				case 'Ship':
 					Ship.FromJSON(<ShipJSON>data, this);
 					break;
-				case 'Star':
-					Star.FromJSON(<StarJSON>data, this);
-					break;
-				case 'Planet':
-					Planet.FromJSON(<PlanetData>data, this);
+				case 'NaturalBody':
+					NaturalBody.FromJSON(<NaturalBodyJSON>data, this);
 					break;
 				default:
 			}

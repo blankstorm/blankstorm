@@ -6,17 +6,20 @@ import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import { Waypoint } from './waypoint';
 
-export interface CelestialBodyJSON extends EntityJSON {
+interface Data extends EntityJSON {
 	fleet: string;
 	radius: number;
 	seed: number;
 	waypoint: string;
 }
 
+export { Data as CelestialBodyJSON };
+
 export class CelestialBody extends Entity {
 	public fleet: Fleet = new Fleet(this);
 	public radius = 1;
 	public seed: number = Math.random();
+
 	public option?: JQuery<HTMLElement>;
 	protected _storage?: Container = new Container(1e10);
 
@@ -40,7 +43,7 @@ export class CelestialBody extends Entity {
 		this.waypoint = wp.id;
 	}
 
-	public toJSON(): CelestialBodyJSON {
+	public toJSON(): Data {
 		return {
 			...super.toJSON(),
 			...pick(this, 'radius', 'seed', 'waypoint'),
@@ -49,7 +52,7 @@ export class CelestialBody extends Entity {
 		};
 	}
 
-	public fromJSON(data: Partial<CelestialBodyJSON>): void {
+	public fromJSON(data: Partial<Data>): void {
 		super.fromJSON(data);
 		assignWithDefaults(this, pick(data, 'radius', 'seed', 'waypoint'));
 		if ('storage' in data) {

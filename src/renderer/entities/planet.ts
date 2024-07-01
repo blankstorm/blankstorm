@@ -4,13 +4,13 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
 import { assignWithDefaults, pick, randomHex } from 'utilium';
-import type { PlanetData } from '../../core/entities/planet';
+import type { PlanetJSON } from '../../core/entities/natural';
 import type { PlanetBiome } from '../../core/generic/planets';
+import { logger } from '../logger';
 import * as planetShader from '../shaders/planet.glslx';
 import { CelestialBodyRenderer } from './body';
 import type { HardpointProjectileHandlerOptions } from './hardpoint';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
-import { logger } from '../logger';
 
 export interface PlanetMaterialOptions {
 	colors: Color3[];
@@ -164,7 +164,7 @@ export class PlanetMaterial extends ShaderMaterial {
 	}
 }
 
-export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
+export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetJSON> {
 	public biome: PlanetBiome;
 	public seed: number;
 	public projectileMaterials: HardpointProjectileHandlerOptions['materials'] = [
@@ -174,7 +174,7 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 		},
 	];
 
-	public async update(data: PlanetData) {
+	public async update(data: PlanetJSON) {
 		await super.update(data);
 		if (this.biome == data.biome && this.seed == data.seed) {
 			return;

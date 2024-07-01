@@ -1,9 +1,8 @@
 import $ from 'jquery';
 import { toDegrees } from 'utilium';
 import type { Entity } from '../../core/entities/entity';
-import type { Planet } from '../../core/entities/planet';
+import type { NaturalBody } from '../../core/entities/natural';
 import type { Ship } from '../../core/entities/ship';
-import type { Star } from '../../core/entities/star';
 import type { Waypoint } from '../../core/entities/waypoint';
 import { config } from '../../core/metadata';
 import { System } from '../../core/system';
@@ -23,10 +22,10 @@ export class MapMarker {
 
 	get color(): string {
 		if (this.target instanceof System) {
-			return this.target.entity<Star>('.Star').color.toHexString();
+			return this.target.entity<NaturalBody>('.NaturalBody')?.color?.toHexString();
 		}
 
-		if (this.target.isType<Star>('Star')) {
+		if (this.target.isType<NaturalBody>('NaturalBody') && this.target.kind == 'star') {
 			return this.target.color.toHexString();
 		}
 
@@ -34,7 +33,7 @@ export class MapMarker {
 			return this.target.color;
 		}
 
-		if (this.target.isType<Planet>('Planet')) {
+		if (this.target.isType<NaturalBody>('NaturalBody') && this.target.kind == 'planet') {
 			biomeColor(this.target.biome);
 		}
 

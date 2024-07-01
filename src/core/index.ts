@@ -10,10 +10,8 @@ export * from './components/storage';
 export * from './entities/body';
 export * from './entities/entity';
 export * from './entities/hardpoint';
-export * from './entities/planet';
 export * from './entities/player';
 export * from './entities/ship';
-export * from './entities/star';
 
 export * from './stations/part';
 export * from './stations/station';

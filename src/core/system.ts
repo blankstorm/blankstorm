@@ -3,9 +3,8 @@ import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
 import { getRandomIntWithRecursiveProbability, greekLetterNames, randomBoolean, randomFloat, randomHex, randomInt, range } from 'utilium';
 import { filterEntities, type Entity } from './entities/entity';
-import { Planet } from './entities/planet';
+import { NaturalBody } from './entities/natural';
 import { generateFleetFromPower } from './entities/ship';
-import { Star } from './entities/star';
 import type { Item } from './generic/items';
 import { planetBiomes } from './generic/planets';
 import type { Research } from './generic/research';
@@ -142,13 +141,14 @@ export class System extends EventEmitter<{
 		system.name = name;
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		system.connections = new Array(connectionCount);
-		const star = new Star(null, level);
+		const star = new NaturalBody(null, level);
 		star.fromJSON({
-			name,
+			kind: 'star',
 			system: system.id,
+			name,
 			radius: randomInt(options.stars.radius_min, options.stars.radius_max),
 			position: [0, 0, 0],
-			color: [
+			biome: [
 				Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[0], options.stars.color_max[0]),
 				Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[1], options.stars.color_max[1]),
 				Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[2], options.stars.color_max[2]),
@@ -159,16 +159,17 @@ export class System extends EventEmitter<{
 			names = randomBoolean() ? greekLetterNames.slice(0, planetCount) : range(1, planetCount + 1),
 			planets = [];
 		for (let i = 0; i < names.length; i++) {
-			const planet = new Planet(null, level);
-			planet.radius = randomInt(options.planets.radius_min, options.planets.radius_max);
+			const planet = new NaturalBody(null, level);
+			planet.fromJSON({
+				kind: 'planet',
+				system: system.id,
+				name: usePrefix ? names[i] + ' ' + name : name + ' ' + names[i],
+				position: randomCords(randomInt((star.radius + planet.radius) * 1.5, options.planets.distance_max), true).asArray(),
+				biome: planetBiomes[randomInt(0, 5)],
+				radius: randomInt(options.planets.radius_min, options.planets.radius_max),
+			});
 			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));
 			planet.fleet.position = randomCords(randomInt(planet.radius + 5, planet.radius * 1.25), true);
-
-			planet.name = usePrefix ? names[i] + ' ' + name : name + ' ' + names[i];
-			planet.system = system;
-			planet.position = randomCords(randomInt((star.radius + planet.radius) * 1.5, options.planets.distance_max), true);
-			planet.biome = planetBiomes[randomInt(0, 5)];
-
 			planets[i] = planet;
 		}
 		return system;
