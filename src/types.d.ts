@@ -1,5 +1,6 @@
 import type package from '../package.json';
 import type { ClientInit } from './client/client';
+import type { IOMessage } from 'logzen';
 
 declare global {
 	const $debug: boolean;

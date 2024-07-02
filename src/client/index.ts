@@ -23,6 +23,6 @@ if (options.debug) {
 		$,
 	});
 }
-coreLogger.on('send', $app.log);
+coreLogger.on('send', entry => $app.log({ ...entry, prefix: 'core' }));
 $('body').on('contextmenu', () => options.debug);
 await client.init(options);

@@ -7,10 +7,10 @@ import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
 import type { Component } from './components/component';
 import type { FleetJSON } from './components/fleet';
 import { filterEntities, type Entity, type EntityJSON } from './entities/entity';
-import { Planet, type PlanetData } from './entities/planet';
+import { Planet } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
-import { Ship, type ShipJSON } from './entities/ship';
-import { Star, type StarJSON } from './entities/star';
+import { Ship } from './entities/ship';
+import { Star } from './entities/star';
 import type { GenericProjectile } from './generic/hardpoints';
 import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
@@ -21,6 +21,7 @@ import { config, version, versions } from './metadata';
 import type { Berth } from './stations/berth';
 import type { SystemJSON } from './system';
 import { System } from './system';
+import { logger } from './utils';
 
 export interface MoveInfo<T> {
 	id: string;
@@ -202,31 +203,25 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		this.date = new Date(json.date);
 
 		for (const systemData of json.systems) {
+			logger.debug('Loading system ' + systemData.id);
 			System.FromJSON(systemData, this);
 		}
 
 		for (const data of json.entities) {
-			switch (data.entityType) {
-				case 'Player':
-					Player.FromJSON(<PlayerJSON>data, this);
-					break;
-				case 'Ship':
-					Ship.FromJSON(<ShipJSON>data, this);
-					break;
-				case 'Star':
-					Star.FromJSON(<StarJSON>data, this);
-					break;
-				case 'Planet':
-					Planet.FromJSON(<PlanetData>data, this);
-					break;
-				default:
+			const types = { Player, Ship, Star, Planet };
+			if (!Object.hasOwn(types, data.entityType)) {
+				logger.debug(`Loading ${data.entityType} ${data.id} (skipped)`);
+				continue;
 			}
+
+			logger.debug(`Loading ${data.entityType} ${data.id}`);
+			types[data.entityType as keyof typeof types].FromJSON(data, this);
 		}
 	}
 
 	public static FromJSON(json: LevelJSON): Level {
 		if (json.version != version) {
-			throw new Error(`Can't load level data: wrong version`);
+			throw new Error('Can not load level data: wrong version');
 		}
 
 		const level = new Level();

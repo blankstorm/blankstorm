@@ -10,8 +10,6 @@ import type { System } from '../system';
 import type { CelestialBody } from './body';
 import type { Player } from './player';
 
-export type EntityConstructor<T extends Entity> = new (...args: ConstructorParameters<typeof Entity>) => T;
-
 export interface EntityJSON {
 	id: string;
 	name: string;
@@ -172,7 +170,7 @@ export class Entity
 	}
 
 	public fromJSON(data: Partial<EntityJSON>): void {
-		const parsed = {
+		assignWithDefaults(this, {
 			...pick(data, copy),
 			system: this.level.systems.get(data.system),
 			position: data.position && Vector3.FromArray(data.position),
@@ -180,11 +178,10 @@ export class Entity
 			velocity: data.velocity && Vector3.FromArray(data.velocity),
 			parent: data.parent && this.level.getEntityByID(data.parent),
 			owner: data.owner && this.level.getEntityByID(data.owner),
-		};
-		assignWithDefaults(this, parsed);
+		});
 	}
 
-	public static FromJSON<const T extends Entity = Entity>(this: EntityConstructor<T>, data: Partial<EntityJSON>, level: Level): T {
+	public static FromJSON(this: typeof Entity, data: Partial<EntityJSON>, level: Level): Entity {
 		const entity = new this(data.id, level);
 		entity.fromJSON(data);
 		return entity;

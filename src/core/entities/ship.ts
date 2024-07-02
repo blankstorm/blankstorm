@@ -132,6 +132,7 @@ export class Ship extends Entity {
 			...pick(this, 'type', 'jumpCooldown'),
 			hp: +this.hp?.toFixed(3),
 			hardpoints: [...this.hardpoints].map(hp => hp.toJSON()),
+			storage: this.storage.toJSON(),
 		};
 	}
 
@@ -145,6 +146,13 @@ export class Ship extends Entity {
 		if ('fleet' in this.owner) {
 			this.owner.fleet.add(this);
 		}
+	}
+
+	public static FromJSON(this: typeof Entity, data: EntityJSON, level: Level): Entity;
+	public static FromJSON(this: typeof Ship, data: ShipJSON, level: Level): Ship {
+		const entity = new this(data.id, level, data.type);
+		entity.fromJSON(data);
+		return entity;
 	}
 }
 

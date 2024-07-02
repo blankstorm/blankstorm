@@ -61,9 +61,15 @@ function _initLog(message: string): void {
 }
 
 async function _init(): Promise<void> {
-	_initLog('Initializing...');
+	if ('client_init' in sessionStorage) {
+		_initLog('Reloading...');
+	} else {
+		_initLog('Initializing...');
+		sessionStorage.client_init = true;
+	}
+
 	if (isInitialized) {
-		logger.warn('Tried to initialize context that is already initialized.');
+		logger.warn('Tried to initialize client after it was already initialized.');
 		return;
 	}
 
