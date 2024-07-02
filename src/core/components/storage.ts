@@ -176,9 +176,11 @@ export class StorageManager extends ItemStorage {
 
 	public remove(item: ItemID, amount?: number): void {
 		for (const storage of this.storages) {
-			const stored = Math.min(storage.count(item), amount);
+			const stored = Math.min(storage.count(item), amount ?? storage.count(item));
 			storage.remove(item, stored);
-			amount -= stored;
+			if (typeof amount == 'number') {
+				amount -= stored;
+			}
 		}
 	}
 }
@@ -233,9 +235,11 @@ export class EntityStorageManager extends ItemStorage {
 
 	public remove(item: ItemID, amount?: number): void {
 		for (const entity of this.entities) {
-			const stored = Math.min(entity.storage.count(item), amount);
+			const stored = Math.min(entity.storage.count(item), amount ?? entity.storage.count(item));
 			entity.storage.remove(item, stored);
-			amount -= stored;
+			if (typeof amount == 'number') {
+				amount -= stored;
+			}
 		}
 	}
 }

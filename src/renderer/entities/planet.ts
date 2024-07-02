@@ -137,7 +137,7 @@ export class PlanetMaterial extends ShaderMaterial {
 			needAlphaBlending: true,
 		});
 
-		this.setVector3('camera', scene.activeCamera.position || Vector3.Zero());
+		this.setVector3('camera', scene.activeCamera?.position || Vector3.Zero());
 		this.setVector3('light', Vector3.Zero());
 		this.setFloat('resolution', generationOptions.resolution || 128);
 		this.setFloat('base', generationOptions.base);
@@ -159,8 +159,8 @@ export class PlanetMaterial extends ShaderMaterial {
 
 		// clouds
 		this.setInt('clouds_enabled', +('clouds' in generationOptions));
-		this.setFloat('clouds_albedo', generationOptions.clouds?.albedo);
-		this.setFloat('clouds_base', generationOptions.clouds?.base);
+		this.setFloat('clouds_albedo', generationOptions.clouds?.albedo ?? 0);
+		this.setFloat('clouds_base', generationOptions.clouds?.base ?? 0);
 	}
 }
 
@@ -182,7 +182,7 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 		if (!(data.biome in biomes)) {
 			throw new ReferenceError('Planet biome does not exist: ' + data.biome);
 		}
-		assignWithDefaults(this, pick(data, 'biome', 'seed'));
+		assignWithDefaults(this as PlanetRenderer, pick(data, 'biome', 'seed'));
 		this.mesh.material = new PlanetMaterial(biomes[data.biome], this.seed, this.getScene());
 	}
 }

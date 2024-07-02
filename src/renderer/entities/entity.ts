@@ -18,7 +18,7 @@ export class EntityRenderer extends TransformNode implements Renderer<EntityJSON
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
 		this.velocity = Vector3.FromArray(velocity);
-		this.parent = this.getScene().getNodeById(parent);
+		this.parent = parent ? this.getScene().getNodeById(parent) : null;
 	}
 }
 

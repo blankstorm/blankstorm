@@ -10,10 +10,10 @@ export interface ServerCommandExecutionContext extends CommandExecutionContext {
 }
 
 export interface ServerCommand extends Command {
-	exec({ server, executor }: { server: Server; executor: Client }, ...args): string | void;
+	exec(context: ServerCommandExecutionContext, ...args: string[]): string | void;
 }
 
-export const commands: Map<string, Partial<ServerCommand>> = new Map([..._commands.entries()]);
+export const commands: Map<string, ServerCommand> = new Map([..._commands.entries()]);
 commands.set('kick', {
 	exec({ server, executor }, player, ...reason: string[]) {
 		const client = server.clients.getByName(player);
@@ -60,20 +60,19 @@ commands.set('log', {
 });
 commands.set('msg', {
 	exec({ server, executor }, player, ...message) {
-		if (server.clients.getByName(player) instanceof Client) {
-			server.clients.getByName(player).socket.emit(`[${executor.name} -> me] ${message.join(' ')}`);
-			server.log.log(`[${executor.name} -> ${player}] ${message.join(' ')}`);
-			server.clients.getByName(player).lastMessager = executor;
-			return `[me -> ${executor.name}] ${message.join(' ')}`;
-		} else {
+		if (!(server.clients.getByName(player) instanceof Client)) {
 			return 'That user is not online';
 		}
+		server.clients.getByName(player).socket.emit(`[${executor.name} -> me] ${message.join(' ')}`);
+		server.log.log(`[${executor.name} -> ${player}] ${message.join(' ')}`);
+		server.clients.getByName(player).lastMessager = executor;
+		return `[me -> ${executor.name}] ${message.join(' ')}`;
 	},
 	oplvl: 0,
 });
 commands.set('reply', {
 	exec({ server, executor }, ...message) {
-		return executor.lastMessager ? commands.get('msg').exec({ server, executor }, [executor.lastMessager.name, ...message]) : 'No one messaged you yet =(';
+		return executor.lastMessager ? commands.get('msg')!.exec({ server, executor }, executor.lastMessager.name, ...message) : 'No one messaged you yet =(';
 	},
 	oplvl: 0,
 });

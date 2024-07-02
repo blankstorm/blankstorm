@@ -8,11 +8,11 @@ export interface Item extends Producible {
 }
 
 export const items = {
-	titanium: { id: 'titanium', productionTime: config.tick_rate, rare: false, value: 1, weight: 1 },
-	quartz: { id: 'quartz', productionTime: config.tick_rate, rare: false, value: 2, weight: 0.5 },
-	hydrogen: { id: 'hydrogen', productionTime: config.tick_rate, rare: false, value: 4, weight: 1 },
-	ancient_tech: { id: 'ancient_tech', productionTime: config.tick_rate, rare: true, value: 1000, weight: 1 },
-	code_snippets: { id: 'code_snippets', productionTime: config.tick_rate, rare: true, value: 1000, weight: 1 },
+	titanium: { id: 'titanium', productionTime: config.tick_rate, rare: false, value: 1, weight: 1, recipe: {}, requires: {} },
+	quartz: { id: 'quartz', productionTime: config.tick_rate, rare: false, value: 2, weight: 0.5, recipe: {}, requires: {} },
+	hydrogen: { id: 'hydrogen', productionTime: config.tick_rate, rare: false, value: 4, weight: 1, recipe: {}, requires: {} },
+	ancient_tech: { id: 'ancient_tech', productionTime: config.tick_rate, rare: true, value: 1000, weight: 1, recipe: {}, requires: {} },
+	code_snippets: { id: 'code_snippets', productionTime: config.tick_rate, rare: true, value: 1000, weight: 1, recipe: {}, requires: {} },
 } as const;
 items satisfies Record<ItemID, Item>;
 

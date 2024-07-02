@@ -57,7 +57,7 @@ server.on('stop', () => {
 server.on('restart', () => {
 	setTimeout(() => {
 		process.on('exit', () => {
-			spawn(process.argv.shift(), process.argv, {
+			spawn(process.argv.shift()!, process.argv, {
 				cwd: process.cwd(),
 				detached: true,
 				stdio: 'inherit',

@@ -37,7 +37,7 @@ const projectiles: Record<string, HardpointProjectileHandler> = {
 			frameFactor = Vector3.Distance(startPos, endPos) / speed;
 		this.projectiles.add(laser);
 		for (const child of laser.getChildMeshes()) {
-			child.material = material;
+			child.material = material ?? null;
 		}
 		laser.scaling = this.scaling;
 		laser.position = startPos;
@@ -73,12 +73,12 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Hardpoi
 				return material;
 			}
 		}, this)?.material;
-		this._projectile.call(this, target, options);
+		this._projectile(target, options);
 	}
 
 	public async update(data: HardpointJSON) {
 		if (this.rendererType != data.type) {
-			this._projectile = projectiles[data.type];
+			this._projectile = projectiles[data.type].bind(this);
 		}
 		await super.update(data);
 		if (!this.isInstanciated) {

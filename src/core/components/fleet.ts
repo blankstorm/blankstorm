@@ -29,8 +29,8 @@ export class Fleet extends Entity implements Set<Ship> {
 		return total;
 	}
 
-	public constructor(owner?: CelestialBody | Player) {
-		super(null, owner.level);
+	public constructor(owner: CelestialBody | Player) {
+		super(undefined, owner.level);
 		this.owner = owner;
 		this.parent = owner;
 		this.ships = new Set();
@@ -86,12 +86,12 @@ export class Fleet extends Entity implements Set<Ship> {
 			throw new ReferenceError('Invalid index in fleet: ' + index);
 		}
 
-		return [...this].at(index);
+		return [...this].at(index)!;
 	}
 
 	public addFromStrings(...types: ShipType[]): void {
 		for (const type of types) {
-			const ship = new Ship(null, this.level, type);
+			const ship = new Ship(undefined, this.level, type);
 			this.add(ship);
 		}
 	}
@@ -107,7 +107,7 @@ export class Fleet extends Entity implements Set<Ship> {
 		super.fromJSON(data);
 		this.clear();
 		for (const id of data.ships) {
-			const ship = this.owner.level.getEntityByID<Ship>(id);
+			const ship = this.owner?.level?.getEntityByID<Ship>(id);
 			if (!ship) {
 				throw new ReferenceError('Ship does not exist: ' + id);
 			}

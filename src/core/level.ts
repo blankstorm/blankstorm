@@ -85,6 +85,8 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		for (const entity of this.entities) {
 			if (entity.id == id) return <N>entity;
 		}
+
+		throw new ReferenceError('Entity does not exist');
 	}
 
 	public selectEntities(selector: string): Set<Entity> {
@@ -102,6 +104,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 
 		player.storage.removeItems(item.recipe);
 		player.storage.addItems({ [item.id]: player.storage.items[item.id] + 1 });
+		return true;
 	}
 
 	public _try_create_ship(player: Player, generic: GenericShip, berth?: Berth): boolean {
@@ -110,8 +113,9 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 
 		player.storage.removeItems(generic.recipe);
-		const ship = new Ship(null, player.level, generic.id);
+		const ship = new Ship(undefined, player.level, generic.id);
 		player.fleet.add(ship);
+		return true;
 	}
 
 	public _try_research(player: Player, data: Research): boolean {
@@ -125,6 +129,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 
 		player.storage.removeItems(neededItems);
 		player.research[data.id]++;
+		return true;
 	}
 
 	public _try_warp(player: Player, data: MoveInfo<System>[]): void {
@@ -139,7 +144,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 	}
 
-	public async tryAction<T extends Action>(id: string, action: T, ...args: ActionParameters<T>): Promise<boolean> {
+	public tryAction<T extends Action>(id: string, action: T, ...args: ActionParameters<T>): boolean {
 		const player = this.getEntityByID(id);
 
 		if (!(player instanceof Player)) {
@@ -150,7 +155,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 			return false;
 		}
 
-		this['_try_' + action](player, ...args);
+		return this['_try_' + action](player, ...args);
 	}
 
 	public async generateSystem(name: string, position: Vector2, options: SystemGenerationOptions = config.system_generation, system?: System) {
@@ -199,7 +204,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	}
 
 	public fromJSON(json: LevelJSON): void {
-		assignWithDefaults(this, pick(json, copy));
+		assignWithDefaults(this as Level, pick(json, copy));
 		this.date = new Date(json.date);
 
 		logger.log(`Loading ${json.systems.length} system(s)`);
@@ -240,6 +245,6 @@ export type ActionParameters<T extends Action> = Shift<Parameters<Level[`_try_${
 export function upgradeLevel(data: LevelJSON): LevelJSON {
 	switch (data.version) {
 		default:
-			throw `Upgrading from ${versions.get(data.version).text} is not supported`;
+			throw `Upgrading from ${versions.get(data.version)?.text || data.version} is not supported`;
 	}
 }

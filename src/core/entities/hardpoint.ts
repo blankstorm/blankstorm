@@ -24,11 +24,11 @@ export class Hardpoint extends Entity {
 	public scale: number;
 	public reload: number;
 	public declare parent: Ship;
-	public get owner(): Player | CelestialBody {
+	public get owner(): Player | CelestialBody | undefined {
 		return this.parent.owner;
 	}
 
-	public constructor(id: string, level: Level, info: HardpointInfo) {
+	public constructor(id: string | undefined, level: Level, info: HardpointInfo) {
 		super(id, level);
 		this.fromJSON(info);
 	}
@@ -54,7 +54,7 @@ export class Hardpoint extends Entity {
 
 	public fromJSON(data: Partial<HardpointJSON>): void {
 		super.fromJSON(data);
-		assignWithDefaults(this, pick(data, copy));
+		assignWithDefaults(this as Hardpoint, pick(data, copy));
 		this.reload ??= this.generic.reload;
 	}
 
@@ -71,7 +71,7 @@ export class Hardpoint extends Entity {
 		if (targetShip.hp <= 0) {
 			this.level.emit('entity_death', targetShip.toJSON());
 
-			if (this.owner.isType<Player>('Player')) {
+			if (this.owner?.isType<Player>('Player')) {
 				this.owner.storage.addItems(targetShip.generic.recipe);
 				if (Math.floor(xpToLevel(this.owner.xp + targetShip.generic.xp)) > Math.floor(xpToLevel(this.owner.xp))) {
 					this.level.emit('player_levelup', this.owner.toJSON());
@@ -79,7 +79,7 @@ export class Hardpoint extends Entity {
 				this.owner.xp += targetShip.generic.xp;
 			}
 
-			if (this.owner.isType<CelestialBody>('CelestialBody')) {
+			if (this.owner?.isType<CelestialBody>('CelestialBody')) {
 				this.owner.storage.addItems(targetShip.generic.recipe);
 			}
 			targetShip.remove();

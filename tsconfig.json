@@ -9,6 +9,9 @@
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
 		"noImplicitThis": true,
+		"strictBindCallApply": true,
+		"strictFunctionTypes": true,
+		"strictNullChecks": true,
 		"paths": {
 			"*.glslx": ["./src/types.d.ts"]
 		},

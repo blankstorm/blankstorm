@@ -19,6 +19,6 @@ export class Planet extends CelestialBody {
 
 	public fromJSON(data: PlanetData): void {
 		super.fromJSON(data);
-		assignWithDefaults(this, pick(data, 'biome'));
+		assignWithDefaults(this as Planet, pick(data, 'biome'));
 	}
 }

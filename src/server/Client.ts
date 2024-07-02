@@ -38,7 +38,7 @@ export function getDisconnectReason(reason: string): string {
 		['transport close', 'Lost Connection'],
 		['transport error', 'Connection failed'],
 	]);
-	return reasons.has(reason) ? reasons.get(reason) : reason;
+	return reasons.get(reason) ?? reason;
 }
 
 export class ClientStore extends Map<string, Client> {
@@ -52,6 +52,8 @@ export class ClientStore extends Map<string, Client> {
 				return client;
 			}
 		}
+
+		throw new ReferenceError('Client does not exist');
 	}
 
 	getByID(id: string): Client {

@@ -1,19 +1,18 @@
-import { createServer } from 'node:http';
-import type { Server as HTTPServer } from 'node:http';
-import EventEmitter from 'node:events';
-import { Server as SocketIOServer } from 'socket.io';
-import type { Socket } from 'socket.io';
-import type { ServerOptions as EngineIOOptions } from 'engine.io';
 import { getAccount } from '@blankstorm/api';
-
-import { version, config as coreConfig } from '../core/metadata';
-import type { VersionID } from '../core/metadata';
-import { execCommandString } from './commands';
-import { Level, levelEventNames } from '../core/level';
-import type { LevelJSON } from '../core/level';
-
+import type { ServerOptions as EngineIOOptions } from 'engine.io';
 import { Logger } from 'logzen';
+import EventEmitter from 'node:events';
+import type { Server as HTTPServer } from 'node:http';
+import { createServer } from 'node:http';
+import type { Socket } from 'socket.io';
+import { Server as SocketIOServer } from 'socket.io';
+import type { WithRequired } from 'utilium';
+import type { LevelJSON } from '../core/level';
+import { Level, levelEventNames } from '../core/level';
+import type { VersionID } from '../core/metadata';
+import { config as coreConfig, version } from '../core/metadata';
 import { Client, ClientStore, getDisconnectReason } from './Client';
+import { execCommandString } from './commands';
 import { captureArrayUpdates } from './utils';
 
 export interface PingInfo {
@@ -50,7 +49,7 @@ export interface ServerOptions {
 
 // see https://stackoverflow.com/a/71689964/17637456
 type _Unwrap<T> = { [K in keyof T]: Extract<T[K], [unknown]>[0] };
-type InitialParameters<F extends (...args: unknown[]) => unknown> = Required<Parameters<F>> extends [...infer InitPs, unknown] ? _Unwrap<InitPs> : never;
+type InitialParameters<F extends (...args: any[]) => any> = Required<Parameters<F>> extends [...infer InitPs, any] ? _Unwrap<InitPs> : never;
 
 export class Server extends EventEmitter {
 	whitelist: string[];
@@ -64,7 +63,7 @@ export class Server extends EventEmitter {
 	level: Level;
 	httpServer: HTTPServer;
 
-	constructor({ config: serverConfig, levelData = null, whitelist = [], blacklist = [], ops = [] }: Partial<ServerOptions>) {
+	constructor({ config: serverConfig, levelData = undefined, whitelist = [], blacklist = [], ops = [] }: WithRequired<Partial<ServerOptions>, 'config'>) {
 		super();
 		this.config = serverConfig;
 
@@ -126,8 +125,7 @@ export class Server extends EventEmitter {
 		});
 
 		this.io.on('connection', socket => {
-			const client = this.clients.get(socket.id);
-			this.addClient(client);
+			this.addClient(this.clients.get(socket.id)!);
 		});
 
 		if (levelData) {

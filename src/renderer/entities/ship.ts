@@ -22,7 +22,7 @@ export class ShipRenderer extends ModelRenderer implements Renderer<ShipJSON> {
 		await super.update(data);
 		for (const hardpointData of [...data.hardpoints]) {
 			if (this.hardpoints.has(hardpointData.id)) {
-				this.hardpoints.get(hardpointData.id).update(hardpointData);
+				this.hardpoints.get(hardpointData.id)!.update(hardpointData);
 			} else {
 				const hardpoint = await createAndUpdate(HardpointRenderer, hardpointData, this.getScene());
 				hardpoint.parent = this;

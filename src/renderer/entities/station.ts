@@ -17,7 +17,7 @@ export class StationRenderer extends TransformNode implements Renderer<StationJS
 		this.name = name;
 		this.position = Vector3.FromArray(position);
 		this.rotation = Vector3.FromArray(rotation);
-		const _parent = this.getScene().getNodeById(parent);
+		const _parent = parent ? this.getScene().getNodeById(parent) : null;
 		if (_parent != this.parent) {
 			this.parent = _parent;
 		}

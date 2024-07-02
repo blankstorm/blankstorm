@@ -13,7 +13,7 @@ export interface PlayerJSON extends EntityJSON {
 }
 
 export class Player extends Entity {
-	public research = <Record<ResearchID, number>>Object.fromEntries(Object.keys(research).map((k: ResearchID) => [k, 0]));
+	public research = Object.fromEntries(Object.keys(research).map(k => [k, 0])) as Record<ResearchID, number>;
 	public fleet: Fleet = new Fleet(this);
 	public xp = 0;
 	public get power(): number {
@@ -41,7 +41,7 @@ export class Player extends Entity {
 
 	public fromJSON(data: PlayerJSON): void {
 		super.fromJSON(data);
-		assignWithDefaults(this, pick(data, 'xp', 'research'));
+		assignWithDefaults(this as Player, pick(data, 'xp', 'research'));
 	}
 
 	public toJSON(): PlayerJSON {

@@ -1,5 +1,5 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { assignWithDefaults, pick, randomInt } from 'utilium';
+import { assignWithDefaults, pick, randomInt, type WithRequired } from 'utilium';
 import { Container } from '../components/storage';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { GenericShip, ShipType } from '../generic/ships';
@@ -12,7 +12,7 @@ import { Entity } from './entity';
 import type { HardpointJSON } from './hardpoint';
 import { Hardpoint } from './hardpoint';
 
-export interface ShipJSON extends EntityJSON {
+export interface ShipJSON extends WithRequired<EntityJSON, 'storage'> {
 	type: ShipType;
 	hp: number;
 	jumpCooldown: number;
@@ -30,10 +30,10 @@ export class Ship extends Entity {
 	/**
 	 * @todo move distance related stuff to ship creation (i.e. berth)
 	 */
-	constructor(id: string, level: Level, type?: ShipType) {
+	constructor(id: string | undefined, level: Level, type?: ShipType) {
 		super(id, level);
 
-		this.type = type;
+		this.type = type || this.type;
 		const { power, hp, jump, storage, hardpoints } = genericShips[this.type];
 
 		this.position.addInPlace(randomCords(Math.log(randomInt(0, power || 1) ** 3 + 1), true));
@@ -48,7 +48,7 @@ export class Ship extends Entity {
 				continue;
 			}
 
-			const hardpoint = new Hardpoint(null, this.level, info);
+			const hardpoint = new Hardpoint(undefined, this.level, info);
 			hardpoint.parent = this;
 			this.hardpoints.add(hardpoint);
 		}
@@ -68,7 +68,7 @@ export class Ship extends Entity {
 				const distance = Vector3.Distance(e.absolutePosition, this.absolutePosition);
 				return e.isTargetable && e.owner != this.owner && distance < hardpoint.generic.range;
 			}, null);
-			const target = targets.reduce((previous, current) => {
+			const target = targets.reduce((previous: Entity | null, current) => {
 				const previousDistance = Vector3.Distance(previous?.absolutePosition ? previous.absolutePosition : Vector3.One().scale(Infinity), this.absolutePosition);
 				const currentDistance = Vector3.Distance(current.absolutePosition, this.absolutePosition);
 				return previousDistance < currentDistance ? previous : current;
@@ -141,11 +141,9 @@ export class Ship extends Entity {
 		if (!Object.hasOwn(genericShips, data.type)) {
 			throw new ReferenceError('Ship type does not exist: ' + data.type);
 		}
-		assignWithDefaults(this, pick(data, 'type', 'hp', 'jumpCooldown'));
+		assignWithDefaults(this as Ship, pick(data, 'type', 'hp', 'jumpCooldown'));
 		this.storage.fromJSON(data.storage);
-		if ('fleet' in this.owner) {
-			this.owner.fleet.add(this);
-		}
+		this.owner?.fleet?.add(this);
 	}
 
 	public static FromJSON(this: typeof Entity, data: EntityJSON, level: Level): Entity;
@@ -158,8 +156,8 @@ export class Ship extends Entity {
 
 export function generateFleetFromPower(power: number): ShipType[] {
 	//enemy spawning algorithm
-	const fleet = [],
-		generic = [...Object.entries(genericShips)];
+	const fleet: ShipType[] = [],
+		generic = [...Object.entries(genericShips)] as [ShipType, GenericShip][];
 	generic.sort((a, b) => b[1].power - a[1].power); //decending
 	for (const [name, ship] of generic) {
 		for (let i = 0; i < Math.floor(power / ship.power); i++) {

@@ -1,26 +1,22 @@
-import type { Level } from '../level';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { assignWithDefaults, pick } from 'utilium';
 import type { CelestialBodyJSON } from '../entities/body';
 import { CelestialBody } from '../entities/body';
 import type { GenericStationPartID } from '../generic/station_part';
 import { stationParts } from '../generic/station_part';
 import type { Station } from './station';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { assignWithDefaults, pick } from 'utilium';
 
 export interface StationPartJSON extends CelestialBodyJSON {
 	hp: number;
 	type: GenericStationPartID;
-	connections: string[];
+	connections: (string | undefined)[];
 }
 
 export class StationPart extends CelestialBody {
 	public hp: number;
 	public station: Station;
-	public connections: StationPart[] = [];
+	public connections: (StationPart | undefined)[] = [];
 	public type: GenericStationPartID;
-	public constructor(id: string, level: Level) {
-		super(id, level);
-	}
 
 	public get generic() {
 		return stationParts[this.type];
@@ -45,9 +41,12 @@ export class StationPart extends CelestialBody {
 		part.rotation = Vector3.FromArray(thisConnecter.rotation); //.add(otherConnecter.rotation);
 	}
 
-	public removePart(part: StationPart) {
-		this.connections[this.connections.indexOf(part)] = null;
-		part.connections[part.connections.indexOf(this)] = null;
+	public removePart(part: StationPart | undefined) {
+		if (!part) {
+			return;
+		}
+		this.connections[this.connections.indexOf(part)] = undefined;
+		part.connections[part.connections.indexOf(this)] = undefined;
 	}
 
 	public removePartAt(connecter: number) {
@@ -59,13 +58,13 @@ export class StationPart extends CelestialBody {
 		return {
 			...super.toJSON(),
 			...pick(this, 'type', 'hp'),
-			connections: this.connections.map(part => part.id),
+			connections: this.connections.map(part => part?.id),
 		};
 	}
 
 	public fromJSON(data: Partial<StationPartJSON>): void {
 		super.fromJSON(data);
-		assignWithDefaults(this, pick(data, 'hp', 'type'));
+		assignWithDefaults(this as StationPart, pick(data, 'hp', 'type'));
 		this.hp ||= this.generic.hp;
 	}
 

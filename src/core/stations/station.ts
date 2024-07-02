@@ -14,10 +14,10 @@ export class Station extends CelestialBody {
 	public readonly core: StationPart;
 
 	public isTargetable = true;
-	public constructor(id: string, level: Level) {
+	public constructor(id: string | undefined, level: Level) {
 		super(id, level);
 
-		this.core = new StationPart(null, level);
+		this.core = new StationPart(undefined, level);
 		this.core.type = 'core';
 		this.core.station = this.core.parent = this;
 	}

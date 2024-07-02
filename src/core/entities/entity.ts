@@ -14,8 +14,8 @@ export interface EntityJSON {
 	id: string;
 	name: string;
 	system: string;
-	owner: string;
-	parent: string;
+	owner?: string;
+	parent?: string;
 	entityType: string;
 	position: readonly number[];
 	rotation: readonly number[];
@@ -28,7 +28,6 @@ export interface EntityJSON {
 const copy = ['id', 'name', 'entityType', 'isSelected', 'isTargetable'] as const satisfies ReadonlyArray<keyof Entity>;
 
 @register
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class Entity
 	extends EventEmitter<{
 		update: [];
@@ -56,20 +55,23 @@ export class Entity
 
 	protected _system: string;
 	public get system(): System {
-		return this.level.systems.get(this._system);
+		if (!this.level.systems.has(this._system)) {
+			throw new ReferenceError(`System "${this._system}" does not exist`);
+		}
+		return this.level.systems.get(this._system)!;
 	}
 	public set system(value: System | string) {
-		this._system = typeof value == 'object' ? value?.id : value;
+		this._system = typeof value == 'object' ? value.id : value;
 	}
 
 	public parent?: Entity;
 
-	protected _owner: CelestialBody | Player;
-	public get owner(): CelestialBody | Player {
+	protected _owner?: CelestialBody | Player;
+	public get owner(): CelestialBody | Player | undefined {
 		return this._owner;
 	}
 
-	public set owner(value: CelestialBody | Player) {
+	public set owner(value: CelestialBody | Player | undefined) {
 		this._owner = value;
 	}
 
@@ -137,17 +139,18 @@ export class Entity
 	public async moveTo(target: Vector3, isRelative = false) {
 		if (!(target instanceof Vector3)) throw new TypeError('target must be a Vector3');
 		const path = findPath(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
-		if (path.length > 0) {
-			this.level.emit(
-				'entity_path_start',
-				this.id,
-				path.map(({ x, y, z }) => ({ x, y, z }))
-			);
-			this.position = path.at(-1).subtract(this.parent.absolutePosition);
-			const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.at(-2), path.at(-1));
-			rotation.x -= Math.PI / 2;
-			this.rotation = rotation;
+		if (path.length == 0) {
+			return;
 		}
+		this.level.emit(
+			'entity_path_start',
+			this.id,
+			path.map(({ x, y, z }) => ({ x, y, z }))
+		);
+		this.position = path.at(-1)!.subtract(this.parent?.absolutePosition || Vector3.Zero());
+		const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.at(-2)!, path.at(-1)!);
+		rotation.x -= Math.PI / 2;
+		this.rotation = rotation;
 	}
 
 	public toJSON(): EntityJSON {
@@ -163,15 +166,17 @@ export class Entity
 	}
 
 	public fromJSON(data: Partial<EntityJSON>): void {
-		assignWithDefaults(this, {
+		assignWithDefaults(this as Entity, {
 			...pick(data, copy),
-			system: this.level.systems.get(data.system),
 			position: data.position && Vector3.FromArray(data.position),
 			rotation: data.rotation && Vector3.FromArray(data.rotation),
 			velocity: data.velocity && Vector3.FromArray(data.velocity),
-			parent: data.parent && this.level.getEntityByID(data.parent),
-			owner: data.owner && this.level.getEntityByID(data.owner),
+			parent: data.parent ? this.level.getEntityByID(data.parent) : undefined,
+			owner: data.owner ? this.level.getEntityByID<CelestialBody | Player>(data.owner) : undefined,
 		});
+		if (data.system) {
+			this.system = data.system;
+		}
 	}
 
 	public static FromJSON(this: typeof Entity, data: Partial<EntityJSON>, level: Level): Entity {
@@ -179,11 +184,6 @@ export class Entity
 		entity.fromJSON(data);
 		return entity;
 	}
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-export interface Entity {
-	constructor: typeof Entity;
 }
 
 export function filterEntities(entities: Iterable<Entity>, selector: string): Set<Entity> {

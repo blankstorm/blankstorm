@@ -54,7 +54,7 @@ export class System extends EventEmitter<{
 	public connections: SystemConnection[] = [];
 
 	constructor(
-		public id: string,
+		public id: string = randomHex(32),
 		public level: Level
 	) {
 		super();
@@ -75,7 +75,7 @@ export class System extends EventEmitter<{
 			if (entity.id == id) return <N>entity;
 		}
 
-		return null;
+		throw new ReferenceError('Entity does not exist');
 	}
 
 	public entity<T extends Entity = Entity>(selector: string): T {
@@ -117,16 +117,19 @@ export class System extends EventEmitter<{
 		this.difficulty = json.difficulty;
 		this.position = Vector2.FromArray(json.position);
 
-		for (const connection of json.connections) {
-			switch (connection.type) {
+		for (const { type, value } of json.connections) {
+			switch (type) {
 				case 'system':
-					this.connections.push(this.level.systems.get(connection.value));
+					if (!this.level.systems.has(value)) {
+						throw new ReferenceError('System does not exist');
+					}
+					this.connections.push(this.level.systems.get(value)!);
 					break;
 				case 'position':
-					this.connections.push(Vector2.FromArray(connection.value));
+					this.connections.push(Vector2.FromArray(value));
 					break;
 				default:
-					this.connections.push(connection.value);
+					this.connections.push(value);
 			}
 		}
 	}
@@ -138,11 +141,11 @@ export class System extends EventEmitter<{
 	}
 
 	static async Generate(name: string, options: SystemGenerationOptions = config.system_generation, level: Level, system?: System) {
-		system ||= new System(null, level);
+		system ||= new System(undefined, level);
 		system.name = name;
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		system.connections = new Array(connectionCount);
-		const star = new Star(null, level);
+		const star = new Star(undefined, level);
 		star.fromJSON({
 			name,
 			system: system.id,
@@ -157,9 +160,9 @@ export class System extends EventEmitter<{
 		const usePrefix = randomBoolean(),
 			planetCount = randomInt(options.planets.min, options.planets.max),
 			names = randomBoolean() ? greekLetterNames.slice(0, planetCount) : range(1, planetCount + 1),
-			planets = [];
+			planets: Planet[] = [];
 		for (let i = 0; i < names.length; i++) {
-			const planet = new Planet(null, level);
+			const planet = new Planet(undefined, level);
 			planet.radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));
 			planet.fleet.position = randomCords(randomInt(planet.radius + 5, planet.radius * 1.25), true);

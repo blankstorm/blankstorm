@@ -9,12 +9,12 @@ export type ProducibleID = ItemID | ResearchID | ShipType;
 export interface Producible {
 	id: ProducibleID;
 	productionTime: number;
-	recipe?: Partial<Record<ItemID, number>>;
-	requires?: Partial<Record<ResearchID, number>>;
+	recipe: Partial<Record<ItemID, number>>;
+	requires: Partial<Record<ResearchID, number>>;
 }
 
 export interface Producer {
-	productionID: ProducibleID;
+	productionID?: ProducibleID;
 	productionTime: number;
 	canProduce: ProducibleID[];
 }

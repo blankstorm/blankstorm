@@ -29,11 +29,11 @@ export { logger };
 
 function createEmptyCache(): LevelJSON {
 	return {
-		id: null,
-		difficulty: null,
-		name: null,
+		id: '',
+		difficulty: 0,
+		name: '',
 		entities: [],
-		date: null,
+		date: '',
 		systems: [],
 		version,
 	};
@@ -182,7 +182,7 @@ export async function load(serializedNodes: EntityJSON[]) {
 			logger.warn('rendering for entity type is not supported: ' + data.entityType);
 			continue;
 		}
-		const entity: Renderer = await createAndUpdate(entityRenderers.get(data.entityType), data, scene);
+		const entity: Renderer = await createAndUpdate(entityRenderers.get(data.entityType)!, data, scene);
 		if (['Player', 'Client'].includes(data.entityType)) {
 			/**
 			 * @todo change this
@@ -210,7 +210,7 @@ export async function update(levelData: LevelJSON) {
 		const data = levelData.entities.find(_ => _.id == entity.id),
 			cached = cache.entities.find(_ => _.id == entity.id);
 
-		if (!entityRenderers.has(data.entityType)) {
+		if (!entityRenderers.has(data?.entityType ?? '')) {
 			continue;
 		}
 
@@ -220,12 +220,12 @@ export async function update(levelData: LevelJSON) {
 		}
 
 		if (!data) {
-			entities.get(entity.id).dispose();
+			entities.get(entity.id)?.dispose();
 			entities.delete(entity.id);
 			continue;
 		}
 
-		entities.get(entity.id).update(data);
+		entities.get(entity.id)?.update(data);
 	}
 
 	const result = await load(renderersToAdd);
@@ -259,7 +259,6 @@ export function getCamera() {
 }
 
 export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
-	ownerID ??= [...entities.values()].find(e => e instanceof PlayerRenderer)?.id;
 	if (!ev.shiftKey) {
 		for (const entity of entities.values()) {
 			if (entity instanceof ShipRenderer) {
@@ -327,5 +326,9 @@ export async function startFollowingPath(entityID: string, path: IVector3Like[])
 export function fireProjectile(hardpointID: string, targetID: string, options: GenericProjectile) {
 	const hardpoint = <HardpointRenderer>scene.getTransformNodeById(hardpointID);
 	const { projectileMaterials: materials } = <PlayerRenderer | PlanetRenderer>hardpoint?.parent?.parent;
-	hardpoint.fireProjectile(scene.getTransformNodeById(targetID), { ...options, materials });
+	const target = scene.getTransformNodeById(targetID);
+	if (!target) {
+		throw new ReferenceError('Target does not exist');
+	}
+	hardpoint.fireProjectile(target, { ...options, materials });
 }

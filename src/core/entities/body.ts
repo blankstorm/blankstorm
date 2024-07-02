@@ -5,8 +5,9 @@ import { Container } from '../components/storage';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import { Waypoint } from './waypoint';
+import type { WithRequired } from 'utilium';
 
-export interface CelestialBodyJSON extends EntityJSON {
+export interface CelestialBodyJSON extends WithRequired<EntityJSON, 'storage'> {
 	fleet: string;
 	radius: number;
 	seed: number;
@@ -31,7 +32,7 @@ export class CelestialBody extends Entity {
 		if (this.waypoint) {
 			return;
 		}
-		const wp = new Waypoint(null, this.level);
+		const wp = new Waypoint(undefined, this.level);
 		assignWithDefaults(wp, pick(this, 'name', 'position', 'system'));
 		wp.builtin = true;
 		wp.readonly = true;
@@ -51,8 +52,8 @@ export class CelestialBody extends Entity {
 
 	public fromJSON(data: Partial<CelestialBodyJSON>): void {
 		super.fromJSON(data);
-		assignWithDefaults(this, pick(data, 'radius', 'seed', 'waypoint'));
-		if ('storage' in data) {
+		assignWithDefaults(this as CelestialBody, pick(data, 'radius', 'seed', 'waypoint'));
+		if (data.storage) {
 			this.storage.fromJSON({ items: data.storage.items, max: 1e10 });
 		}
 	}

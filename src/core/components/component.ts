@@ -22,7 +22,7 @@ export interface ComponentStatic<T extends Component = Component> {
 }
 
 export function isComponent(value: unknown): value is Component {
-	return typeof value == 'object' && 'component' in value && typeof value.component == 'string';
+	return typeof value == 'object' && value != null && 'component' in value && typeof value.component == 'string';
 }
 
 export const components = new Map<string, ComponentStatic>();

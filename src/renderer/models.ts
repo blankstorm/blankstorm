@@ -43,7 +43,7 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
 		}
 		for (const mesh of this.getChildMeshes<Mesh>()) {
-			this.getScene().getHighlightLayerByName('highlight').addMesh(mesh, Color3.Green());
+			this.getScene().getHighlightLayerByName('highlight')?.addMesh(mesh, Color3.Green());
 		}
 		this._selected = true;
 	}
@@ -53,7 +53,7 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
 		}
 		for (const mesh of this.getChildMeshes<Mesh>()) {
-			this.getScene().getHighlightLayerByName('highlight').removeMesh(mesh);
+			this.getScene().getHighlightLayerByName('highlight')?.removeMesh(mesh);
 		}
 		this._selected = false;
 	}
@@ -69,7 +69,7 @@ export class ModelRenderer extends TransformNode {
 		}
 		if (this._pathGizmo && settings.get('show_path_gizmos')) {
 			this._pathGizmo.dispose();
-			this._pathGizmo = null;
+			this._pathGizmo = undefined;
 		}
 		this._currentPath = path;
 		if (this._pathGizmo) {
@@ -102,11 +102,11 @@ export class ModelRenderer extends TransformNode {
 		const result = this.getScene().beginAnimation(this, 0, path.length * 60);
 		result.disposeOnEnd = true;
 		await result.waitAsync();
-		this._currentPath = null;
+		this._currentPath = undefined;
 
 		if (this._pathGizmo) {
 			this._pathGizmo.dispose();
-			this._pathGizmo = null;
+			this._pathGizmo = undefined;
 		}
 	}
 
@@ -125,7 +125,7 @@ export class ModelRenderer extends TransformNode {
 			throw new ReferenceError(`Model "${modelID}" does not exist`);
 		}
 
-		this._instance = <TransformNode>genericMeshes.get(modelID).instantiateModelsToScene().rootNodes[0];
+		this._instance = genericMeshes.get(modelID)!.instantiateModelsToScene().rootNodes[0] as TransformNode;
 		this._instance.id = this.id + ':instance';
 		this._instance.parent = this;
 		this._instance.rotation.y += Math.PI;
@@ -147,7 +147,7 @@ export class ModelRenderer extends TransformNode {
 			await this.createInstance(_type);
 		}
 
-		const maybeParent = this.getScene().getNodeById(parent);
+		const maybeParent = parent ? this.getScene().getNodeById(parent) : null;
 		if (maybeParent) {
 			this.parent = maybeParent;
 		}
@@ -169,7 +169,7 @@ export async function initModel(path: string, scene: Scene) {
 		isVisible: false,
 		isPickable: false,
 	});
-	scene.reflectionProbes[0].renderList.push(container.meshes[1]);
+	scene.reflectionProbes[0].renderList?.push(container.meshes[1]);
 	genericMeshes.set(path, container);
 	logger.debug('Loaded model asset: ' + path);
 }

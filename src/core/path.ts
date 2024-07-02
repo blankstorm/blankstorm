@@ -34,13 +34,30 @@ function nodeDistance(nodeA: PathNode, nodeB: PathNode): number {
 }
 
 function trace(startNode: PathNode, endNode: PathNode): PathNode[] {
-	const path = [];
-	let currentNode = endNode;
+	const path: PathNode[] = [];
+	let currentNode: PathNode = endNode;
 	while (currentNode.id != startNode.id) {
 		path.push(currentNode);
-		currentNode = currentNode.parent;
+		currentNode = currentNode.parent!;
 	}
 	return path.reverse();
+}
+
+function getLeastExpensiveNode(nodes: Iterable<PathNode>): PathNode {
+	let best: PathNode | undefined;
+
+	for (const node of nodes) {
+		best ||= node;
+		if (best.fCost > node.fCost || (best.fCost == node.fCost && best.hCost < node.hCost)) {
+			best = node;
+		}
+	}
+
+	if (!best) {
+		throw new Error('No nodes in list');
+	}
+
+	return best;
 }
 
 export function findPath(start: Vector3, end: Vector3, system: System): Vector3[] {
@@ -51,25 +68,21 @@ export function findPath(start: Vector3, end: Vector3, system: System): Vector3[
 	const startNode: PathNode = new PathNode(start);
 	let endNode: PathNode = new PathNode(end);
 	openNodes.set(startNode.id, startNode);
-	while (openNodes.size > 0 && openNodes.size < 1e4 && closedNodes.size < 1e4) {
-		const currentNode = Array.from(openNodes.values()).reduce(
-			(previous, current) => (previous.fCost < current.fCost || (previous.fCost == current.fCost && previous.hCost > current.hCost) ? previous : current),
-			openNodes.values().next().value
-		);
-		openNodes.delete(currentNode.id);
-		closedNodes.set(currentNode.id, currentNode);
-		if (currentNode.id == endNode.id) {
-			endNode = currentNode;
-			const path = trace(startNode, endNode);
-			return path.map(node => node.position);
+	for (
+		let node = getLeastExpensiveNode(openNodes.values());
+		node.id != endNode.id && openNodes.size > 0 && openNodes.size < 1e4 && closedNodes.size < 1e4;
+		node = getLeastExpensiveNode(openNodes.values())
+	) {
+		openNodes.delete(node.id);
+		closedNodes.set(node.id, node);
+		if (node.id == endNode.id) {
+			endNode = node;
+			break;
 		}
 		const neighbors = [0, 1, -1]
 			.flatMap(x => [0, 1, -1].map(y => new Vector3(x, 0, y)))
 			.filter(v => v.x != 0 || v.z != 0)
-			.map(v => {
-				const id = v.asArray().toString();
-				return openNodes.has(id) ? openNodes.get(id) : new PathNode(currentNode.position.add(v), currentNode);
-			});
+			.map(v => openNodes.get(v.asArray().toString()) || new PathNode(node.position.add(v), node));
 		for (const neighbor of neighbors) {
 			let intersects = false;
 			for (const node of system.entities()) {
@@ -81,7 +94,7 @@ export function findPath(start: Vector3, end: Vector3, system: System): Vector3[
 				continue;
 			}
 
-			const costToNeighbor = currentNode.gCost + nodeDistance(currentNode, neighbor);
+			const costToNeighbor = node.gCost + nodeDistance(node, neighbor);
 			if (costToNeighbor > neighbor.gCost && openNodes.has(neighbor.id)) {
 				continue;
 			}
@@ -93,4 +106,5 @@ export function findPath(start: Vector3, end: Vector3, system: System): Vector3[
 			}
 		}
 	}
+	return trace(startNode, endNode).map(node => node.position);
 }

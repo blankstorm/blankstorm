@@ -34,6 +34,6 @@ export class Waypoint extends Entity {
 
 	public fromJSON(data: Partial<WaypointJSON>): void {
 		super.fromJSON(data);
-		assignWithDefaults(this, pick(data, 'icon', 'color', 'builtin', 'readonly'));
+		assignWithDefaults(this as Waypoint, pick(data, 'icon', 'color', 'builtin', 'readonly'));
 	}
 }
