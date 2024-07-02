@@ -20,7 +20,7 @@ export class Player extends Entity {
 		return this.fleet.power;
 	}
 
-	get owner(): this {
+	public get owner(): this {
 		return this;
 	}
 

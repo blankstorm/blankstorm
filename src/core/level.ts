@@ -209,7 +209,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 
 		logger.log(`Loading ${json.entities.length} entities`);
-		json.entities.sort((a, b) => loadingPriorities.indexOf(a.entityType) > loadingPriorities.indexOf(b.entityType) ? 1 : -1);
+		json.entities.sort((a, b) => (loadingPriorities.indexOf(a.entityType) > loadingPriorities.indexOf(b.entityType) ? 1 : -1));
 		for (const data of json.entities) {
 			const types = { Player, Ship, Star, Planet };
 			if (!Object.hasOwn(types, data.entityType)) {

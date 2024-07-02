@@ -28,6 +28,7 @@ export interface EntityJSON {
 const copy = ['id', 'name', 'entityType', 'isSelected', 'isTargetable'] as const satisfies ReadonlyArray<keyof Entity>;
 
 @register
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class Entity
 	extends EventEmitter<{
 		update: [];
@@ -39,15 +40,7 @@ export class Entity
 		return this.constructor.name;
 	}
 
-	protected _name: string;
-
-	public get name(): string {
-		return this._name;
-	}
-
-	public set name(name: string) {
-		this._name = name;
-	}
+	public name: string;
 
 	public get entityType(): string {
 		return this.constructor.name;
@@ -186,6 +179,11 @@ export class Entity
 		entity.fromJSON(data);
 		return entity;
 	}
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+export interface Entity {
+	constructor: typeof Entity;
 }
 
 export function filterEntities(entities: Iterable<Entity>, selector: string): Set<Entity> {
