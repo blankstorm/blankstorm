@@ -36,7 +36,7 @@ export async function load(url: string): Promise<Locale> {
 
 		store.set(locale.language, locale);
 		logger.debug(`Loaded locale "${locale.name}" (${locale.language})`);
-		settings.items.get('locale').addOption(locale.language, locale.name);
+		settings.items.get('locale')!.addOption(locale.language, locale.name);
 		emitter.emit('fetch', locale);
 		return locale;
 	} catch (e) {
@@ -46,7 +46,7 @@ export async function load(url: string): Promise<Locale> {
 
 export function use(id: string) {
 	if (!store.has(id)) throw new Error(`Locale ${id} does not exist`);
-	const locale = store.get(id);
+	const locale = store.get(id)!;
 	currentLang = id;
 	$('#main button.sp').text(locale['menu.singleplayer'] ?? 'Singleplayer');
 	$('#main button.mp').text(locale['menu.multiplayer'] ?? 'Multiplayer');

@@ -6,9 +6,12 @@ const { fileURLToPath } = $app.require('node:url');
 const path = $app.require('node:path');
 
 export function upload(type: string, multiple = false): Promise<File> {
-	return new Promise<File>(resolve => {
+	return new Promise<File>((resolve, reject) => {
 		$<HTMLInputElement>(`<input type=file ${type ? `accept='${type}'` : ''} ${multiple ? 'multiple' : ''}>`)
-			.on('change', e => resolve(Array.from(e.target.files)[0]))
+			.on('change', e => {
+				const file = e.target?.files?.[0];
+				file ? resolve(file) : reject(new ReferenceError('No files uploaded'));
+			})
 			.trigger('click');
 	});
 }

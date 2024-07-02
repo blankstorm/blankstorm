@@ -16,9 +16,7 @@ export interface VersionInfo {
 }
 
 export function getVersionInfo(fullVersion: string = $package.version): VersionInfo {
-	const {
-		groups: { type, subversion, version },
-	} = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion);
+	const { type, subversion, version } = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion)!.groups!;
 	const shortVersion = type ? '0.' + subversion : version + '.0';
 	return {
 		fullVersion,

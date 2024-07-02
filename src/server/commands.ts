@@ -1,12 +1,14 @@
 import { getAccount } from '@blankstorm/api';
 import type { Command, CommandExecutionContext } from '../core/commands';
 import { commands as _commands, execCommandString as _execCommandString } from '../core/commands';
-import { Client } from './Client';
-import type { Server } from './Server';
+import { Client } from './clients';
+import * as server from './server';
+import { blacklist } from './config';
+import { getClientByName } from './clients';
+import { logger } from './utils';
 
 export interface ServerCommandExecutionContext extends CommandExecutionContext {
 	executor: Client;
-	server: Server;
 }
 
 export interface ServerCommand extends Command {
@@ -15,35 +17,35 @@ export interface ServerCommand extends Command {
 
 export const commands: Map<string, ServerCommand> = new Map([..._commands.entries()]);
 commands.set('kick', {
-	exec({ server, executor }, player, ...reason: string[]) {
-		const client = server.clients.getByName(player);
+	exec({ executor }, player, ...reason: string[]) {
+		const client = getClientByName(player);
 		if (!client) {
 			return 'Player is not online or does not exist';
 		}
 		client.kick(reason.join(' '));
-		server.log.log(`${executor.name} kicked ${player}. Reason: ${reason.join(' ')}`);
+		logger.log(`${executor.name} kicked ${player}. Reason: ${reason.join(' ')}`);
 		return 'Kicked ' + player;
 	},
 	oplvl: 3,
 } as ServerCommand);
 commands.set('ban', {
-	exec({ server, executor }, player, ...reason: string[]) {
-		const client = server.clients.getByName(player);
+	exec({ executor }, player, ...reason: string[]) {
+		const client = getClientByName(player);
 		if (!client) {
 			return 'Player is not online or does not exist';
 		}
 		client.ban(reason.join(' '));
-		server.log.log(`${executor.name} banned ${player}. Reason: ${reason.join(' ')}`);
+		logger.log(`${executor.name} banned ${player}. Reason: ${reason.join(' ')}`);
 		return 'Banned ' + player;
 	},
 	oplvl: 4,
 });
 commands.set('unban', {
-	exec({ server, executor }, player, ...reason) {
+	exec({ executor }, player, ...reason) {
 		getAccount('username', player)
 			.then(client => {
-				server.blacklist.splice(server.blacklist.indexOf(client.id), 1);
-				server.log.log(`${executor.name} unbanned ${player}. Reason: ${reason.join(' ')}`);
+				blacklist.delete(client.id);
+				logger.log(`${executor.name} unbanned ${player}. Reason: ${reason.join(' ')}`);
 				executor.socket.emit('chat', `Unbanned ${player}`);
 			})
 			.catch(() => {
@@ -53,43 +55,43 @@ commands.set('unban', {
 	oplvl: 4,
 });
 commands.set('log', {
-	exec({ server, executor }, ...message) {
-		server.log.log(`${executor.name} logged ${message.join(' ')}`);
+	exec({ executor }, ...message) {
+		logger.log(`${executor.name} logged ${message.join(' ')}`);
 	},
 	oplvl: 1,
 });
 commands.set('msg', {
-	exec({ server, executor }, player, ...message) {
-		if (!(server.clients.getByName(player) instanceof Client)) {
+	exec({ executor }, player, ...message) {
+		if (!(getClientByName(player) instanceof Client)) {
 			return 'That user is not online';
 		}
-		server.clients.getByName(player).socket.emit(`[${executor.name} -> me] ${message.join(' ')}`);
-		server.log.log(`[${executor.name} -> ${player}] ${message.join(' ')}`);
-		server.clients.getByName(player).lastMessager = executor;
+		getClientByName(player).socket.emit(`[${executor.name} -> me] ${message.join(' ')}`);
+		logger.log(`[${executor.name} -> ${player}] ${message.join(' ')}`);
+		getClientByName(player).lastMessager = executor;
 		return `[me -> ${executor.name}] ${message.join(' ')}`;
 	},
 	oplvl: 0,
 });
 commands.set('reply', {
-	exec({ server, executor }, ...message) {
-		return executor.lastMessager ? commands.get('msg')!.exec({ server, executor }, executor.lastMessager.name, ...message) : 'No one messaged you yet =(';
+	exec({ executor }, ...message) {
+		return executor.lastMessager ? commands.get('msg')!.exec({ executor }, executor.lastMessager.name, ...message) : 'No one messaged you yet =(';
 	},
 	oplvl: 0,
 });
 commands.set('stop', {
-	exec({ server }) {
+	exec() {
 		server.stop();
 	},
 	oplvl: 4,
 });
 commands.set('restart', {
-	exec({ server }) {
+	exec() {
 		server.restart();
 	},
 	oplvl: 4,
 });
 commands.set('save', {
-	exec({ server }) {
+	exec() {
 		server.save();
 		return 'Saved the current level';
 	},

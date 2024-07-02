@@ -36,7 +36,14 @@ export interface ClientInit {
 	debug: boolean;
 }
 
-export let currentLevel: Level;
+export let currentLevel: Level | null;
+
+export function getCurrentLevel(): Level {
+	if (!currentLevel) {
+		throw new ReferenceError('No current level');
+	}
+	return currentLevel;
+}
 
 export function clearLevel(): void {
 	currentLevel = null;
@@ -294,39 +301,39 @@ async function _init(): Promise<void> {
 			},
 		],
 	});
-	settings.items.get('forward').addEventListener('trigger', () => {
+	settings.items.get('forward')?.addEventListener('trigger', () => {
 		renderer.addCameraVelocity(Vector3.Forward());
 	});
-	settings.items.get('left').addEventListener('trigger', () => {
+	settings.items.get('left')?.addEventListener('trigger', () => {
 		renderer.addCameraVelocity(Vector3.Left());
 	});
-	settings.items.get('right').addEventListener('trigger', () => {
+	settings.items.get('right')?.addEventListener('trigger', () => {
 		renderer.addCameraVelocity(Vector3.Right());
 	});
-	settings.items.get('back').addEventListener('trigger', () => {
+	settings.items.get('back')?.addEventListener('trigger', () => {
 		renderer.addCameraVelocity(Vector3.Backward());
 	});
-	settings.items.get('chat').addEventListener('trigger', e => {
+	settings.items.get('chat')?.addEventListener('trigger', e => {
 		e.preventDefault();
 		chat.toggleUI();
 	});
-	settings.items.get('command').addEventListener('trigger', e => {
+	settings.items.get('command')?.addEventListener('trigger', e => {
 		e.preventDefault();
 		chat.toggleUI(true);
 	});
-	settings.items.get('toggle_menu').addEventListener('trigger', () => {
+	settings.items.get('toggle_menu')?.addEventListener('trigger', () => {
 		// not implemented
 	});
-	settings.items.get('toggle_map').addEventListener('trigger', () => {
+	settings.items.get('toggle_map')?.addEventListener('trigger', () => {
 		changeUI('#map');
 	});
-	settings.items.get('toggle_temp_menu').addEventListener('trigger', () => {
+	settings.items.get('toggle_temp_menu')?.addEventListener('trigger', () => {
 		changeUI('#ingame-temp-menu');
 	});
-	settings.items.get('screenshot').addEventListener('trigger', () => {
+	settings.items.get('screenshot')?.addEventListener('trigger', () => {
 		new ScreenshotUI(canvas[0].toDataURL('image/png'));
 	});
-	settings.items.get('save').addEventListener('trigger', e => {
+	settings.items.get('save')?.addEventListener('trigger', e => {
 		e.preventDefault();
 		saves.flush();
 	});
@@ -479,7 +486,7 @@ export function load(level: Level): boolean {
 	renderer.clear();
 	renderer.update(currentLevel.toJSON());
 	level.on('update', () => {
-		renderer.update(currentLevel.toJSON());
+		renderer.update(currentLevel!.toJSON());
 	});
 	level.on('projectile_fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
 		renderer.fireProjectile(hardpointID, targetID, projectile);
@@ -502,7 +509,7 @@ export function load(level: Level): boolean {
 	});
 	level.on('fleet_items_change', async (_, items: Record<ItemID, number>) => {
 		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
-			$(ui.items.get(id)).find('.count').text(minimize(amount));
+			$(ui.items.get(id)!).find('.count').text(minimize(amount));
 		}
 	});
 	unpause();
@@ -511,7 +518,7 @@ export function load(level: Level): boolean {
 }
 
 export function unload(): void {
-	currentLevel.removeAllListeners();
+	currentLevel?.removeAllListeners();
 	pause();
 	$('.ingame').hide();
 	if (isServer) {

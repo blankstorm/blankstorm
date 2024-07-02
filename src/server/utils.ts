@@ -1,58 +1,19 @@
-import EventEmitter from 'events';
 import * as fs from 'fs';
+import { Logger } from 'logzen';
 import { isJSON } from 'utilium';
 
-export function readJSONFile(path) {
+export const logger = new Logger();
+
+export function readJSONFile<T extends object = object>(path: string): T | undefined {
 	if (!fs.existsSync(path)) {
-		return false;
+		return;
 	}
 
 	const content = fs.readFileSync(path, { encoding: 'utf8' });
 
 	if (!isJSON(content)) {
-		return false;
+		return;
 	}
 
 	return JSON.parse(content);
-}
-
-export function captureArrayUpdates(array) {
-	let cache = array;
-	const emitter = new EventEmitter(),
-		update = newArray => {
-			if (cache.length != newArray.length) {
-				emitter.emit('update');
-				cache = newArray;
-				return;
-			}
-
-			for (let i = 0; i < newArray.length; i++) {
-				if (newArray[i] != cache[i]) {
-					emitter.emit('update');
-					cache = newArray;
-					return;
-				}
-			}
-		};
-	return {
-		proxy: new Proxy(array, {
-			get(target, prop) {
-				if (typeof target[prop] != 'function') {
-					return target[prop];
-				}
-				return (...args) => {
-					const rv = target[prop](...args);
-					update(target);
-					return rv;
-				};
-			},
-
-			set(target, prop, value): boolean {
-				target[prop] = value;
-				update(target);
-				return true;
-			},
-		}),
-		emitter,
-	};
 }

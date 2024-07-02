@@ -38,7 +38,9 @@ export const research: Map<string, ResearchUI> = new Map();
 export const waypoints: Map<string, WaypointUI> = new Map();
 
 export function init() {
-	$('#main .version a').text(versions.get(version).text).attr('href', `${game_url}/versions#${version}`);
+	$('#main .version a')
+		.text(versions.get(version)?.text || version)
+		.attr('href', `${game_url}/versions#${version}`);
 
 	for (const [id, item] of Object.entries(itemsData)) {
 		items.set(id, new ItemUI(item));
@@ -85,13 +87,13 @@ export function update() {
 	$('div.item-bar .label').text(`${minimize(player.storage.count())} / ${minimize(player.storage.max)}`);
 
 	for (const [id, amount] of player.storage) {
-		$(items.get(id)).find('.count').text(minimize(amount));
+		$(items.get(id)!).find('.count').text(minimize(amount));
 	}
 
 	//update tech info
 	for (const [id, _research] of Object.entries(researchData)) {
 		const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
-			(result, [id, amount]: [ItemID, number]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`,
+			(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
 			''
 		);
 		const requires = Object.entries(_research.requires).reduce(
@@ -99,7 +101,7 @@ export function update() {
 				result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 			''
 		);
-		$(research.get(id))
+		$(research.get(id)!)
 			.find('.upgrade tool-tip')
 			.html(
 				`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
@@ -110,13 +112,13 @@ export function update() {
 					settings.get('tooltips') ? '<br>type: ' + id : ''
 				}`
 			);
-		$(research.get(id)).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
+		$(research.get(id)!).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
 	}
 
 	//update ship info
 	for (const [id, ship] of Object.entries(genericShips)) {
 		const materials = Object.entries(ship.recipe).reduce(
-			(result, [id, amount]: [ItemID, number]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`,
+			(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
 			''
 		);
 		const requires = Object.entries(ship.requires).reduce(
@@ -124,7 +126,8 @@ export function update() {
 				`${result}<br>${tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${tech}`}`,
 			''
 		);
-		$(ships.get(id))
+
+		$(ships.get(id)!)
 			.find('.add tool-tip')
 			.html(
 				`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
@@ -136,7 +139,7 @@ export function update() {
 		for (const t in ship.requires) {
 			if (isResearchLocked(t as ResearchID, player)) locked = true;
 		}
-		$(ships.get(id)).find('.locked')[locked ? 'show' : 'hide']();
+		$(ships.get(id)!).find('.locked')[locked ? 'show' : 'hide']();
 	}
 
 	$('#waypoint-list div').detach();
@@ -145,7 +148,7 @@ export function update() {
 			waypoints.set(waypoint.id, new WaypointUI(waypoint));
 		}
 
-		waypoints.get(waypoint.id).update();
+		waypoints.get(waypoint.id)?.update();
 	}
 	map.update();
 
@@ -167,7 +170,7 @@ export function setLast(value: string) {
 	lastUI = value;
 }
 
-let strobeInterval = null;
+let strobeInterval: NodeJS.Timeout | number | null = null;
 function strobe(rate) {
 	if (strobeInterval) {
 		clearInterval(strobeInterval);
@@ -349,9 +352,9 @@ export function registerListeners() {
 	});
 	$('#waypoint-dialog .save').on('click', () => {
 		const wpd = $<HTMLDialogElement & { _waypoint?: Waypoint }>('#waypoint-dialog');
-		const x = +wpd.find('[name=x]').val(),
-			y = +wpd.find('[name=y]').val(),
-			z = +wpd.find('[name=z]').val(),
+		const x = +(wpd.find('[name=x]').val() || 0),
+			y = +(wpd.find('[name=y]').val() || 0),
+			z = +(wpd.find('[name=z]').val() || 0),
 			color = wpd.find('[name=color]').val() as string,
 			name = wpd.find('[name=name]').val() as string;
 		if (!isHex(color.slice(1))) {
@@ -359,7 +362,7 @@ export function registerListeners() {
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 			alert(locales.text`error.waypoint.range`);
 		} else {
-			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(null, client.currentLevel);
+			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(undefined, client.getCurrentLevel());
 			waypoint.name = name;
 			waypoint.color = color;
 			waypoint.position = new Vector3(x, y, z);

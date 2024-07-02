@@ -12,7 +12,7 @@ import { defines, deleteOutput, getVersionInfo, renameOutput } from './common';
 const dirname = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
 
-const options = parseArgs({
+const { values: _values } = parseArgs({
 	options: {
 		verbose: { type: 'boolean', short: 'v', default: false },
 		watch: { type: 'boolean', short: 'w', default: false },
@@ -22,7 +22,8 @@ const options = parseArgs({
 		debug: { type: 'boolean', default: false },
 		keep: { type: 'boolean', short: 'k', default: false },
 	},
-}).values;
+});
+const options = _values as { [K in keyof typeof _values]: Exclude<(typeof _values)[K], undefined> };
 const input = path.posix.join(dirname, 'src/client'),
 	asset_path = path.posix.join(dirname, 'dist/build/assets');
 
@@ -30,7 +31,7 @@ function fromPath(sourcePath: string): string[] {
 	if (!fs.statSync(sourcePath).isDirectory()) {
 		return [sourcePath];
 	}
-	const files = [];
+	const files: string[] = [];
 	for (const file of fs.readdirSync(sourcePath)) {
 		const fpath = path.join(sourcePath, file);
 		if (fs.statSync(fpath).isDirectory()) {
@@ -91,7 +92,7 @@ function onBuildStart() {
 			}
 			console.log('Exporting assets: ' + entry);
 			if (entry == 'models') {
-				execSync(`bash ${path.join(dirname, 'assets/models/export.sh')} ${asset_path}/models`, options.verbose ? { stdio: 'inherit' } : null);
+				execSync(`bash ${path.join(dirname, 'assets/models/export.sh')} ${asset_path}/models`, options.verbose ? { stdio: 'inherit' } : undefined);
 				continue;
 			}
 

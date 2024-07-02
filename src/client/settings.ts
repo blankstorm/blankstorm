@@ -6,18 +6,19 @@ import { config } from '../core/metadata';
 
 const fs = $app.require('fs');
 
-export class SettingsError extends Error {
-	target: Item;
-	constructor(message: string, settingsEntry?: Item) {
+export class SettingsError<T extends keyof _Values = keyof _Values> extends Error {
+	constructor(
+		message: string,
+		public target?: Item<T>
+	) {
 		super(message);
-		this.target = settingsEntry;
 	}
 }
 
-export class SettingsEvent extends Event {
+export class SettingsEvent<T extends keyof _Values = keyof _Values> extends Event {
 	constructor(
 		type: string,
-		public item: Item
+		public item: Item<T>
 	) {
 		super(type);
 	}
@@ -82,7 +83,7 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 	#ui_input: JQuery<HTMLInputElement>;
 
 	//Used by select
-	#options = [];
+	#options: JQuery<HTMLOptionElement>[] = [];
 	#value: Keybind = {
 		alt: false,
 		ctrl: false,
@@ -90,7 +91,7 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 	};
 
 	//Used by keybind
-	constructor(options: Partial<ItemOptions<T>>) {
+	constructor(options: ItemOptions<T>) {
 		super();
 		this.id = options.id;
 		this.type = options.type;
@@ -99,7 +100,7 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 		if (options.section instanceof Section) {
 			this.section = options.section;
 		} else if (sections.has(options.section)) {
-			this.section = sections.get(options.section);
+			this.section = sections.get(options.section)!;
 		} else if (options.section) {
 			throw new SettingsError(`Settings section "${options.section}" does not exist`);
 		}
@@ -116,12 +117,12 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 			case 'number':
 			case 'color':
 				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', options.kind);
+				this.#ui_input.attr('type', options.kind!);
 				options.type = <T>(options.type == 'color' ? 'color' : 'number');
 				break;
 			case 'select':
 				this.#ui_input = $('<select></select>');
-				this.#ui_input.text(options.value?.toString());
+				this.#ui_input.text(options.value + '');
 				for (const option of options.options || []) {
 					this.addOption(option.name, option.label);
 				}
@@ -159,7 +160,7 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 			set(this.id, this.value);
 		});
 
-		if ([null, undefined].includes(options.value)) {
+		if (options.value === null || options.value === undefined) {
 			return;
 		}
 
@@ -176,9 +177,9 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 			case 'boolean':
 				return this.#ui_input.is(':checked');
 			case 'number':
-				return +this.#ui_input.val();
+				return +this.#ui_input.val()!;
 			default:
-				return this.#ui_input.val();
+				return this.#ui_input.val()!;
 		}
 	}
 
@@ -235,7 +236,7 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 	}
 
 	addOption(name: string, label: string) {
-		const option = $('<option></option>');
+		const option = $<HTMLOptionElement>('<option></option>');
 		option.val(name);
 		option.text(label);
 		this.#options.push(option);
@@ -244,12 +245,14 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 
 	removeOption(name: string): boolean {
 		const option = this.#options.find(el => el.val() == name);
-		if (option) {
-			this.#ui_input.remove(option);
-			this.#options.splice(this.#options.indexOf(option), 1);
-			return true;
+		if (!option) {
+			return false;
 		}
-		return false;
+		const id = Math.random.toString().slice(2);
+		option.attr('id', id);
+		this.#ui_input.remove('#' + id);
+		this.#options.splice(this.#options.indexOf(option), 1);
+		return true;
 	}
 
 	emit(type: string): boolean {
@@ -257,16 +260,16 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 	}
 
 	update(options: { min?: number; max?: number; step?: number }) {
-		if (isFinite(options?.min)) {
-			this.#ui_input.attr('min', +options.min);
+		if (isFinite(options?.min || NaN)) {
+			this.#ui_input.attr('min', +options.min!);
 		}
 
-		if (isFinite(options?.max)) {
-			this.#ui_input.attr('max', +options.max);
+		if (isFinite(options?.max || NaN)) {
+			this.#ui_input.attr('max', +options.max!);
 		}
 
-		if (isFinite(options?.step)) {
-			this.#ui_input.attr('step', +options.step);
+		if (isFinite(options?.step || NaN)) {
+			this.#ui_input.attr('step', +options.step!);
 		}
 	}
 

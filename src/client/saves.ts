@@ -5,7 +5,7 @@ import { Player } from '../core/entities/player';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
 import { randomCords } from '../core/utils';
-import { currentLevel } from './client';
+import { getCurrentLevel } from './client';
 import { path } from './config';
 import { SaveListItem } from './ui/save';
 import { account } from './user';
@@ -113,10 +113,9 @@ export function init() {
 export function get(id: string): Save {
 	const data = folder.get(id);
 	if (isJSON(data) && map.has(id)) {
-		const save = map.get(id);
-		save.data = JSON.parse(data);
+		map.get(id)!.data = JSON.parse(data);
 	}
-	return map.get(id);
+	return map.get(id)!;
 }
 
 export function set(key: string, save: Save): void {
@@ -139,9 +138,7 @@ export { remove as delete };
  * Writes a level to the save file
  */
 export function flush(): void {
-	if (!(currentLevel instanceof Level)) {
-		throw 'You must have a valid save selected.';
-	}
+	const currentLevel = getCurrentLevel();
 	$('#pause .save').text('Saving...');
 	try {
 		const save = get(currentLevel.id);

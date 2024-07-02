@@ -8,18 +8,19 @@ import { parseArgs } from 'node:util';
 import { version, versions } from '../core/metadata';
 import type { ClientInit } from './client';
 
-const __dirname: string = resolve(fileURLToPath(import.meta.url), '..');
+const dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
-const options = parseArgs({
+const _values = parseArgs({
 	options: {
 		dev: { type: 'boolean', default: false },
 		logLevel: { type: 'string' },
 		quiet: { type: 'boolean', default: false },
 		initalScale: { type: 'string', default: '100' },
-		path: { type: 'string', default: __dirname },
+		path: { type: 'string', default: dirname },
 	},
 	allowPositionals: true,
 }).values;
+const options = _values as { [K in keyof typeof _values]: K extends 'logLevel' ? (typeof _values)[K] : Exclude<(typeof _values)[K], undefined> };
 
 // Initial window scale
 let initialScale: number = parseInt(options.initalScale);
@@ -57,7 +58,7 @@ if (options.logLevel) {
 logger.log('Initializing...');
 
 ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options.dev }));
-ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, computed: null }));
+ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, computed: undefined }));
 
 nativeTheme.themeSource = 'dark';
 
@@ -68,16 +69,16 @@ async function init(): Promise<void> {
 		center: true,
 		darkTheme: true,
 		webPreferences: {
-			preload: join(__dirname, 'preload.mjs'),
+			preload: join(dirname, 'preload.mjs'),
 			nodeIntegration: true,
 		},
-		title: 'Blankstorm Client ' + versions.get(version).text,
+		title: 'Blankstorm Client ' + versions.get(version)?.text || version,
 		backgroundColor: '#000',
 	});
 
 	window.menuBarVisible = false;
 	window.fullScreenable = true;
-	await window.loadFile(join(__dirname, 'index.html'));
+	await window.loadFile(join(dirname, 'index.html'));
 
 	window.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url);

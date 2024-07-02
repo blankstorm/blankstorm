@@ -7,7 +7,7 @@ import type { Star } from '../../core/entities/star';
 import type { Waypoint } from '../../core/entities/waypoint';
 import { config } from '../../core/metadata';
 import { System } from '../../core/system';
-import { currentLevel } from '../client';
+import { getCurrentLevel } from '../client';
 import * as settings from '../settings';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
@@ -35,12 +35,14 @@ export class MapMarker {
 		}
 
 		if (this.target.isType<Planet>('Planet')) {
-			biomeColor(this.target.biome);
+			return biomeColor(this.target.biome);
 		}
 
 		if (this.target.isType<Ship>('Ship')) {
-			return account.id == (<Ship>this.target).owner.id ? '#0f0' : '#f00';
+			return account.id == this.target?.owner?.id ? '#0f0' : '#f00';
 		}
+
+		throw new TypeError('Invalid target type');
 	}
 
 	constructor(public readonly target: Entity | System) {
@@ -154,7 +156,7 @@ export function update(): void {
 		const marker = new MapMarker(entity);
 		markers.set(entity.id, marker);
 	}
-	for (const [id, system] of currentLevel.systems) {
+	for (const [id, system] of getCurrentLevel().systems) {
 		if (markers.has(id)) {
 			continue;
 		}
@@ -188,8 +190,9 @@ export function registerListeners(): void {
 		update();
 	});
 
-	$('#map,#map-markers').on('wheel', ({ originalEvent: evt }: JQuery.TriggeredEvent & { originalEvent: WheelEvent }) => {
-		scale = Math.min(Math.max(scale - Math.sign(evt.deltaY) * 0.1, 0.5), 5);
+	$('#map,#map-markers').on('wheel', ({ originalEvent }: JQuery.TriggeredEvent) => {
+		const original = originalEvent as WheelEvent;
+		scale = Math.min(Math.max(scale - Math.sign(original.deltaY) * 0.1, 0.5), 5);
 		update();
 	});
 

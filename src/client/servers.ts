@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 import { JSONFileMap, isJSON } from 'utilium';
 import { Level, type LevelEvents } from '../core/level';
 import { config, versions } from '../core/metadata';
-import type { PingInfo } from '../server/Server';
+import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
 import { currentLevel, load, unload } from './client';
 import { path } from './config';
@@ -19,7 +19,7 @@ export type ServerData = {
 	name: string;
 };
 
-let kickMessage: string;
+let kickMessage: string | null;
 
 function handleDisconnect(reason: string): void {
 	const message =
@@ -55,11 +55,11 @@ function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ..
 		if (!currentLevel) {
 			load(new Level());
 		}
-		currentLevel.fromJSON(data[0]);
-		currentLevel.sampleTick();
+		currentLevel!.fromJSON(data[0]);
+		currentLevel!.sampleTick();
 	}
 
-	currentLevel.emit(type, ...data);
+	currentLevel?.emit(type, ...data);
 }
 
 function updatePlayerList(list: string[]): void {
@@ -80,7 +80,7 @@ export function disconnect(): void {
 	}
 }
 
-export async function ping(id: string): Promise<PingInfo> {
+export async function ping(id: string): Promise<void> {
 	const server: ServerData = get(id);
 	const url = parseURL(server.url);
 	const info = gui(id).find('.info');
@@ -92,8 +92,7 @@ export async function ping(id: string): Promise<PingInfo> {
 			const ping = await res.json();
 			pingCache.set(id, ping);
 			info.find('span').text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${ping.current_clients}/${ping.max_clients}`);
-			info.find('tool-tip').html(`${url.hostname}<br><br>${versions.get(ping.version).text || ping.version}<br><br>${ping.message}`);
-			return ping;
+			info.find('tool-tip').html(`${url.hostname}<br><br>${versions.get(ping.version)?.text || ping.version}<br><br>${ping.message}`);
 		} catch (e) {
 			info.find('span').html('<svg><use href="assets/images/icons.svg#xmark"/></svg>');
 			info.find('tool-tip').html('Invalid response');
@@ -122,7 +121,7 @@ export function connect(id: string): void {
 		pingInfo = pingCache.get(id);
 	socket = io(url.href, { reconnection: false, auth: { token: cookies.get('token'), session: cookies.get('session') } });
 	socket.on('connect', () => {
-		$('#tablist p.info').html(`${url.hostname}<br>${versions.get(pingInfo.version).text}<br>${pingInfo.message}<br>`);
+		$('#tablist p.info').html(`${url.hostname}<br>${(pingInfo?.version ? versions.get(pingInfo.version)?.text : null) || pingInfo?.version}<br>${pingInfo?.message}<br>`);
 	});
 	socket.on('connect_error', handleConnectionError);
 	socket.on('connect_failed', handleConnectionFailed);
