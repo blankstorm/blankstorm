@@ -6,7 +6,7 @@ import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
 import type { Component } from './components/component';
 import type { FleetJSON } from './components/fleet';
-import { filterEntities, type Entity, type EntityJSON } from './entities/entity';
+import { filterEntities, loadingPriorities, type Entity, type EntityJSON } from './entities/entity';
 import { Planet } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
 import { Ship } from './entities/ship';
@@ -202,11 +202,14 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		assignWithDefaults(this, pick(json, copy));
 		this.date = new Date(json.date);
 
+		logger.log(`Loading ${json.systems.length} system(s)`);
 		for (const systemData of json.systems) {
 			logger.debug('Loading system ' + systemData.id);
 			System.FromJSON(systemData, this);
 		}
 
+		logger.log(`Loading ${json.entities.length} entities`);
+		json.entities.sort((a, b) => loadingPriorities.indexOf(a.entityType) > loadingPriorities.indexOf(b.entityType) ? 1 : -1);
 		for (const data of json.entities) {
 			const types = { Player, Ship, Star, Planet };
 			if (!Object.hasOwn(types, data.entityType)) {

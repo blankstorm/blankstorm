@@ -219,3 +219,5 @@ export function filterEntities(entities: Iterable<Entity>, selector: string): Se
 	}
 	return selected;
 }
+
+export const loadingPriorities = ['Player', 'Star', 'Planet', 'Fleet', 'Ship'];
