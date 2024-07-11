@@ -53,16 +53,7 @@ export class Entity
 		return types.some(type => this.entityTypes.includes(type));
 	}
 
-	protected _system: string;
-	public get system(): System {
-		if (!this.level.systems.has(this._system)) {
-			throw new ReferenceError(`System "${this._system}" does not exist`);
-		}
-		return this.level.systems.get(this._system)!;
-	}
-	public set system(value: System | string) {
-		this._system = typeof value == 'object' ? value.id : value;
-	}
+	public system: System;
 
 	public parent?: Entity;
 
@@ -110,10 +101,7 @@ export class Entity
 		this.id ||= randomHex(32);
 		level.entities.add(this);
 
-		setTimeout(() => {
-			this.emit('created');
-			level.emit('entity_created', this.toJSON());
-		});
+		setTimeout(() => this.emit('created'));
 	}
 
 	public update() {
@@ -175,7 +163,7 @@ export class Entity
 			owner: data.owner ? this.level.getEntityByID<CelestialBody | Player>(data.owner) : undefined,
 		});
 		if (data.system) {
-			this.system = data.system;
+			this.system = this.level.systems.get(data.system)!;
 		}
 	}
 

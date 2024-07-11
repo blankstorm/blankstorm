@@ -2,7 +2,6 @@ import { Animation } from '@babylonjs/core/Animations/animation';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { Scene } from '@babylonjs/core/scene';
 import { randomFloat, randomHex, randomInt, wait } from 'utilium';
 import type { HardpointJSON } from '../../core/entities/hardpoint';
 import { genericHardpoints, type GenericProjectile, type HardpointType } from '../../core/generic/hardpoints';
@@ -25,7 +24,7 @@ export interface HardpointProjectileHandlerOptions extends FireProjectileOptions
 
 export type HardpointProjectileHandler = (this: HardpointRenderer, target: TransformNode, options: HardpointProjectileHandlerOptions) => Promise<unknown>;
 
-const projectiles: Record<string, HardpointProjectileHandler> = {
+const projectiles = {
 	async laser(target, { material, speed, id: modelID }) {
 		await wait(randomInt(4, 40));
 		const laser = new ModelRenderer(randomHex(32), this.getScene());
@@ -56,15 +55,11 @@ const projectiles: Record<string, HardpointProjectileHandler> = {
 			laser.dispose();
 		};
 	},
-};
+} satisfies Record<string, HardpointProjectileHandler>;
 
 export class HardpointRenderer extends ModelRenderer implements Renderer<HardpointJSON> {
 	public projectiles: Set<Renderer> = new Set();
-	protected _projectile: HardpointProjectileHandler;
 	public declare rendererType: HardpointType;
-	public constructor(id: string, scene: Scene) {
-		super(id, scene);
-	}
 
 	public fireProjectile(target: TransformNode, rawOptions: FireProjectileOptions) {
 		const options: HardpointProjectileHandlerOptions = rawOptions;
@@ -73,13 +68,10 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Hardpoi
 				return material;
 			}
 		}, this)?.material;
-		this._projectile(target, options);
+		projectiles[options.id as keyof typeof projectiles].call(this, target, options);
 	}
 
 	public async update(data: HardpointJSON) {
-		if (this.rendererType != data.type) {
-			this._projectile = projectiles[data.type].bind(this);
-		}
 		await super.update(data);
 		if (!this.isInstanciated) {
 			return;

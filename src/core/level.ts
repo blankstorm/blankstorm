@@ -45,7 +45,6 @@ export interface LevelEvents {
 	entity_removed: [EntityJSON];
 	entity_death: [EntityJSON];
 	entity_path_start: [string, IVector3Like[]];
-	entity_created: [EntityJSON];
 	fleet_items_change: [FleetJSON, Record<ItemID, number>];
 	player_levelup: [PlayerJSON];
 	player_reset: [PlayerJSON];
@@ -58,7 +57,6 @@ export const levelEventNames = [
 	'entity_removed',
 	'entity_death',
 	'entity_path_start',
-	'entity_created',
 	'fleet_items_change',
 	'player_levelup',
 	'player_reset',

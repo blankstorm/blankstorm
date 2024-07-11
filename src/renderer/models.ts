@@ -30,10 +30,6 @@ export class ModelRenderer extends TransformNode {
 		return { speed: 0, agility: 0 };
 	}
 
-	public constructor(id: string, scene: Scene) {
-		super(id, scene);
-	}
-
 	public get selected(): boolean {
 		return this._selected;
 	}

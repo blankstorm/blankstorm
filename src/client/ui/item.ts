@@ -3,22 +3,10 @@ import type { Item } from '../../core/generic/items';
 import * as locales from '../locales';
 import { action } from '../user';
 
-export class ItemUI extends HTMLDivElement {
-	constructor(item: Item) {
-		super();
-
-		$('<span></span>')
-			.css('text-align', 'right')
-			.text(`${locales.text(`item.${item.id}.name`)}${item.rare ? ` (rare)` : ``}: `)
-			.appendTo(this);
-		$('<span></span>').addClass('count').appendTo(this);
-
-		$(this)
-			.on('click', async () => {
-				await action('create_item', item);
-			})
-			.addClass('ui-item')
-			.appendTo('div.inventory');
-	}
+export function createItemUI(item: Item): DocumentFragment {
+	const instance = $<HTMLTemplateElement>('#item')[0].content.cloneNode(true) as DocumentFragment;
+	instance.querySelector('.name')!.textContent = locales.text(`item.${item.id}.name`) + (item.rare ? ' (rare)' : '') + ': ';
+	instance.querySelector('.item')!.addEventListener('click', () => action('create_item', item));
+	$('div.inventory').append(instance);
+	return instance;
 }
-customElements.define('ui-item', ItemUI, { extends: 'div' });

@@ -85,7 +85,7 @@ export function findPath(start: Vector3, end: Vector3, system: System): Vector3[
 			.map(v => openNodes.get(v.asArray().toString()) || new PathNode(node.position.add(v), node));
 		for (const neighbor of neighbors) {
 			let intersects = false;
-			for (const node of system.entities()) {
+			for (const node of system?.entities() || []) {
 				if (Vector3.Distance(node.absolutePosition, neighbor.position) <= (node.entityTypes.includes('CelestialBody') ? (<CelestialBody>node).radius : 1) + 1) {
 					intersects = true;
 				}

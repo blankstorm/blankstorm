@@ -11,7 +11,6 @@ import { isResearchLocked, priceOfResearch, research as researchData } from '../
 import { genericShips } from '../../core/generic/ships';
 import { Level } from '../../core/level';
 import { config, game_url, version, versions } from '../../core/metadata';
-import { System } from '../../core/system';
 import * as renderer from '../../renderer';
 import * as client from '../client';
 import { isServer } from '../config';
@@ -20,16 +19,16 @@ import * as saves from '../saves';
 import { Save } from '../saves';
 import * as servers from '../servers';
 import * as settings from '../settings';
-import { account, action, player as getPlayer, system } from '../user';
+import { account, action, player as getPlayer, system, hasSystem } from '../user';
 import { $svg, alert, logger, minimize, upload } from '../utils';
-import { ItemUI } from './item';
+import { createItemUI } from './item';
 import * as map from './map';
 import { ResearchUI } from './research';
 import { ShipUI } from './ship';
 import { changeUI } from './utils';
 import { WaypointUI } from './waypoint';
 
-export const items: Map<string, ItemUI> = new Map();
+export const items: Map<string, DocumentFragment> = new Map();
 
 export const ships: Map<string, ShipUI> = new Map();
 
@@ -43,7 +42,7 @@ export function init() {
 		.attr('href', `${game_url}/versions#${version}`);
 
 	for (const [id, item] of Object.entries(itemsData)) {
-		items.set(id, new ItemUI(item));
+		items.set(id, createItemUI(item));
 	}
 	for (const [id, _research] of Object.entries(researchData)) {
 		research.set(id, new ResearchUI(_research));
@@ -78,7 +77,7 @@ export function update() {
 
 	$(':root').css('--font-size', settings.get('font_size') + 'px');
 
-	if (!(system() instanceof System)) {
+	if (!hasSystem()) {
 		return;
 	}
 

@@ -24,8 +24,26 @@ export function player(): Player {
 	return getCurrentLevel().getEntityByID(account.id);
 }
 
+export function hasPlayer(): boolean {
+	try {
+		player();
+		return true;
+	} catch (_) {
+		return false;
+	}
+}
+
 export function system(): System {
 	return player()?.system;
+}
+
+export function hasSystem(): boolean {
+	try {
+		system();
+		return true;
+	} catch (_) {
+		return false;
+	}
 }
 
 export async function action<T extends Action>(action: T, ...args: ActionParameters<T>): Promise<boolean> {
