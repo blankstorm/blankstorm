@@ -33,7 +33,7 @@ export interface ServerConfig {
 	public_log: boolean;
 }
 
-export let config: ServerConfig = {
+export const config: ServerConfig = {
 	whitelist: false,
 	blacklist: true,
 	max_clients: 10,

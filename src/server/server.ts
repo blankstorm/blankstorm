@@ -85,7 +85,7 @@ export function stop() {
 	process.exit();
 }
 
-export function restart(restartProcess = false) {
+export function restart() {
 	isStopping = true;
 	logger.log('Restarting...');
 	for (const client of clients.values()) {

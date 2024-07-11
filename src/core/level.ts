@@ -112,6 +112,10 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 
 		player.storage.removeItems(generic.recipe);
 		const ship = new Ship(undefined, player.level, generic.id);
+		if (berth) {
+			ship.position.addInPlace(berth.position);
+		}
+
 		player.fleet.add(ship);
 		return true;
 	}
