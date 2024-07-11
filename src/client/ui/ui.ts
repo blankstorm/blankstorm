@@ -23,16 +23,16 @@ import { account, action, player as getPlayer, system, hasSystem } from '../user
 import { $svg, alert, logger, minimize, upload } from '../utils';
 import { createItemUI } from './item';
 import * as map from './map';
-import { ResearchUI } from './research';
-import { ShipUI } from './ship';
 import { changeUI } from './utils';
 import { WaypointUI } from './waypoint';
+import { createResearchUI } from './research';
+import { createShipUI } from './ship';
 
 export const items: Map<string, DocumentFragment> = new Map();
 
-export const ships: Map<string, ShipUI> = new Map();
+export const ships: Map<string, DocumentFragment> = new Map();
 
-export const research: Map<string, ResearchUI> = new Map();
+export const research: Map<string, DocumentFragment> = new Map();
 
 export const waypoints: Map<string, WaypointUI> = new Map();
 
@@ -45,10 +45,10 @@ export function init() {
 		items.set(id, createItemUI(item));
 	}
 	for (const [id, _research] of Object.entries(researchData)) {
-		research.set(id, new ResearchUI(_research));
+		research.set(id, createResearchUI(_research));
 	}
 	for (const [type, genericShip] of Object.entries(genericShips)) {
-		ships.set(type, new ShipUI(genericShip));
+		ships.set(type, createShipUI(genericShip));
 	}
 	const size = config.system_generation.max_size;
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
@@ -103,13 +103,16 @@ export function update() {
 		$(research.get(id)!)
 			.find('.upgrade tool-tip')
 			.html(
-				`<strong>${locales.text(`tech.${id}.name`)}</strong><br>${locales.text(`tech.${id}.description`)}<br>${
+				`<strong>${locales.text(`tech.${id}.name`)}</strong><br>
+				${locales.text(`tech.${id}.description`)}<br>
+				${
 					player.research[id] >= _research.max
 						? `<strong>Max Level</strong>`
 						: `${player.research[id]} <svg><use href="assets/images/icons.svg#arrow-right"/></svg> ${player.research[id] + 1}`
-				}<br><br><strong>Material Cost:</strong>${materials}<br>${Object.keys(_research.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${
-					settings.get('tooltips') ? '<br>type: ' + id : ''
-				}`
+				}
+				<br><br><strong>Material Cost:</strong>${materials}<br>
+				${Object.keys(_research.requires).length ? `<br><strong>Requires:</strong>` : ``}
+				${requires}${settings.get('tooltips') ? '<br>type: ' + id : ''}`
 			);
 		$(research.get(id)!).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
 	}

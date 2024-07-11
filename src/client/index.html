@@ -11,6 +11,19 @@
 	</head>
 
 	<body data-server-no-reload background="assets/images/menu.png">
+		<template id="berth">
+			<div class="content bg-transparent ui-berth">
+				<p class="active"></p>
+				<select></select>
+				<p class="non-active add add-or-upgrade-icon">
+					<tool-tip></tool-tip>
+					<svg style="font-size: 1.5em">
+						<use href="assets/images/icons.svg#circle-plus" />
+					</svg>
+				</p>
+			</div>
+		</template>
+
 		<div id="loading_cover" class="cover bg-alt" style="z-index: 100">
 			<svg xmlns="http://www.w3.org/2000/svg" style="position: fixed; left: calc(50% - 75px); top: calc(50% - 100px); width: 150px; height: 150px" viewBox="0 0 100 100">
 				<defs>
@@ -58,6 +71,26 @@
 				</svg>
 				<span></span>
 			</button>
+			<template id="save">
+				<li class="bg-normal clickable" style="align-items: center; height: 3em; word-wrap: break-word; overflow: none">
+					<p class="delete" style="position: absolute; left: 10%">
+						<svg><use href="assets/images/icons.svg#trash" /></svg>
+					</p>
+					<p class="download" style="position: absolute; left: 15%">
+						<svg><use href="assets/images/icons.svg#download" /></svg>
+					</p>
+					<p class="play" style="position: absolute; left: 20%">
+						<svg><use href="assets/images/icons.svg#play" /></svg>
+					</p>
+					<p class="edit" style="position: absolute; left: 25%">
+						<svg><use href="assets/images/icons.svg#pencil" /></svg>
+					</p>
+					<p class="name" style="position: absolute; left: 30%"></p>
+					<p class="version" style="position: absolute; left: 55%"></p>
+					<p class="date" style="position: absolute; left: 65%"></p>
+					<p></p>
+				</li>
+			</template>
 		</ul>
 		<ul id="server-list" class="playable-list content bg-transparent">
 			<button class="back menu">
@@ -196,7 +229,7 @@
 					</svg>
 				</div>
 				<template id="item">
-					<div class="item">
+					<div class="ui-item">
 						<span class="name" style="text-align: right"></span>
 						<span class="count"></span>
 					</div>
@@ -204,7 +237,40 @@
 			</div>
 			<div class="ingame-menu-flex screenshots"></div>
 			<div class="ingame-menu-flex shipyard"></div>
-			<div class="ingame-menu-flex lab"></div>
+			<template id="ship">
+				<div class="ui-ship">
+					<span class="locked locked-icon">
+						<svg style="font-size: 1.5em">
+							<use href="assets/images/icons.svg#lock" />
+						</svg>
+					</span>
+					<span class="name" style="text-align: center">${locales.text(`entity.${ship.id}.name`)}</span>
+					<span class="add add-or-upgrade-icon">
+						<tool-tip></tool-tip>
+						<svg style="font-size: 1.5em">
+							<use href="assets/images/icons.svg#circle-plus" />
+						</svg>
+					</span>
+				</div>
+			</template>
+			<div class="ingame-menu-flex lab">
+				<template id="research">
+					<div class="ui-research">
+						<span class="locked locked-icon">
+							<svg style="font-size: 1.5em">
+								<use href="assets/images/icons.svg#lock" />
+							</svg>
+						</span>
+						<span class="name" style="text-align: center"></span>
+						<span class="upgrade add-or-upgrade-icon">
+							<tool-tip></tool-tip>
+							<svg style="font-size: 1.5em">
+								<use href="assets/images/icons.svg#circle-up" />
+							</svg>
+						</span>
+					</div>
+				</template>
+			</div>
 		</div>
 		<div id="map" class="cover game-ui ingame" tabindex="-1">
 			<svg id="map-markers-container" class="cover" transform-origin="center">

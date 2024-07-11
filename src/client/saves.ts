@@ -7,7 +7,7 @@ import { Level } from '../core/level';
 import { randomCords } from '../core/utils';
 import { getCurrentLevel } from './client';
 import { path } from './config';
-import { SaveListItem } from './ui/save';
+import { createSaveListItem } from './ui/save';
 import { account } from './user';
 import { alert, logger } from './utils';
 const fs = $app.require('fs');
@@ -15,14 +15,14 @@ const fs = $app.require('fs');
 export class Save {
 	protected _data: LevelJSON;
 
-	public gui: JQuery<SaveListItem>;
+	public gui: JQuery<DocumentFragment>;
 
 	public constructor(data: LevelJSON) {
 		this._data = data;
 
 		set(this.id, this);
 
-		this.gui = $(new SaveListItem(this));
+		this.gui = createSaveListItem(this);
 	}
 
 	public get id() {

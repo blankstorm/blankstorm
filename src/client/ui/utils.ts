@@ -28,3 +28,7 @@ export function changeUI(selector: string, hideAll?: boolean) {
 		$(selector).show().trigger('focus');
 	}
 }
+
+export function instaniateTemplate(selector: string): DocumentFragment {
+	return $<HTMLTemplateElement>(selector)[0].content.cloneNode(true) as DocumentFragment;
+}
