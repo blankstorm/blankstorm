@@ -328,6 +328,20 @@
 				</svg>
 				<span></span>
 			</button>
+			<template id="waypoint-li">
+				<div class="waypoint-ui bg-normal">
+					<span class="edit clickable" style="text-align: center; grid-column: 2">
+						<svg><use href="assets/images/icons.svg#pencil" /></svg>
+					</span>
+					<span class="trash clickable" style="text-align: center; grid-column: 3">
+						<svg><use href="assets/images/icons.svg#trash" /></svg>
+					</span>
+					<span class="icon" style="text-align: center; grid-column: 4">
+						<svg class="icon"><use class="icon" /></svg>
+					</span>
+					<span class="name" style="text-align: left; grid-column: 5"></span>
+				</div>
+			</template>
 		</div>
 		<canvas class="game cover ingame" style="display: none; z-index: 0"></canvas>
 		<div id="debug" class="text-overlay cover ingame" style="display: none; width: fit-content">

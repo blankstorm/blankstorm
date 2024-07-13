@@ -2,48 +2,14 @@ import { Matrix, Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
 import * as settings from '../settings';
 import { player, system } from '../user';
-import { $svg, confirm, minimize } from '../utils';
+import { $svg, minimize } from '../utils';
 import { type Waypoint } from '../../core/entities/waypoint';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
 import { scene } from '../../renderer';
-
-export class WaypointListItemUI extends HTMLDivElement {
-	constructor(public readonly target: Waypoint) {
-		super();
-		$('<span class="edit" style=text-align:center;grid-column:2;><svg><use href="assets/images/icons.svg#pencil"/></svg></span>')
-			.addClass('clickable')
-			.on('click', () => {
-				const dialog = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
-				dialog._waypoint = target;
-				dialog.showModal();
-			})
-			.appendTo(this);
-		$('<span class="trash" style=text-align:center;grid-column:3;><svg><use href="assets/images/icons.svg#trash"/></svg></span>')
-			.addClass('clickable')
-			.on('click', async () => {
-				const yes = await confirm('Are you sure?');
-				if (yes) target.remove();
-			})
-			.appendTo(this);
-		$(`<span class="icon" style=text-align:center;grid-column:4;><svg style="fill:${target.color}"><use href="assets/images/icons.svg#${
-			target.icon || 'location-dot'
-		}" /></svg></span>
-		<span class="name" style=text-align:left;grid-column:5>${target.name}</span>
-		`).appendTo(this);
-
-		$(this).addClass('waypoint-ui bg-normal');
-		if (target.readonly) {
-			$(this)
-				.find('span')
-				.filter(i => [0, 1].includes(i))
-				.hide();
-		}
-	}
-}
-customElements.define('ui-waypoint-li', WaypointListItemUI, { extends: 'div' });
+import { createWaypointListItem } from './templates';
 
 export class WaypointUI extends HTMLDivElement {
-	public readonly li: JQuery<WaypointListItemUI>;
+	public readonly li: JQuery<DocumentFragment>;
 	public readonly marker: JQuery<HTMLDivElement>;
 
 	public get screenPos(): Vector3 {
@@ -55,7 +21,7 @@ export class WaypointUI extends HTMLDivElement {
 
 	public constructor(public readonly target: Waypoint) {
 		super();
-		this.li = $(new WaypointListItemUI(target));
+		this.li = createWaypointListItem(target);
 		const svg = $svg('svg').append($svg('use').attr('href', 'assets/images/icons.svg#location-dot'));
 		this.marker = $<HTMLDivElement>('<div><p style=justify-self:center></p></div>')
 			.append(svg)
