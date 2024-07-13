@@ -93,6 +93,20 @@
 			</template>
 		</ul>
 		<ul id="server-list" class="playable-list content bg-transparent">
+			<template id="server">
+				<li class="bg-normal clickable" style="overflow: none; align-items: center; height: 3em"></li>
+				<p class="delete" style="position: absolute; left: 15%">
+					<svg><use href="assets/images/icons.svg#trash" /></svg>
+				</p>
+				<p class="play" style="position: absolute; left: 20%">
+					<svg><use href="assets/images/icons.svg#play" /></svg>
+				</p>
+				<p class="edit" style="position: absolute; left: 25%">
+					<svg><use href="assets/images/icons.svg#pencil" /></svg>
+				</p>
+				<p class="name" style="position: absolute; left: 30%"></p>
+				<p class="info" style="position: absolute; left: 75%"><span></span><tool-tip></tool-tip></p>
+			</template>
 			<button class="back menu">
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
@@ -235,6 +249,21 @@
 					</div>
 				</template>
 			</div>
+			<template id="screenshot-context-menu">
+				<div class="bg-light context-menu" style="position: fixed; width: fit-content; height: fit-content; max-width: 15%; padding: 1em; z-index: 9">
+					<button class="download">
+						<svg><use href="assets/images/icons.svg#download" /></svg> Download
+					</button>
+					<br /><br />
+					<button class="delete">
+						<svg><use href="assets/images/icons.svg#trash" /></svg> Delete
+					</button>
+				</div>
+			</template>
+
+			<template id="screenshot">
+				<img width="256" />
+			</template>
 			<div class="ingame-menu-flex screenshots"></div>
 			<div class="ingame-menu-flex shipyard"></div>
 			<template id="ship">

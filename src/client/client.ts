@@ -18,11 +18,11 @@ import * as mods from './mods';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
-import { ScreenshotUI } from './ui/screenshot';
 import * as ui from './ui/ui';
 import { changeUI } from './ui/utils';
 import * as user from './user';
 import { alert, cookies, fixPaths, logger, minimize } from './utils';
+import { createScreenshotUI } from './ui';
 
 export interface ClientInit {
 	/**
@@ -331,7 +331,7 @@ async function _init(): Promise<void> {
 		changeUI('#ingame-temp-menu');
 	});
 	settings.items.get('screenshot')?.addEventListener('trigger', () => {
-		new ScreenshotUI(canvas[0].toDataURL('image/png'));
+		createScreenshotUI(canvas[0].toDataURL('image/png'));
 	});
 	settings.items.get('save')?.addEventListener('trigger', e => {
 		e.preventDefault();
@@ -509,7 +509,7 @@ export function load(level: Level): boolean {
 	});
 	level.on('fleet_items_change', async (_, items: Record<ItemID, number>) => {
 		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
-			$(ui.items.get(id)!).find('.count').text(minimize(amount));
+			$(ui.UIs.get(id)!).find('.count').text(minimize(amount));
 		}
 	});
 	unpause();

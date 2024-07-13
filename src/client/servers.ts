@@ -9,7 +9,7 @@ import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
 import { currentLevel, load, unload } from './client';
 import { path } from './config';
-import { ServerListItem } from './ui/server';
+import { createServerUI } from './ui/templates';
 import { cookies, logger } from './utils';
 const fs = $app.require('fs');
 
@@ -168,7 +168,7 @@ export function init() {
 	file = new JSONFileMap(filePath, { fs, ...config });
 
 	for (const server of data()) {
-		$<ServerListItem>(new ServerListItem(server));
+		createServerUI(server);
 	}
 }
 
@@ -178,8 +178,8 @@ export function add(name: string, url: string): string {
 	return id;
 }
 
-export function gui(id: string): JQuery<ServerListItem> {
-	return $<ServerListItem>('#' + id);
+export function gui(id: string): JQuery<HTMLLIElement> {
+	return $<HTMLLIElement>('#' + id);
 }
 
 export function rename(id: string, name: string): void {

@@ -7,7 +7,7 @@ import { Waypoint } from '../../core/entities/waypoint';
 import type { ItemID } from '../../core/generic/items';
 import { items as itemsData } from '../../core/generic/items';
 import type { ResearchID } from '../../core/generic/research';
-import { isResearchLocked, priceOfResearch, research as researchData } from '../../core/generic/research';
+import { isResearchLocked, priceOfResearch, research } from '../../core/generic/research';
 import { genericShips } from '../../core/generic/ships';
 import { Level } from '../../core/level';
 import { config, game_url, version, versions } from '../../core/metadata';
@@ -21,18 +21,12 @@ import * as servers from '../servers';
 import * as settings from '../settings';
 import { account, action, player as getPlayer, system, hasSystem } from '../user';
 import { $svg, alert, logger, minimize, upload } from '../utils';
-import { createItemUI } from './item';
+import { createItemUI, createResearchUI, createShipUI } from './templates';
 import * as map from './map';
 import { changeUI } from './utils';
 import { WaypointUI } from './waypoint';
-import { createResearchUI } from './research';
-import { createShipUI } from './ship';
 
-export const items: Map<string, DocumentFragment> = new Map();
-
-export const ships: Map<string, DocumentFragment> = new Map();
-
-export const research: Map<string, DocumentFragment> = new Map();
+export const UIs: Map<string, JQuery<DocumentFragment>> = new Map();
 
 export const waypoints: Map<string, WaypointUI> = new Map();
 
@@ -42,14 +36,17 @@ export function init() {
 		.attr('href', `${game_url}/versions#${version}`);
 
 	for (const [id, item] of Object.entries(itemsData)) {
-		items.set(id, createItemUI(item));
+		UIs.set(id, createItemUI(item));
 	}
-	for (const [id, _research] of Object.entries(researchData)) {
-		research.set(id, createResearchUI(_research));
+
+	for (const [id, _research] of Object.entries(research)) {
+		UIs.set(id, createResearchUI(_research));
 	}
+
 	for (const [type, genericShip] of Object.entries(genericShips)) {
-		ships.set(type, createShipUI(genericShip));
+		UIs.set(type, createShipUI(genericShip));
 	}
+
 	const size = config.system_generation.max_size;
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
 	const grid = $svg<SVGGElement>('g');
@@ -83,14 +80,14 @@ export function update() {
 
 	const player: Player = getPlayer();
 	$('svg.item-bar rect').attr('width', (player.storage.count() / player.storage.max) * 100 || 0);
-	$('div.item-bar .label').text(`${minimize(player.storage.count())} / ${minimize(player.storage.max)}`);
+	$('div.item-bar .label').text(minimize(player.storage.count()) + ' / ' + minimize(player.storage.max));
 
 	for (const [id, amount] of player.storage) {
-		$(items.get(id)!).find('.count').text(minimize(amount));
+		$(UIs.get(id)!).find('.count').text(minimize(amount));
 	}
 
 	//update tech info
-	for (const [id, _research] of Object.entries(researchData)) {
+	for (const [id, _research] of Object.entries(research)) {
 		const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
 			(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
 			''
@@ -100,7 +97,7 @@ export function update() {
 				result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
 			''
 		);
-		$(research.get(id)!)
+		$(UIs.get(id)!)
 			.find('.upgrade tool-tip')
 			.html(
 				`<strong>${locales.text(`tech.${id}.name`)}</strong><br>
@@ -114,7 +111,7 @@ export function update() {
 				${Object.keys(_research.requires).length ? `<br><strong>Requires:</strong>` : ``}
 				${requires}${settings.get('tooltips') ? '<br>type: ' + id : ''}`
 			);
-		$(research.get(id)!).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
+		$(UIs.get(id)!).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
 	}
 
 	//update ship info
@@ -129,7 +126,7 @@ export function update() {
 			''
 		);
 
-		$(ships.get(id)!)
+		$(UIs.get(id)!)
 			.find('.add tool-tip')
 			.html(
 				`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
@@ -141,7 +138,7 @@ export function update() {
 		for (const t in ship.requires) {
 			if (isResearchLocked(t as ResearchID, player)) locked = true;
 		}
-		$(ships.get(id)!).find('.locked')[locked ? 'show' : 'hide']();
+		$(UIs.get(id)!).find('.locked')[locked ? 'show' : 'hide']();
 	}
 
 	$('#waypoint-list div').detach();
