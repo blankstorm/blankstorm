@@ -16,11 +16,11 @@ function instaniateTemplate(selector: string): JQuery<DocumentFragment> {
 	return $($<HTMLTemplateElement>(selector)[0].content.cloneNode(true) as DocumentFragment);
 }
 
-export function createScreenshotUI(src: string): JQuery<DocumentFragment> {
-	const instance = instaniateTemplate('#screenshot');
+export function createScreenshotUI(src: string): JQuery<HTMLImageElement> {
+	const instance = instaniateTemplate('#screenshot').find('img');
 	const contextMenu = instaniateTemplate('#screenshot-context-menu').find('div');
 
-	instance.find('img').attr('src', src);
+	instance.attr('src', src);
 
 	instance.on('contextmenu', e => {
 		e.preventDefault();
@@ -33,10 +33,11 @@ export function createScreenshotUI(src: string): JQuery<DocumentFragment> {
 	contextMenu.find('button.download').on('click', () => {
 		$('<a download=screenshot.png></a>').attr('href', src)[0].click();
 	});
-	contextMenu.find('button.delete').on('click', () => {
-		confirm('Are you sure?').then(() => {
+	contextMenu.find('button.delete').on('click', async e => {
+		if (e.shiftKey || (await confirm('Are you sure?'))) {
 			instance.remove();
-		});
+			contextMenu.remove();
+		}
 	});
 
 	$('#ingame-temp-menu div.screenshots').append(instance);
@@ -55,9 +56,7 @@ export function createResearchUI(research: Research): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#research');
 	instance.find('.name').text(locales.text(`tech.${research.id}.name`));
 	instance.find('.upgrade').on('click', () => action('research', research));
-	const $lab = $('div.lab');
-	console.log($lab[0]);
-	$lab.append(instance);
+	$('div.lab').append(instance);
 	return instance;
 }
 
@@ -134,6 +133,7 @@ export function createSaveListItem(save: Save): JQuery<DocumentFragment> {
 export function createServerUI(server: ServerData) {
 	const instance = instaniateTemplate('#server');
 	instance
+		.find('li')
 		.attr('id', server.id)
 		.on('click', () => {
 			$('.selected').removeClass('selected');
