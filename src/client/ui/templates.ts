@@ -72,6 +72,9 @@ export function createShipUI(ship: GenericShip): JQuery<DocumentFragment> {
 export function createBerthUI(berth: Berth): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#berth');
 	instance.find('.active').text('Building: ' + locales.text(`entity.${berth.productionID}.name`));
+	instance.find('.add').on('click', () => action('create_ship', genericShips[instance.find('select').val() as ShipType], berth));
+	instance.find(berth.productionID ? '.non-active' : '.active').hide();
+	instance.find(berth.productionID ? '.active' : '.non-active').show();
 
 	for (const type of shipTypes) {
 		$('<option></option>')
@@ -79,10 +82,6 @@ export function createBerthUI(berth: Berth): JQuery<DocumentFragment> {
 			.text(locales.text(`entity.${type}.name`))
 			.appendTo(instance.find('select'));
 	}
-
-	instance.find('.add').on('click', () => action('create_ship', genericShips[instance.find('select').val() as ShipType], berth));
-	instance.find(berth.productionID ? '.non-active' : '.active').hide();
-	instance.find(berth.productionID ? '.active' : '.non-active').show();
 	return instance;
 }
 
@@ -132,10 +131,6 @@ export function createSaveListItem(save: Save): JQuery<DocumentFragment> {
 	return instance;
 }
 
-function connectAndStartPlaying(server: ServerData) {
-	connect(server.id);
-}
-
 export function createServerUI(server: ServerData) {
 	const instance = instaniateTemplate('#server');
 	instance
@@ -144,7 +139,7 @@ export function createServerUI(server: ServerData) {
 			$('.selected').removeClass('selected');
 			instance.addClass('selected');
 		})
-		.on('dblclick', () => connectAndStartPlaying(server))
+		.on('dblclick', () => connect(server.id))
 		.prependTo('#server-list');
 	instance.find('.name').text(server.name);
 
@@ -153,7 +148,7 @@ export function createServerUI(server: ServerData) {
 			removeServer(server.id);
 		}
 	});
-	instance.find('.play').on('click', () => connectAndStartPlaying(server));
+	instance.find('.play').on('click', () => connect(server.id));
 	instance.find('.edit').on('click', () => {
 		$('#server-dialog').find('.name').val(server.name);
 		$('#server-dialog').find('.url').val(server.url);
