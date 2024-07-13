@@ -15,7 +15,7 @@ const fs = $app.require('fs');
 export class Save {
 	protected _data: LevelJSON;
 
-	public gui: JQuery<DocumentFragment>;
+	public gui: JQuery<HTMLLIElement>;
 
 	public constructor(data: LevelJSON) {
 		this._data = data;
