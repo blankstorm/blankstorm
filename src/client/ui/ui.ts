@@ -141,7 +141,7 @@ export function update() {
 		$(UIs.get(id)!).find('.locked')[locked ? 'show' : 'hide']();
 	}
 
-	$('#waypoint-list div').detach();
+	$('#waypoint-list .waypoint-li').detach();
 	for (const waypoint of system().entities<Waypoint>('.Waypoint')) {
 		if (!waypoints.has(waypoint.id)) {
 			waypoints.set(waypoint.id, new WaypointUI(waypoint));

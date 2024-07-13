@@ -158,7 +158,7 @@ export function createServerUI(server: ServerData) {
 }
 
 export function createWaypointListItem(waypoint: Waypoint) {
-	const instance = instaniateTemplate('#waypoint-list-item');
+	const instance = instaniateTemplate('#waypoint-li');
 
 	instance.find('.edit').on('click', () => {
 		const dialog = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
@@ -179,6 +179,8 @@ export function createWaypointListItem(waypoint: Waypoint) {
 	if (waypoint.readonly) {
 		instance.find('span.clickable').hide();
 	}
+
+	instance.appendTo('#waypoint-list')
 
 	return instance;
 }
