@@ -84,8 +84,8 @@ export function createBerthUI(berth: Berth): JQuery<DocumentFragment> {
 	return instance;
 }
 
-export function createSaveListItem(save: Save): JQuery<DocumentFragment> {
-	const instance = instaniateTemplate('#save');
+export function createSaveListItem(save: Save): JQuery<HTMLLIElement> {
+	const instance = instaniateTemplate('#save').find('li');
 
 	const loadAndPlay = async () => {
 		$('#loading_cover').show();
@@ -102,7 +102,6 @@ export function createSaveListItem(save: Save): JQuery<DocumentFragment> {
 	};
 
 	instance
-		.find('li')
 		.on('click', () => {
 			$('.selected').removeClass('selected');
 			instance.addClass('selected');
@@ -112,6 +111,7 @@ export function createSaveListItem(save: Save): JQuery<DocumentFragment> {
 	instance.find('.delete').on('click', async e => {
 		if (e.shiftKey || (await confirm('Are you sure?'))) {
 			save.remove();
+			instance.remove();
 		}
 	});
 
