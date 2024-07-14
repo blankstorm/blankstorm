@@ -141,7 +141,6 @@ export function update() {
 		$(UIs.get(id)!).find('.locked')[locked ? 'show' : 'hide']();
 	}
 
-	$('#waypoint-list .waypoint-li').detach();
 	for (const waypoint of system().entities<Waypoint>('.Waypoint')) {
 		if (!waypoints.has(waypoint.id)) {
 			waypoints.set(waypoint.id, new WaypointUI(waypoint));
@@ -362,10 +361,12 @@ export function registerListeners() {
 			alert(locales.text`error.waypoint.range`);
 		} else {
 			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(undefined, client.getCurrentLevel());
+			waypoint.system = system();
 			waypoint.name = name;
 			waypoint.color = color;
 			waypoint.position = new Vector3(x, y, z);
 			$<HTMLDialogElement>('#waypoint-dialog')[0].close();
+			update();
 		}
 	});
 	$('#waypoint-dialog .cancel').on('click', () => {

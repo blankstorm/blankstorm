@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import type { Waypoint } from '../../core/entities/waypoint';
 import type { Item } from '../../core/generic/items';
 import type { Research } from '../../core/generic/research';
 import { genericShips, shipTypes, type GenericShip, type ShipType } from '../../core/generic/ships';
@@ -11,7 +12,6 @@ import type { ServerData } from '../servers';
 import { connect, remove as removeServer } from '../servers';
 import { action } from '../user';
 import { confirm, download, logger } from '../utils';
-import type { Waypoint } from '../../core/entities/waypoint';
 
 function instaniateTemplate(selector: string): JQuery<DocumentFragment> {
 	return $($<HTMLTemplateElement>(selector)[0].content.cloneNode(true) as DocumentFragment);
@@ -127,7 +127,7 @@ export function createSaveListItem(save: Save): JQuery<HTMLLIElement> {
 	instance.find('.version').text(versions.get(save.data.version)?.text || save.data.version);
 	instance.find('.date').text(new Date(save.data.date).toLocaleString());
 
-	$('#save-list').prepend(instance);
+	instance.prependTo('#save-list');
 	return instance;
 }
 
@@ -157,16 +157,16 @@ export function createServerUI(server: ServerData) {
 	});
 }
 
-export function createWaypointListItem(waypoint: Waypoint) {
-	const instance = instaniateTemplate('#waypoint-li');
+export function createWaypointListItem(waypoint: Waypoint): JQuery<HTMLDivElement> {
+	const instance = instaniateTemplate('#waypoint-li').find('div');
 
 	instance.find('.edit').on('click', () => {
 		const dialog = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
 		dialog._waypoint = waypoint;
 		dialog.showModal();
 	});
-	instance.find('.trash').on('click', async (e) => {
-		if(e.shiftKey || (await confirm('Are you sure?'))) {
+	instance.find('.trash').on('click', async e => {
+		if (e.shiftKey || (await confirm('Are you sure?'))) {
 			waypoint.remove();
 			instance.remove();
 		}
@@ -180,7 +180,12 @@ export function createWaypointListItem(waypoint: Waypoint) {
 		instance.find('span.clickable').hide();
 	}
 
-	instance.appendTo('#waypoint-list')
+	instance.appendTo('#waypoint-list');
+	return instance;
+}
 
+export function createWaypointMarker(): JQuery<HTMLDivElement> {
+	const instance = instaniateTemplate('#waypoint-marker').find('div');
+	instance.hide().appendTo('body');
 	return instance;
 }

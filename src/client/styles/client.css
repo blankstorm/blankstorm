@@ -220,7 +220,7 @@ div.screenshots img {
 	transform-origin: center;
 }
 
-.waypoint-ui {
+.waypoint-li {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr) 6fr;
 	margin: 1em 25% 0 25%;
