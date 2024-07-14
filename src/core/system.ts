@@ -14,7 +14,7 @@ import type { SystemGenerationOptions } from './generic/system';
 import type { Level } from './level';
 import { config } from './metadata';
 import type { Berth } from './stations/berth';
-import { randomCords } from './utils';
+import { logger, randomCords } from './utils';
 
 export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
 
@@ -142,10 +142,12 @@ export class System extends EventEmitter<{
 
 	static async Generate(name: string, options: SystemGenerationOptions = config.system_generation, level: Level, system?: System) {
 		system ||= new System(undefined, level);
+		logger.debug(`Generating system "${name}" (${system.id})`);
 		system.name = name;
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		system.connections = new Array(connectionCount);
 		const star = new Star(undefined, level);
+		logger.debug(`	> star ${star.id}`);
 		star.fromJSON({
 			name,
 			system: system.id,
@@ -163,6 +165,7 @@ export class System extends EventEmitter<{
 			planets: Planet[] = [];
 		for (let i = 0; i < names.length; i++) {
 			const planet = new Planet(undefined, level);
+			logger.debug(`	> planet ${planet.id}`);
 			planet.radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));
 			planet.fleet.position = randomCords(randomInt(planet.radius + 5, planet.radius * 1.25), true);

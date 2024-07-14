@@ -63,7 +63,6 @@ export class Save {
 }
 
 export async function createDefault(name: string): Promise<Level> {
-	logger.debug(`Created default level "${name}"`);
 	const level = new Level();
 	level.name = name;
 	await level.ready();
@@ -78,6 +77,7 @@ export async function createDefault(name: string): Promise<Level> {
 	player.rotation = Vector3.Zero();
 
 	level.rootSystem = system;
+	logger.log(`Created default level "${name}"`);
 	return level;
 }
 
