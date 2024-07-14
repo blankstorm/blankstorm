@@ -13,9 +13,13 @@ export interface Producible {
 	requires: Partial<Record<ResearchID, number>>;
 }
 
-export interface Producer {
-	productionID?: ProducibleID;
-	productionTime: number;
+export type ProductionInfo<T extends ProducibleID> = {
+	id: T;
+	time: number;
+} | null;
+
+export interface Producer<T extends ProducibleID> {
+	production: ProductionInfo<T>;
 	canProduce: ProducibleID[];
 }
 

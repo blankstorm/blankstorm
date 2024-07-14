@@ -1,47 +1,50 @@
 import { assignWithDefaults, pick } from 'utilium';
 import { Ship } from '../ship';
-import type { Producer } from '~/core/generic/production';
+import type { Producer, ProductionInfo } from '~/core/generic/production';
 import type { ShipType } from '~/core/generic/ships';
 import { genericShips, shipTypes } from '~/core/generic/ships';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
 
 export interface BerthJSON extends StationPartJSON {
-	productionID?: ShipType;
-	productionTime: number;
+	production: ProductionInfo<ShipType>;
 }
 
-export class Berth extends StationPart implements Producer {
-	public productionID?: ShipType;
-	public productionTime: number;
+export class Berth extends StationPart implements Producer<ShipType> {
+	public production: ProductionInfo<ShipType>;
 	public canProduce = shipTypes;
 
 	public update(): void {
 		super.update();
-		this.productionTime = Math.max(this.productionTime - 1, 0);
-		if (this.productionTime != 0 || !this.productionID) {
+		if (!this.production) {
 			return;
 		}
-		const ship = new Ship(undefined, this.level, this.productionID);
+		this.production.time = Math.max(this.production.time - 1, 0);
+		if (this.production.time != 0) {
+			return;
+		}
+		const ship = new Ship(undefined, this.level, this.production.id);
 		ship.position = this.absolutePosition;
 		this.fleet.add(ship);
-		this.productionID = undefined;
+		this.production = null;
 	}
 
-	public build(type: ShipType) {
-		this.productionID = type;
-		this.productionTime = +genericShips[type].productionTime;
+	public build(id: ShipType) {
+		this.production = {
+			id,
+			time: +genericShips[id].productionTime,
+		};
 	}
 
 	public toJSON(): BerthJSON {
 		return {
 			...super.toJSON(),
-			...pick(this, 'productionID', 'productionTime'),
+			...pick(this, 'production'),
 		};
 	}
 
 	public fromJSON(data: BerthJSON): void {
 		super.fromJSON(data);
-		assignWithDefaults(this as Berth, pick(data, 'productionID', 'productionTime'));
+		assignWithDefaults(this as Berth, pick(data, 'production'));
 	}
 }

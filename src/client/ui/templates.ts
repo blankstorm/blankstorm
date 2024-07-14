@@ -71,10 +71,13 @@ export function createShipUI(ship: GenericShip): JQuery<DocumentFragment> {
 
 export function createBerthUI(berth: Berth): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#berth');
-	instance.find('.active').text('Building: ' + locales.text(`entity.${berth.productionID}.name`));
 	instance.find('.add').on('click', () => action('create_ship', genericShips[instance.find('select').val() as ShipType], berth));
-	instance.find(berth.productionID ? '.non-active' : '.active').hide();
-	instance.find(berth.productionID ? '.active' : '.non-active').show();
+	instance.find(berth.production ? '.non-active' : '.active').hide();
+	instance.find(berth.production ? '.active' : '.non-active').show();
+
+	if (berth.production) {
+		instance.find('.active').text('Building: ' + locales.text(`entity.${berth.production.id}.name`));
+	}
 
 	for (const type of shipTypes) {
 		$('<option></option>')
