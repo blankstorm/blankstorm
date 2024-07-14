@@ -38,20 +38,19 @@ export class Save {
 
 	public set data(data: LevelJSON) {
 		this._data = data;
-		this.updateData();
-	}
-
-	protected updateData() {
 		const date = new Date(this._data.date);
 		this._data.date = date.toJSON();
 		this.gui.find('.date').text(date.toLocaleString());
+		this.update();
+	}
 
+	protected update() {
 		folder.set(this.id, JSON.stringify(this._data));
 		set(this.id, this);
 	}
 
 	public load(): Level {
-		this.updateData();
+		this.update();
 		logger.info('Loading level from save ' + this.id);
 		return Level.FromJSON(this.data);
 	}
