@@ -1,6 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { StationJSON } from '~/core/entities/station/station';
+import type { StationJSON } from '~/core/entities/station';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 import type { StationPartRenderer } from './station/part';
 

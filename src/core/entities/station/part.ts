@@ -4,7 +4,7 @@ import type { CelestialBodyJSON } from '../body';
 import { CelestialBody } from '../body';
 import type { GenericStationPartID } from '~/core/generic/station_part';
 import { stationParts } from '~/core/generic/station_part';
-import type { Station } from './station';
+import type { Station } from '../station';
 
 export interface StationPartJSON extends CelestialBodyJSON {
 	hp: number;

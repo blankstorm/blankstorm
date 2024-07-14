@@ -16,7 +16,7 @@ export * from './entities/ship';
 export * from './entities/star';
 
 export * from './entities/station/part';
-export * from './entities/station/station';
+export * from './entities/station';
 
 export * from './components/component';
 export * from './level';
