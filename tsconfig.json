@@ -13,7 +13,8 @@
 		"strictFunctionTypes": true,
 		"strictNullChecks": true,
 		"paths": {
-			"*.glslx": ["./src/types.d.ts"]
+			"*.glslx": ["./src/types.d.ts"],
+			"~/*": ["./src/*"]
 		},
 		"moduleSuffixes": [".glslx", ""],
 		"skipLibCheck": true

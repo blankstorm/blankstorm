@@ -1,8 +1,8 @@
 import { assignWithDefaults, pick } from 'utilium';
-import { Ship } from '../entities/ship';
-import type { Producer } from '../generic/production';
-import type { ShipType } from '../generic/ships';
-import { genericShips, shipTypes } from '../generic/ships';
+import { Ship } from '../ship';
+import type { Producer } from '~/core/generic/production';
+import type { ShipType } from '~/core/generic/ships';
+import { genericShips, shipTypes } from '~/core/generic/ships';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
 

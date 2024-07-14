@@ -1,7 +1,7 @@
 import { pick } from 'utilium';
-import type { CelestialBodyJSON } from '../entities/body';
-import { CelestialBody } from '../entities/body';
-import type { Level } from '../level';
+import type { CelestialBodyJSON } from '../body';
+import { CelestialBody } from '../body';
+import type { Level } from '../../level';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
 

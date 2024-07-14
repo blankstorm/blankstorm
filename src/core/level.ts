@@ -18,7 +18,7 @@ import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
-import type { Berth } from './stations/berth';
+import type { Berth } from './entities/station/berth';
 import type { SystemJSON } from './system';
 import { System } from './system';
 import { logger } from './utils';

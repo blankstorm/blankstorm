@@ -1,4 +1,4 @@
-import type { FleetJSON } from '../../core/components/fleet';
+import type { FleetJSON } from '~/core/components/fleet';
 import { EntityRenderer } from './entity';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 

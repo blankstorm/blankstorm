@@ -1,10 +1,10 @@
 import $ from 'jquery';
-import type { Waypoint } from '../../core/entities/waypoint';
-import type { Item } from '../../core/generic/items';
-import type { Research } from '../../core/generic/research';
-import { genericShips, shipTypes, type GenericShip, type ShipType } from '../../core/generic/ships';
-import { versions } from '../../core/metadata';
-import type { Berth } from '../../core/stations/berth';
+import type { Waypoint } from '~/core/entities/waypoint';
+import type { Item } from '~/core/generic/items';
+import type { Research } from '~/core/generic/research';
+import { genericShips, shipTypes, type GenericShip, type ShipType } from '~/core/generic/ships';
+import { versions } from '~/core/metadata';
+import type { Berth } from '~/core/entities/station/berth';
 import { load } from '../client';
 import * as locales from '../locales';
 import type { Save } from '../saves';

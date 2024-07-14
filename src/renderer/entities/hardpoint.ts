@@ -3,9 +3,9 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { randomFloat, randomHex, randomInt, wait } from 'utilium';
-import type { HardpointJSON } from '../../core/entities/hardpoint';
-import { genericHardpoints, type GenericProjectile, type HardpointType } from '../../core/generic/hardpoints';
-import { randomCords } from '../../core/utils';
+import type { HardpointJSON } from '~/core/entities/hardpoint';
+import { genericHardpoints, type GenericProjectile, type HardpointType } from '~/core/generic/hardpoints';
+import { randomCords } from '~/core/utils';
 import { ModelRenderer } from '../models';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 

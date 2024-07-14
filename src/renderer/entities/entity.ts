@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
-import type { EntityJSON } from '../../core/entities/entity';
+import type { EntityJSON } from '~/core/entities/entity';
 import type { Renderer, RendererStatic } from './renderer';
 
 export class EntityRenderer extends TransformNode implements Renderer<EntityJSON> {

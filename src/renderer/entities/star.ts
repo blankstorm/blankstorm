@@ -2,8 +2,8 @@ import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
-import type { StarJSON } from '../../core/entities/star';
-import { config } from '../../core/metadata';
+import type { StarJSON } from '~/core/entities/star';
+import { config } from '~/core/metadata';
 import { CelestialBodyRenderer } from './body';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 

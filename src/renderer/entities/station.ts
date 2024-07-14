@@ -1,8 +1,8 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { StationJSON } from '../../core/stations/station';
+import type { StationJSON } from '~/core/entities/station/station';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
-import type { StationPartRenderer } from './station_part';
+import type { StationPartRenderer } from './station/part';
 
 export class StationRenderer extends TransformNode implements Renderer<StationJSON> {
 	public components: StationPartRenderer[] = [];

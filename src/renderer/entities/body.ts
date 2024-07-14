@@ -1,6 +1,6 @@
 import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import type { CelestialBodyJSON } from '../../core/entities/body';
+import type { CelestialBodyJSON } from '~/core/entities/body';
 import { EntityRenderer } from './entity';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 

@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { getCamera } from '../../renderer';
+import { getCamera } from '~/renderer';
 
 export function changeUI(selector: string, hideAll?: boolean) {
 	if ($(selector).is(':visible')) {
