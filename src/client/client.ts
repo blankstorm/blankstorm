@@ -353,10 +353,10 @@ async function _init(): Promise<void> {
 
 	_initLog('Authenticating...');
 	if (!navigator.onLine) {
-		logger.warn('Could not authenitcate (offline)');
+		logger.warn('Could not authenticate (offline)');
 	}
 	if (!cookies.has('token')) {
-		logger.warn('Could not authenitcate (no token)');
+		logger.warn('Could not authenticate (no token)');
 	}
 	if (cookies.has('token') && navigator.onLine) {
 		try {
@@ -364,7 +364,7 @@ async function _init(): Promise<void> {
 			Object.assign(user.account, result);
 			isMultiplayerEnabled = true;
 		} catch (e) {
-			throw new Error('Could not authenitcate', { cause: e.stack });
+			throw new Error('Could not authenticate', { cause: e.stack });
 		}
 	}
 
