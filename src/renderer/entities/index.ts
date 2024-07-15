@@ -8,4 +8,3 @@ export * from './renderer';
 export * from './ship';
 export * from './star';
 export * from './station';
-export * from './station/part';

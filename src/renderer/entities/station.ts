@@ -2,11 +2,11 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { StationJSON } from '~/core/entities/station';
 import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
-import type { StationPartRenderer } from './station/part';
+import type { ModelRenderer } from '../models';
 
 export class StationRenderer extends TransformNode implements Renderer<StationJSON> {
-	public components: StationPartRenderer[] = [];
-	public core: StationPartRenderer;
+	public components: ModelRenderer[] = [];
+	public core: ModelRenderer;
 
 	public async update({ name, position, rotation, parent }: StationJSON) {
 		this.name = name;
