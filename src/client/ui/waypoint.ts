@@ -5,7 +5,40 @@ import { scene } from '~/renderer';
 import * as settings from '../settings';
 import { player, system } from '../user';
 import { minimize } from '../utils';
-import { createWaypointListItem, createWaypointMarker } from './templates';
+import { instaniateTemplate } from './templates';
+
+export function createWaypointListItem(waypoint: Waypoint): JQuery<HTMLDivElement> {
+	const instance = instaniateTemplate('#waypoint-li').find('div');
+
+	instance.find('.edit').on('click', () => {
+		const dialog = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
+		dialog._waypoint = waypoint;
+		dialog.showModal();
+	});
+	instance.find('.trash').on('click', async e => {
+		if (e.shiftKey || (await confirm('Are you sure?'))) {
+			waypoint.remove();
+			instance.remove();
+		}
+	});
+
+	instance.find('.name').text(waypoint.name);
+	instance.find('svg.icon').css('fill', waypoint.color);
+	instance.find('use.icon').attr('href', 'assets/images/icons.svg#' + (waypoint.icon || 'location-dot'));
+
+	if (waypoint.readonly) {
+		instance.find('span.clickable').hide();
+	}
+
+	instance.appendTo('#waypoint-list');
+	return instance;
+}
+
+export function createWaypointMarker(): JQuery<HTMLDivElement> {
+	const instance = instaniateTemplate('#waypoint-marker').find('div');
+	instance.hide().appendTo('body');
+	return instance;
+}
 
 export class WaypointUI {
 	public readonly li: JQuery<HTMLDivElement>;

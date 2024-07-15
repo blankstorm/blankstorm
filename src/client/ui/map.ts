@@ -15,7 +15,7 @@ import { $svg, biomeColor } from '../utils';
 export type MapMode = 'in-system' | 'inter-system';
 
 export class MapMarker {
-	gui = $svg<SVGGElement>('g');
+	gui = $svg<SVGGElement>('g').attr('id', this.markerID).addClass('map-marker').appendTo('#map-markers');
 
 	get markerID(): string {
 		return 'map-marker:' + this.target.id;
@@ -46,7 +46,6 @@ export class MapMarker {
 	}
 
 	constructor(public readonly target: Entity | System) {
-		this.gui.attr('id', this.markerID).addClass('map-marker').appendTo('#map-markers');
 		let internalMarker: JQuery<SVGElement>;
 		if (target instanceof System) {
 			internalMarker = $svg('circle');
