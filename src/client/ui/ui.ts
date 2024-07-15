@@ -145,8 +145,9 @@ export function update() {
 		if (!waypoints.has(waypoint.id)) {
 			waypoints.set(waypoint.id, new WaypointUI(waypoint));
 		}
-
-		waypoints.get(waypoint.id)?.update();
+	}
+	for (const waypoint of waypoints.values()) {
+		waypoint.update();
 	}
 	map.update();
 

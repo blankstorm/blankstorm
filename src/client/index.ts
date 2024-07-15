@@ -2,6 +2,16 @@ import $ from 'jquery';
 import { logger as coreLogger } from '../core';
 import * as client from './client';
 import { logger } from './utils';
+import { LogLevel } from 'logzen';
+
+addEventListener('error', ev => {
+	$app.log({
+		contents: ev.error.stack,
+		level: LogLevel.ERROR,
+		prefix: 'client',
+	});
+	//logger.error(ev.error);
+});
 
 $.ajaxSetup({ timeout: 3000 });
 $.event.special.wheel = {
