@@ -203,6 +203,7 @@ export function registerListeners() {
 		update();
 	});
 	$('#main .exit').on('click', () => {
+		logger.debug('Quitting...');
 		close();
 	});
 	$('.playable-list .back').on('click', () => {

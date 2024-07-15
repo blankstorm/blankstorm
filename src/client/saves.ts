@@ -127,7 +127,7 @@ export function has(key: string): boolean {
 }
 
 function remove(key: string): boolean {
-	logger.debug('Deleteing save ' + key);
+	logger.debug('Deleteing level ' + key);
 	folder.delete(key);
 	return map.delete(key);
 }

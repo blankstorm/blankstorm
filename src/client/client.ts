@@ -377,9 +377,9 @@ async function _init(): Promise<void> {
 
 	_initLog('Updating UI...');
 	ui.update();
-	_initLog('Done!');
+	$('#loading_cover p').text('Done!');
 	$('#loading_cover').fadeOut(1000);
-	logger.log('Client loaded successful');
+	logger.log('Loaded successfully');
 	renderer.engine.runRenderLoop(update);
 	setInterval(() => {
 		if (!isPaused && !isServer && currentLevel instanceof Level) {
