@@ -479,7 +479,7 @@ export function load(level: Level): boolean {
 		return false;
 	}
 
-	$('#save-list,#server-list').hide();
+	$('#saves,#server-list').hide();
 	$('canvas.game').show().trigger('focus');
 	$('#hud').show();
 	currentLevel = level;

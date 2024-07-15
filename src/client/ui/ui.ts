@@ -187,7 +187,7 @@ function strobe(rate) {
 export function registerListeners() {
 	$('#main .sp').on('click', () => {
 		$('#main').hide();
-		$('#save-list').show();
+		$('#saves').show();
 	});
 	$('#main .mp').on('click', () => {
 		if (client.isMultiplayerEnabled) {
@@ -211,7 +211,7 @@ export function registerListeners() {
 		$('.playable-list').hide();
 		$('#main').show();
 	});
-	$('#save-list .new').on('click', () => {
+	$('#saves .new').on('click', () => {
 		$<HTMLDialogElement>('#save-new')[0].showModal();
 	});
 	$('#server-list .new').on('click', () => {
@@ -250,7 +250,7 @@ export function registerListeners() {
 	$('#save-edit .cancel').on('click', () => {
 		$<HTMLDialogElement>('#save-edit')[0].close();
 	});
-	$('#save-list button.upload').on('click', async () => {
+	$('#saves button.upload').on('click', async () => {
 		const files = await upload('.json');
 		const text = await files[0].text();
 		if (isJSON(text)) {
@@ -307,7 +307,8 @@ export function registerListeners() {
 				await alert(`Welcome, ${result.username}! ` + locales.text`menu.logged_in.message`);
 				location.reload();
 			} catch (e) {
-				$('#login').find('.error').text(e.message).show();
+				logger.warn('Authentication failed: ' + e);
+				$('#login').find('.error').text(e).show();
 			}
 		});
 	$('#ingame-temp-menu div.nav button').on('click', e => {

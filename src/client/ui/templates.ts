@@ -129,7 +129,7 @@ export function createSaveListItem(save: Save): JQuery<HTMLLIElement> {
 	instance.find('.version').text(versions.get(save.data.version)?.text || save.data.version);
 	instance.find('.date').text(new Date(save.data.date).toLocaleString());
 
-	instance.prependTo('#save-list');
+	instance.prependTo('#saves ul');
 	return instance;
 }
 

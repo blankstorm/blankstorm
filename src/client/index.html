@@ -52,7 +52,7 @@
 			<p class="version" style="right: 2em; text-align: right"><a target="_blank">Version</a></p>
 			<p class="copyright" style="left: 2em"></p>
 		</div>
-		<ul id="save-list" class="playable-list content bg-transparent">
+		<div id="saves" class="playable-list content bg-transparent">
 			<button class="back menu">
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
@@ -71,27 +71,30 @@
 				</svg>
 				<span></span>
 			</button>
-			<template id="save">
-				<li class="bg-normal clickable" style="align-items: center; height: 3em; word-wrap: break-word; overflow: none">
-					<p class="delete" style="position: absolute; left: 10%">
-						<svg><use href="assets/images/icons.svg#trash" /></svg>
-					</p>
-					<p class="download" style="position: absolute; left: 15%">
-						<svg><use href="assets/images/icons.svg#download" /></svg>
-					</p>
-					<p class="play" style="position: absolute; left: 20%">
-						<svg><use href="assets/images/icons.svg#play" /></svg>
-					</p>
-					<p class="edit" style="position: absolute; left: 25%">
-						<svg><use href="assets/images/icons.svg#pencil" /></svg>
-					</p>
-					<p class="name" style="position: absolute; left: 30%"></p>
-					<p class="version" style="position: absolute; left: 55%"></p>
-					<p class="date" style="position: absolute; left: 65%"></p>
-					<p></p>
-				</li>
-			</template>
-		</ul>
+			<ul>
+				<template id="save">
+					<li class="bg-normal clickable" style="align-items: center; height: 3em; word-wrap: break-word; overflow: none">
+						<p class="delete" style="position: absolute; left: 10%">
+							<svg><use href="assets/images/icons.svg#trash" /></svg>
+						</p>
+						<p class="download" style="position: absolute; left: 15%">
+							<svg><use href="assets/images/icons.svg#download" /></svg>
+						</p>
+						<p class="play" style="position: absolute; left: 20%">
+							<svg><use href="assets/images/icons.svg#play" /></svg>
+						</p>
+						<p class="edit" style="position: absolute; left: 25%">
+							<svg><use href="assets/images/icons.svg#pencil" /></svg>
+						</p>
+						<p class="name" style="position: absolute; left: 30%"></p>
+						<p class="version" style="position: absolute; left: 55%"></p>
+						<p class="date" style="position: absolute; left: 65%"></p>
+						<p></p>
+					</li>
+				</template>
+			</ul>
+		</div>
+
 		<ul id="server-list" class="playable-list content bg-transparent">
 			<template id="server">
 				<li class="bg-normal clickable" style="overflow: none; align-items: center; height: 3em"></li>

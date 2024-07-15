@@ -125,10 +125,15 @@ dialog.server {
 }
 
 .playable-list {
+	display: none;
+}
+
+.playable-list ul {
 	list-style: none;
 	overflow-y: scroll;
-	display: none;
 	padding: 2.5%;
+	position: absolute;
+	inset: 0 0 76px 0;
 }
 
 #debug p {

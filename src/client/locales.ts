@@ -55,10 +55,10 @@ export function use(id: string) {
 	$('#pause button.resume').text(locale['menu.resume'] ?? 'Resume Game');
 	$('#pause button.save').text(locale['menu.save_game'] ?? 'Save Game');
 	$('#pause button.quit').text(locale['menu.quit'] ?? 'Main Menu');
-	$('#save-list button.upload span').text(locale['menu.upload'] ?? 'Upload');
+	$('#saves button.upload span').text(locale['menu.upload'] ?? 'Upload');
 	$('#server-list button.refresh span').text(locale['menu.refresh'] ?? 'Refresh');
-	$(':where(#save-list,#server-list,#save-new,#settings,#waypoint-list) button.back span').text(locale['menu.back'] ?? 'Back');
-	$(':where(#save-list,#server-list,#ingame-temp-menu,#waypoint-list) button.new span').text(locale['menu.new'] ?? 'New');
+	$(':where(#saves,#server-list,#save-new,#settings,#waypoint-list) button.back span').text(locale['menu.back'] ?? 'Back');
+	$(':where(#saves,#server-list,#ingame-temp-menu,#waypoint-list) button.new span').text(locale['menu.new'] ?? 'New');
 	$('#save-new button.new span').text(locale['menu.start'] ?? 'Start');
 	$(':where(#confirm,#login,#save-edit,#server-dialog) .cancel').text(locale['menu.cancel'] ?? 'Cancel');
 	$(':where(#save-edit,#server-dialog,#waypoint-dialog) .save').text(locale['menu.save'] ?? 'Save');
