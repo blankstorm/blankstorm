@@ -6,11 +6,13 @@ import { genericShips, shipTypes } from '~/core/generic/ships';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
 
-export interface BerthJSON extends StationPartJSON {
+export interface ShipyardJSON extends StationPartJSON {
 	production: ProductionInfo<ShipType>;
 }
 
-export class Berth extends StationPart implements Producer<ShipType> {
+export class Shipyard extends StationPart implements Producer<ShipType> {
+	public readonly type = 'shipyard' as const;
+
 	public production: ProductionInfo<ShipType>;
 	public canProduce = shipTypes;
 
@@ -36,15 +38,15 @@ export class Berth extends StationPart implements Producer<ShipType> {
 		};
 	}
 
-	public toJSON(): BerthJSON {
+	public toJSON(): ShipyardJSON {
 		return {
 			...super.toJSON(),
 			...pick(this, 'production'),
 		};
 	}
 
-	public fromJSON(data: BerthJSON): void {
+	public fromJSON(data: ShipyardJSON): void {
 		super.fromJSON(data);
-		assignWithDefaults(this as Berth, pick(data, 'production'));
+		assignWithDefaults(this as Shipyard, pick(data, 'production'));
 	}
 }

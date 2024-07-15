@@ -28,7 +28,7 @@ export class Ship extends Entity {
 	public isTargetable = true;
 
 	/**
-	 * @todo move distance related stuff to ship creation (i.e. berth)
+	 * @todo move distance related stuff to ship creation (i.e. shipyard)
 	 */
 	constructor(id: string | undefined, level: Level, type?: ShipType) {
 		super(id, level);

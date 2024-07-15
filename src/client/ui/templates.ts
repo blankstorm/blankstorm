@@ -4,7 +4,7 @@ import type { Item } from '~/core/generic/items';
 import type { Research } from '~/core/generic/research';
 import { genericShips, shipTypes, type GenericShip, type ShipType } from '~/core/generic/ships';
 import { versions } from '~/core/metadata';
-import type { Berth } from '~/core/entities/station/berth';
+import type { Shipyard } from '~/core/entities/station/shipyard';
 import { load } from '../client';
 import * as locales from '../locales';
 import type { Save } from '../saves';
@@ -69,14 +69,14 @@ export function createShipUI(ship: GenericShip): JQuery<DocumentFragment> {
 	return instance;
 }
 
-export function createBerthUI(berth: Berth): JQuery<DocumentFragment> {
-	const instance = instaniateTemplate('#berth');
-	instance.find('.add').on('click', () => action('create_ship', genericShips[instance.find('select').val() as ShipType], berth));
-	instance.find(berth.production ? '.non-active' : '.active').hide();
-	instance.find(berth.production ? '.active' : '.non-active').show();
+export function createShipyardUI(shipyard: Shipyard): JQuery<DocumentFragment> {
+	const instance = instaniateTemplate('#shipyard');
+	instance.find('.add').on('click', () => action('create_ship', genericShips[instance.find('select').val() as ShipType], shipyard));
+	instance.find(shipyard.production ? '.non-active' : '.active').hide();
+	instance.find(shipyard.production ? '.active' : '.non-active').show();
 
-	if (berth.production) {
-		instance.find('.active').text('Building: ' + locales.text(`entity.${berth.production.id}.name`));
+	if (shipyard.production) {
+		instance.find('.active').text('Building: ' + locales.text(`entity.${shipyard.production.id}.name`));
 	}
 
 	for (const type of shipTypes) {

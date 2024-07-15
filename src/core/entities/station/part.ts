@@ -2,8 +2,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { assignWithDefaults, pick } from 'utilium';
 import type { CelestialBodyJSON } from '../body';
 import { CelestialBody } from '../body';
-import type { GenericStationPartID } from '~/core/generic/station_part';
-import { stationParts } from '~/core/generic/station_part';
+import type { GenericStationPartID } from '~/core/generic/station';
+import { stationParts } from '~/core/generic/station';
 import type { Station } from '../station';
 
 export interface StationPartJSON extends CelestialBodyJSON {
@@ -23,13 +23,13 @@ export class StationPart extends CelestialBody {
 	}
 
 	public addPart(part: StationPart, thisConn: number, otherConn: number) {
-		const thisConnecter = this.generic.connecters.at(thisConn),
-			otherConnecter = part.generic.connecters.at(otherConn);
-		if (!thisConnecter) {
-			throw new ReferenceError('Connecter does not exist: ' + thisConn);
+		const thisConnector = this.generic.connectors.at(thisConn),
+			otherConnector = part.generic.connectors.at(otherConn);
+		if (!thisConnector) {
+			throw new ReferenceError('Connector does not exist: ' + thisConn);
 		}
-		if (!otherConnecter) {
-			throw new ReferenceError('Subcomponent connecter does not exist' + otherConn);
+		if (!otherConnector) {
+			throw new ReferenceError('Subcomponent connector does not exist' + otherConn);
 		}
 
 		this.station.parts.add(part);
@@ -37,8 +37,8 @@ export class StationPart extends CelestialBody {
 		part.connections[otherConn] = this;
 
 		part.parent = this;
-		part.position = Vector3.FromArray(thisConnecter.position); //.add(otherConnecter.position);
-		part.rotation = Vector3.FromArray(thisConnecter.rotation); //.add(otherConnecter.rotation);
+		part.position = Vector3.FromArray(thisConnector.position); //.add(otherConnector.position);
+		part.rotation = Vector3.FromArray(thisConnector.rotation); //.add(otherConnector.rotation);
 	}
 
 	public removePart(part: StationPart | undefined) {
@@ -49,8 +49,8 @@ export class StationPart extends CelestialBody {
 		part.connections[part.connections.indexOf(this)] = undefined;
 	}
 
-	public removePartAt(connecter: number) {
-		const component = this.connections[connecter];
+	public removePartAt(connector: number) {
+		const component = this.connections[connector];
 		return this.removePart(component);
 	}
 

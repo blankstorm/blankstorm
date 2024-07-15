@@ -9,6 +9,8 @@ export interface LabJSON extends StationPartJSON {
 }
 
 export class Lab extends StationPart implements Producer<ResearchID> {
+	public readonly type = 'lab' as const;
+
 	public production: ProductionInfo<ResearchID>;
 	public canProduce = Object.keys(research) as ResearchID[];
 

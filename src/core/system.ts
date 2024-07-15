@@ -13,7 +13,7 @@ import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { Level } from './level';
 import { config } from './metadata';
-import type { Berth } from './entities/station/berth';
+import type { Shipyard } from './entities/station/shipyard';
 import { logger, randomCords } from './utils';
 
 export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
@@ -35,7 +35,7 @@ export interface ActionData {
 	create_item: Item;
 	create_ship: {
 		ship: GenericShip;
-		berth?: Berth;
+		shipyard?: Shipyard;
 	};
 	do_research: Research;
 	warp: MoveInfo<System>[];

@@ -3,7 +3,7 @@ export * from './generic/hardpoints';
 export * from './generic/items';
 export * from './generic/research';
 export * from './generic/ships';
-export * from './generic/station_part';
+export * from './generic/station';
 export * from './path';
 export * from './components/storage';
 

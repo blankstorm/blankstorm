@@ -9,6 +9,9 @@ function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<key
 	return new Map(entries);
 }
 
+/**
+ * Generic class for something that stores items
+ */
 export abstract class ItemStorage implements ItemContainer, Component<ItemContainer> {
 	public get [Symbol.toStringTag](): string {
 		return 'ItemStorage';
@@ -104,6 +107,9 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 	}
 }
 
+/**
+ * Duh- stores items
+ */
 @register
 export class Container extends ItemStorage {
 	public constructor(
@@ -126,6 +132,9 @@ export class Container extends ItemStorage {
 	}
 }
 
+/**
+ * Manages the storage for a group of other storages
+ */
 @register
 export class StorageManager extends ItemStorage {
 	public constructor(protected storages: Set<ItemStorage> = new Set()) {
@@ -185,6 +194,9 @@ export class StorageManager extends ItemStorage {
 	}
 }
 
+/**
+ * Manages the storage for a group of entities
+ */
 @register
 export class EntityStorageManager extends ItemStorage {
 	public constructor(protected entities: Set<Entity> = new Set()) {

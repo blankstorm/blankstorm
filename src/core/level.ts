@@ -18,7 +18,7 @@ import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
-import type { Berth } from './entities/station/berth';
+import type { Shipyard } from './entities/station/shipyard';
 import type { SystemJSON } from './system';
 import { System } from './system';
 import { logger } from './utils';
@@ -105,15 +105,15 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		return true;
 	}
 
-	public _try_create_ship(player: Player, generic: GenericShip, berth?: Berth): boolean {
+	public _try_create_ship(player: Player, generic: GenericShip, shipyard?: Shipyard): boolean {
 		if (!player.storage.hasItems(generic.recipe)) {
 			return false;
 		}
 
 		player.storage.removeItems(generic.recipe);
 		const ship = new Ship(undefined, player.level, generic.id);
-		if (berth) {
-			ship.position.addInPlace(berth.position);
+		if (shipyard) {
+			ship.position.addInPlace(shipyard.position);
 		}
 
 		player.fleet.add(ship);
