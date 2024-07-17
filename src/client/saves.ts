@@ -85,7 +85,6 @@ let folder: FolderMap;
 const map: Map<string, Save> = new Map();
 
 export function init() {
-	logger.debug('Initializing saves');
 	const folderPath = path + '/saves';
 	if (!fs.existsSync(folderPath)) {
 		fs.mkdirSync(folderPath);
