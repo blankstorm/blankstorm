@@ -1,6 +1,7 @@
 import path from 'node:path';
 import * as fs from 'node:fs';
 import $package from '../package.json' assert { type: 'json' };
+import { gitCommitHash } from 'utilium/fs.js';
 
 export interface VersionInfo {
 	fullVersion: string;
@@ -51,12 +52,9 @@ export function deleteOutput(deletes: string[], outPath = 'dist') {
 	}
 }
 
-export function defines(mode: string): {
-	$debug: string;
-	$package: string;
-} {
+export function defines(mode: string): Record<'$debug' | '$revision', string> {
 	return {
 		$debug: JSON.stringify(mode == 'dev' || mode == 'development'),
-		$package: JSON.stringify($package),
+		$revision: JSON.stringify(gitCommitHash()),
 	};
 }

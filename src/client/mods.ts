@@ -1,7 +1,7 @@
 import { isJSON } from 'utilium';
 import { path } from './config';
 import { logger } from './utils';
-const fs = $app.require('fs');
+import * as fs from 'node:fs';
 
 interface ModData {
 	id: string;

@@ -1,9 +1,9 @@
 import $ from 'jquery';
+import { Logger } from 'logzen';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { EntityJSON } from '../core/entities/entity';
 import type { PlanetBiome } from '../core/generic/planets';
-import { Logger } from 'logzen';
-const { fileURLToPath } = $app.require('node:url');
-const path = $app.require('node:path');
 
 export function upload(type: string, multiple = false): Promise<File> {
 	return new Promise<File>((resolve, reject) => {

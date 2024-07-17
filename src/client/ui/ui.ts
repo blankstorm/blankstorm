@@ -19,10 +19,10 @@ import * as saves from '../saves';
 import { Save } from '../saves';
 import * as servers from '../servers';
 import * as settings from '../settings';
-import { account, action, player as getPlayer, system, hasSystem } from '../user';
+import { account, action, player as getPlayer, hasSystem, system } from '../user';
 import { $svg, alert, logger, minimize, upload } from '../utils';
-import { createItemUI, createResearchUI, createShipUI } from './templates';
 import * as map from './map';
+import { createItemUI, createResearchUI, createShipUI } from './templates';
 import { changeUI } from './utils';
 import { WaypointUI } from './waypoint';
 

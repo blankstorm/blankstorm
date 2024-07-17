@@ -2,12 +2,13 @@ import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { getAccount, type Account } from '@blankstorm/api';
 import $ from 'jquery';
+import $package from '../../package.json' assert { type: 'json' };
 import { execCommandString } from '../core/commands';
 import type { EntityJSON } from '../core/entities/entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemID } from '../core/generic/items';
 import { Level } from '../core/level';
-import { config, version } from '../core/metadata';
+import { config, game_url, version, versions } from '../core/metadata';
 import { xpToLevel } from '../core/utils';
 import * as renderer from '../renderer/index';
 import { playsound } from './audio';
@@ -18,11 +19,11 @@ import * as mods from './mods';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
+import { createScreenshotUI } from './ui/templates';
 import * as ui from './ui/ui';
 import { changeUI } from './ui/utils';
 import * as user from './user';
 import { alert, cookies, fixPaths, logger, minimize } from './utils';
-import { createScreenshotUI } from './ui';
 
 export interface ClientInit {
 	/**
@@ -78,6 +79,17 @@ async function _init(): Promise<void> {
 	if (isInitialized) {
 		logger.warn('Tried to initialize client after it was already initialized.');
 		return;
+	}
+
+	if (config.load_remote_manifest) {
+		fetch(game_url + '/versions.json')
+			.then(response => response.json())
+			.then(data => {
+				for (const [key, value] of data) {
+					versions.set(key, value);
+				}
+			})
+			.catch(err => logger.warn('Failed to retrieve version manifest: ' + err));
 	}
 
 	$<HTMLParagraphElement>('p.copyright').text(`Copyright © ${new Date().getFullYear()} ${$package.author.name}. All Rights Reserved.`);

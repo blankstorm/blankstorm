@@ -4,12 +4,12 @@ import * as esbuild from 'esbuild';
 import glslPlugin from 'esbuild-plugin-glslx';
 import { execSync } from 'node:child_process';
 import * as fs from 'node:fs';
-import path from 'node:path';
+import path, { relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import $package from '../package.json' assert { type: 'json' };
 import { defines, deleteOutput, getVersionInfo, renameOutput } from './common';
-const bs_root = path.resolve(fileURLToPath(import.meta.url), '..', '..');
+const root = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
 
 const { values: _values } = parseArgs({
@@ -24,8 +24,8 @@ const { values: _values } = parseArgs({
 	},
 });
 const options = _values as { [K in keyof typeof _values]: Exclude<(typeof _values)[K], undefined> };
-const input = path.posix.join(bs_root, 'src/client'),
-	asset_path = path.posix.join(bs_root, 'dist/build/assets');
+const input = path.posix.join(root, 'src/client'),
+	asset_path = path.posix.join(root, 'dist/build/assets');
 
 function fromPath(sourcePath: string): string[] {
 	if (!fs.statSync(sourcePath).isDirectory()) {
@@ -53,7 +53,7 @@ if (options.keep) {
 const productName = 'Blankstorm Client';
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
-	projectDir: bs_root,
+	projectDir: root,
 	config: {
 		extends: null,
 		extraMetadata: {
@@ -86,17 +86,17 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 function onBuildStart() {
 	try {
 		//build assets
-		for (const entry of fs.readdirSync(path.join(bs_root, 'assets'))) {
+		for (const entry of fs.readdirSync(path.join(root, 'assets'))) {
 			if (entry.startsWith('.')) {
 				continue;
 			}
 			console.log('Exporting assets: ' + entry);
 			if (entry == 'models') {
-				execSync(`bash ${path.join(bs_root, 'assets/models/export.sh')} ${asset_path}/models`, options.verbose ? { stdio: 'inherit' } : undefined);
+				execSync(`bash ${path.join(root, 'assets/models/export.sh')} ${asset_path}/models`, options.verbose ? { stdio: 'inherit' } : undefined);
 				continue;
 			}
 
-			fs.cpSync(path.join(bs_root, 'assets', entry), path.join(asset_path, entry), { recursive: true });
+			fs.cpSync(path.join(root, 'assets', entry), path.join(asset_path, entry), { recursive: true });
 		}
 		fs.cpSync(asset_path, path.join(options.output, 'assets'), { recursive: true });
 	} catch (e) {
@@ -165,10 +165,34 @@ const esbuildConfig = {
 		'.json': 'copy',
 	},
 	alias: {
-		'~': bs_root + '/src',
+		'~': root + '/src',
 	},
 	define: defines(options.mode),
-	plugins: [glslPlugin()],
+	plugins: [
+		glslPlugin(),
+		{
+			name: 'node-import-transform',
+			setup(build) {
+				const nodeImportRegex = /import\s+(?:\*\s+as\s+(\w+)|(\{[^}]+\}))\s+from\s+['"](node:[^'"]+|fs)['"];/g;
+
+				build.onLoad({ filter: /\.[tj]s$/ }, ({ path }) => {
+					const original = fs.readFileSync(path, 'utf8');
+					if (original.includes('/* eslint-env node */') || path.includes('src/core') || path.includes('src/server')) {
+						return;
+					}
+					const contents = original.replaceAll(nodeImportRegex, (match, ns, bindings, specifier) => {
+						const newImport = `const ${ns || bindings} = $app.require('${specifier}');`;
+						if (options.verbose) {
+							console.log(`Transforming: ${match} -> ${newImport} (${relative(root, path).replaceAll('node_modules/', '')})`);
+						}
+						return newImport;
+					});
+
+					return { contents, loader: path.endsWith('.ts') ? 'ts' : 'js' };
+				});
+			},
+		},
+	],
 } satisfies esbuild.BuildOptions;
 
 const esbuildAppConfig = {

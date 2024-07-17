@@ -1,8 +1,10 @@
 import type EventEmitter from 'eventemitter3';
 import $ from 'jquery';
+import * as fs from 'node:fs';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
-import { JSONFileMap, isJSON } from 'utilium';
+import { isJSON } from 'utilium';
+import { JSONFileMap } from 'utilium/fs.js';
 import { Level, type LevelEvents } from '../core/level';
 import { config, versions } from '../core/metadata';
 import type { PingInfo } from '../server/server';
@@ -11,7 +13,6 @@ import { currentLevel, load, unload } from './client';
 import { path } from './config';
 import { createServerUI } from './ui/templates';
 import { cookies, logger } from './utils';
-const fs = $app.require('fs');
 
 export type ServerData = {
 	id: string;
@@ -165,7 +166,7 @@ export function init() {
 		logger.warn('Invalid servers file (overwriting)');
 		fs.rmSync(filePath);
 	}
-	file = new JSONFileMap(filePath, { fs, ...config });
+	file = new JSONFileMap(filePath, config);
 
 	for (const server of data()) {
 		createServerUI(server);

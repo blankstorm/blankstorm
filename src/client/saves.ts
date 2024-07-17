@@ -1,6 +1,8 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import $ from 'jquery';
-import { FolderMap, isJSON } from 'utilium';
+import * as fs from 'node:fs';
+import { isJSON } from 'utilium';
+import { FolderMap } from 'utilium/fs.js';
 import { Player } from '../core/entities/player';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
@@ -10,7 +12,6 @@ import { path } from './config';
 import { createSaveListItem } from './ui/templates';
 import { account } from './user';
 import { alert, logger } from './utils';
-const fs = $app.require('fs');
 
 export class Save {
 	protected _data: LevelJSON;
@@ -89,7 +90,7 @@ export function init() {
 	if (!fs.existsSync(folderPath)) {
 		fs.mkdirSync(folderPath);
 	}
-	folder = new FolderMap(folderPath, { fs, suffix: '.json' });
+	folder = new FolderMap(folderPath, { suffix: '.json' });
 	for (const [id, content] of folder) {
 		if (!isJSON(content)) {
 			logger.debug('Skipping invalid save: ' + id);

@@ -1,10 +1,11 @@
 import $ from 'jquery';
-import { JSONFileMap, isJSON, type JSONObject } from 'utilium';
+import * as fs from 'node:fs';
+import { isJSON } from 'utilium';
+import type { JSONObject } from 'utilium/fs.js';
+import { JSONFileMap } from 'utilium/fs.js';
+import { config } from '../core';
 import { path } from './config';
 import { logger } from './utils';
-import { config } from '../core/metadata';
-
-const fs = $app.require('fs');
 
 export class SettingsError<T extends keyof _Values = keyof _Values> extends Error {
 	constructor(
@@ -350,7 +351,7 @@ export function init(): void {
 		logger.warn('Invalid settings file (overwriting)');
 		fs.rmSync(filePath);
 	}
-	file = new JSONFileMap(filePath, { fs, ...config });
+	file = new JSONFileMap(filePath, config);
 	initialized = true;
 }
 

@@ -1,8 +1,8 @@
 import $ from 'jquery';
+import { LogLevel } from 'logzen';
 import { logger as coreLogger } from '../core';
 import * as client from './client';
 import { logger } from './utils';
-import { LogLevel } from 'logzen';
 
 addEventListener('error', ev => {
 	$app.log({
@@ -10,10 +10,8 @@ addEventListener('error', ev => {
 		level: LogLevel.ERROR,
 		prefix: 'client',
 	});
-	//logger.error(ev.error);
 });
 
-$.ajaxSetup({ timeout: 3000 });
 $.event.special.wheel = {
 	setup: function (_, ns, handle) {
 		this.addEventListener('wheel', handle as unknown as EventListener, { passive: true });

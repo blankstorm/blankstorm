@@ -27,7 +27,7 @@ export async function load(url: string): Promise<Locale> {
 		if (!settings.initialized) {
 			throw 'Settings not initialized';
 		}
-		const locale: Locale = isJSON(url) ? JSON.parse(url) : await $.ajax(url);
+		const locale: Locale = isJSON(url) ? JSON.parse(url) : await (await fetch(url)).json();
 		if (typeof locale != 'object') throw 'Not an object';
 		if (!locale.language) throw 'Does not have a language';
 		if (!locale.version) throw 'Does not have a version';
