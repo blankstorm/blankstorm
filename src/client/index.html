@@ -45,10 +45,10 @@
 		<ul id="chat-history" class="ingame" style="overflow-y: scroll; display: none"></ul>
 		<div id="main" class="cover">
 			<img src="assets/images/title.png" alt="Title" class="center-x" style="top: 90px; width: 475px; height: 75px" />
-			<button class="sp center-x" style="top: 260px"></button>
-			<button class="mp center-x" style="top: 360px"></button>
-			<button class="options center-x" style="top: 460px"></button>
-			<button class="exit center-x" style="top: 560px"></button>
+			<button class="sp center-x" style="top: 260px">Singleplayer</button>
+			<button class="mp center-x" style="top: 360px">Multiplayer</button>
+			<button class="options center-x" style="top: 460px">Options</button>
+			<button class="exit center-x" style="top: 560px">Exit</button>
 			<p class="version" style="right: 2em; text-align: right"><a target="_blank">Version</a></p>
 			<p class="copyright" style="left: 2em"></p>
 		</div>
@@ -57,19 +57,19 @@
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
 				</svg>
-				<span></span>
+				<span>Back</span>
 			</button>
 			<button class="new menu">
 				<svg>
 					<use href="assets/images/icons.svg#plus" />
 				</svg>
-				<span></span>
+				<span>New</span>
 			</button>
 			<button class="upload menu">
 				<svg>
 					<use href="assets/images/icons.svg#upload" />
 				</svg>
-				<span></span>
+				<span>Upload</span>
 			</button>
 			<ul>
 				<template id="save">
@@ -114,19 +114,19 @@
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
 				</svg>
-				<span></span>
+				<span>Back</span>
 			</button>
 			<button class="new menu">
 				<svg>
 					<use href="assets/images/icons.svg#plus" />
 				</svg>
-				<span></span>
+				<span>New</span>
 			</button>
 			<button class="refresh menu">
 				<svg>
 					<use href="assets/images/icons.svg#arrows-rotate" />
 				</svg>
-				<span></span>
+				<span>Refresh</span>
 			</button>
 		</ul>
 		<dialog id="login" class="bg-normal">
@@ -144,7 +144,8 @@
 			</form>
 			<br />
 			<br />
-			<button class="cancel"></button><button class="login">Login</button>
+			<button class="cancel">Cancel</button>
+			<button class="login">Login</button>
 		</dialog>
 		<dialog id="save-new" class="bg-normal save">
 			<input placeholder="Save name" class="name center-x dialog-title" />
@@ -152,13 +153,13 @@
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
 				</svg>
-				<span></span>
+				<span>Back</span>
 			</button>
 			<button class="new center-x dialog-button right">
 				<svg>
 					<use href="assets/images/icons.svg#plus" />
 				</svg>
-				<span></span>
+				<span>New</span>
 			</button>
 		</dialog>
 		<dialog id="save-edit" class="bg-normal save">
@@ -168,9 +169,9 @@
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
 				</svg>
-				<span></span>
+				<span>Cancel</span>
 			</button>
-			<button class="save center-x dialog-button right"></button>
+			<button class="save center-x dialog-button right">Save</button>
 		</dialog>
 		<dialog id="server-dialog" class="bg-normal server">
 			<input placeholder="Display name" class="name center-x dialog-title" /><br />
@@ -179,9 +180,9 @@
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
 				</svg>
-				<span></span>
+				<span>Cancel</span>
 			</button>
-			<button class="save center-x dialog-button right"></button>
+			<button class="save center-x dialog-button right">Save</button>
 		</dialog>
 		<dialog id="waypoint-dialog" class="bg-normal">
 			<input type="text" name="name" placeholder="Name" /><br />
@@ -189,13 +190,13 @@
 			<input type="number" name="y" placeholder="Y" style="width: 4em" />
 			<input type="number" name="z" placeholder="Z" style="width: 4em" /><br />
 			<input type="color" name="color" placeholder="Color" /><br />
-			<button class="cancel"></button>
-			<button class="save"></button>
+			<button class="cancel">Cancel</button>
+			<button class="save">Save</button>
 		</dialog>
 		<div id="connect" class="content bg-transparent" style="display: none">
 			<p class="center-x center-y" style="top: calc(50% - 2em); width: 75%; height: 1em; text-align: center"></p>
 			<button class="back center-x center-y" style="top: calc(50% + 2em); width: 100px; height: 2em">
-				<span></span>
+				<span>Back</span>
 			</button>
 		</div>
 		<div id="tablist" class="bg-transparent ingame center-x" style="top: 0; width: 200px; height: fit-content; display: none; word-wrap: break-word; text-align: center">
@@ -204,7 +205,7 @@
 		</div>
 		<dialog id="confirm" class="bg-normal">
 			<p class="message"></p>
-			<button class="cancel"></button>
+			<button class="cancel">Cancel</button>
 			<button class="ok">Ok</button>
 		</dialog>
 		<dialog id="alert" class="bg-normal">
@@ -217,25 +218,25 @@
 					<svg>
 						<use href="assets/images/icons.svg#box" />
 					</svg>
-					<span></span>
+					<span>Inventory</span>
 				</button>
 				<button section="screenshots">
 					<svg>
 						<use href="assets/images/icons.svg#image" />
 					</svg>
-					<span></span>
+					<span>Screenshots</span>
 				</button>
 				<button section="shipyard">
 					<svg>
 						<use href="assets/images/icons.svg#wrench" />
 					</svg>
-					<span></span>
+					<span>Shipyard</span>
 				</button>
 				<button section="lab">
 					<svg>
 						<use href="assets/images/icons.svg#flask" />
 					</svg>
-					<span></span>
+					<span>Laboratory</span>
 				</button>
 			</div>
 			<div class="ingame-menu-flex inventory" style="display: flex">
@@ -314,7 +315,7 @@
 				<svg>
 					<use href="assets/images/icons.svg#location-dot" />
 				</svg>
-				<span></span>
+				<span>Waypoints</span>
 			</button>
 			<button class="mode menu"></button>
 		</div>
@@ -323,13 +324,13 @@
 				<svg>
 					<use href="assets/images/icons.svg#plus" />
 				</svg>
-				<span></span>
+				<span>New</span>
 			</button>
 			<button class="back menu">
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
 				</svg>
-				<span></span>
+				<span>Back</span>
 			</button>
 			<template id="waypoint-li">
 				<div class="waypoint-li bg-normal">
@@ -361,10 +362,10 @@
 		</div>
 		<div id="pause" style="display: none" class="cover ingame center-flex" tabindex="-1">
 			<div class="bg-normal center-flex">
-				<button class="resume"></button>
-				<button class="save"></button>
-				<button class="options"></button>
-				<button class="quit"></button>
+				<button class="resume">Resume Game</button>
+				<button class="save">Save Game</button>
+				<button class="options">Options</button>
+				<button class="quit">Main Menu</button>
 			</div>
 		</div>
 		<div id="settings" class="content bg-transparent" style="display: none">
@@ -373,7 +374,7 @@
 					<svg>
 						<use href="assets/images/icons.svg#arrow-left" />
 					</svg>
-					<span></span>
+					<span>Back</span>
 				</button>
 			</div>
 
