@@ -170,7 +170,7 @@ export function setLast(value: string) {
 }
 
 let strobeInterval: NodeJS.Timeout | number | null = null;
-function strobe(rate) {
+function strobe(rate: number) {
 	if (strobeInterval) {
 		clearInterval(strobeInterval);
 		$(':root').css('--hue', 200);
