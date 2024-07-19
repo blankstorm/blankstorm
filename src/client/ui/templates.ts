@@ -16,34 +16,6 @@ export function instaniateTemplate(selector: string): JQuery<DocumentFragment> {
 	return $($<HTMLTemplateElement>(selector)[0].content.cloneNode(true) as DocumentFragment);
 }
 
-export function createScreenshotUI(src: string): JQuery<HTMLImageElement> {
-	const instance = instaniateTemplate('#screenshot').find('img');
-	const contextMenu = instaniateTemplate('#screenshot-context-menu').find('div');
-
-	instance.attr('src', src);
-
-	instance.on('contextmenu', e => {
-		e.preventDefault();
-		contextMenu.css({ left: e.pageX, top: e.pageY });
-		instance.parent().append(contextMenu);
-		const height = parseFloat(getComputedStyle(contextMenu[0]).height);
-		contextMenu.css('top', e.pageY + height < innerHeight ? e.pageY : e.pageY - height);
-	});
-
-	contextMenu.find('button.download').on('click', () => {
-		$('<a download=screenshot.png></a>').attr('href', src)[0].click();
-	});
-	contextMenu.find('button.delete').on('click', async e => {
-		if (e.shiftKey || (await confirm('Are you sure?'))) {
-			instance.remove();
-			contextMenu.remove();
-		}
-	});
-
-	$('#ingame-temp-menu div.screenshots').append(instance);
-	return instance;
-}
-
 export function createItemUI(item: Item): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#item');
 	instance.find('.name').text(locales.text('item.name', item.id) + (item.rare ? ' (rare)' : '') + ': ');

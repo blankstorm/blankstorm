@@ -220,12 +220,6 @@
 					</svg>
 					<span locale>Inventory</span>
 				</button>
-				<button section="screenshots">
-					<svg>
-						<use href="assets/images/icons.svg#image" />
-					</svg>
-					<span locale>Screenshots</span>
-				</button>
 				<button section="shipyard">
 					<svg>
 						<use href="assets/images/icons.svg#wrench" />
@@ -253,24 +247,8 @@
 					</div>
 				</template>
 			</div>
-			<template id="screenshot-context-menu">
-				<div class="bg-light context-menu" style="position: fixed; width: fit-content; height: fit-content; max-width: 15%; padding: 1em; z-index: 9">
-					<button class="download">
-						<svg><use href="assets/images/icons.svg#download" /></svg>
-						<span locale class="download">Download</span>
-					</button>
-					<br /><br />
-					<button class="delete">
-						<svg><use href="assets/images/icons.svg#trash" /></svg>
-						<span locale class="delete">Delete</span>
-					</button>
-				</div>
-			</template>
 
-			<template id="screenshot">
-				<img width="256" />
-			</template>
-			<div class="ingame-menu-flex screenshots"></div>
+			<div class="ingame-menu-flex screenshots" id="screenshots"></div>
 			<div class="ingame-menu-flex shipyard"></div>
 			<template id="ship">
 				<div class="ui-ship">

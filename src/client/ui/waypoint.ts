@@ -36,7 +36,7 @@ export function createWaypointListItem(waypoint: Waypoint): JQuery<HTMLDivElemen
 
 export function createWaypointMarker(): JQuery<HTMLDivElement> {
 	const instance = instaniateTemplate('#waypoint-marker').find('div');
-	instance.hide().appendTo('body');
+	instance.hide().appendTo('#hud');
 	return instance;
 }
 

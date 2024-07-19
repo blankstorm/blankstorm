@@ -13,13 +13,13 @@ import { xpToLevel } from '../core/utils';
 import * as renderer from '../renderer/index';
 import { playsound } from './audio';
 import * as chat from './chat';
-import { isServer, setDebug, setPath } from './config';
+import { isServer, path, setDebug, setPath } from './config';
 import * as locales from './locales';
 import * as mods from './mods';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
-import { createScreenshotUI } from './ui/templates';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import * as ui from './ui/ui';
 import * as user from './user';
 import { alert, cookies, fixPaths, logger, minimize } from './utils';
@@ -315,7 +315,21 @@ async function _init(): Promise<void> {
 	settings.items.get('toggle_menu')!.onTrigger = () => null;
 	settings.items.get('toggle_map')!.onTrigger = () => ui.switchTo('#map');
 	settings.items.get('toggle_temp_menu')!.onTrigger = () => ui.switchTo('#ingame-temp-menu');
-	settings.items.get('screenshot')!.onTrigger = () => createScreenshotUI(canvas[0].toDataURL('image/png'));
+	settings.items.get('screenshot')!.onTrigger = () => {
+		canvas[0].toBlob(async blob => {
+			const data = await blob?.arrayBuffer();
+			if (!data) {
+				chat.sendMessage('Failed to save screenshot.');
+				return;
+			}
+			const name = new Date().toISOString().replaceAll(':', '.') + '.png';
+			if (!existsSync(path + '/screenshots/')) {
+				mkdirSync(path + '/screenshots/');
+			}
+			writeFileSync(path + '/screenshots/' + name, new Uint8Array(data));
+			chat.sendMessage('Saved screenshot to ' + name);
+		});
+	};
 	settings.items.get('save')!.onTrigger = e => {
 		e.preventDefault();
 		saves.flush();
