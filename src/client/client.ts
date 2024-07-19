@@ -20,7 +20,7 @@ import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import * as ui from './ui/ui';
+import * as ui from './ui';
 import * as user from './user';
 import { alert, cookies, fixPaths, logger, minimize } from './utils';
 

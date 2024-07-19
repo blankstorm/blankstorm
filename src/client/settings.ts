@@ -5,7 +5,7 @@ import type { JSONObject } from 'utilium/fs.js';
 import { JSONFileMap } from 'utilium/fs.js';
 import { config } from '../core';
 import { path } from './config';
-import { instaniateTemplate } from './ui';
+import { instaniateTemplate } from './ui/templates';
 import { logger } from './utils';
 
 export const settingTypes = ['boolean', 'string', 'number', 'color', 'select', 'keybind'] as const;
