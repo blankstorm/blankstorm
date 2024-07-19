@@ -1,4 +1,3 @@
-import EventEmitter from 'eventemitter3';
 import $ from 'jquery';
 import { isJSON } from 'utilium';
 import { version } from '../core/metadata';
@@ -15,9 +14,6 @@ export interface Locale {
 
 const store: Map<string, Locale> = new Map();
 export let currentLang: string = 'en';
-
-const emitter: EventEmitter<{ fetch: Locale; load: Locale }> = new EventEmitter();
-export const on = emitter.on.bind(emitter);
 
 /**
  * Fetch and load a locale from a URL.
@@ -38,7 +34,6 @@ export async function load(url: string): Promise<Locale> {
 		store.set(locale.language, locale);
 		logger.debug(`Loaded locale "${locale.name}" (${locale.language})`);
 		settings.items.get('locale')!.addOption(locale.language, locale.name);
-		emitter.emit('fetch', locale);
 		return locale;
 	} catch (e) {
 		throw new Error(`Failed to load locale from ${url}: ${e}`);
@@ -55,12 +50,11 @@ export function use(id: string) {
 		$(selector).filter('[locale]').text(text);
 	}
 	for (const [id, section] of settings.sections) {
-		const _ = text('settings_section', id);
-		section.ui.find('h2.settings-name').text('Settings - ' + _);
-		section.button.find('span').text(_);
+		const label = text('settings_section', id);
+		section.ui.find('h2.settings-name').text('Settings - ' + label);
+		section.button.find('span').text(label);
 	}
 	logger.debug(`Using locale "${locale.name}" (${locale.language})`);
-	emitter.emit('load', locale);
 }
 
 export function text(...keyParts: string[]): string {
