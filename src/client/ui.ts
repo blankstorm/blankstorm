@@ -23,7 +23,8 @@ import * as settings from './settings';
 import { account, action, player as getPlayer, hasSystem, system } from './user';
 import { $svg, alert, logger, minimize, upload } from './utils';
 import * as map from './ui/map';
-import { createItemUI, createResearchUI, createShipUI } from './ui/templates';
+import * as templates from './ui/templates';
+export { map, templates };
 import { WaypointUI } from './ui/waypoint';
 
 export const UIs: Map<string, JQuery<DocumentFragment>> = new Map();
@@ -36,15 +37,15 @@ export function init() {
 		.attr('href', game_url + '/versions#' + version);
 
 	for (const [id, item] of Object.entries(items)) {
-		UIs.set(id, createItemUI(item));
+		UIs.set(id, templates.createItemUI(item));
 	}
 
 	for (const [id, tech] of Object.entries(research)) {
-		UIs.set(id, createResearchUI(tech));
+		UIs.set(id, templates.createResearchUI(tech));
 	}
 
 	for (const [type, genericShip] of Object.entries(genericShips)) {
-		UIs.set(type, createShipUI(genericShip));
+		UIs.set(type, templates.createShipUI(genericShip));
 	}
 
 	const size = config.system_generation.max_size;

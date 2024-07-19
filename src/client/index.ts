@@ -26,7 +26,6 @@ if (options.debug) {
 		core: await import('../core'),
 		renderer: await import('../renderer'),
 		ui: await import('./ui'),
-		map: await import('./ui/map'),
 		user: await import('./user'),
 		locales: await import('./locales'),
 		settings: await import('./settings'),
