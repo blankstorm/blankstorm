@@ -89,19 +89,19 @@ export function update() {
 	//update tech info
 	for (const [id, _research] of Object.entries(research)) {
 		const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
-			(result, [id, amount]) => result + `<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
+			(result, [id, amount]) => result + `<br>${locales.text('item.name', id)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
 			''
 		);
 		const requires = Object.entries(_research.requires).reduce(
 			(result, [id, amount]) =>
-				result + (amount > 0) ? `<br>${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text(`tech.${id}.name`)}`,
+				result + (amount > 0) ? `<br>${locales.text('tech.name', id)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text('tech.name', id)}`,
 			''
 		);
 		$(UIs.get(id)!)
 			.find('.upgrade tool-tip')
 			.html(
-				`<strong>${locales.text(`tech.${id}.name`)}</strong><br>
-				${locales.text(`tech.${id}.description`)}<br>
+				`<strong>${locales.text('tech.name', id)}</strong><br>
+				${locales.text('tech.description', id)}<br>
 				${
 					player.research[id] >= _research.max
 						? `<strong>Max Level</strong>`
@@ -117,19 +117,19 @@ export function update() {
 	//update ship info
 	for (const [id, ship] of Object.entries(genericShips)) {
 		const materials = Object.entries(ship.recipe).reduce(
-			(result, [id, amount]) => `${result}<br>${locales.text(`item.${id}.name`)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
+			(result, [id, amount]) => `${result}<br>${locales.text('item.name', id)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
 			''
 		);
 		const requires = Object.entries(ship.requires).reduce(
 			(result, [id, tech]) =>
-				`${result}<br>${tech == 0 ? `Incompatible with ${locales.text(`tech.${id}.name`)}` : `${locales.text(`tech.${id}.name`)}: ${player.research[id]}/${tech}`}`,
+				`${result}<br>${tech == 0 ? `Incompatible with ${locales.text('tech.name', id)}` : `${locales.text('tech.name', id)}: ${player.research[id]}/${tech}`}`,
 			''
 		);
 
 		$(UIs.get(id)!)
 			.find('.add tool-tip')
 			.html(
-				`${locales.text(`entity.${id}.description`)}<br><br><strong>Material Cost</strong>${materials}<br>${
+				`${locales.text('entity.description', id)}<br><br><strong>Material Cost</strong>${materials}<br>${
 					Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
 				}${requires}${settings.get('tooltips') ? '<br>' + id : ''}`
 			);
@@ -185,11 +185,11 @@ function strobe(rate) {
 }
 
 export function registerListeners() {
-	$('#main .sp').on('click', () => {
+	$('#main .singleplayer').on('click', () => {
 		$('#main').hide();
 		$('#saves').show();
 	});
-	$('#main .mp').on('click', () => {
+	$('#main .multiplayer').on('click', () => {
 		if (client.isMultiplayerEnabled) {
 			$('#main').hide();
 			$('#server-list').show();
@@ -260,7 +260,7 @@ export function registerListeners() {
 		}
 	});
 	$('#server-list button.refresh').on('click', servers.pingAll);
-	$('#connect button.back').on('click', () => {
+	$('#connect button.cancel').on('click', () => {
 		$('#server-list').show();
 		$('#connect').hide();
 	});
@@ -304,7 +304,7 @@ export function registerListeners() {
 				document.cookie = `token=${result.token}`;
 				$('#login').find('.error').hide().text('');
 				$<HTMLDialogElement>('#login')[0].close();
-				await alert(`Welcome, ${result.username}! ` + locales.text`menu.logged_in.message`);
+				await alert(`Welcome, ${result.username}! ` + locales.text('logged_in_message'));
 				location.reload();
 			} catch (e) {
 				logger.warn('Authentication failed: ' + e);
@@ -359,9 +359,9 @@ export function registerListeners() {
 			color = wpd.find('[name=color]').val() as string,
 			name = wpd.find('[name=name]').val() as string;
 		if (!isHex(color.slice(1))) {
-			alert(locales.text`error.waypoint.color`);
+			alert(locales.text('error.waypoint.color'));
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
-			alert(locales.text`error.waypoint.range`);
+			alert(locales.text('error.waypoint.range'));
 		} else {
 			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(undefined, client.getCurrentLevel());
 			waypoint.system = system();

@@ -9,7 +9,8 @@ export interface Locale {
 	language: string;
 	name: string;
 	version: string;
-	text: { [key: string]: string };
+	text: Record<string, string>;
+	markup_text: Record<string, string>;
 }
 
 const store: Map<string, Locale> = new Map();
@@ -50,36 +51,20 @@ export function use(id: string) {
 		throw new Error(`Locale ${id} does not exist`);
 	}
 	currentLang = id;
-	$('#main button.sp').text(locale.text['menu.singleplayer'] ?? 'Singleplayer');
-	$('#main button.mp').text(locale.text['menu.multiplayer'] ?? 'Multiplayer');
-	$('#main button.options,#pause button.options').text(locale.text['menu.options'] ?? 'Options');
-	$('#main button.exit').text(locale.text['menu.exit'] ?? 'Exit');
-	$('#pause button.resume').text(locale.text['menu.resume'] ?? 'Resume Game');
-	$('#pause button.save').text(locale.text['menu.save_game'] ?? 'Save Game');
-	$('#pause button.quit').text(locale.text['menu.quit'] ?? 'Main Menu');
-	$('#saves button.upload span').text(locale.text['menu.upload'] ?? 'Upload');
-	$('#server-list button.refresh span').text(locale.text['menu.refresh'] ?? 'Refresh');
-	$(':where(#saves,#server-list,#save-new,#settings,#waypoint-list) button.back span').text(locale.text['menu.back'] ?? 'Back');
-	$(':where(#saves,#server-list,#ingame-temp-menu,#waypoint-list) button.new span').text(locale.text['menu.new'] ?? 'New');
-	$('#save-new button.new span').text(locale.text['menu.start'] ?? 'Start');
-	$(':where(#confirm,#login,#save-edit,#server-dialog) .cancel').text(locale.text['menu.cancel'] ?? 'Cancel');
-	$(':where(#save-edit,#server-dialog,#waypoint-dialog) .save').text(locale.text['menu.save'] ?? 'Save');
-	$('#connect button.back span,#waypoint-dialog .cancel').text(locale.text['menu.cancel'] ?? 'Cancel');
-	$('#map button.waypoints span').text(locale.text['menu.waypoints'] ?? 'Waypoints');
-	$('#ingame-temp-menu div.nav button[section=inventory] span').text(locale.text['menu.items'] ?? 'Inventory');
-	$('#ingame-temp-menu div.nav button[section=screenshots] span').text(locale.text['menu.screenshots'] ?? 'Screenshots');
-	$('#ingame-temp-menu div.nav button[section=shipyard] span').text(locale.text['menu.shipyard'] ?? 'Shipyard');
-	$('#ingame-temp-menu div.nav button[section=lab] span').text(locale.text['menu.lab'] ?? 'Laboratory');
+	for (const [selector, text] of Object.entries(locale.markup_text)) {
+		$(selector).filter('[locale]').text(text);
+	}
 	for (const [id, section] of settings.sections) {
-		section.label = () => text('menu.settings_section.' + id);
-		$(`#settings-nav button[section=${id}] span`).text(locale.text['menu.settings_section.' + id]);
+		const _ = text('settings_section', id);
+		section.ui.find('h2.settings-name').text('Settings - ' + _);
+		section.button.find('span').text(_);
 	}
 	logger.debug(`Using locale "${locale.name}" (${locale.language})`);
 	emitter.emit('load', locale);
 }
 
-export function text(key: string | TemplateStringsArray): string {
-	return store.get(currentLang)?.text?.[typeof key == 'string' ? key : key[0]] || 'Unknown';
+export function text(...keyParts: string[]): string {
+	return store.get(currentLang)?.text?.[keyParts.join('.')] || 'Unknown';
 }
 
 export const has = (lang: string): boolean => store.has(lang);

@@ -221,32 +221,18 @@ export class Item<T extends Type = Type> {
 
 export class Section {
 	public readonly ui: JQuery<HTMLFormElement>;
+	public readonly button: JQuery<HTMLButtonElement>;
 
 	public constructor(
 		public readonly id: string,
-		public readonly icon: string,
-		protected _label: Label
+		public readonly icon: string
 	) {
 		const ui = instaniateTemplate('#settings-section');
 		ui.children().attr('section', id);
 		this.ui = ui.find('form').appendTo('#settings');
 		ui.find('button use').attr('href', 'assets/images/icons.svg#' + icon);
-		ui.find('button').appendTo('#settings-nav');
+		this.button = ui.find('button').appendTo('#settings-nav');
 		sections.set(id, this);
-		this.update();
-	}
-
-	public get label(): string {
-		return typeof this._label == 'function' ? this._label() : this._label;
-	}
-
-	public set label(value: Label) {
-		this._label = value;
-		this.update();
-	}
-
-	public update() {
-		this.ui.find('h2.settings-name').text(`Settings - ${this.label}`);
 	}
 
 	public dispose(disposeItems?: boolean) {
@@ -289,7 +275,6 @@ export function init(): void {
 
 export interface SettingsSectionConfig {
 	id: string;
-	label: Label;
 	icon: string;
 	isDefault?: boolean;
 }
@@ -298,9 +283,9 @@ export function load(config: { sections: SettingsSectionConfig[]; items: ItemCon
 	if (!initialized) {
 		throw new Error('Can not load settings before initialization');
 	}
-	for (const { id, icon, label, isDefault } of config.sections) {
+	for (const { id, icon, isDefault } of config.sections) {
 		logger.debug(`Loading settings section: "${id}"`);
-		const section = new Section(id, icon, label);
+		const section = new Section(id, icon);
 		if (isDefault) {
 			section.ui.css('display', 'flex');
 		}

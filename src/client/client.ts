@@ -110,18 +110,15 @@ async function _init(): Promise<void> {
 			{
 				id: 'general',
 				icon: 'gear',
-				label: 'General',
 				isDefault: true,
 			},
 			{
 				id: 'keybinds',
 				icon: 'keyboard',
-				label: 'Keybinds',
 			},
 			{
 				id: 'debug',
 				icon: 'bug',
-				label: 'Debug',
 			},
 		],
 		items: [

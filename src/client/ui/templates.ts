@@ -46,7 +46,7 @@ export function createScreenshotUI(src: string): JQuery<HTMLImageElement> {
 
 export function createItemUI(item: Item): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#item');
-	instance.find('.name').text(locales.text(`item.${item.id}.name`) + (item.rare ? ' (rare)' : '') + ': ');
+	instance.find('.name').text(locales.text('item.name', item.id) + (item.rare ? ' (rare)' : '') + ': ');
 	instance.find('.ui-item').on('click', () => action('create_item', item));
 	$('div.inventory').append(instance);
 	return instance;
@@ -54,7 +54,7 @@ export function createItemUI(item: Item): JQuery<DocumentFragment> {
 
 export function createResearchUI(research: Research): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#research');
-	instance.find('.name').text(locales.text(`tech.${research.id}.name`));
+	instance.find('.name').text(locales.text('tech.name', research.id));
 	instance.find('.upgrade').on('click', () => action('research', research));
 	$('div.lab').append(instance);
 	return instance;
@@ -62,7 +62,7 @@ export function createResearchUI(research: Research): JQuery<DocumentFragment> {
 
 export function createShipUI(ship: GenericShip): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#ship');
-	instance.find('.name').text(locales.text(`entity.${ship.id}.name`));
+	instance.find('.name').text(locales.text('entity.name', ship.id));
 	instance.find('.add').on('click', () => action('create_ship', ship));
 	$('div.shipyard').append(instance);
 	return instance;
@@ -75,14 +75,11 @@ export function createShipyardUI(shipyard: Shipyard): JQuery<DocumentFragment> {
 	instance.find(shipyard.production ? '.active' : '.non-active').show();
 
 	if (shipyard.production) {
-		instance.find('.active').text('Building: ' + locales.text(`entity.${shipyard.production.id}.name`));
+		instance.find('.active').text('Building: ' + locales.text('entity.name', shipyard.production.id));
 	}
 
 	for (const type of shipTypes) {
-		$('<option></option>')
-			.attr('value', type)
-			.text(locales.text(`entity.${type}.name`))
-			.appendTo(instance.find('select'));
+		$('<option></option>').attr('value', type).text(locales.text('entity.name', type)).appendTo(instance.find('select'));
 	}
 	return instance;
 }
