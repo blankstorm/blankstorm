@@ -5,13 +5,14 @@ import { isHex, isJSON } from 'utilium';
 import type { Player } from '~/core/entities/player';
 import { Waypoint } from '~/core/entities/waypoint';
 import type { ItemID } from '~/core/generic/items';
-import { items as itemsData } from '~/core/generic/items';
+import { items } from '~/core/generic/items';
 import type { ResearchID } from '~/core/generic/research';
 import { isResearchLocked, priceOfResearch, research } from '~/core/generic/research';
 import { genericShips } from '~/core/generic/ships';
 import { Level } from '~/core/level';
 import { config, game_url, version, versions } from '~/core/metadata';
 import * as renderer from '~/renderer';
+import { getCamera } from '~/renderer';
 import * as client from '../client';
 import { isServer } from '../config';
 import * as locales from '../locales';
@@ -23,7 +24,6 @@ import { account, action, player as getPlayer, hasSystem, system } from '../user
 import { $svg, alert, logger, minimize, upload } from '../utils';
 import * as map from './map';
 import { createItemUI, createResearchUI, createShipUI } from './templates';
-import { changeUI } from './utils';
 import { WaypointUI } from './waypoint';
 
 export const UIs: Map<string, JQuery<DocumentFragment>> = new Map();
@@ -33,14 +33,14 @@ export const waypoints: Map<string, WaypointUI> = new Map();
 export function init() {
 	$('#main .version a')
 		.text(versions.get(version)?.text || version)
-		.attr('href', `${game_url}/versions#${version}`);
+		.attr('href', game_url + '/versions#' + version);
 
-	for (const [id, item] of Object.entries(itemsData)) {
+	for (const [id, item] of Object.entries(items)) {
 		UIs.set(id, createItemUI(item));
 	}
 
-	for (const [id, _research] of Object.entries(research)) {
-		UIs.set(id, createResearchUI(_research));
+	for (const [id, tech] of Object.entries(research)) {
+		UIs.set(id, createResearchUI(tech));
 	}
 
 	for (const [type, genericShip] of Object.entries(genericShips)) {
@@ -52,20 +52,7 @@ export function init() {
 	const grid = $svg<SVGGElement>('g');
 	grid.css('stroke', 'var(--bg-color)').appendTo('#map-markers');
 	for (let i = -size * 2; i < size * 2; i += 100) {
-		grid.append(
-			$svg('line').attr({
-				x1: -size * 2,
-				x2: size * 2,
-				y1: i,
-				y2: i,
-			}),
-			$svg('line').attr({
-				x1: i,
-				x2: i,
-				y1: -size * 2,
-				y2: size * 2,
-			})
-		);
+		grid.append($svg('line').attr({ x1: -size * 2, x2: size * 2, y1: i, y2: i }), $svg('line').attr({ x1: i, x2: i, y1: -size * 2, y2: size * 2 }));
 	}
 }
 
@@ -87,12 +74,12 @@ export function update() {
 	}
 
 	//update tech info
-	for (const [id, _research] of Object.entries(research)) {
+	for (const [id, tech] of Object.entries(research)) {
 		const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
 			(result, [id, amount]) => result + `<br>${locales.text('item.name', id)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
 			''
 		);
-		const requires = Object.entries(_research.requires).reduce(
+		const requires = Object.entries(tech.requires).reduce(
 			(result, [id, amount]) =>
 				result + (amount > 0) ? `<br>${locales.text('tech.name', id)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text('tech.name', id)}`,
 			''
@@ -103,12 +90,12 @@ export function update() {
 				`<strong>${locales.text('tech.name', id)}</strong><br>
 				${locales.text('tech.description', id)}<br>
 				${
-					player.research[id] >= _research.max
+					player.research[id] >= tech.max
 						? `<strong>Max Level</strong>`
 						: `${player.research[id]} <svg><use href="assets/images/icons.svg#arrow-right"/></svg> ${player.research[id] + 1}`
 				}
 				<br><br><strong>Material Cost:</strong>${materials}<br>
-				${Object.keys(_research.requires).length ? `<br><strong>Requires:</strong>` : ``}
+				${Object.keys(tech.requires).length ? `<br><strong>Requires:</strong>` : ``}
 				${requires}${settings.get('tooltips') ? '<br>type: ' + id : ''}`
 			);
 		$(UIs.get(id)!).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
@@ -181,6 +168,19 @@ function strobe(rate: number) {
 			if (hue > 360) hue -= 360;
 			$(':root').css('--hue', ++hue);
 		}, 1000 / rate);
+	}
+}
+
+export function switchTo(selector: string, hideAll?: boolean) {
+	if ($(selector).is(':visible')) {
+		$('canvas.game').trigger('focus');
+		$(selector).hide();
+	} else if ($('.game-ui').not(selector).is(':visible') && hideAll) {
+		$('canvas.game').trigger('focus');
+		$('.game-ui').hide();
+	} else if (!$('.game-ui').is(':visible')) {
+		getCamera().detachControl();
+		$(selector).show().trigger('focus');
 	}
 }
 
@@ -460,13 +460,13 @@ export function registerListeners() {
 	$('#ingame-temp-menu')
 		.on('keydown', e => {
 			if (e.key == settings.get('toggle_temp_menu') || e.key == 'Escape') {
-				changeUI('#ingame-temp-menu');
+				switchTo('#ingame-temp-menu');
 			}
 		})
 		.on('click', update);
 	$('canvas.game,#pause,#hud').on('keydown', e => {
 		if (e.key == 'Escape') {
-			changeUI('#pause', true);
+			switchTo('#pause', true);
 			client.isPaused ? client.unpause() : client.pause();
 		}
 		update();

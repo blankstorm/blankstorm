@@ -21,7 +21,6 @@ import * as servers from './servers';
 import * as settings from './settings';
 import { createScreenshotUI } from './ui/templates';
 import * as ui from './ui/ui';
-import { changeUI } from './ui/utils';
 import * as user from './user';
 import { alert, cookies, fixPaths, logger, minimize } from './utils';
 
@@ -314,8 +313,8 @@ async function _init(): Promise<void> {
 		chat.toggleUI(true);
 	};
 	settings.items.get('toggle_menu')!.onTrigger = () => null;
-	settings.items.get('toggle_map')!.onTrigger = () => changeUI('#map');
-	settings.items.get('toggle_temp_menu')!.onTrigger = () => changeUI('#ingame-temp-menu');
+	settings.items.get('toggle_map')!.onTrigger = () => ui.switchTo('#map');
+	settings.items.get('toggle_temp_menu')!.onTrigger = () => ui.switchTo('#ingame-temp-menu');
 	settings.items.get('screenshot')!.onTrigger = () => createScreenshotUI(canvas[0].toDataURL('image/png'));
 	settings.items.get('save')!.onTrigger = e => {
 		e.preventDefault();
