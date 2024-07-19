@@ -327,13 +327,13 @@ export function registerListeners() {
 		dialog.find('input').val('');
 		dialog[0].showModal();
 	});
-	$('#settings-nav button:not(.back)').on('click', e => {
+	$('#settings-nav button[section]').on('click', e => {
 		const target = $(e.target),
 			button = target.is('button') ? target : target.parent('button');
-		$('#settings > div:not(#settings-nav)')
+		$('#settings form[section]')
 			.hide()
-			.filter(`[setting-section=${button.attr('setting-section')}]`)
-			.show();
+			.filter(`[section=${button.attr('section')}]`)
+			.css('display', 'flex');
 	});
 
 	$('#settings button.back').on('click', () => {
@@ -445,7 +445,7 @@ export function registerListeners() {
 	$('canvas.game,.game-ui,#hud,#tablist').on('keydown', e => {
 		for (const setting of [...settings.items.values()].filter(item => item.type == 'keybind')) {
 			const { key, alt, ctrl } = <settings.Keybind>setting.value;
-			if (e.key == key && (!alt || e.altKey) && (!ctrl || e.ctrlKey)) setting.emit('trigger');
+			if (e.key == key && (!alt || e.altKey) && (!ctrl || e.ctrlKey)) setting.onTrigger?.(e);
 		}
 	});
 	$('canvas.game').on('keyup', e => {

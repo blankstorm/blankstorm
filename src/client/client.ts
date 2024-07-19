@@ -109,18 +109,19 @@ async function _init(): Promise<void> {
 		sections: [
 			{
 				id: 'general',
+				icon: 'gear',
 				label: 'General',
-				parent: $('#settings div.general'),
+				isDefault: true,
 			},
 			{
 				id: 'keybinds',
+				icon: 'keyboard',
 				label: 'Keybinds',
-				parent: $('#settings div.keybinds'),
 			},
 			{
 				id: 'debug',
+				icon: 'bug',
 				label: 'Debug',
-				parent: $('#settings div.debug'),
 			},
 		],
 		items: [
@@ -128,55 +129,44 @@ async function _init(): Promise<void> {
 				id: 'font_size',
 				section: 'general',
 				type: 'number',
-				kind: 'range',
+
 				label: val => `Font Size (${val}px)`,
-				min: 10,
-				max: 20,
-				step: 1,
+				attributes: { min: 10, max: 20, step: 1 },
 				value: 13,
 			},
 			{
 				id: 'chat_timeout',
 				section: 'general',
 				type: 'number',
-				kind: 'range',
+
 				label: val => `Chat Timeout (${val} seconds)`,
-				min: 5,
-				max: 15,
-				step: 1,
+				attributes: { min: 5, max: 15, step: 1 },
 				value: 10,
 			},
 			{
 				id: 'sensitivity',
 				section: 'general',
 				type: 'number',
-				kind: 'range',
+
 				label: val => `Camera Sensitivity (${((val as number) * 100).toFixed()}%)`,
-				min: 0.1,
-				max: 2,
-				step: 0.05,
+				attributes: { min: 0.1, max: 2, step: 0.05 },
 				value: 1,
 			},
 			{
 				id: 'music',
 				section: 'general',
 				type: 'number',
-				kind: 'range',
+
 				label: val => `Music Volume (${((val as number) * 100).toFixed()}%)`,
-				min: 0,
-				max: 1,
-				step: 0.05,
+				attributes: { min: 0, max: 1, step: 0.05 },
 				value: 1,
 			},
 			{
 				id: 'sfx',
 				section: 'general',
 				type: 'number',
-				kind: 'range',
 				label: val => `Sound Effects Volume (${((val as number) * 100).toFixed()}%)`,
-				min: 0,
-				max: 1,
-				step: 0.05,
+				attributes: { min: 0, max: 1, step: 0.05 },
 				value: 1,
 			},
 			{
@@ -184,6 +174,7 @@ async function _init(): Promise<void> {
 				section: 'general',
 				type: 'select',
 				label: 'Language',
+				value: 'en',
 			},
 			{
 				id: 'show_path_gizmos',
@@ -206,149 +197,133 @@ async function _init(): Promise<void> {
 				label: 'Disable Saves',
 				value: false,
 			},
-			<settings.ItemOptions>{
+			{
 				id: 'forward',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Forward',
-				value: { key: 'w' },
+				value: { key: 'w', ctrl: false, alt: false },
 			},
 			{
 				id: 'left',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Strafe Left',
-				value: { key: 'a' },
+				value: { key: 'a', ctrl: false, alt: false },
 			},
 			{
 				id: 'right',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Strafe Right',
-				value: { key: 'd' },
+				value: { key: 'd', ctrl: false, alt: false },
 			},
 			{
 				id: 'back',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Backward',
-				value: { key: 's' },
+				value: { key: 's', ctrl: false, alt: false },
 			},
 			{
 				id: 'chat',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Toggle Chat',
-				value: { key: 't' },
+				value: { key: 't', ctrl: false, alt: false },
 			},
 			{
 				id: 'command',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Toggle Command',
-				value: { key: '/' },
+				value: { key: '/', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_temp_menu',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Toggle Temporary Ingame Menu',
-				value: { key: 'Tab' },
+				value: { key: 'Tab', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_menu',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Toggle Ingame Menu',
-				value: { key: 'e' },
+				value: { key: 'e', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_map',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Toggle Map',
-				value: { key: 'm' },
+				value: { key: 'm', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_left',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Map Move Left',
-				value: { key: 'ArrowLeft' },
+				value: { key: 'ArrowLeft', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_down',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Map Move Down',
-				value: { key: 'ArrowDown' },
+				value: { key: 'ArrowDown', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_right',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Map Move Right',
-				value: { key: 'ArrowRight' },
+				value: { key: 'ArrowRight', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_up',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Map Move Up',
-				value: { key: 'ArrowUp' },
+				value: { key: 'ArrowUp', ctrl: false, alt: false },
 			},
 			{
 				id: 'screenshot',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Take Screenshot',
-				value: { key: 'F2' },
+				value: { key: 'F2', ctrl: false, alt: false },
 			},
 			{
 				id: 'save',
 				section: 'keybinds',
 				type: 'keybind',
 				label: 'Save Game',
-				value: { key: 's', ctrl: true },
+				value: { key: 's', ctrl: true, alt: false },
 			},
 		],
 	});
-	settings.items.get('forward')?.addEventListener('trigger', () => {
-		renderer.addCameraVelocity(Vector3.Forward());
-	});
-	settings.items.get('left')?.addEventListener('trigger', () => {
-		renderer.addCameraVelocity(Vector3.Left());
-	});
-	settings.items.get('right')?.addEventListener('trigger', () => {
-		renderer.addCameraVelocity(Vector3.Right());
-	});
-	settings.items.get('back')?.addEventListener('trigger', () => {
-		renderer.addCameraVelocity(Vector3.Backward());
-	});
-	settings.items.get('chat')?.addEventListener('trigger', e => {
+	settings.items.get('forward')!.onTrigger = () => renderer.addCameraVelocity(Vector3.Forward());
+	settings.items.get('left')!.onTrigger = () => renderer.addCameraVelocity(Vector3.Left());
+	settings.items.get('right')!.onTrigger = () => renderer.addCameraVelocity(Vector3.Right());
+	settings.items.get('back')!.onTrigger = () => renderer.addCameraVelocity(Vector3.Backward());
+	settings.items.get('chat')!.onTrigger = e => {
 		e.preventDefault();
 		chat.toggleUI();
-	});
-	settings.items.get('command')?.addEventListener('trigger', e => {
+	};
+	settings.items.get('command')!.onTrigger = e => {
 		e.preventDefault();
 		chat.toggleUI(true);
-	});
-	settings.items.get('toggle_menu')?.addEventListener('trigger', () => {
-		// not implemented
-	});
-	settings.items.get('toggle_map')?.addEventListener('trigger', () => {
-		changeUI('#map');
-	});
-	settings.items.get('toggle_temp_menu')?.addEventListener('trigger', () => {
-		changeUI('#ingame-temp-menu');
-	});
-	settings.items.get('screenshot')?.addEventListener('trigger', () => {
-		createScreenshotUI(canvas[0].toDataURL('image/png'));
-	});
-	settings.items.get('save')?.addEventListener('trigger', e => {
+	};
+	settings.items.get('toggle_menu')!.onTrigger = () => null;
+	settings.items.get('toggle_map')!.onTrigger = () => changeUI('#map');
+	settings.items.get('toggle_temp_menu')!.onTrigger = () => changeUI('#ingame-temp-menu');
+	settings.items.get('screenshot')!.onTrigger = () => createScreenshotUI(canvas[0].toDataURL('image/png'));
+	settings.items.get('save')!.onTrigger = e => {
 		e.preventDefault();
 		saves.flush();
-	});
+	};
 
 	_initLog('Loading locales...');
 	await locales.init();

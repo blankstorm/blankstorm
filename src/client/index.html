@@ -369,30 +369,6 @@
 		</div>
 		<div id="settings" class="content bg-transparent" style="display: none">
 			<div id="settings-nav">
-				<button class="general" setting-section="general">
-					<svg>
-						<use href="assets/images/icons.svg#gear" />
-					</svg>
-					<span></span>
-				</button>
-				<button class="keybinds" setting-section="keybinds">
-					<svg>
-						<use href="assets/images/icons.svg#keyboard" />
-					</svg>
-					<span></span>
-				</button>
-				<button class="mod" style="display: none">
-					<svg>
-						<use href="assets/images/icons.svg#puzzle-piece" />
-					</svg>
-					<span>Mods</span>
-				</button>
-				<button class="debug" setting-section="debug">
-					<svg>
-						<use href="assets/images/icons.svg#bug" />
-					</svg>
-					<span></span>
-				</button>
 				<button class="back">
 					<svg>
 						<use href="assets/images/icons.svg#arrow-left" />
@@ -401,10 +377,26 @@
 				</button>
 			</div>
 
-			<div class="general" setting-section="general"></div>
-			<div class="keybinds" setting-section="keybinds" style="display: none"></div>
-			<div class="debug" setting-section="debug" style="display: none"></div>
-			<div class="mod" style="display: none"></div>
+			<template id="settings-section">
+				<form class="settings-section center-flex">
+					<h2 class="settings-name"></h2>
+				</form>
+				<button>
+					<svg>
+						<use href="assets/images/icons.svg#gear" />
+					</svg>
+					<span></span>
+				</button>
+			</template>
+
+			<template id="setting">
+				<div class="setting">
+					<label style="text-align: right"></label>
+					<div class="input-container">
+						<input />
+					</div>
+				</div>
+			</template>
 		</div>
 
 		<template id="waypoint-marker">

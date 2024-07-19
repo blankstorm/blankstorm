@@ -5,9 +5,12 @@ import type { JSONObject } from 'utilium/fs.js';
 import { JSONFileMap } from 'utilium/fs.js';
 import { config } from '../core';
 import { path } from './config';
+import { instaniateTemplate } from './ui';
 import { logger } from './utils';
 
-export class SettingsError<T extends keyof _Values = keyof _Values> extends Error {
+export const settingTypes = ['boolean', 'string', 'number', 'color', 'select', 'keybind'] as const;
+
+export class SettingsError<T extends Type = Type> extends Error {
 	constructor(
 		message: string,
 		public target?: Item<T>
@@ -16,7 +19,7 @@ export class SettingsError<T extends keyof _Values = keyof _Values> extends Erro
 	}
 }
 
-export class SettingsEvent<T extends keyof _Values = keyof _Values> extends Event {
+export class SettingsEvent<T extends Type = Type> extends Event {
 	constructor(
 		type: string,
 		public item: Item<T>
@@ -25,196 +28,162 @@ export class SettingsEvent<T extends keyof _Values = keyof _Values> extends Even
 	}
 }
 
-export interface Keybind extends JSONObject<string> {
+export interface Keybind extends JSONObject {
 	alt: boolean;
 	ctrl: boolean;
 	key: string;
 }
 
-interface _Values {
+type Type = (typeof settingTypes)[number];
+type Value<T extends Type = Type> = {
 	boolean: boolean;
 	string: string;
 	number: number;
 	color: string;
 	select: string | string[];
 	keybind: Keybind;
-}
-
-export type Type = keyof _Values;
-export type Value<T extends Type = Type> = _Values[T];
-
-export type Kind<T extends Type = Type> = {
-	boolean: undefined;
-	string: undefined;
-	number: 'number' | 'range';
-	color: undefined;
-	select: undefined;
-	keybind: undefined;
 }[T];
 
-export type Label<T extends Type = Type> = string | ((value?: Value<T>) => string);
+type Label<T extends Type = Type> = string | ((value?: Value<T>) => string);
+type Attributes<T extends Type> = T extends 'number' ? { min: number; max: number; step: number } : undefined;
 
-export const settingTypes: Type[] = ['boolean', 'string', 'number', 'color', 'select', 'keybind'];
-
-export interface ItemOptions<T extends Type = Type> {
+export interface ItemConfig<T extends Type = Type> {
 	id: string;
 	section: Section | string;
 	label: Label<T>;
 	type: T;
-	kind?: Kind<T>;
 	options?: {
 		name: string;
 		label: string;
 	}[];
-	value?: Partial<Value<T>>;
-	onTrigger?(evt: Event | JQuery.KeyDownEvent): unknown;
-	min?: number;
-	max?: number;
-	step?: number;
+	value: Value<T>;
+	attributes?: Attributes<T>;
 }
 
-export class Item<T extends Type = Type> extends HTMLDivElement {
+const htmlTypes = {
+	boolean: 'checkbox',
+	string: 'text',
+	number: 'range',
+	color: 'color',
+	select: 'hidden',
+	keybind: 'button',
+} satisfies Record<Type, string>;
+
+export class Item<T extends Type = Type> {
 	public readonly id: string;
 	public readonly type: T;
 	public readonly section: Section;
 
 	public label: Label<T>;
 
-	#ui_label = $('<label></label>').addClass('settings-label').css('text-align', 'right').appendTo(this);
-	#ui_input: JQuery<HTMLInputElement>;
-
 	//Used by select
-	#options: JQuery<HTMLOptionElement>[] = [];
-	#value: Keybind = {
+	private select_options = new Map<string, JQuery<HTMLOptionElement>>();
+
+	//Used by keybind
+	private keybind_value: Keybind = {
 		alt: false,
 		ctrl: false,
 		key: '',
 	};
 
-	//Used by keybind
-	constructor(options: ItemOptions<T>) {
-		super();
-		this.id = options.id;
-		this.type = options.type;
-		this.label = options.label;
+	public onTrigger?(evt: Event | JQuery.KeyDownEvent): unknown;
 
-		if (options.section instanceof Section) {
-			this.section = options.section;
-		} else if (sections.has(options.section)) {
-			this.section = sections.get(options.section)!;
-		} else if (options.section) {
-			throw new SettingsError(`Settings section "${options.section}" does not exist`);
+	public readonly ui: JQuery<HTMLDivElement>;
+
+	public constructor({ id, type, label, section, value, options, attributes }: ItemConfig<T>) {
+		this.id = id;
+		this.type = type;
+		this.label = label;
+		this.ui = instaniateTemplate('#setting').find<HTMLDivElement>('div.setting');
+
+		if (section instanceof Section) {
+			this.section = section;
+		} else if (sections.has(section)) {
+			this.section = sections.get(section)!;
+		} else if (section) {
+			throw new SettingsError(`Settings section "${section}" does not exist`);
 		}
 
-		switch (options.type) {
-			case 'boolean':
-				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', 'checkbox');
-				break;
-			case 'string':
-				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', 'text');
-				break;
-			case 'number':
-			case 'color':
-				this.#ui_input = $('<input></input>');
-				this.#ui_input.attr('type', options.kind!);
-				options.type = <T>(options.type == 'color' ? 'color' : 'number');
-				break;
-			case 'select':
-				this.#ui_input = $('<select></select>');
-				this.#ui_input.text(options.value + '');
-				for (const option of options.options || []) {
-					this.addOption(option.name, option.label);
-				}
-				break;
-			case 'keybind':
-				this.#ui_input = $('<button></button>');
-				this.#ui_input
-					.on('click', e => {
-						e.preventDefault();
-						e.target.focus();
-					})
-					.on('keydown', e => {
-						e.preventDefault();
-						this.value = <Value<T>>{
-							alt: e.altKey,
-							ctrl: e.ctrlKey,
-							key: e.key,
-						};
-					});
-				break;
-			default:
-				throw new SettingsError(`Invalid type: ${options.type}`, this);
+		if (!settingTypes.includes(this.type)) {
+			throw new SettingsError(`Invalid type: ${this.type}`, this);
 		}
 
-		this.#ui_input.attr('name', this.id).addClass('setting-input');
-		$('<div></div>').append(this.#ui_input).appendTo(this);
-		$(this).addClass('settings-item');
-		if (this.section) {
-			$(this).appendTo(this.section);
+		this.ui.find('input').attr({ type: htmlTypes[this.type], name: this.id });
+
+		if (this.type == 'select') {
+			$('<select class="input"></select>')
+				.text(value + '')
+				.appendTo(this.ui.find('div.input-container'));
+			this.ui.find('input').removeClass('input');
+			for (const option of options || []) {
+				this.addOption(option.name, option.label);
+			}
+		}
+		if (this.type == 'keybind') {
+			this.ui
+				.find('input')
+				.on('click', e => {
+					e.preventDefault();
+					e.target.focus();
+				})
+				.on('keydown', e => {
+					e.preventDefault();
+					this.value = {
+						alt: e.altKey,
+						ctrl: e.ctrlKey,
+						key: e.key,
+					};
+					set(this.id, this.value);
+				});
 		}
 
-		this.update(options);
-		this.#ui_input.on('change', e => {
-			this.value = <Value<T>>(this.type == 'boolean' ? e.target.checked : e.target.value);
+		this.section.ui.append(this.ui);
+
+		if (attributes) {
+			this.ui.find('input,select').attr(attributes);
+		}
+		this.updateLabel();
+		const input = this.ui.find('input,select');
+		input.on('change', () => {
+			this.value = (this.type == 'boolean' ? input.is(':checked') : input.val()) as Value<T>;
 			set(this.id, this.value);
 		});
 
-		if (options.value === null || options.value === undefined) {
-			return;
-		}
-
-		this.value = <Value<T>>options.value;
+		this.value = value;
 	}
 
-	get value(): Value<Type> {
-		if (this.type == 'keybind') {
-			return this.#value;
-		}
+	public get value(): Value<T> {
 		switch (this.type) {
 			case 'keybind':
-				return this.#value;
+				return this.keybind_value as Value<T>;
 			case 'boolean':
-				return this.#ui_input.is(':checked');
+				return this.ui.find('input').is(':checked') as Value<T>;
 			case 'number':
-				return +this.#ui_input.val()!;
+				return +this.ui.find('input').val()! as Value<T>;
 			default:
-				return this.#ui_input.val()!;
+				return this.ui.find('.input').val()! as Value<T>;
 		}
 	}
 
-	set value(val: Value<T>) {
+	public set value(val: Value) {
 		switch (this.type) {
 			case 'keybind':
-				this.#value = <Value<T> & Keybind>val;
-				this.#ui_input.text((this.#value.ctrl ? 'Ctrl + ' : '') + (this.#value.alt ? 'Alt + ' : '') + this.#value.key);
+				this.keybind_value = <Value<T> & Keybind>val;
+				this.ui.find('input').val((this.keybind_value.ctrl ? 'Ctrl + ' : '') + (this.keybind_value.alt ? 'Alt + ' : '') + this.keybind_value.key);
 				break;
 			case 'boolean':
-				this.#ui_input[0].checked = val as boolean;
+				this.ui.find('input')[0].checked = val as boolean;
 				break;
 			case 'number':
-				this.#ui_input.val(+val);
+				this.ui.find('input').val(+val);
 				break;
 			default:
-				this.#ui_input.val(val as string);
+				this.ui.find('.input').val(val as string);
 		}
-
-		let label = '';
-		if (typeof this.label == 'function') {
-			label = this.label(val);
-		} else {
-			label = this.label;
-		}
-		this.#ui_label.text(label);
-		this.emit('update');
+		this.updateLabel();
 	}
 
-	get ui() {
-		return $(this);
-	}
-
-	get metadata() {
+	public get metadata() {
 		const data = {
 			id: this.id,
 			type: this.type,
@@ -222,7 +191,7 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 		};
 
 		for (const attr of ['step', 'min', 'max']) {
-			const val = this.#ui_input.attr(attr);
+			const val = this.ui.attr(attr);
 			if (val) {
 				data[attr] = isFinite(+val) ? +val : val;
 			}
@@ -232,104 +201,67 @@ export class Item<T extends Type = Type> extends HTMLDivElement {
 	}
 
 	//for selects
-	hasOption(name: string) {
-		return this.#options.findIndex(el => el.val() == name) != -1;
-	}
-
-	addOption(name: string, label: string) {
+	public addOption(name: string, label: string) {
 		const option = $<HTMLOptionElement>('<option></option>');
 		option.val(name);
 		option.text(label);
-		this.#options.push(option);
-		this.#ui_input.append(option);
+		this.select_options.set(name, option);
+		this.ui.find('select').append(option);
 	}
 
-	removeOption(name: string): boolean {
-		const option = this.#options.find(el => el.val() == name);
-		if (!option) {
-			return false;
-		}
-		const id = Math.random.toString().slice(2);
-		option.attr('id', id);
-		this.#ui_input.remove('#' + id);
-		this.#options.splice(this.#options.indexOf(option), 1);
-		return true;
+	public updateLabel() {
+		this.ui.find('label').text(typeof this.label == 'function' ? this.label(this.value) : this.label);
 	}
 
-	emit(type: string): boolean {
-		return this.dispatchEvent(new SettingsEvent(type, this));
-	}
-
-	update(options: { min?: number; max?: number; step?: number }) {
-		if (isFinite(options?.min || NaN)) {
-			this.#ui_input.attr('min', +options.min!);
-		}
-
-		if (isFinite(options?.max || NaN)) {
-			this.#ui_input.attr('max', +options.max!);
-		}
-
-		if (isFinite(options?.step || NaN)) {
-			this.#ui_input.attr('step', +options.step!);
-		}
-	}
-
-	dispose() {
-		this.#ui_input.detach();
+	public delete() {
+		this.ui.detach();
 		items.delete(this.id);
 	}
 }
-customElements.define('settings-item', Item, { extends: 'div' });
 
-export interface SettingsSectionOptions {
-	id: string;
-	label: Label;
-	parent: JQuery;
-}
+export class Section {
+	public readonly ui: JQuery<HTMLFormElement>;
 
-export class Section extends HTMLFormElement {
-	public readonly parent: JQuery;
-	#label: Label;
-
-	public readonly id: string;
-
-	constructor({ id, label, parent }: SettingsSectionOptions) {
-		super();
-		this.id = id;
-		this.parent = parent;
-		$(this).addClass('settings-section center-flex').append('<h2 class="settings-name"></h2>');
-		this.#label = label;
-
-		if (parent) {
-			$(parent).append(this);
-		}
-
+	public constructor(
+		public readonly id: string,
+		public readonly icon: string,
+		protected _label: Label
+	) {
+		const ui = instaniateTemplate('#settings-section');
+		ui.children().attr('section', id);
+		this.ui = ui.find('form').appendTo('#settings');
+		ui.find('button use').attr('href', 'assets/images/icons.svg#' + icon);
+		ui.find('button').appendTo('#settings-nav');
 		sections.set(id, this);
+		this.update();
 	}
 
-	get label(): string {
-		return typeof this.#label == 'function' ? this.#label() : this.#label;
+	public get label(): string {
+		return typeof this._label == 'function' ? this._label() : this._label;
 	}
 
-	set label(value: Label) {
-		this.#label = value;
-		$(this).find('h2.settings-name').text(`Settings - ${this.label}`);
+	public set label(value: Label) {
+		this._label = value;
+		this.update();
 	}
 
-	dispose(disposeItems?: boolean) {
+	public update() {
+		this.ui.find('h2.settings-name').text(`Settings - ${this.label}`);
+	}
+
+	public dispose(disposeItems?: boolean) {
 		if (disposeItems) {
 			for (const item of items.values()) {
 				if (item.section == this) {
-					item.dispose();
+					item.delete();
 				}
 			}
 		}
 
-		$(this).detach();
+		this.ui.remove();
 		sections.delete(this.id);
 	}
 }
-customElements.define('settings-section', Section, { extends: 'form' });
 
 export const sections: Map<string, Section> = new Map();
 export const items: Map<string, Item> = new Map();
@@ -355,21 +287,30 @@ export function init(): void {
 	initialized = true;
 }
 
-export function load({ sections: _sections = [], items: _items = [] }: { sections: SettingsSectionOptions[]; items: ItemOptions[] }): void {
+export interface SettingsSectionConfig {
+	id: string;
+	label: Label;
+	icon: string;
+	isDefault?: boolean;
+}
+
+export function load(config: { sections: SettingsSectionConfig[]; items: ItemConfig[] }): void {
 	if (!initialized) {
 		throw new Error('Can not load settings before initialization');
 	}
-	for (const _section of _sections) {
-		logger.debug(`Loading settings section: "${_section.id}"`);
-		const section = new Section(_section);
-		sections.set(section.id, section);
+	for (const { id, icon, label, isDefault } of config.sections) {
+		logger.debug(`Loading settings section: "${id}"`);
+		const section = new Section(id, icon, label);
+		if (isDefault) {
+			section.ui.css('display', 'flex');
+		}
 	}
 
-	for (const _item of _items) {
-		logger.debug(`Loading setting: "${_item.id}"`);
-		const item = new Item(_item);
+	for (const itemConfig of config.items) {
+		logger.debug(`Loading setting: "${itemConfig.id}"`);
+		const value: Value = <Value>(file.has(itemConfig.id) ? file.get(itemConfig.id) : itemConfig.value);
+		const item = new Item(itemConfig);
 		items.set(item.id, item);
-		const value: Value = <Value>(file.has(item.id) ? file.get(item.id) : _item.value);
 		item.value = value;
 		file.set(item.id, value);
 	}

@@ -250,46 +250,24 @@ div.screenshots img {
 	margin: 1em;
 }
 
-.settings-section {
+form.settings-section {
 	flex-direction: column;
 	overflow-y: scroll;
+	align-items: center;
+	display: none;
 }
 
-.settings-item {
+.setting {
 	margin-bottom: 1em;
-	display: inline-grid;
-	grid-template-columns: 1fr 1fr;
+	display: flex;
 	align-items: center;
 	gap: 1em;
 }
 
-.settings-input {
+.setting input,
+.setting select {
 	display: inline-block;
 }
-
-/*.settings-input::after {
-	content: '-';
-	margin: 1px 1px 1px auto;
-	visibility: hidden;
-}*/
-
-/*.setting-label {
-	text-align: right;
-	position: absolute;
-	right: 50%;
-	margin: 0.5em;
-}
-.setting-input {
-	position: absolute;
-	left: 50%;
-	margin: 0.5em;
-}
-
-#settings div[settings-section] {
-	overflow-y: scroll;
-	width: 100%;
-	margin-top: 1em;
-}*/
 
 #settings-nav {
 	position: absolute;

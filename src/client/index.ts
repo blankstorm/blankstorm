@@ -28,6 +28,8 @@ if (options.debug) {
 		ui: await import('./ui/ui'),
 		map: await import('./ui/map'),
 		user: await import('./user'),
+		locales: await import('./locales'),
+		settings: await import('./settings'),
 		$,
 	});
 }
