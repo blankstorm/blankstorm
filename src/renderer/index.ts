@@ -315,12 +315,12 @@ export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: st
 	return returnData;
 }
 
-export async function startFollowingPath(entityID: string, path: IVector3Like[]) {
+export async function startFollowingPath(entityID: string, path: IVector3Like[], showPathGizmos: boolean) {
 	const renderer = entities.get(entityID);
 	if (!(renderer instanceof ModelRenderer)) {
 		throw logger.error(new TypeError(`Node ${entityID} is not an entity`));
 	}
-	await renderer.followPath(path.map(({ x, y, z }) => new Vector3(x, y, z)));
+	await renderer.followPath(path.map(({ x, y, z }) => new Vector3(x, y, z)), showPathGizmos);
 }
 
 export function fireProjectile(hardpointID: string, targetID: string, options: GenericProjectile) {

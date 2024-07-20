@@ -10,7 +10,6 @@ import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/loaders/glTF/index';
 import { randomHex } from 'utilium';
-import * as settings from '../client/settings';
 import type { EntityJSON } from '../core/entities/entity';
 import { logger } from './logger';
 
@@ -58,19 +57,19 @@ export class ModelRenderer extends TransformNode {
 		return this._currentPath;
 	}
 
-	public async followPath(path: Vector3[]) {
+	public async followPath(path: Vector3[], showPathGizmos: boolean) {
 		if (!Array.isArray(path)) throw new TypeError('path must be a Path');
 		if (path.length == 0) {
 			return;
 		}
-		if (this._pathGizmo && settings.get('show_path_gizmos')) {
+		if (this._pathGizmo && showPathGizmos) {
 			this._pathGizmo.dispose();
 			this._pathGizmo = undefined;
 		}
 		this._currentPath = path;
 		if (this._pathGizmo) {
 			console.warn('Path gizmo was already drawn and not disposed');
-		} else if (settings.get('show_path_gizmos')) {
+		} else if (showPathGizmos) {
 			this._pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + randomHex(16), { points: path }, this.getScene());
 			this._pathGizmo.color = Color3.Green();
 		}

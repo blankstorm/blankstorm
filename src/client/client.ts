@@ -497,7 +497,7 @@ export function load(level: Level): boolean {
 		}
 	});
 	level.on('entity_path_start', async (entityID: string, path: IVector3Like[]) => {
-		renderer.startFollowingPath(entityID, path);
+		renderer.startFollowingPath(entityID, path, settings.get('show_path_gizmos'));
 	});
 	level.on('entity_death', async (entity: EntityJSON) => {
 		if (entity.entityType == 'Ship') {
