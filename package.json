@@ -37,7 +37,9 @@
 		"node": ">=18.0.0"
 	},
 	"lint-staged": {
-		"*": ["prettier --write"]
+		"*": [
+			"prettier --write"
+		]
 	},
 	"dependencies": {
 		"@babylonjs/core": "^7.6.0",
