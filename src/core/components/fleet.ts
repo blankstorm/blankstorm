@@ -12,7 +12,7 @@ export interface FleetJSON extends EntityJSON {
 }
 
 @register
-export class Fleet extends Entity implements Set<Ship> {
+export class Fleet extends Entity {
 	protected _storage = new EntityStorageManager(this);
 
 	public get storage(): EntityStorageManager {
@@ -59,22 +59,6 @@ export class Fleet extends Entity implements Set<Ship> {
 
 	public has(value: Ship): boolean {
 		return this.ships.has(value);
-	}
-
-	public forEach(cb: (value: Ship, value2: Ship, set: Set<Ship>) => void, thisArg?): void {
-		this.ships.forEach(cb, thisArg);
-	}
-
-	public entries(): IterableIterator<[Ship, Ship]> {
-		return this.ships.entries();
-	}
-
-	public keys(): IterableIterator<Ship> {
-		return this.ships.keys();
-	}
-
-	public values(): IterableIterator<Ship> {
-		return this.ships.values();
 	}
 
 	[Symbol.iterator](): IterableIterator<Ship> {

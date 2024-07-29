@@ -199,7 +199,7 @@ export class StorageManager extends ItemStorage {
  */
 @register
 export class EntityStorageManager extends ItemStorage {
-	public constructor(protected entities: Set<Entity> = new Set()) {
+	public constructor(protected entities: Iterable<Entity> = new Set()) {
 		super();
 	}
 

@@ -1,12 +1,11 @@
-import type { ServerOptions as EngineIOOptions } from 'engine.io';
 import type { Server as HTTPServer } from 'node:http';
 import { createServer } from 'node:http';
+import type { ListenOptions } from 'node:net';
 import { Server as SocketIOServer } from 'socket.io';
 import type { VersionID } from '../core/metadata';
 import { version } from '../core/metadata';
 import { config } from './config';
 import { logger } from './utils';
-import type { ListenOptions } from 'node:net';
 
 export interface PingInfo {
 	current_clients: number;
@@ -43,8 +42,7 @@ export const http: HTTPServer = createServer((req, res) => {
 export const io = new SocketIOServer(http, {
 	pingInterval: 1000,
 	pingTimeout: 10000,
-	cors: '*',
-} satisfies EngineIOOptions).attach(http);
+}).attach(http);
 
 export function listen(options: ListenOptions): Promise<void> {
 	return new Promise<void>(resolve => http.listen(options, resolve));

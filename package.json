@@ -36,12 +36,16 @@
 	"engines": {
 		"node": ">=18.0.0"
 	},
+	"lint-staged": {
+		"*": ["prettier --write"]
+	},
 	"dependencies": {
 		"@babylonjs/core": "^7.6.0",
 		"@babylonjs/loaders": "^7.6.0",
 		"@blankstorm/api": "^0.5.4",
 		"eventemitter3": "^5.0.1",
 		"jquery": "^3.7.1",
+		"lint-staged": "^15.2.7",
 		"logzen": "^0.3.8",
 		"socket.io": "^4.7.5",
 		"socket.io-client": "^4.7.5",
