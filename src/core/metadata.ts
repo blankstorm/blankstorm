@@ -1,4 +1,4 @@
-import $package from '../../package.json' assert { type: 'json' };
+export { version as fullVersion } from '../../package.json';
 
 export const game_url = 'https://blankstorm.net';
 
@@ -71,7 +71,5 @@ export interface Version {
 }
 
 export const version: VersionID = 'alpha_1.4.4';
-
-export const fullVersion = $package.version;
 
 export const versions = new Map(Object.entries(_versions)) as Map<VersionID, Version>;

@@ -2,7 +2,7 @@ import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { getAccount, type Account } from '@blankstorm/api';
 import $ from 'jquery';
-import $package from '../../package.json' assert { type: 'json' };
+import { author } from '../../package.json';
 import { execCommandString } from '../core/commands';
 import type { EntityJSON } from '../core/entities/entity';
 import type { GenericProjectile } from '../core/generic/hardpoints';
@@ -91,7 +91,7 @@ async function _init(): Promise<void> {
 			.catch(err => logger.warn('Failed to retrieve version manifest: ' + err));
 	}
 
-	$<HTMLParagraphElement>('p.copyright').text(`Copyright © ${new Date().getFullYear()} ${$package.author.name}. All Rights Reserved.`);
+	$<HTMLParagraphElement>('p.copyright').text(`Copyright © ${new Date().getFullYear()} ${author.name}. All Rights Reserved.`);
 	const canvas = $<HTMLCanvasElement>('canvas.game');
 
 	_initLog('Loading saves...');

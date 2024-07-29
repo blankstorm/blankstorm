@@ -162,7 +162,6 @@ const esbuildConfig = {
 	format: 'esm',
 	loader: {
 		'.html': 'copy',
-		'.json': 'copy',
 	},
 	alias: {
 		'~': root + '/src',

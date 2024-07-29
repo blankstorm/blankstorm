@@ -17,22 +17,34 @@ const _values = parseArgs({
 		quiet: { type: 'boolean', default: false },
 		initalScale: { type: 'string', default: '100' },
 		path: { type: 'string', default: dirname },
+		help: { type: 'boolean', default: false },
 	},
 	allowPositionals: true,
 }).values;
 const options = _values as { [K in keyof typeof _values]: K extends 'logLevel' ? (typeof _values)[K] : Exclude<(typeof _values)[K], undefined> };
+
+if (options.help) {
+	console.log(`Options:
+	--help					Shows this message
+	--dev					Debug mode
+	--path <directory>		The directory to use for game data
+	--logLevel <level>		Sets log level
+	--quiet					Do not write logs to terminal output
+	--initalScale <n=100>	The initial scale of the window when multiplied by 16 or 9`);
+	process.exit();
+}
 
 // Initial window scale
 let initialScale: number = parseInt(options.initalScale);
 initialScale = isNaN(initialScale) ? 100 : initialScale;
 
 // Set up logging
-const logger = new Logger({ prefix: 'main' });
 const logDir: string = join(options.path, 'logs/');
 if (!existsSync(logDir)) {
 	// This also creates the data directory if it doesn't exist
 	mkdirSync(logDir, { recursive: true });
 }
+const logger = new Logger({ prefix: 'main' });
 
 const latestLog = join(logDir, 'latest.log');
 if (existsSync(latestLog)) {
