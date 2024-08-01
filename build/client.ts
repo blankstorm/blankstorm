@@ -99,6 +99,10 @@ function onBuildStart() {
 			fs.cpSync(path.join(root, 'assets', entry), path.join(asset_path, entry), { recursive: true });
 		}
 		fs.cpSync(asset_path, path.join(options.output, 'assets'), { recursive: true });
+
+		// locales
+		console.log('Copying locales...');
+		fs.cpSync(path.join(input, 'locales'), path.join(options.output, 'locales'), { recursive: true });
 	} catch (e) {
 		if (!('status' in e)) {
 			console.error(e);
@@ -152,7 +156,7 @@ async function onBuildEnd() {
 }
 
 const esbuildConfig = {
-	entryPoints: ['index.ts', 'index.html', 'locales', 'styles'].flatMap(p => fromPath(path.join(input, p))),
+	entryPoints: ['index.ts', 'index.html', 'styles'].flatMap(p => fromPath(path.join(input, p))),
 	assetNames: '[dir]/[name]',
 	outdir: options.output,
 	bundle: true,
@@ -160,9 +164,7 @@ const esbuildConfig = {
 	keepNames: true,
 	sourcemap: true,
 	format: 'esm',
-	loader: {
-		'.html': 'copy',
-	},
+	loader: { '.html': 'copy' },
 	alias: {
 		'~': root + '/src',
 	},

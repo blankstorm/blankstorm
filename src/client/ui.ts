@@ -17,7 +17,6 @@ import * as client from './client';
 import { isServer } from './config';
 import * as locales from './locales';
 import * as saves from './saves';
-import { Save } from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
 import { account, action, player as getPlayer, hasSystem, system } from './user';
@@ -238,8 +237,8 @@ export function registerListeners() {
 		const id = $('#save-edit .id').val() as string,
 			name = $('#save-edit .name').val() as string;
 		const save = saves.get(id);
-		if (saves.has(id)) {
-			save.data.name = name;
+		if (save) {
+			save.name = name;
 		}
 		update();
 		$<HTMLDialogElement>('#save-edit')[0].close();
@@ -251,9 +250,9 @@ export function registerListeners() {
 		const files = await upload('.json');
 		const text = await files[0].text();
 		if (isJSON(text)) {
-			new Save(JSON.parse(text));
+			saves.add(JSON.parse(text));
 		} else {
-			alert(`Can't load save: not JSON.`);
+			alert('Can not load save: not JSON.');
 		}
 	});
 	$('#server-list button.refresh').on('click', servers.pingAll);
@@ -268,7 +267,7 @@ export function registerListeners() {
 		$<HTMLDialogElement>('#save-new')[0].close();
 		const name = $('#save-new .name').val() as string;
 		const live = await saves.createDefault(name);
-		new Save(live.toJSON());
+		saves.add(live.toJSON());
 		client.load(live);
 	});
 	$('#pause .resume').on('click', () => {

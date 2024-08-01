@@ -3,10 +3,11 @@ import type { Shipyard } from '~/core/entities/station/shipyard';
 import type { Item } from '~/core/generic/items';
 import type { Research } from '~/core/generic/research';
 import { genericShips, shipTypes, type GenericShip, type ShipType } from '~/core/generic/ships';
+import { Level, type LevelJSON } from '~/core/level';
 import { versions } from '~/core/metadata';
 import { load } from '../client';
 import * as locales from '../locales';
-import type { Save } from '../saves';
+import * as saves from '../saves';
 import type { ServerData } from '../servers';
 import { connect, remove as removeServer } from '../servers';
 import { action } from '../user';
@@ -56,15 +57,16 @@ export function createShipyardUI(shipyard: Shipyard): JQuery<DocumentFragment> {
 	return instance;
 }
 
-export function createSaveListItem(save: Save): JQuery<HTMLLIElement> {
+export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 	const instance = instaniateTemplate('#save').find('li');
 
 	const loadAndPlay = async () => {
 		$('#loading_cover').show();
 		try {
-			const live = save.load();
-			await live.ready();
-			load(live);
+			logger.info('Loading level from save ' + save.id);
+			const level = Level.FromJSON(save);
+			await level.ready();
+			load(level);
 			$('#loading_cover').hide();
 		} catch (e) {
 			alert('Failed to load save: ' + e);
@@ -82,21 +84,21 @@ export function createSaveListItem(save: Save): JQuery<HTMLLIElement> {
 
 	instance.find('.delete').on('click', async e => {
 		if (e.shiftKey || (await confirm('Are you sure?'))) {
-			save.remove();
+			saves.remove(save.id);
 			instance.remove();
 		}
 	});
 
-	instance.find('.download').on('click', () => download(JSON.stringify(save.data), (save.data.name || 'save') + '.json'));
+	instance.find('.download').on('click', () => download(JSON.stringify(save), (save.name || 'save') + '.json'));
 	instance.find('.play').on('click', loadAndPlay);
 	instance.find('.edit').on('click', () => {
 		$('#save-edit').find('.id').val(save.id);
-		$('#save-edit').find('.name').val(save.data.name);
+		$('#save-edit').find('.name').val(save.name);
 		$<HTMLDialogElement>('#save-edit')[0].showModal();
 	});
-	instance.find('.name').text(save.data.name);
-	instance.find('.version').text(versions.get(save.data.version)?.text || save.data.version);
-	instance.find('.date').text(new Date(save.data.date).toLocaleString());
+	instance.find('.name').text(save.name);
+	instance.find('.version').text(versions.get(save.version)?.text || save.version);
+	instance.find('.date').text(new Date(save.date).toLocaleString());
 
 	instance.prependTo('#saves ul');
 	return instance;

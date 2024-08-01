@@ -13,55 +13,6 @@ import { createSaveListItem } from './ui/templates';
 import { account } from './user';
 import { alert, logger } from './utils';
 
-export class Save {
-	protected _data: LevelJSON;
-
-	public gui: JQuery<HTMLLIElement>;
-
-	public constructor(data: LevelJSON) {
-		this._data = data;
-
-		set(this.id, this);
-
-		this.gui = createSaveListItem(this);
-	}
-
-	public get id() {
-		return this._data?.id;
-	}
-
-	public get data(): LevelJSON {
-		if (folder.has(this.id)) {
-			this._data = JSON.parse(folder.get(this.id));
-		}
-		return this._data;
-	}
-
-	public set data(data: LevelJSON) {
-		this._data = data;
-		const date = new Date(this._data.date);
-		this._data.date = date.toJSON();
-		this.gui.find('.date').text(date.toLocaleString());
-		this.update();
-	}
-
-	protected update() {
-		folder.set(this.id, JSON.stringify(this._data));
-		set(this.id, this);
-	}
-
-	public load(): Level {
-		this.update();
-		logger.info('Loading level from save ' + this.id);
-		return Level.FromJSON(this.data);
-	}
-
-	public remove() {
-		remove(this.id);
-		this.gui.remove();
-	}
-}
-
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();
 	level.name = name;
@@ -81,55 +32,75 @@ export async function createDefault(name: string): Promise<Level> {
 	return level;
 }
 
-let folder: FolderMap;
-const map: Map<string, Save> = new Map();
+/**
+ * Runtime stuff for a save
+ */
+export interface SaveData {
+	gui: JQuery<HTMLLIElement>;
+}
+
+const runtimeData = new Map<string, SaveData>();
+
+let saves: FolderMap;
 
 export function init() {
 	const folderPath = path + '/saves';
 	if (!fs.existsSync(folderPath)) {
 		fs.mkdirSync(folderPath);
 	}
-	folder = new FolderMap(folderPath, { suffix: '.json' });
-	for (const [id, content] of folder) {
+	saves = new FolderMap(folderPath, { suffix: '.json' });
+	for (const [id, content] of saves) {
 		if (!isJSON(content)) {
 			logger.debug('Skipping invalid save: ' + id);
 			continue;
 		}
 
-		const data = JSON.parse(content);
-
-		if (map.has(id)) {
+		if (runtimeData.has(id)) {
 			logger.debug('Skipping already initialized save: ' + id);
 			continue;
 		}
 
 		logger.debug('Initializing save: ' + id);
-		new Save(data);
+		const save = JSON.parse(content);
+		runtimeData.set(save.id, { gui: createSaveListItem(save) });
 	}
-	logger.info('Loaded ' + map.size + ' saves');
+	logger.info('Loaded ' + saves.size + ' saves');
 }
 
-export function get(id: string): Save {
-	const data = folder.get(id);
-	if (isJSON(data) && map.has(id)) {
-		map.get(id)!.data = JSON.parse(data);
+export function get(id: string): LevelJSON {
+	const data = saves.get(id);
+	if (!isJSON(data)) {
+		throw new TypeError('Cannot get invalid save: ' + id);
 	}
-	return map.get(id)!;
+	return JSON.parse(data);
 }
 
-export function set(key: string, save: Save): void {
-	folder.set(key, JSON.stringify(save.data));
-	map.set(key, save);
+export function add(save: LevelJSON): void {
+	logger.debug('Added save: ' + save.id);
+	if (saves.has(save.id)) {
+		throw new ReferenceError('Can not add save because it already exists: ' + save.id);
+	}
+	runtimeData.set(save.id, { gui: createSaveListItem(save) });
+	saves.set(save.id, JSON.stringify(save));
 }
 
-export function has(key: string): boolean {
-	return folder.has(key);
+export function update(save: LevelJSON): void {
+	const date = new Date();
+	save.date = date.toJSON();
+	runtimeData.get(save.id)?.gui.find('.date').text(date.toLocaleString());
+	saves.set(save.id, JSON.stringify(save));
 }
 
-function remove(key: string): boolean {
-	logger.debug('Deleteing level ' + key);
-	folder.delete(key);
-	return map.delete(key);
+export function has(id: string): boolean {
+	return saves.has(id);
+}
+
+export function remove(save: string | LevelJSON): boolean {
+	const id = typeof save == 'string' ? save : save.id;
+	logger.debug('Deleteing save: ' + id);
+	runtimeData.get(id)?.gui.remove();
+	runtimeData.delete(id);
+	return saves.delete(id);
 }
 
 export { remove as delete };
@@ -141,9 +112,7 @@ export function flush(): void {
 	const currentLevel = getCurrentLevel();
 	$('#pause .save').text('Saving...');
 	try {
-		const save = get(currentLevel.id);
-		save.data = currentLevel.toJSON();
-		set(currentLevel.id, save);
+		update(currentLevel.toJSON());
 		logger.debug('Saved level ' + currentLevel.id);
 	} catch (err) {
 		alert('Failed to save.');
