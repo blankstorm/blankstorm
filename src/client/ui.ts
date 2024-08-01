@@ -20,11 +20,12 @@ import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
 import { account, action, player as getPlayer, hasSystem, system } from './user';
-import { $svg, alert, logger, minimize, upload } from './utils';
+import { $svg, logger, minimize, upload } from './utils';
 import * as map from './ui/map';
 import * as templates from './ui/templates';
 export { map, templates };
 import { WaypointUI } from './ui/waypoint';
+import { alert } from './ui/dialog';
 
 export const UIs: Map<string, JQuery<DocumentFragment>> = new Map();
 

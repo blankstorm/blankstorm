@@ -22,7 +22,8 @@ import * as settings from './settings';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import * as ui from './ui';
 import * as user from './user';
-import { alert, cookies, fixPaths, logger, minimize } from './utils';
+import { cookies, fixPaths, logger, minimize } from './utils';
+import { alert } from './ui/dialog';
 
 export interface ClientInit {
 	/**

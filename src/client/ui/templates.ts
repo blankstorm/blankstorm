@@ -11,7 +11,8 @@ import * as saves from '../saves';
 import type { ServerData } from '../servers';
 import { connect, remove as removeServer } from '../servers';
 import { action } from '../user';
-import { confirm, download, logger } from '../utils';
+import { download, logger } from '../utils';
+import { alert, confirm } from './dialog';
 
 export function instaniateTemplate(selector: string): JQuery<DocumentFragment> {
 	return $($<HTMLTemplateElement>(selector)[0].content.cloneNode(true) as DocumentFragment);

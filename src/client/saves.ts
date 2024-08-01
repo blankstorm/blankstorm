@@ -11,7 +11,8 @@ import { getCurrentLevel } from './client';
 import { path } from './config';
 import { createSaveListItem } from './ui/templates';
 import { account } from './user';
-import { alert, logger } from './utils';
+import { logger } from './utils';
+import { alert } from './ui/dialog';
 
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();
@@ -113,7 +114,7 @@ export function flush(): void {
 	$('#pause .save').text('Saving...');
 	try {
 		update(currentLevel.toJSON());
-		logger.debug('Saved level ' + currentLevel.id);
+		logger.debug('Writing save: ' + currentLevel.id);
 	} catch (err) {
 		alert('Failed to save.');
 		logger.error(err);
