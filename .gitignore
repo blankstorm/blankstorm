@@ -1,14 +1,18 @@
+# dependencies
 node_modules
-dist
 
-#game files
+# build files
+dist
+build
+
+# game data
 saves
 servers.json
 settings.json
 mods
 logs
 
-#temporary
+# temporary
 tmp
 temp
 src/client/assets

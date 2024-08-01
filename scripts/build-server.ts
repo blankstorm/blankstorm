@@ -5,7 +5,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { dirname, extname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { inject } from 'postject';
-import { defines, getVersionInfo } from './common';
+import { defines, getVersionInfo } from './build-common';
 
 const { display: displayVersion } = getVersionInfo();
 const { values: _values } = parseArgs({

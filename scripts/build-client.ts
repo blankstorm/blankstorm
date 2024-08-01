@@ -8,7 +8,7 @@ import path, { relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import $package from '../package.json' assert { type: 'json' };
-import { defines, deleteOutput, getVersionInfo, renameOutput } from './common';
+import { defines, deleteOutput, getVersionInfo, renameOutput } from './build-common';
 const root = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
 
@@ -16,7 +16,7 @@ const { values: _values } = parseArgs({
 	options: {
 		verbose: { type: 'boolean', short: 'v', default: false },
 		watch: { type: 'boolean', short: 'w', default: false },
-		output: { type: 'string', short: 'o', default: 'dist/build/client' },
+		output: { type: 'string', short: 'o', default: 'build/client' },
 		'no-app': { type: 'boolean', default: false },
 		mode: { type: 'string', short: 'm', default: 'dev' },
 		debug: { type: 'boolean', default: false },
@@ -25,7 +25,7 @@ const { values: _values } = parseArgs({
 });
 const options = _values as { [K in keyof typeof _values]: Exclude<(typeof _values)[K], undefined> };
 const input = path.posix.join(root, 'src/client'),
-	asset_path = path.posix.join(root, 'dist/build/assets');
+	asset_path = path.posix.join(root, 'build/assets');
 
 function fromPath(sourcePath: string): string[] {
 	if (!fs.statSync(sourcePath).isDirectory()) {

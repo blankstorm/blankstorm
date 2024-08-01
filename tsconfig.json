@@ -20,6 +20,6 @@
 		"skipLibCheck": true
 	},
 	"files": ["src/index.ts"],
-	"include": ["./src/**/*.ts", "build/*.ts", "./src/*.d.ts"],
+	"include": ["./src/**/*.ts", "scripts/*.ts", "./src/*.d.ts"],
 	"exclude": ["node_modules"]
 }
