@@ -12,12 +12,12 @@ const { values: _values } = parseArgs({
 	options: {
 		watch: { type: 'boolean', short: 'w', default: false },
 		mode: { type: 'string', short: 'm', default: 'dev' },
-		output: { type: 'string', short: 'o', default: 'dist/build' },
+		output: { type: 'string', short: 'o', default: 'build' },
 	},
 });
 const { watch, mode, output } = _values as { [K in keyof typeof _values]: Exclude<(typeof _values)[K], undefined> };
 
-const outfile = 'dist/build/server.js',
+const outfile = 'build/server.js',
 	seaPath = 'dist/blankstorm-server-' + displayVersion + extname(process.execPath);
 
 async function buildSEA() {
