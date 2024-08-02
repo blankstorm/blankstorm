@@ -51,6 +51,7 @@ const esbuildConfig = {
 	entryPoints: ['src/server/cli.ts'],
 	bundle: true,
 	outfile,
+	format: 'esm',
 	platform: 'node',
 	keepNames: true,
 	define: defines(mode),
