@@ -116,9 +116,7 @@ export class Ship extends Entity {
 			return false;
 		}
 
-		const distance = Vector2.Distance(this.system.position, targetSystem.position);
-
-		if (distance > this.generic.jump.range) {
+		if (Vector2.Distance(this.system.position, targetSystem.position) > this.generic.jump.range) {
 			return false;
 		}
 

@@ -1,16 +1,17 @@
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
-import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
 import type { Component } from './components/component';
-import type { FleetJSON } from './components/fleet';
-import { filterEntities, loadingPriorities, type Entity, type EntityJSON } from './entities/entity';
+import { Fleet, type FleetJSON } from './components/fleet';
+import { filterEntities, type Entity, type EntityJSON } from './entities/entity';
 import { Planet } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
 import { Ship } from './entities/ship';
 import { Star } from './entities/star';
+import type { Shipyard } from './entities/station/shipyard';
+import { Waypoint } from './entities/waypoint';
 import type { GenericProjectile } from './generic/hardpoints';
 import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
@@ -18,7 +19,6 @@ import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
 import { config, version, versions } from './metadata';
-import type { Shipyard } from './entities/station/shipyard';
 import type { SystemJSON } from './system';
 import { System } from './system';
 import { logger } from './utils';
@@ -140,7 +140,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 	}
 
-	public _try_move(player: Player, data: MoveInfo<Vector3>[]): void {
+	public _try_move(player: Player, data: MoveInfo<IVector3Like>[]): void {
 		for (const { id, target } of data) {
 			this.getEntityByID<Entity>(id).moveTo(target);
 		}
@@ -216,16 +216,17 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 
 		logger.log(`Loading ${json.entities.length} entities`);
-		json.entities.sort((a, b) => (loadingPriorities.indexOf(a.entityType) > loadingPriorities.indexOf(b.entityType) ? 1 : -1));
+		const types = [Player, Star, Planet, Fleet, Ship, Waypoint];
+		const priorities = types.map(type => type.name);
+		json.entities.sort((a, b) => (priorities.indexOf(a.entityType) > priorities.indexOf(b.entityType) ? 1 : -1));
 		for (const data of json.entities) {
-			const types = { Player, Ship, Star, Planet };
-			if (!Object.hasOwn(types, data.entityType)) {
+			if (!priorities.includes(data.entityType)) {
 				logger.debug(`Loading ${data.entityType} ${data.id} (skipped)`);
 				continue;
 			}
 
 			logger.debug(`Loading ${data.entityType} ${data.id}`);
-			types[data.entityType as keyof typeof types].FromJSON(data, this);
+			types[priorities.indexOf(data.entityType)].FromJSON(data, this);
 		}
 	}
 

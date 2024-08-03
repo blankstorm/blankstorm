@@ -1,3 +1,4 @@
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, resolveConstructors } from 'utilium';
@@ -120,11 +121,10 @@ export class Entity
 	}
 
 	/**
-	 *
 	 * @param target The position the entity should move to
 	 * @param isRelative Wheter the target is a change to the current position (i.e. a "delta" vector) or absolute
 	 */
-	public async moveTo(target: Vector3, isRelative = false) {
+	public async moveTo(target: IVector3Like, isRelative = false) {
 		if (!(target instanceof Vector3)) throw new TypeError('target must be a Vector3');
 		const path = findPath(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
 		if (path.length == 0) {
@@ -205,5 +205,3 @@ export function filterEntities(entities: Iterable<Entity>, selector: string): Se
 	}
 	return selected;
 }
-
-export const loadingPriorities = ['Player', 'Star', 'Planet', 'Fleet', 'Ship'];

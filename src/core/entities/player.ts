@@ -14,7 +14,7 @@ export interface PlayerJSON extends EntityJSON {
 
 export class Player extends Entity {
 	public research = Object.fromEntries(Object.keys(research).map(k => [k, 0])) as Record<ResearchID, number>;
-	public fleet: Fleet = new Fleet(this);
+	public fleet: Fleet;
 	public xp = 0;
 	public get power(): number {
 		return this.fleet.power;
@@ -26,6 +26,14 @@ export class Player extends Entity {
 
 	public get storage(): EntityStorageManager {
 		return this.fleet.storage;
+	}
+
+	public update(): void {
+		super.update();
+		if (!this.fleet) {
+			this.fleet = new Fleet(undefined, this.level);
+			this.fleet.parent = this;
+		}
 	}
 
 	public reset() {
@@ -42,6 +50,7 @@ export class Player extends Entity {
 	public fromJSON(data: PlayerJSON): void {
 		super.fromJSON(data);
 		assignWithDefaults(this as Player, pick(data, 'xp', 'research'));
+		// Note: Fleet loaded after Player
 	}
 
 	public toJSON(): PlayerJSON {

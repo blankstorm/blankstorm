@@ -15,7 +15,7 @@ export interface CelestialBodyJSON extends WithRequired<EntityJSON, 'storage'> {
 }
 
 export class CelestialBody extends Entity {
-	public fleet: Fleet = new Fleet(this);
+	public fleet: Fleet;
 	public radius = 1;
 	public seed: number = Math.random();
 	public option?: JQuery<HTMLElement>;
@@ -29,6 +29,10 @@ export class CelestialBody extends Entity {
 
 	public update() {
 		super.update();
+		if (!this.fleet) {
+			this.fleet = new Fleet(undefined, this.level);
+			this.fleet.parent = this;
+		}
 		if (this.waypoint) {
 			return;
 		}
@@ -56,5 +60,6 @@ export class CelestialBody extends Entity {
 		if (data.storage) {
 			this.storage.fromJSON({ items: data.storage.items, max: 1e10 });
 		}
+		// Note: Fleet loaded after CelestialBody
 	}
 }

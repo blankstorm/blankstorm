@@ -1,3 +1,4 @@
+import type { IVector2Like } from '@babylonjs/core/Maths/math.like';
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
@@ -6,6 +7,7 @@ import { filterEntities, type Entity } from './entities/entity';
 import { Planet } from './entities/planet';
 import { generateFleetFromPower } from './entities/ship';
 import { Star } from './entities/star';
+import type { Shipyard } from './entities/station/shipyard';
 import type { Item } from './generic/items';
 import { planetBiomes } from './generic/planets';
 import type { Research } from './generic/research';
@@ -13,7 +15,6 @@ import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { Level } from './level';
 import { config } from './metadata';
-import type { Shipyard } from './entities/station/shipyard';
 import { logger, randomCords } from './utils';
 
 export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
@@ -22,7 +23,7 @@ export interface SystemJSON {
 	name: string;
 	id: string;
 	difficulty: number;
-	position: number[];
+	position: IVector2Like;
 	connections: SystemConnectionJSON[];
 }
 
@@ -50,7 +51,7 @@ export class System extends EventEmitter<{
 	public name = '';
 
 	public difficulty = 1;
-	public position: Vector2;
+	public position: IVector2Like;
 	public connections: SystemConnection[] = [];
 
 	constructor(
@@ -91,7 +92,7 @@ export class System extends EventEmitter<{
 			difficulty: this.difficulty,
 			name: this.name,
 			id: this.id,
-			position: this.position.asArray(),
+			position: this.position,
 			connections: [],
 		};
 
@@ -115,7 +116,7 @@ export class System extends EventEmitter<{
 	public fromJSON(json: SystemJSON): void {
 		this.name = json.name;
 		this.difficulty = json.difficulty;
-		this.position = Vector2.FromArray(json.position);
+		this.position = json.position;
 
 		for (const { type, value } of json.connections) {
 			switch (type) {

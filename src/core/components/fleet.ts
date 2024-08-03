@@ -1,4 +1,3 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { CelestialBody } from '../entities/body';
 import { Entity, type EntityJSON } from '../entities/entity';
 import type { Player } from '../entities/player';
@@ -19,8 +18,6 @@ export class Fleet extends Entity {
 		return this._storage;
 	}
 
-	public position: Vector3 = Vector3.Zero();
-
 	public get power(): number {
 		let total = 0;
 		for (const ship of this) {
@@ -29,14 +26,17 @@ export class Fleet extends Entity {
 		return total;
 	}
 
-	public constructor(owner: CelestialBody | Player) {
-		super(undefined, owner.level);
-		this.owner = owner;
-		this.parent = owner;
-		this.ships = new Set();
+	protected ships: Set<Ship> = new Set();
+
+	declare parent: CelestialBody | Player;
+
+	public get owner(): CelestialBody | Player {
+		return this.parent;
 	}
 
-	protected ships: Set<Ship> = new Set();
+	public set owner(value: CelestialBody | Player) {
+		this.parent = value;
+	}
 
 	public get size() {
 		return this.ships.size;
@@ -89,13 +89,7 @@ export class Fleet extends Entity {
 
 	public fromJSON(data: FleetJSON): void {
 		super.fromJSON(data);
-		this.clear();
-		for (const id of data.ships) {
-			const ship = this.owner?.level?.getEntityByID<Ship>(id);
-			if (!ship) {
-				throw new ReferenceError('Ship does not exist: ' + id);
-			}
-			this.add(ship);
-		}
+		this.owner.fleet = this;
+		// Note: Ship loaded after Fleet
 	}
 }
