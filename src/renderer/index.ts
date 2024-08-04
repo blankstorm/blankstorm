@@ -50,6 +50,7 @@ export const cameraVelocity: Vector3 = Vector3.Zero();
 export let engine: Engine, scene: Scene, highlight: HighlightLayer, probe: ReflectionProbe;
 
 export function setHitboxes(value: boolean) {
+	logger.debug((value ? 'Enabled' : 'Disabled') + ' hitboxes');
 	for (const node of scene.transformNodes) {
 		if (node instanceof EntityRenderer || node instanceof ModelRenderer) {
 			for (const mesh of node.getChildMeshes()) {
@@ -177,7 +178,11 @@ export async function load(entityJSON: EntityJSON[]) {
 		throw logger.error(new ReferenceError('Not initalized'));
 	}
 
-	logger.debug(`Loading ${entityJSON} entities`);
+	if (!entityJSON.length) {
+		return;
+	}
+
+	logger.debug(`Loading ${entityJSON.length} entities`);
 	for (const data of entityJSON) {
 		if (!entityRenderers.has(data.entityType)) {
 			logger.warn('rendering for entity type is not supported: ' + data.entityType);

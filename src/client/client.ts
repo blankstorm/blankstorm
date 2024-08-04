@@ -401,7 +401,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 		return;
 	} catch (e) {
 		logger.error('Client initialization failed: ' + (e.cause ?? e.stack));
-		await alert('Client initialization failed: ' + fixPaths(e.cause ?? e.stack));
+		await alert('Client initialization failed.');
 		if (!debug) {
 			close();
 		}
@@ -460,10 +460,12 @@ export function update() {
 }
 
 export function pause() {
+	logger.debug('Paused');
 	isPaused = true;
 }
 
 export function unpause() {
+	logger.debug('Unpaused');
 	isPaused = false;
 }
 
@@ -474,7 +476,7 @@ export function load(level: Level): boolean {
 		return false;
 	}
 	if (level.version != version) {
-		logger.warn(`Can not play level #${level.id}: `);
+		logger.warn(`Can't play level ${level.id}, version mismatch`);
 		alert('Incompatible version');
 		return false;
 	}
@@ -492,7 +494,7 @@ export function load(level: Level): boolean {
 		renderer.fireProjectile(hardpointID, targetID, projectile);
 	});
 	level.on('player_levelup', async () => {
-		logger.debug('Triggered player_levelup (unimplemented)');
+		logger.warn('Triggered player_levelup (unimplemented)');
 	});
 	level.on('entity_removed', async entity => {
 		if (entity.entityType == 'player') {
