@@ -172,12 +172,13 @@ export async function clear() {
 	logger.debug('Cleared');
 }
 
-export async function load(serializedNodes: EntityJSON[]) {
+export async function load(entityJSON: EntityJSON[]) {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Not initalized'));
 	}
 
-	for (const data of serializedNodes) {
+	logger.debug(`Loading ${entityJSON} entities`);
+	for (const data of entityJSON) {
 		if (!entityRenderers.has(data.entityType)) {
 			logger.warn('rendering for entity type is not supported: ' + data.entityType);
 			continue;

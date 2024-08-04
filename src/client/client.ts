@@ -47,6 +47,7 @@ export function getCurrentLevel(): Level {
 }
 
 export function clearLevel(): void {
+	logger.debug('Clearing current level');
 	currentLevel = null;
 	$('.waypoint-li,.waypoint-marker').remove();
 }
