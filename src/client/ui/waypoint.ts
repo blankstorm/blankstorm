@@ -81,7 +81,7 @@ export class WaypointUI {
 		this.li.find('.icon svg').css('fill', this.target.color);
 		this.li.find('.name').text(this.target.name);
 
-		if (this.target.system.id == system().id) {
+		if (this.target.system == system()) {
 			this.li.show();
 			this.marker[this.screenPos.z > 1 && this.screenPos.z < 1.15 ? 'hide' : 'show']();
 		} else {

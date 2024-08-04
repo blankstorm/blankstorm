@@ -48,6 +48,7 @@ export function getCurrentLevel(): Level {
 
 export function clearLevel(): void {
 	currentLevel = null;
+	$('.waypoint-li,.waypoint-marker').remove();
 }
 
 export let isPaused: boolean;

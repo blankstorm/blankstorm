@@ -240,6 +240,8 @@ export function registerListeners() {
 		const save = saves.get(id);
 		if (save) {
 			save.name = name;
+			logger.debug(`Renamed save ${save.id} to "${name}"`);
+			saves.update(save);
 		}
 		update();
 		$<HTMLDialogElement>('#save-edit')[0].close();
