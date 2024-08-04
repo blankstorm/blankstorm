@@ -298,35 +298,36 @@
 				<span locale class="waypoints">Waypoints</span>
 			</button>
 			<button class="mode menu"></button>
+			<div id="waypoint-list" class="content bg-transparent center-flex" style="z-index: 6">
+				<button class="new menu">
+					<svg>
+						<use href="assets/images/icons.svg#plus" />
+					</svg>
+					<span locale class="new">New</span>
+				</button>
+				<button class="back menu">
+					<svg>
+						<use href="assets/images/icons.svg#arrow-left" />
+					</svg>
+					<span locale class="back">Back</span>
+				</button>
+				<template id="waypoint-li">
+					<div class="waypoint-li bg-normal">
+						<span class="edit clickable" style="text-align: center; grid-column: 2">
+							<svg><use href="assets/images/icons.svg#pencil" /></svg>
+						</span>
+						<span class="trash clickable" style="text-align: center; grid-column: 3">
+							<svg><use href="assets/images/icons.svg#trash" /></svg>
+						</span>
+						<span class="icon" style="text-align: center; grid-column: 4">
+							<svg class="icon"><use class="icon" href="assets/images/icons.svg#location-dot" /></svg>
+						</span>
+						<span class="name" style="text-align: left; grid-column: 5"></span>
+					</div>
+				</template>
+			</div>
 		</div>
-		<div id="waypoint-list" class="content bg-transparent center-flex" style="z-index: 6">
-			<button class="new menu">
-				<svg>
-					<use href="assets/images/icons.svg#plus" />
-				</svg>
-				<span locale class="new">New</span>
-			</button>
-			<button class="back menu">
-				<svg>
-					<use href="assets/images/icons.svg#arrow-left" />
-				</svg>
-				<span locale class="back">Back</span>
-			</button>
-			<template id="waypoint-li">
-				<div class="waypoint-li bg-normal">
-					<span class="edit clickable" style="text-align: center; grid-column: 2">
-						<svg><use href="assets/images/icons.svg#pencil" /></svg>
-					</span>
-					<span class="trash clickable" style="text-align: center; grid-column: 3">
-						<svg><use href="assets/images/icons.svg#trash" /></svg>
-					</span>
-					<span class="icon" style="text-align: center; grid-column: 4">
-						<svg class="icon"><use class="icon" href="assets/images/icons.svg#location-dot" /></svg>
-					</span>
-					<span class="name" style="text-align: left; grid-column: 5"></span>
-				</div>
-			</template>
-		</div>
+
 		<canvas class="game cover ingame" style="display: none; z-index: 0"></canvas>
 		<div id="debug" class="text-overlay cover ingame" style="display: none; width: fit-content">
 			<p style="left: 1%; top: 0" class="left"></p>

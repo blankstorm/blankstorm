@@ -232,10 +232,10 @@ try {
 }
 
 if (options.watch) {
-	console.log('Watching...');
 	const ctx = await esbuild.context(esbuildConfig);
-	const appCtx = await esbuild.context(esbuildAppConfig);
-	await Promise.all([ctx.watch(), appCtx.watch()]);
+	const app = await esbuild.context(esbuildAppConfig);
+	console.log('Watching...');
+	await Promise.all([ctx.watch(), app.watch()]);
 } else {
 	await esbuild.build(esbuildConfig);
 	await esbuild.build(esbuildAppConfig);

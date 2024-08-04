@@ -3,6 +3,7 @@ import { Fleet } from '../components/fleet';
 import type { EntityStorageManager } from '../components/storage';
 import type { ResearchID } from '../generic/research';
 import { research } from '../generic/research';
+import type { Level } from '../level';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 
@@ -28,12 +29,10 @@ export class Player extends Entity {
 		return this.fleet.storage;
 	}
 
-	public update(): void {
-		super.update();
-		if (!this.fleet) {
-			this.fleet = new Fleet(undefined, this.level);
-			this.fleet.parent = this;
-		}
+	public constructor(id: string | undefined, level: Level) {
+		super(id, level);
+		this.fleet = new Fleet(undefined, this.level);
+		this.fleet.parent = this;
 	}
 
 	public reset() {

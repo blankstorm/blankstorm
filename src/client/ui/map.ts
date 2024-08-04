@@ -11,6 +11,7 @@ import { getCurrentLevel } from '../client';
 import * as settings from '../settings';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
+import { switchTo } from '../ui';
 
 export type MapMode = 'in-system' | 'inter-system';
 
@@ -185,6 +186,9 @@ export function registerListeners(): void {
 				break;
 			case settings.get<settings.Keybind>('map_move_down').key:
 				y = Math.min(y + speed, max);
+				break;
+			case 'Escape':
+				switchTo('#map');
 				break;
 		}
 		update();

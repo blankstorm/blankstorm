@@ -1,11 +1,12 @@
+import type { WithRequired } from 'utilium';
 import { assignWithDefaults, pick } from 'utilium';
 import { getEntityIcon } from '../../client/utils';
 import { Fleet } from '../components/fleet';
 import { Container } from '../components/storage';
+import type { Level } from '../level';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import { Waypoint } from './waypoint';
-import type { WithRequired } from 'utilium';
 
 export interface CelestialBodyJSON extends WithRequired<EntityJSON, 'storage'> {
 	fleet: string;
@@ -23,16 +24,18 @@ export class CelestialBody extends Entity {
 
 	public waypoint: string;
 
+	public constructor(id: string | undefined, level: Level) {
+		super(id, level);
+		this.fleet = new Fleet(undefined, this.level);
+		this.fleet.parent = this;
+	}
+
 	public get power(): number {
 		return this.fleet.power;
 	}
 
 	public update() {
 		super.update();
-		if (!this.fleet) {
-			this.fleet = new Fleet(undefined, this.level);
-			this.fleet.parent = this;
-		}
 		if (this.waypoint) {
 			return;
 		}
