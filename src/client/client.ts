@@ -6,7 +6,6 @@ import $ from 'jquery';
 import { author } from '../../package.json';
 import { execCommandString } from '../core/commands';
 import type { EntityJSON } from '../core/entities/entity';
-import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { ItemID } from '../core/generic/items';
 import { Level } from '../core/level';
 import { config, game_url, version, versions } from '../core/metadata';
@@ -489,9 +488,6 @@ export function load(level: Level): boolean {
 	renderer.update(currentLevel.toJSON());
 	level.on('update', () => {
 		renderer.update(currentLevel!.toJSON());
-	});
-	level.on('projectile_fire', async (hardpointID: string, targetID: string, projectile: GenericProjectile) => {
-		renderer.fireProjectile(hardpointID, targetID, projectile);
 	});
 	level.on('player_levelup', async () => {
 		logger.warn('Triggered player_levelup (unimplemented)');

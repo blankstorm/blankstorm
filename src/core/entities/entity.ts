@@ -111,7 +111,6 @@ export class Entity
 		}
 
 		this.position.addInPlace(this.velocity);
-		this.velocity.scaleInPlace(0.9);
 		this.emit('update');
 	}
 

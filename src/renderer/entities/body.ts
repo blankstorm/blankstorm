@@ -1,11 +1,21 @@
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { CelestialBodyJSON } from '~/core/entities/body';
-import { EntityRenderer, renderers, type Renderer } from './entity';
+import { EntityRenderer, renderers } from './entity';
+import type { ProjectileMaterial } from './projectile';
 
-export class CelestialBodyRenderer extends EntityRenderer implements Renderer<CelestialBodyJSON> {
+export class CelestialBodyRenderer extends EntityRenderer<CelestialBodyJSON> {
 	public radius = 0;
-	public mesh: Mesh = new Mesh('CelestialBodyRenderer:mesh', null, this);
+	public mesh: Mesh = new Mesh('CelestialBodyRenderer.mesh', null, this);
+
+	public readonly projectileMaterials: ProjectileMaterial[] = [
+		{
+			applies_to: ['laser'],
+			material: Object.assign(new StandardMaterial(''), { emissiveColor: Color3.Red() }),
+		},
+	];
 
 	public async update(data: CelestialBodyJSON) {
 		await super.update(data);

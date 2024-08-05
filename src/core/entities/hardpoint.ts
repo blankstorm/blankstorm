@@ -1,14 +1,14 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { assignWithDefaults, pick, wait } from 'utilium';
+import { assignWithDefaults, pick, randomFloat } from 'utilium';
 import type { GenericHardpoint, HardpointType } from '../generic/hardpoints';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { HardpointInfo } from '../generic/ships';
 import type { Level } from '../level';
-import { xpToLevel } from '../utils';
+import { randomCords } from '../utils';
 import type { CelestialBody } from './body';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import type { Player } from './player';
+import { Projectile } from './projectile';
 import type { Ship } from './ship';
 
 export interface HardpointJSON extends EntityJSON {
@@ -23,7 +23,11 @@ export class Hardpoint extends Entity {
 	public type!: HardpointType;
 	public scale!: number;
 	public reload!: number;
+
+	public readonly projectiles: Set<Projectile> = new Set();
+
 	public declare parent: Ship;
+
 	public get owner(): Player | CelestialBody | undefined {
 		return this.parent.owner;
 	}
@@ -37,7 +41,7 @@ export class Hardpoint extends Entity {
 		return genericHardpoints[this.type];
 	}
 
-	public remove() {
+	public remove(): void {
 		super.remove();
 		if (!this.parent) {
 			return;
@@ -58,31 +62,13 @@ export class Hardpoint extends Entity {
 		this.reload ??= this.generic.reload;
 	}
 
-	/**
-	 * @todo implement projectile logic on the core
-	 */
-	async fire(target: Ship | Hardpoint) {
-		this.level.emit('projectile_fire', this.id, target.id, this.generic.projectile);
-		const time = Vector3.Distance(this.absolutePosition, target.absolutePosition) / this.generic.projectile.speed;
+	public async fire(target: Ship | Hardpoint): Promise<void> {
 		this.reload = this.generic.reload;
-		await wait(time);
-		const targetShip = target.isType<Ship>('Ship') ? target : target.parent;
-		targetShip.hp -= this.generic.damage * (Math.random() < this.generic.critChance ? this.generic.critFactor : 1);
-		if (targetShip.hp <= 0) {
-			this.level.emit('entity_death', targetShip.toJSON());
-
-			if (this.owner?.isType<Player>('Player')) {
-				this.owner.storage.addItems(targetShip.generic.recipe);
-				if (Math.floor(xpToLevel(this.owner.xp + targetShip.generic.xp)) > Math.floor(xpToLevel(this.owner.xp))) {
-					this.level.emit('player_levelup', this.owner.toJSON());
-				}
-				this.owner.xp += targetShip.generic.xp;
-			}
-
-			if (this.owner?.isType<CelestialBody>('CelestialBody')) {
-				this.owner.storage.addItems(targetShip.generic.recipe);
-			}
-			targetShip.remove();
-		}
+		const projectile = new Projectile(undefined, this.level);
+		projectile.hardpoint = this;
+		const targetPosition = target.absolutePosition.add(randomCords(randomFloat(0, 1 / this.generic.accuracy)));
+		projectile.velocity = targetPosition.subtract(this.absolutePosition).normalize().scale(this.generic.projectileSpeed);
+		projectile.target = target.isType<Ship>('Ship') ? target : target.parent;
+		this.projectiles.add(projectile);
 	}
 }

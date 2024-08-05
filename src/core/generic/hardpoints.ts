@@ -1,22 +1,30 @@
-export interface GenericProjectile {
-	id: string;
-	count: number;
-	interval: number;
-	speed: number;
-}
+import type { ProjectileType } from '../entities/projectile';
 
 export interface GenericHardpoint {
 	damage: number;
+	/**
+	 * Reload time in ticks
+	 */
 	reload: number;
 	range: number;
 	critChance: number;
 	critFactor: number;
-
 	/**
-	 * The different nodeTypes's that the hardpoint can target
+	 * The different entity types that the hardpoint can target
 	 */
-	targets: string[];
-	projectile: GenericProjectile;
+	targets: readonly string[];
+	activationDistance: number;
+	accuracy: number;
+	projectileType: ProjectileType;
+	projectileCount: number;
+	/**
+	 * For burst weapons
+	 */
+	interval: number;
+	/**
+	 * In m/s
+	 */
+	projectileSpeed: number;
 }
 
 export const genericHardpoints = {
@@ -27,14 +35,14 @@ export const genericHardpoints = {
 		critChance: 0.05,
 		critFactor: 1.5,
 		targets: ['Ship', 'Station'],
-		projectile: {
-			id: 'laser',
-			count: 1,
-			interval: 0,
-			speed: 5,
-		},
+		activationDistance: 1,
+		accuracy: 0.5,
+		projectileType: 'laser',
+		projectileCount: 1,
+		interval: 0,
+		projectileSpeed: 50,
 	},
-};
+} as const;
 
 export type HardpointType = keyof typeof genericHardpoints;
 

@@ -12,7 +12,6 @@ import { Ship } from './entities/ship';
 import { Star } from './entities/star';
 import type { Shipyard } from './entities/station/shipyard';
 import { Waypoint } from './entities/waypoint';
-import type { GenericProjectile } from './generic/hardpoints';
 import type { Item, ItemID } from './generic/items';
 import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
 import type { GenericShip } from './generic/ships';
@@ -48,7 +47,6 @@ export interface LevelEvents {
 	fleet_items_change: [FleetJSON, Record<ItemID, number>];
 	player_levelup: [PlayerJSON];
 	player_reset: [PlayerJSON];
-	projectile_fire: [string, string, GenericProjectile];
 	update: [];
 }
 
@@ -60,9 +58,8 @@ export const levelEventNames = [
 	'fleet_items_change',
 	'player_levelup',
 	'player_reset',
-	'projectile_fire',
 	'update',
-] as const;
+] satisfies (keyof LevelEvents)[];
 
 type _ActionsData = {
 	create_item: Item;

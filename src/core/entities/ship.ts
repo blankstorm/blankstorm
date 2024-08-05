@@ -58,6 +58,7 @@ export class Ship extends Entity {
 
 	public update() {
 		super.update();
+		this.velocity.scaleInPlace(0.9);
 		if (this.hp <= 0) {
 			this.level.emit('entity_death', this.toJSON());
 			this.remove();

@@ -21,7 +21,7 @@ import * as settings from './settings';
 import { alert } from './ui/dialog';
 import * as map from './ui/map';
 import * as templates from './ui/templates';
-import { productRequirements } from './ui/tooltips';
+import * as tooltip from './ui/tooltips';
 import { WaypointUI } from './ui/waypoint';
 import { account, action, player as getPlayer, hasSystem, system } from './user';
 import { $svg, logger, minimize, upload } from './utils';
@@ -74,30 +74,20 @@ export function update() {
 		$(UIs.get(id)!).find('.count').text(minimize(amount));
 	}
 
-	//update tech info
-	for (const [id, tech] of research) {
-		$(UIs.get(id)!)
-			.find('.upgrade tool-tip')
-			.html(
-				`<strong>${locales.text('tech.name', id)}</strong><br>
-				${locales.text('tech.description', id)}<br>
-				${player.research[id] >= tech.max ? `<strong>Max Level</strong>` : `${player.research[id]} <svg><use href="assets/images/icons.svg#arrow-right"/></svg> ${player.research[id] + 1}`}
-				${productRequirements(tech, player)}`
-			);
-		$(UIs.get(id)!).find('.locked')[isResearchLocked(id, player) ? 'show' : 'hide']();
+	//update research
+	for (const tech of research.values()) {
+		$(UIs.get(tech.id)!).find('.upgrade tool-tip').html(tooltip.research(tech, player));
+		$(UIs.get(tech.id)!).find('.locked')[isResearchLocked(tech.id, player) ? 'show' : 'hide']();
 	}
 
-	//update ship info
-	for (const [id, ship] of genericShips) {
-		$(UIs.get(id)!)
+	//update ships
+	for (const ship of genericShips.values()) {
+		$(UIs.get(ship.id)!)
 			.find('.add tool-tip')
-			.html(locales.text('entity.description', id) + productRequirements(ship, player));
+			.html(locales.text('entity.description', ship.id) + tooltip.productRequirements(ship, player));
 
-		let locked = false;
-		for (const t in ship.requires) {
-			if (isResearchLocked(t as ResearchID, player)) locked = true;
-		}
-		$(UIs.get(id)!).find('.locked')[locked ? 'show' : 'hide']();
+		const locked = Object.keys(ship.requires).some(tech => isResearchLocked(tech as ResearchID, player));
+		$(UIs.get(ship.id)!).find('.locked')[locked ? 'show' : 'hide']();
 	}
 
 	for (const waypoint of system().entities<Waypoint>('.Waypoint')) {

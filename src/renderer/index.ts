@@ -17,11 +17,9 @@ import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import { Scene } from '@babylonjs/core/scene';
 import type { EntityJSON } from '../core/entities/entity';
-import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { LevelJSON } from '../core/level';
 import { config, version } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
-import type { HardpointRenderer, PlayerRenderer } from './entities';
 import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, renderers } from './entities';
 import { logger } from './logger';
 import { ModelRenderer, initModel } from './models';
@@ -331,14 +329,4 @@ export async function startFollowingPath(entityID: string, path: IVector3Like[],
 		path.map(({ x, y, z }) => new Vector3(x, y, z)),
 		showPathGizmos
 	);
-}
-
-export function fireProjectile(hardpointID: string, targetID: string, options: GenericProjectile) {
-	const hardpoint = <HardpointRenderer>scene.getTransformNodeById(hardpointID);
-	const { projectileMaterials: materials } = <PlayerRenderer | PlanetRenderer>hardpoint?.parent?.parent;
-	const target = scene.getTransformNodeById(targetID);
-	if (!target) {
-		throw new ReferenceError('Target does not exist');
-	}
-	hardpoint.fireProjectile(target, { ...options, materials });
 }

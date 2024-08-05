@@ -1,16 +1,19 @@
 import type { ShipJSON } from '~/core/entities/ship';
-import type { ShipType } from '~/core/generic/ships';
+import type { GenericShip, ShipType } from '~/core/generic/ships';
 import { genericShips } from '~/core/generic/ships';
 import { ModelRenderer } from '../models';
-import { renderers, type Renderer } from './entity';
+import { renderers } from './entity';
 import { HardpointRenderer } from './hardpoint';
 
-export class ShipRenderer extends ModelRenderer implements Renderer<ShipJSON> {
+export class ShipRenderer extends ModelRenderer {
 	public hardpoints: Map<string, HardpointRenderer> = new Map();
 	public type!: ShipType;
 
-	public override get generic() {
-		return genericShips.get(this.type)!;
+	public readonly generic: GenericShip;
+
+	public constructor(data: ShipJSON) {
+		super(data);
+		this.generic = genericShips.get(this.type)!;
 	}
 
 	public async update(data: ShipJSON) {

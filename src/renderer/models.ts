@@ -26,14 +26,14 @@ function resolveModelID(data: ModelEntityJSON): string {
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
  */
-export class ModelRenderer extends EntityRenderer {
+export class ModelRenderer<T extends ModelEntityJSON = ModelEntityJSON> extends EntityRenderer<T> {
 	public readonly instance: TransformNode;
 	protected _selected: boolean = false;
 	protected _currentPath?: Vector3[];
 	protected _pathGizmo?: LinesMesh;
 	public readonly modelID: string;
 
-	public constructor(data: ModelEntityJSON) {
+	public constructor(data: T) {
 		super(data);
 
 		this.modelID = resolveModelID(data);
@@ -46,11 +46,6 @@ export class ModelRenderer extends EntityRenderer {
 		this.instance.id = this.id + ':instance';
 		this.instance.parent = this;
 		this.instance.rotation.y += Math.PI;
-	}
-
-	public get generic(): { speed: number; agility: number } {
-		logger.warn(`Accessed generic of a ModelRenderer that was not a ShipRenderer`);
-		return { speed: 0, agility: 0 };
 	}
 
 	public get selected(): boolean {
@@ -75,7 +70,7 @@ export class ModelRenderer extends EntityRenderer {
 		return this._currentPath;
 	}
 
-	public async followPath(path: Vector3[], showPathGizmos: boolean) {
+	public async followPath(path: Vector3[], showPathGizmos: boolean, { speed = 1, agility = 1 }: { speed?: number; agility?: number } = {}) {
 		if (!Array.isArray(path)) throw new TypeError('path must be a Path');
 		if (path.length == 0) {
 			return;
@@ -92,10 +87,10 @@ export class ModelRenderer extends EntityRenderer {
 			this._pathGizmo.color = Color3.Green();
 		}
 
-		const animation = new Animation('pathFollow', 'position', 60 * this.generic.speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
-			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * this.generic.agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+		const animation = new Animation('pathFollow', 'position', 60 * speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
+			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * this.generic.speed, value: node.subtract((<TransformNode>this.parent).absolutePosition) })));
+		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * speed, value: node.subtract((<TransformNode>this.parent).absolutePosition) })));
 		rotateAnimation.setKeys(
 			path.flatMap((node, i) => {
 				if (i == 0) {
@@ -104,8 +99,8 @@ export class ModelRenderer extends EntityRenderer {
 				const value = Vector3.PitchYawRollToMoveBetweenPoints(path[i - 1], node);
 				value.x -= Math.PI / 2;
 				return [
-					{ frame: i * 60 * this.generic.agility - 30, value },
-					{ frame: i * 60 * this.generic.agility - 10, value },
+					{ frame: i * 60 * agility - 30, value },
+					{ frame: i * 60 * agility - 10, value },
 				];
 			})
 		);
@@ -124,7 +119,7 @@ export class ModelRenderer extends EntityRenderer {
 	}
 
 	// @todo change path following to be on core
-	public async update(data: ModelEntityJSON) {
+	public async update(data: T) {
 		super.update(data);
 		if (!this._currentPath) {
 			this.position = Vector3.FromArray(data.position);

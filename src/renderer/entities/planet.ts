@@ -1,5 +1,4 @@
 import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
@@ -9,8 +8,7 @@ import type { PlanetBiome } from '~/core/generic/planets';
 import { logger } from '../logger';
 import * as planetShader from '../shaders/planet.glslx';
 import { CelestialBodyRenderer } from './body';
-import { renderers, type Renderer } from './entity';
-import type { HardpointProjectileHandlerOptions } from './hardpoint';
+import { renderers } from './entity';
 
 export interface PlanetMaterialOptions {
 	colors: Color3[];
@@ -164,15 +162,9 @@ export class PlanetMaterial extends ShaderMaterial {
 	}
 }
 
-export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
+export class PlanetRenderer extends CelestialBodyRenderer {
 	public biome!: PlanetBiome;
 	public seed!: number;
-	public projectileMaterials: HardpointProjectileHandlerOptions['materials'] = [
-		{
-			applies_to: ['laser'],
-			material: Object.assign(new StandardMaterial('player-laser-projectile'), { emissiveColor: Color3.Red() }),
-		},
-	];
 
 	public async update(data: PlanetData) {
 		await super.update(data);

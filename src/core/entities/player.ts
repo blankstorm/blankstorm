@@ -35,7 +35,11 @@ export class Player extends Entity {
 		this.fleet.parent = this;
 	}
 
-	public reset() {
+	public update(): void {
+		this.velocity.scaleInPlace(0.9);
+	}
+
+	public reset(): void {
 		this.fleet.storage.clear();
 		for (const type of research.keys()) {
 			this.research[type] = 0;

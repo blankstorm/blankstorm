@@ -1,7 +1,7 @@
 import type { FleetJSON } from '~/core/components/fleet';
-import { EntityRenderer, renderers, type Renderer } from './entity';
+import { EntityRenderer, renderers } from './entity';
 
-export class FleetRenderer extends EntityRenderer implements Renderer<FleetJSON> {
+export class FleetRenderer extends EntityRenderer {
 	public async update(data: FleetJSON): Promise<void> {
 		await super.update(data);
 		for (const id of data?.ships || []) {
