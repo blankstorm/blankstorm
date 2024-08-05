@@ -6,11 +6,11 @@ dist
 build
 
 # game data
-saves
-servers.json
-settings.json
-mods
-logs
+/saves
+/servers.json
+/settings.json
+/mods
+/logs
 
 # temporary
 tmp
