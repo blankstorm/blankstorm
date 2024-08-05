@@ -1,6 +1,7 @@
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { getAccount, type Account } from '@blankstorm/api';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import $ from 'jquery';
 import { author } from '../../package.json';
 import { execCommandString } from '../core/commands';
@@ -19,11 +20,10 @@ import * as mods from './mods';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import * as ui from './ui';
-import * as user from './user';
-import { cookies, fixPaths, logger, minimize } from './utils';
 import { alert } from './ui/dialog';
+import * as user from './user';
+import { cookies, logger, minimize, optionsOf } from './utils';
 
 export interface ClientInit {
 	/**
@@ -347,8 +347,8 @@ async function _init(): Promise<void> {
 	_initLog('Initializing renderer...');
 	try {
 		await renderer.init(canvas[0]);
-	} catch (err) {
-		throw new Error('Failed to initalize renderer: ' + err, { cause: err.stack });
+	} catch (error) {
+		throw new Error('Failed to initalize renderer: ' + error, optionsOf(error));
 	}
 
 	_initLog('Authenticating...');
@@ -363,8 +363,8 @@ async function _init(): Promise<void> {
 			const result: Account = await getAccount('token', cookies.get('token'));
 			Object.assign(user.account, result);
 			isMultiplayerEnabled = true;
-		} catch (e) {
-			throw new Error('Could not authenticate', { cause: e.stack });
+		} catch (error) {
+			throw new Error('Could not authenticate', optionsOf(error));
 		}
 	}
 
@@ -399,13 +399,13 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 		setDebug(debug);
 		await _init();
 		return;
-	} catch (e) {
-		logger.error('Client initialization failed: ' + (e.cause ?? e.stack));
+	} catch (error) {
+		logger.error('Client initialization failed: ' + (error instanceof Error ? (error.cause ?? error.stack) : error));
 		await alert('Client initialization failed.');
 		if (!debug) {
 			close();
 		}
-		throw e;
+		throw error;
 	}
 }
 
@@ -452,10 +452,10 @@ function _update() {
 export function update() {
 	try {
 		_update();
-	} catch (e) {
-		logger.error('Client update failed: ' + (e.cause ?? e.stack));
-		alert('Client update failed: ' + fixPaths(e.cause ?? e.stack));
-		throw e;
+	} catch (error) {
+		logger.error('Client update failed: ' + (error instanceof Error ? (error.cause ?? error.stack) : error));
+		alert('Client update failed.');
+		throw error;
 	}
 }
 
@@ -533,7 +533,7 @@ export function unload(): void {
 
 export type RPCCommand = 'chat' | 'command';
 
-export function send(command: RPCCommand, ...data): void {
+export function send(command: RPCCommand, ...data: string[]): void {
 	if (isServer) {
 		servers.socket.emit(command, data);
 		return;

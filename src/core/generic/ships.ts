@@ -1,3 +1,4 @@
+import type { Entries } from 'utilium';
 import { config } from '../metadata';
 import { type HardpointType, genericHardpoints } from './hardpoints';
 import type { Producible } from './production';
@@ -27,7 +28,7 @@ export interface GenericShip extends Producible {
 	hardpoints: HardpointInfo[] | Readonly<HardpointInfo[]>;
 }
 
-const genericShips = {
+const _ships = {
 	wind: {
 		id: 'wind',
 		hp: 10,
@@ -249,14 +250,11 @@ const genericShips = {
 	},
 } as const;
 
-export type ShipType = keyof typeof genericShips;
-
-export const shipTypes = Object.keys(genericShips) as ShipType[];
+export type ShipType = keyof typeof _ships;
 
 export type GenericShipCollection<T = number> = Record<ShipType, T>;
 
-const _ships: GenericShipCollection<GenericShip> = genericShips;
-export { _ships as genericShips };
+export const genericShips = new Map<ShipType, GenericShip>(Object.entries(_ships) as Entries<typeof _ships>);
 
 export interface ShipRatings {
 	combat: number;

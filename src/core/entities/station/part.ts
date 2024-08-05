@@ -13,10 +13,10 @@ export interface StationPartJSON extends CelestialBodyJSON {
 }
 
 export class StationPart extends CelestialBody {
-	public hp: number;
-	public station: Station;
+	public hp: number = -1;
+	public station!: Station;
 	public connections: (StationPart | undefined)[] = [];
-	public type: GenericStationPartID;
+	public type!: GenericStationPartID;
 
 	public get generic() {
 		return stationParts[this.type];

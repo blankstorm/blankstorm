@@ -29,14 +29,14 @@ export function fixPaths(text: string): string {
 	);
 }
 
-export function getByString(object: object, path: string, seperator = /[.[\]'"]/) {
+export function getByString(object: Record<string, any>, path: string, seperator = /[.[\]'"]/) {
 	return path
 		.split(seperator)
 		.filter(p => p)
-		.reduce((o, p) => (o ? o[p] : null), object);
+		.reduce((o, p) => o?.[p], object);
 }
 
-export function setByString(object: object, path: string, value, seperator = /[.[\]'"]/) {
+export function setByString(object: Record<string, any>, path: string, value: unknown, seperator = /[.[\]'"]/) {
 	return path
 		.split(seperator)
 		.filter(p => p)
@@ -131,6 +131,10 @@ export function biomeColor(biome: PlanetBiome): string {
 export function $svg<TElement extends SVGElement>(tag: string): JQuery<TElement> {
 	const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
 	return $<TElement>(<TElement>element);
+}
+
+export function optionsOf(error: unknown): ErrorOptions {
+	return { cause: error instanceof Error ? error.stack : error + '' };
 }
 
 export const logger = new Logger({ prefix: 'client' });

@@ -1,5 +1,5 @@
 import type { Account } from '@blankstorm/api';
-import type { Action, ActionParameters } from '../core';
+import type { ActionType, ActionData } from '../core';
 import type { Player } from '../core/entities/player';
 import type { System } from '../core/system';
 import { sendMessage } from './chat';
@@ -46,6 +46,6 @@ export function hasSystem(): boolean {
 	}
 }
 
-export async function action<T extends Action>(action: T, ...args: ActionParameters<T>): Promise<boolean> {
-	return getCurrentLevel().tryAction<T>(account.id, action, ...args);
+export async function action<T extends ActionType>(action: T, data: ActionData<T>): Promise<boolean> {
+	return getCurrentLevel().tryAction(account.id, action, data);
 }

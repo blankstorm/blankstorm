@@ -20,9 +20,9 @@ export interface HardpointJSON extends EntityJSON {
 const copy = ['type', 'scale', 'reload'] as const satisfies ReadonlyArray<keyof Hardpoint>;
 
 export class Hardpoint extends Entity {
-	public type: HardpointType;
-	public scale: number;
-	public reload: number;
+	public type!: HardpointType;
+	public scale!: number;
+	public reload!: number;
 	public declare parent: Ship;
 	public get owner(): Player | CelestialBody | undefined {
 		return this.parent.owner;

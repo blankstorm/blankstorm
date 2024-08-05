@@ -2,7 +2,7 @@ import $ from 'jquery';
 import type { Shipyard } from '~/core/entities/station/shipyard';
 import type { Item } from '~/core/generic/items';
 import type { Research } from '~/core/generic/research';
-import { genericShips, shipTypes, type GenericShip, type ShipType } from '~/core/generic/ships';
+import { genericShips, type GenericShip, type ShipType } from '~/core/generic/ships';
 import { Level, type LevelJSON } from '~/core/level';
 import { versions } from '~/core/metadata';
 import { load } from '../client';
@@ -37,14 +37,14 @@ export function createResearchUI(research: Research): JQuery<DocumentFragment> {
 export function createShipUI(ship: GenericShip): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#ship');
 	instance.find('.name').text(locales.text('entity.name', ship.id));
-	instance.find('.add').on('click', () => action('create_ship', ship));
+	instance.find('.add').on('click', () => alert('Disabled.'));
 	$('div.shipyard').append(instance);
 	return instance;
 }
 
 export function createShipyardUI(shipyard: Shipyard): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#shipyard');
-	instance.find('.add').on('click', () => action('create_ship', genericShips[instance.find('select').val() as ShipType], shipyard));
+	instance.find('.add').on('click', () => action('create_ship', { ship: genericShips.get(instance.find('select').val() as ShipType)!, shipyard }));
 	instance.find(shipyard.production ? '.non-active' : '.active').hide();
 	instance.find(shipyard.production ? '.active' : '.non-active').show();
 
@@ -52,7 +52,7 @@ export function createShipyardUI(shipyard: Shipyard): JQuery<DocumentFragment> {
 		instance.find('.active').text('Building: ' + locales.text('entity.name', shipyard.production.id));
 	}
 
-	for (const type of shipTypes) {
+	for (const type of genericShips.keys()) {
 		$('<option></option>').attr('value', type).text(locales.text('entity.name', type)).appendTo(instance.find('select'));
 	}
 	return instance;
@@ -71,7 +71,7 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 			$('#loading_cover').hide();
 		} catch (e) {
 			alert('Failed to load save: ' + e);
-			logger.error(e);
+			logger.error(e instanceof Error ? e : e + '');
 			throw e;
 		}
 	};

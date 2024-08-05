@@ -21,7 +21,6 @@ export interface ShipJSON extends WithRequired<EntityJSON, 'storage'> {
 
 export class Ship extends Entity {
 	public hardpoints: Set<Hardpoint> = new Set();
-	public type: ShipType;
 	public hp: number;
 	public jumpCooldown: number;
 
@@ -30,11 +29,14 @@ export class Ship extends Entity {
 	/**
 	 * @todo move distance related stuff to ship creation (i.e. shipyard)
 	 */
-	constructor(id: string | undefined, level: Level, type?: ShipType) {
+	constructor(
+		id: string | undefined,
+		level: Level,
+		public type: ShipType
+	) {
 		super(id, level);
 
-		this.type = type || this.type;
-		const { power, hp, jump, storage, hardpoints } = genericShips[this.type];
+		const { power, hp, jump, storage, hardpoints } = genericShips.get(this.type)!;
 
 		this.position.addInPlace(randomCords(Math.log(randomInt(0, power || 1) ** 3 + 1), true));
 
@@ -103,7 +105,7 @@ export class Ship extends Entity {
 	}
 
 	public get generic(): GenericShip {
-		return genericShips[this.type];
+		return genericShips.get(this.type)!;
 	}
 
 	public remove() {
@@ -111,7 +113,7 @@ export class Ship extends Entity {
 		this.owner?.fleet?.delete(this);
 	}
 
-	public jumpTo(targetSystem: System) {
+	public jumpTo(targetSystem: System): boolean {
 		if (this.jumpCooldown) {
 			return false;
 		}
@@ -122,6 +124,7 @@ export class Ship extends Entity {
 
 		this.system = targetSystem;
 		this.jumpCooldown = +this.generic.jump.cooldown;
+		return true;
 	}
 
 	public toJSON() {
@@ -136,7 +139,7 @@ export class Ship extends Entity {
 
 	public fromJSON(data: ShipJSON): void {
 		super.fromJSON(data);
-		if (!Object.hasOwn(genericShips, data.type)) {
+		if (!genericShips.has(data.type)) {
 			throw new ReferenceError('Ship type does not exist: ' + data.type);
 		}
 		assignWithDefaults(this as Ship, pick(data, 'type', 'hp', 'jumpCooldown'));
@@ -144,8 +147,8 @@ export class Ship extends Entity {
 		this.owner?.fleet?.add(this);
 	}
 
-	public static FromJSON(this: typeof Entity, data: EntityJSON, level: Level): Entity;
-	public static FromJSON(this: typeof Ship, data: ShipJSON, level: Level): Ship {
+	public static FromJSON(data: EntityJSON, level: Level): Ship;
+	public static FromJSON(data: ShipJSON, level: Level): Ship {
 		const entity = new this(data.id, level, data.type);
 		entity.fromJSON(data);
 		return entity;

@@ -11,10 +11,10 @@ export interface WaypointJSON extends EntityJSON {
 }
 
 export class Waypoint extends Entity {
-	public color: string;
+	public color!: string;
 	public icon = 'location-dot';
 
-	protected _active: boolean;
+	protected _active: boolean = false;
 
 	public get active(): boolean {
 		return this._active;

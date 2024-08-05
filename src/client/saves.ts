@@ -119,10 +119,10 @@ export function flush(): void {
 	try {
 		update(currentLevel.toJSON());
 		logger.debug('Writing save: ' + currentLevel.id);
-	} catch (err) {
+	} catch (error: any) {
 		alert('Failed to save.');
-		logger.error(err);
-		throw err;
+		logger.error(error);
+		throw error;
 	}
 	$('#pause .save').text('Save Game');
 }

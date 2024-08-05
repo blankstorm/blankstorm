@@ -14,7 +14,7 @@ export interface PlayerJSON extends EntityJSON {
 }
 
 export class Player extends Entity {
-	public research = Object.fromEntries(Object.keys(research).map(k => [k, 0])) as Record<ResearchID, number>;
+	public research = Object.fromEntries([research.keys()].map(k => [k, 0])) as Record<ResearchID, number>;
 	public fleet: Fleet;
 	public xp = 0;
 	public get power(): number {
@@ -37,7 +37,7 @@ export class Player extends Entity {
 
 	public reset() {
 		this.fleet.storage.clear();
-		for (const type of Object.keys(research)) {
+		for (const type of research.keys()) {
 			this.research[type] = 0;
 		}
 		for (const ship of this.fleet) {

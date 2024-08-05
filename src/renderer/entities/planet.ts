@@ -6,11 +6,11 @@ import type { Scene } from '@babylonjs/core/scene';
 import { assignWithDefaults, pick, randomHex } from 'utilium';
 import type { PlanetData } from '~/core/entities/planet';
 import type { PlanetBiome } from '~/core/generic/planets';
+import { logger } from '../logger';
 import * as planetShader from '../shaders/planet.glslx';
 import { CelestialBodyRenderer } from './body';
+import { renderers, type Renderer } from './entity';
 import type { HardpointProjectileHandlerOptions } from './hardpoint';
-import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
-import { logger } from '../logger';
 
 export interface PlanetMaterialOptions {
 	colors: Color3[];
@@ -165,8 +165,8 @@ export class PlanetMaterial extends ShaderMaterial {
 }
 
 export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<PlanetData> {
-	public biome: PlanetBiome;
-	public seed: number;
+	public biome!: PlanetBiome;
+	public seed!: number;
 	public projectileMaterials: HardpointProjectileHandlerOptions['materials'] = [
 		{
 			applies_to: ['laser'],
@@ -186,5 +186,4 @@ export class PlanetRenderer extends CelestialBodyRenderer implements Renderer<Pl
 		this.mesh.material = new PlanetMaterial(biomes[data.biome], this.seed, this.getScene());
 	}
 }
-PlanetRenderer satisfies RendererStatic<PlanetRenderer>;
-entityRenderers.set('Planet', PlanetRenderer);
+renderers.set('Planet', PlanetRenderer);

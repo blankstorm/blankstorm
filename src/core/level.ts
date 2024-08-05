@@ -1,8 +1,8 @@
-import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
+import type { IVector2Like, IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
-import { assignWithDefaults, pick, randomHex, type Shift } from 'utilium';
+import { assignWithDefaults, pick, randomHex, type Entries, type Expand } from 'utilium';
 import type { Component } from './components/component';
 import { Fleet, type FleetJSON } from './components/fleet';
 import { filterEntities, type Entity, type EntityJSON } from './entities/entity';
@@ -64,6 +64,18 @@ export const levelEventNames = [
 	'update',
 ] as const;
 
+type _ActionsData = {
+	create_item: Item;
+	create_ship: { ship: GenericShip; shipyard?: Shipyard };
+	research: Research;
+	warp: MoveInfo<System>[];
+	move: MoveInfo<IVector3Like>[];
+};
+
+export type ActionType = Expand<keyof _ActionsData>;
+
+export type ActionData<T extends ActionType> = _ActionsData[T];
+
 export class Level extends EventEmitter<LevelEvents> implements Component<LevelJSON> {
 	public id: string = randomHex(16);
 	public name: string = '';
@@ -72,7 +84,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	public difficulty = 1;
 	public entities: Set<Entity> = new Set();
 	public systems: Map<string, System> = new Map();
-	public rootSystem: System;
+	public rootSystem!: System;
 	protected _performanceMonitor = new PerformanceMonitor(60);
 
 	public async ready(): Promise<this> {
@@ -95,72 +107,72 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		return this.selectEntities(selector).values().next().value;
 	}
 
-	public _try_create_item(player: Player, item: Item): boolean {
-		if (!item.recipe || !player.storage.hasItems(item.recipe)) {
-			return false;
-		}
-
-		player.storage.removeItems(item.recipe);
-		player.storage.addItems({ [item.id]: player.storage.items[item.id] + 1 });
-		return true;
-	}
-
-	public _try_create_ship(player: Player, generic: GenericShip, shipyard?: Shipyard): boolean {
-		if (!player.storage.hasItems(generic.recipe)) {
-			return false;
-		}
-
-		player.storage.removeItems(generic.recipe);
-		const ship = new Ship(undefined, player.level, generic.id);
-		if (shipyard) {
-			ship.position.addInPlace(shipyard.position);
-		}
-
-		player.fleet.add(ship);
-		return true;
-	}
-
-	public _try_research(player: Player, data: Research): boolean {
-		if (player.research[data.id] >= data.max || isResearchLocked(<ResearchID>data.id, player)) {
-			return false;
-		}
-		const neededItems = priceOfResearch(<ResearchID>data.id, player.research[data.id]);
-		if (!player.storage.hasItems(neededItems)) {
-			return false;
-		}
-
-		player.storage.removeItems(neededItems);
-		player.research[data.id]++;
-		return true;
-	}
-
-	public _try_warp(player: Player, data: MoveInfo<System>[]): void {
-		for (const { id, target } of data) {
-			this.getEntityByID<Ship>(id).jumpTo(target);
-		}
-	}
-
-	public _try_move(player: Player, data: MoveInfo<IVector3Like>[]): void {
-		for (const { id, target } of data) {
-			this.getEntityByID<Entity>(id).moveTo(target);
-		}
-	}
-
-	public tryAction<T extends Action>(id: string, action: T, ...args: ActionParameters<T>): boolean {
+	public tryAction<T extends ActionType>(id: string, action: T, data: ActionData<T>): boolean {
 		const player = this.getEntityByID(id);
 
 		if (!(player instanceof Player)) {
 			return false;
 		}
 
-		if (!('_try_' + action in this)) {
-			return false;
-		}
+		const [_action, _data] = [action, data] as Entries<_ActionsData>[number];
 
-		return this['_try_' + action](player, ...args);
+		switch (_action) {
+			case 'create_item': {
+				if (!_data.recipe || !player.storage.hasItems(_data.recipe)) {
+					return false;
+				}
+
+				player.storage.removeItems(_data.recipe);
+				player.storage.addItems({ [_data.id]: player.storage.items[_data.id] + 1 });
+				return true;
+			}
+			case 'create_ship': {
+				const { ship: generic, shipyard } = _data;
+				if (!player.storage.hasItems(generic.recipe)) {
+					return false;
+				}
+
+				player.storage.removeItems(generic.recipe);
+				const ship = new Ship(undefined, player.level, generic.id);
+				if (shipyard) {
+					ship.position.addInPlace(shipyard.position);
+				}
+
+				player.fleet.add(ship);
+				return true;
+			}
+			case 'research': {
+				if (player.research[_data.id] >= _data.max || isResearchLocked(<ResearchID>_data.id, player)) {
+					return false;
+				}
+				const neededItems = priceOfResearch(<ResearchID>_data.id, player.research[_data.id]);
+				if (!player.storage.hasItems(neededItems)) {
+					return false;
+				}
+
+				player.storage.removeItems(neededItems);
+				player.research[_data.id]++;
+				return true;
+			}
+			case 'warp': {
+				for (const { id, target } of _data) {
+					this.getEntityByID<Ship>(id).jumpTo(target);
+				}
+				return true;
+			}
+			case 'move': {
+				for (const { id, target } of _data) {
+					this.getEntityByID<Entity>(id).moveTo(target);
+				}
+				return true;
+			}
+			default:
+				logger.warn('Invalid action: ' + _action);
+				return false;
+		}
 	}
 
-	public async generateSystem(name: string, position: Vector2, options: SystemGenerationOptions = config.system_generation, system?: System) {
+	public async generateSystem(name: string, position: IVector2Like, options: SystemGenerationOptions = config.system_generation, system?: System) {
 		const difficulty = Math.max(Math.log10(Vector2.Distance(Vector2.Zero(), position)) - 1, 0.25);
 		system = await System.Generate(name, { ...options, difficulty }, this, system);
 		system.position = position;
@@ -240,10 +252,6 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		return level;
 	}
 }
-
-export type Action = 'create_item' | 'create_ship' | 'research' | 'warp' | 'move';
-
-export type ActionParameters<T extends Action> = Shift<Parameters<Level[`_try_${T}`]>>;
 
 export function upgradeLevel(data: LevelJSON): LevelJSON {
 	switch (data.version) {

@@ -1,6 +1,5 @@
 import type { FleetJSON } from '~/core/components/fleet';
-import { EntityRenderer } from './entity';
-import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
+import { EntityRenderer, renderers, type Renderer } from './entity';
 
 export class FleetRenderer extends EntityRenderer implements Renderer<FleetJSON> {
 	public async update(data: FleetJSON): Promise<void> {
@@ -14,5 +13,4 @@ export class FleetRenderer extends EntityRenderer implements Renderer<FleetJSON>
 		}
 	}
 }
-FleetRenderer satisfies RendererStatic<FleetRenderer>;
-entityRenderers.set('Fleet', FleetRenderer);
+renderers.set('Fleet', FleetRenderer);

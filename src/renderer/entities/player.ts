@@ -1,9 +1,8 @@
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { PlayerJSON } from '~/core/entities/player';
-import { EntityRenderer } from './entity';
+import { EntityRenderer, renderers, type Renderer } from './entity';
 import type { ProjectileMaterial } from './hardpoint';
-import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
 
 export class PlayerRenderer extends EntityRenderer implements Renderer<PlayerJSON> {
 	public projectileMaterials: ProjectileMaterial[] = [
@@ -16,5 +15,4 @@ export class PlayerRenderer extends EntityRenderer implements Renderer<PlayerJSO
 		},
 	];
 }
-PlayerRenderer satisfies RendererStatic<PlayerRenderer>;
-entityRenderers.set('Player', PlayerRenderer);
+renderers.set('Player', PlayerRenderer);

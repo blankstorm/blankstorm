@@ -15,6 +15,7 @@ blacklist.on('update', () => writeFileSync('blacklist.json', blacklist.json()));
 //operators
 
 export interface OpsEntry {
+	id: string;
 	bypassLimit: boolean;
 	oplvl: number;
 }

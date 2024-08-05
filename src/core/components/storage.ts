@@ -1,7 +1,7 @@
 import { pick } from 'utilium';
 import type { Entity } from '../entities/entity';
 import type { ItemContainer, ItemID, PartialItemContainer } from '../generic/items';
-import { items as Items } from '../generic/items';
+import { items } from '../generic/items';
 import { register, type Component } from './component';
 
 function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<keyof T, number> {
@@ -29,10 +29,10 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 		return pick(this, 'items', 'max');
 	}
 
-	public fromJSON({ max, items }: PartialItemContainer): this {
+	public fromJSON(data: PartialItemContainer): this {
 		this.clear();
-		this.max = max;
-		for (const [id, amount] of map(items)) {
+		this.max = data.max;
+		for (const [id, amount] of map(data.items)) {
 			this.add(id, amount);
 		}
 		return this;
@@ -48,8 +48,8 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 
 	protected get total(): number {
 		let total = 0;
-		for (const [id, amount] of this.entries()) {
-			total += amount * Items[id].weight;
+		for (const [id, amount] of this) {
+			total += amount * items.get(id)!.weight;
 		}
 		return total;
 	}
@@ -142,13 +142,13 @@ export class StorageManager extends ItemStorage {
 	}
 
 	public get items(): Record<ItemID, number> {
-		const items = <Record<ItemID, number>>Object.fromEntries(Object.keys(Items).map(i => [i, 0]));
+		const _items = <Record<ItemID, number>>Object.fromEntries(Object.keys(items).map(i => [i, 0]));
 		for (const storage of this.storages) {
-			for (const name of <ItemID[]>Object.keys(Items)) {
-				items[name] += storage.count(name);
+			for (const name of <ItemID[]>Object.keys(items)) {
+				_items[name] += storage.count(name);
 			}
 		}
-		return items;
+		return _items;
 	}
 
 	public get total(): number {
@@ -173,7 +173,7 @@ export class StorageManager extends ItemStorage {
 			if (space <= 0) {
 				continue;
 			}
-			if (!Object.hasOwn(Items, item)) {
+			if (!items.has(item)) {
 				console.warn('Failed to add invalid item to storage: ' + item);
 				continue;
 			}
@@ -204,13 +204,13 @@ export class EntityStorageManager extends ItemStorage {
 	}
 
 	public get items(): Record<ItemID, number> {
-		const items = <Record<ItemID, number>>Object.fromEntries(Object.keys(Items).map(i => [i, 0]));
+		const _items = <Record<ItemID, number>>Object.fromEntries(Object.keys(items).map(i => [i, 0]));
 		for (const entity of this.entities) {
-			for (const name of <ItemID[]>Object.keys(Items)) {
-				items[name] += entity.storage.count(name);
+			for (const name of <ItemID[]>Object.keys(items)) {
+				_items[name] += entity.storage.count(name);
 			}
 		}
-		return items;
+		return _items;
 	}
 
 	public get total(): number {
@@ -235,7 +235,7 @@ export class EntityStorageManager extends ItemStorage {
 			if (space <= 0) {
 				continue;
 			}
-			if (!Object.hasOwn(Items, item)) {
+			if (!items.has(item)) {
 				console.warn('Failed to add invalid item to storage: ' + item);
 				continue;
 			}

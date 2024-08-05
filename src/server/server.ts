@@ -27,12 +27,12 @@ export function init() {
 		try {
 			await checkClientAuth(socket);
 			next();
-		} catch (err) {
-			if (typeof err == 'string') {
-				next(new Error(err));
-			} else {
-				logger.error('Client auth failed: ' + err.stack);
+		} catch (error) {
+			if (error instanceof Error) {
+				logger.error('Client auth failed: ' + error.stack);
 				next(new Error('Server error'));
+			} else {
+				next(new Error(error + ''));
 			}
 		}
 	});
@@ -111,43 +111,38 @@ export async function checkClientAuth(socket: Socket) {
 		throw 'Server is stopping or restarting';
 	}
 
-	let data;
-	try {
-		data = await getAccount('token', socket.handshake.auth.token);
-	} catch (err) {
-		if (!data) {
-			// the fetch failed (instead of the request being invalid)
-			logger.warn('Client auth API request failed: ' + err.stack);
-			throw 'Auth request failed';
-		}
+	const account = await getAccount('token', socket.handshake.auth.token).catch((error: Error | string) => {
+		logger.warn('API request for client authentication failed: ' + error);
+		throw 'Authentication request failed';
+	});
 
-		throw 'Invalid token';
+	if (!account) {
+		logger.warn('Invalid account data recieved');
+		throw 'Invalid account';
 	}
 
-	const clientData = data.result;
-
-	if (config.whitelist && !whitelist.has(clientData.id)) {
+	if (config.whitelist && !whitelist.has(account.id)) {
 		throw 'You are not whitelisted';
 	}
 
-	if (config.blacklist && blacklist.has(clientData.id)) {
+	if (config.blacklist && blacklist.has(account.id)) {
 		throw 'You are banned from this server';
 	}
 
-	if (+clientData.disabled) {
+	if (+account.is_disabled) {
 		throw 'Your account is disabled';
 	}
 
-	if (io.sockets.sockets.size >= config.max_clients && !(ops[clientData.id] && ops[clientData.id].bypassLimit)) {
+	if (io.sockets.sockets.size >= config.max_clients && ![...ops].some(op => op.id == account.id && op.bypassLimit)) {
 		throw 'Server full';
 	}
 
-	if (getClientByID(clientData.id)) {
+	if (getClientByID(account.id)) {
 		throw 'Already connected';
 	}
 
-	const client = new Client(clientData.id, socket);
-	client.name = clientData.username;
+	const client = new Client(account.id, socket);
+	client.name = account.username;
 	clients.set(socket.id, client);
 	logger.log(`${client.name} connected with socket id ${socket.id}`);
 	io.emit('chat', `${client.name} joined`);

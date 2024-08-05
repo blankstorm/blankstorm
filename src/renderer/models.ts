@@ -5,24 +5,48 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
-import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/loaders/glTF/index';
 import { randomHex } from 'utilium';
 import type { EntityJSON } from '../core/entities/entity';
+import { EntityRenderer } from './entities';
 import { logger } from './logger';
+
+interface ModelEntityJSON extends EntityJSON {
+	model?: string;
+	type?: string;
+}
+
+function resolveModelID(data: ModelEntityJSON): string {
+	return data.model || data.type || data.entityType;
+}
 
 /**
  * Internal class for rendering models. Other renderers (e.g. ShipRenderer) use this.
  */
-export class ModelRenderer extends TransformNode {
-	protected _instance: TransformNode;
+export class ModelRenderer extends EntityRenderer {
+	public readonly instance: TransformNode;
 	protected _selected: boolean = false;
 	protected _currentPath?: Vector3[];
-	protected _createdInstance: boolean = false;
 	protected _pathGizmo?: LinesMesh;
-	public rendererType: string;
+	public readonly modelID: string;
+
+	public constructor(data: ModelEntityJSON) {
+		super(data);
+
+		this.modelID = resolveModelID(data);
+
+		if (!genericMeshes.has(this.modelID)) {
+			throw new ReferenceError(`Model "${this.modelID}" does not exist`);
+		}
+
+		this.instance = genericMeshes.get(this.modelID)!.instantiateModelsToScene().rootNodes[0] as TransformNode;
+		this.instance.id = this.id + ':instance';
+		this.instance.parent = this;
+		this.instance.rotation.y += Math.PI;
+	}
 
 	public get generic(): { speed: number; agility: number } {
 		logger.warn(`Accessed generic of a ModelRenderer that was not a ShipRenderer`);
@@ -34,9 +58,6 @@ export class ModelRenderer extends TransformNode {
 	}
 
 	public select(): void {
-		if (!this.isInstanciated) {
-			throw new ReferenceError('Cannot select a renderer that was not been instantiated');
-		}
 		for (const mesh of this.getChildMeshes<Mesh>()) {
 			this.getScene().getHighlightLayerByName('highlight')?.addMesh(mesh, Color3.Green());
 		}
@@ -44,9 +65,6 @@ export class ModelRenderer extends TransformNode {
 	}
 
 	public unselect() {
-		if (!this.isInstanciated) {
-			throw new ReferenceError('Cannot unselect a renderer that was not been instantiated');
-		}
 		for (const mesh of this.getChildMeshes<Mesh>()) {
 			this.getScene().getHighlightLayerByName('highlight')?.removeMesh(mesh);
 		}
@@ -105,44 +123,19 @@ export class ModelRenderer extends TransformNode {
 		}
 	}
 
-	public get instance() {
-		return this._instance;
-	}
-
-	public get isInstanciated() {
-		return this._createdInstance;
-	}
-
-	public async createInstance(modelID: string) {
-		//Async so we don't block while models are being instanciated
-
-		if (!genericMeshes.has(modelID)) {
-			throw new ReferenceError(`Model "${modelID}" does not exist`);
-		}
-
-		this._instance = genericMeshes.get(modelID)!.instantiateModelsToScene().rootNodes[0] as TransformNode;
-		this._instance.id = this.id + ':instance';
-		this._instance.parent = this;
-		this._instance.rotation.y += Math.PI;
-
-		this._createdInstance = true;
-
-		return this._instance;
-	}
-
-	public async update({ name, position, rotation, parent, entityType, type }: EntityJSON & { type?: string }) {
-		this.name = name;
+	// @todo change path following to be on core
+	public async update(data: ModelEntityJSON) {
+		super.update(data);
 		if (!this._currentPath) {
-			this.position = Vector3.FromArray(position);
-			this.rotation = Vector3.FromArray(rotation);
-		}
-		const _type = type || entityType;
-		if (this.rendererType != _type) {
-			this.rendererType = _type;
-			await this.createInstance(_type);
+			this.position = Vector3.FromArray(data.position);
+			this.rotation = Vector3.FromArray(data.rotation);
 		}
 
-		const maybeParent = parent ? this.getScene().getNodeById(parent) : null;
+		if (this.modelID != resolveModelID(data)) {
+			throw logger.error(`Can not change model of entity ${data.id} from ${this.modelID} to ${resolveModelID(data)}`);
+		}
+
+		const maybeParent = data.parent ? this.getScene().getNodeById(data.parent) : null;
 		if (maybeParent) {
 			this.parent = maybeParent;
 		}

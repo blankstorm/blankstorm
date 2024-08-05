@@ -7,7 +7,7 @@ import type { HardpointJSON } from '~/core/entities/hardpoint';
 import { genericHardpoints, type GenericProjectile, type HardpointType } from '~/core/generic/hardpoints';
 import { randomCords } from '~/core/utils';
 import { ModelRenderer } from '../models';
-import { entityRenderers, type Renderer, type RendererStatic } from './renderer';
+import { renderers, type Renderer } from './entity';
 
 export interface ProjectileMaterial {
 	applies_to: string[];
@@ -25,10 +25,13 @@ export interface HardpointProjectileHandlerOptions extends FireProjectileOptions
 export type HardpointProjectileHandler = (this: HardpointRenderer, target: TransformNode, options: HardpointProjectileHandlerOptions) => Promise<unknown>;
 
 const projectiles = {
-	async laser(target, { material, speed, id: modelID }) {
+	async laser(target, { material, speed, id: model }) {
 		await wait(randomInt(4, 40));
-		const laser = new ModelRenderer(randomHex(32), this.getScene());
-		await laser.createInstance(modelID);
+		// @todo change projectiles to be in core
+		const laser = new ModelRenderer({
+			id: randomHex(32),
+			model,
+		});
 		const bounding = this.getHierarchyBoundingVectors(),
 			targetOffset = randomFloat(0, bounding.max.subtract(bounding.min).length()),
 			startPos = this.getAbsolutePosition(),
@@ -59,12 +62,12 @@ const projectiles = {
 
 export class HardpointRenderer extends ModelRenderer implements Renderer<HardpointJSON> {
 	public projectiles: Set<Renderer> = new Set();
-	public declare rendererType: HardpointType;
+	public declare modelID: HardpointType;
 
 	public fireProjectile(target: TransformNode, rawOptions: FireProjectileOptions) {
 		const options: HardpointProjectileHandlerOptions = rawOptions;
 		options.material = rawOptions.materials.find(({ applies_to = [], material }) => {
-			if (applies_to.includes(genericHardpoints[this.rendererType].projectile.id) && material) {
+			if (applies_to.includes(genericHardpoints[this.modelID].projectile.id) && material) {
 				return material;
 			}
 		}, this)?.material;
@@ -73,12 +76,8 @@ export class HardpointRenderer extends ModelRenderer implements Renderer<Hardpoi
 
 	public async update(data: HardpointJSON) {
 		await super.update(data);
-		if (!this.isInstanciated) {
-			return;
-		}
 		this.instance.scaling.setAll(data.scale);
 		this.instance.scalingDeterminant = data.scale;
 	}
 }
-HardpointRenderer satisfies RendererStatic<HardpointRenderer>;
-entityRenderers.set('Hardpoint', HardpointRenderer);
+renderers.set('Hardpoint', HardpointRenderer);

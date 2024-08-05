@@ -104,7 +104,7 @@ function onBuildStart() {
 		console.log('Copying locales...');
 		fs.cpSync(path.join(input, 'locales'), path.join(options.output, 'locales'), { recursive: true });
 	} catch (e) {
-		if (!('status' in e)) {
+		if (typeof e == 'object' && e != null && !('status' in e)) {
 			console.error(e);
 		}
 	}
@@ -225,8 +225,9 @@ if (!fs.existsSync(asset_path)) {
 }
 try {
 	fs.symlinkSync(asset_path, symlinkPath);
-} catch (e) {
-	console.log('Failed to symlink: ' + e.message);
+} catch (_error) {
+	const error = _error as Error;
+	console.log('Failed to symlink: ' + error);
 	console.log('Attempting to copy...');
 	fs.cpSync(asset_path, symlinkPath, { recursive: true, force: true });
 }

@@ -7,7 +7,7 @@ export interface StarJSON extends CelestialBodyJSON {
 }
 
 export class Star extends CelestialBody {
-	public color: Color3;
+	public color: Color3 = Color3.Black();
 
 	public toJSON(): StarJSON {
 		return {

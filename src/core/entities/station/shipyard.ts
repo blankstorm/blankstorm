@@ -2,9 +2,10 @@ import { assignWithDefaults, pick } from 'utilium';
 import { Ship } from '../ship';
 import type { Producer, ProductionInfo } from '~/core/generic/production';
 import type { ShipType } from '~/core/generic/ships';
-import { genericShips, shipTypes } from '~/core/generic/ships';
+import { genericShips } from '~/core/generic/ships';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
+import { logger } from '../../utils';
 
 export interface ShipyardJSON extends StationPartJSON {
 	production: ProductionInfo<ShipType>;
@@ -13,8 +14,8 @@ export interface ShipyardJSON extends StationPartJSON {
 export class Shipyard extends StationPart implements Producer<ShipType> {
 	public readonly type = 'shipyard' as const;
 
-	public production: ProductionInfo<ShipType>;
-	public canProduce = shipTypes;
+	public production: ProductionInfo<ShipType> = null;
+	public canProduce = [...genericShips.keys()];
 
 	public update(): void {
 		super.update();
@@ -32,9 +33,13 @@ export class Shipyard extends StationPart implements Producer<ShipType> {
 	}
 
 	public build(id: ShipType) {
+		const ship = genericShips.get(id);
+		if (!ship) {
+			throw logger.error('Ship does not exist: ' + id);
+		}
 		this.production = {
 			id,
-			time: +genericShips[id].productionTime,
+			time: ship.productionTime,
 		};
 	}
 

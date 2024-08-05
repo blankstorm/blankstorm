@@ -96,16 +96,14 @@ export class Item<T extends Type = Type> {
 		this.label = label;
 		this.ui = instaniateTemplate('#setting').find<HTMLDivElement>('div.setting');
 
-		if (section instanceof Section) {
-			this.section = section;
-		} else if (sections.has(section)) {
-			this.section = sections.get(section)!;
-		} else if (section) {
-			throw new SettingsError(`Settings section "${section}" does not exist`);
+		const _section = section instanceof Section ? section : sections.get(section);
+		if (!_section) {
+			throw new SettingsError(`Invalid section for setting "${id}"`, this);
 		}
+		this.section = _section;
 
 		if (!settingTypes.includes(this.type)) {
-			throw new SettingsError(`Invalid type: ${this.type}`, this);
+			throw new SettingsError(`Invalid type for setting "${id}"`, this);
 		}
 
 		this.ui.find('input').attr({ type: htmlTypes[this.type], name: this.id });
@@ -181,23 +179,6 @@ export class Item<T extends Type = Type> {
 				this.ui.find('.input').val(val as string);
 		}
 		this.updateLabel();
-	}
-
-	public get metadata() {
-		const data = {
-			id: this.id,
-			type: this.type,
-			value: this.value,
-		};
-
-		for (const attr of ['step', 'min', 'max']) {
-			const val = this.ui.attr(attr);
-			if (val) {
-				data[attr] = isFinite(+val) ? +val : val;
-			}
-		}
-
-		return data;
 	}
 
 	//for selects

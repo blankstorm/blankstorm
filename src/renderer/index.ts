@@ -21,8 +21,8 @@ import type { GenericProjectile } from '../core/generic/hardpoints';
 import type { LevelJSON } from '../core/level';
 import { config, version } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
-import type { HardpointRenderer, Renderer, PlayerRenderer } from './entities';
-import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, createAndUpdate, entityRenderers } from './entities';
+import type { HardpointRenderer, PlayerRenderer } from './entities';
+import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, renderers } from './entities';
 import { logger } from './logger';
 import { ModelRenderer, initModel } from './models';
 export { logger };
@@ -60,7 +60,7 @@ export function setHitboxes(value: boolean) {
 	}
 }
 
-const entities: Map<string, Renderer<EntityJSON>> = new Map();
+const entities: Map<string, EntityRenderer> = new Map();
 
 export async function init(canvas: HTMLCanvasElement) {
 	logger.debug('Initializing engine');
@@ -184,11 +184,12 @@ export async function load(entityJSON: EntityJSON[]) {
 
 	logger.debug(`Loading ${entityJSON.length} entities`);
 	for (const data of entityJSON) {
-		if (!entityRenderers.has(data.entityType)) {
+		if (!renderers.has(data.entityType)) {
 			logger.warn('rendering for entity type is not supported: ' + data.entityType);
 			continue;
 		}
-		const entity: Renderer = await createAndUpdate(entityRenderers.get(data.entityType)!, data, scene);
+		const entity = new (renderers.get(data.entityType)!)(data);
+		await entity.update(data);
 		if (['Player', 'Client'].includes(data.entityType)) {
 			/**
 			 * @todo change this
@@ -216,7 +217,7 @@ export async function update(levelData: LevelJSON) {
 		const data = levelData.entities.find(_ => _.id == entity.id),
 			cached = cache.entities.find(_ => _.id == entity.id);
 
-		if (!entityRenderers.has(data?.entityType ?? '')) {
+		if (!renderers.has(data?.entityType ?? '')) {
 			continue;
 		}
 

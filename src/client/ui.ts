@@ -4,10 +4,9 @@ import $ from 'jquery';
 import { isHex, isJSON } from 'utilium';
 import type { Player } from '~/core/entities/player';
 import { Waypoint } from '~/core/entities/waypoint';
-import type { ItemID } from '~/core/generic/items';
 import { items } from '~/core/generic/items';
 import type { ResearchID } from '~/core/generic/research';
-import { isResearchLocked, priceOfResearch, research } from '~/core/generic/research';
+import { isResearchLocked, research } from '~/core/generic/research';
 import { genericShips } from '~/core/generic/ships';
 import { Level } from '~/core/level';
 import { config, game_url, version, versions } from '~/core/metadata';
@@ -19,13 +18,14 @@ import * as locales from './locales';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
-import { account, action, player as getPlayer, hasSystem, system } from './user';
-import { $svg, logger, minimize, upload } from './utils';
+import { alert } from './ui/dialog';
 import * as map from './ui/map';
 import * as templates from './ui/templates';
-export { map, templates };
+import { productRequirements } from './ui/tooltips';
 import { WaypointUI } from './ui/waypoint';
-import { alert } from './ui/dialog';
+import { account, action, player as getPlayer, hasSystem, system } from './user';
+import { $svg, logger, minimize, upload } from './utils';
+export { map, templates };
 
 export const UIs: Map<string, JQuery<DocumentFragment>> = new Map();
 
@@ -36,16 +36,16 @@ export function init() {
 		.text(versions.get(version)?.text || version)
 		.attr('href', game_url + '/versions#' + version);
 
-	for (const [id, item] of Object.entries(items)) {
+	for (const [id, item] of items) {
 		UIs.set(id, templates.createItemUI(item));
 	}
 
-	for (const [id, tech] of Object.entries(research)) {
+	for (const [id, tech] of research) {
 		UIs.set(id, templates.createResearchUI(tech));
 	}
 
-	for (const [type, genericShip] of Object.entries(genericShips)) {
-		UIs.set(type, templates.createShipUI(genericShip));
+	for (const [type, ship] of genericShips) {
+		UIs.set(type, templates.createShipUI(ship));
 	}
 
 	const size = config.system_generation.max_size;
@@ -75,48 +75,23 @@ export function update() {
 	}
 
 	//update tech info
-	for (const [id, tech] of Object.entries(research)) {
-		const materials = Object.entries(priceOfResearch(id as ResearchID, player.research[id])).reduce(
-			(result, [id, amount]) => result + `<br>${locales.text('item.name', id)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
-			''
-		);
-		const requires = Object.entries(tech.requires).reduce(
-			(result, [id, amount]) =>
-				result + (amount > 0) ? `<br>${locales.text('tech.name', id)}: ${player.research[id]}/${amount}` : `<br>Incompatible with ${locales.text('tech.name', id)}`,
-			''
-		);
+	for (const [id, tech] of research) {
 		$(UIs.get(id)!)
 			.find('.upgrade tool-tip')
 			.html(
 				`<strong>${locales.text('tech.name', id)}</strong><br>
 				${locales.text('tech.description', id)}<br>
 				${player.research[id] >= tech.max ? `<strong>Max Level</strong>` : `${player.research[id]} <svg><use href="assets/images/icons.svg#arrow-right"/></svg> ${player.research[id] + 1}`}
-				<br><br><strong>Material Cost:</strong>${materials}<br>
-				${Object.keys(tech.requires).length ? `<br><strong>Requires:</strong>` : ``}
-				${requires}${settings.get('tooltips') ? '<br>type: ' + id : ''}`
+				${productRequirements(tech, player)}`
 			);
-		$(UIs.get(id)!).find('.locked')[isResearchLocked(id as ResearchID, player) ? 'show' : 'hide']();
+		$(UIs.get(id)!).find('.locked')[isResearchLocked(id, player) ? 'show' : 'hide']();
 	}
 
 	//update ship info
-	for (const [id, ship] of Object.entries(genericShips)) {
-		const materials = Object.entries(ship.recipe).reduce(
-			(result, [id, amount]) => `${result}<br>${locales.text('item.name', id)}: ${minimize(player.storage.count(id as ItemID))}/${minimize(amount)}`,
-			''
-		);
-		const requires = Object.entries(ship.requires).reduce(
-			(result, [id, tech]) =>
-				`${result}<br>${tech == 0 ? `Incompatible with ${locales.text('tech.name', id)}` : `${locales.text('tech.name', id)}: ${player.research[id]}/${tech}`}`,
-			''
-		);
-
+	for (const [id, ship] of genericShips) {
 		$(UIs.get(id)!)
 			.find('.add tool-tip')
-			.html(
-				`${locales.text('entity.description', id)}<br><br><strong>Material Cost</strong>${materials}<br>${
-					Object.keys(ship.requires).length ? `<br><strong>Requires:</strong>` : ``
-				}${requires}${settings.get('tooltips') ? '<br>' + id : ''}`
-			);
+			.html(locales.text('entity.description', id) + productRequirements(ship, player));
 
 		let locked = false;
 		for (const t in ship.requires) {
@@ -250,8 +225,8 @@ export function registerListeners() {
 		$<HTMLDialogElement>('#save-edit')[0].close();
 	});
 	$('#saves button.upload').on('click', async () => {
-		const files = await upload('.json');
-		const text = await files[0].text();
+		const file = await upload('.json');
+		const text = await file.text();
 		if (isJSON(text)) {
 			saves.add(JSON.parse(text));
 		} else {
@@ -307,7 +282,10 @@ export function registerListeners() {
 				location.reload();
 			} catch (e) {
 				logger.warn('Authentication failed: ' + e);
-				$('#login').find('.error').text(e).show();
+				$('#login')
+					.find('.error')
+					.text(e + '')
+					.show();
 			}
 		});
 	$('#ingame-temp-menu div.nav button').on('click', e => {

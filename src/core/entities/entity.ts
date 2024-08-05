@@ -40,7 +40,7 @@ export class Entity
 		return this.constructor.name;
 	}
 
-	public name: string;
+	public name: string = '';
 
 	public get entityType(): string {
 		return this.constructor.name;
@@ -54,7 +54,7 @@ export class Entity
 		return types.some(type => this.entityTypes.includes(type));
 	}
 
-	public system: System;
+	public system!: System;
 
 	public parent?: Entity;
 
@@ -167,7 +167,7 @@ export class Entity
 		}
 	}
 
-	public static FromJSON(this: typeof Entity, data: Partial<EntityJSON>, level: Level): Entity {
+	public static FromJSON(data: Partial<EntityJSON>, level: Level): Entity {
 		const entity = new this(data.id, level);
 		entity.fromJSON(data);
 		return entity;

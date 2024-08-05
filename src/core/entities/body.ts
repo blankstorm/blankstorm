@@ -22,7 +22,7 @@ export class CelestialBody extends Entity {
 	public option?: JQuery<HTMLElement>;
 	protected _storage?: Container = new Container(1e10);
 
-	public waypoint: string;
+	public waypoint!: string;
 
 	public constructor(id: string | undefined, level: Level) {
 		super(id, level);

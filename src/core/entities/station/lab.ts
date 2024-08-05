@@ -3,6 +3,7 @@ import type { Producer, ProductionInfo } from '~/core/generic/production';
 import { research, type ResearchID } from '~/core/generic/research';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
+import { logger } from '../../utils';
 
 export interface LabJSON extends StationPartJSON {
 	production: ProductionInfo<ResearchID>;
@@ -11,8 +12,8 @@ export interface LabJSON extends StationPartJSON {
 export class Lab extends StationPart implements Producer<ResearchID> {
 	public readonly type = 'lab' as const;
 
-	public production: ProductionInfo<ResearchID>;
-	public canProduce = Object.keys(research) as ResearchID[];
+	public production: ProductionInfo<ResearchID> = null;
+	public canProduce = [...research.keys()];
 
 	public update(): void {
 		super.update();
@@ -27,9 +28,13 @@ export class Lab extends StationPart implements Producer<ResearchID> {
 	}
 
 	public research(id: ResearchID) {
+		const tech = research.get(id);
+		if (!tech) {
+			throw logger.error('Research does not exist: ' + id);
+		}
 		this.production = {
 			id,
-			time: +research[id].productionTime,
+			time: tech.productionTime,
 		};
 	}
 

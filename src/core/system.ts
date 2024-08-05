@@ -2,7 +2,7 @@ import type { IVector2Like } from '@babylonjs/core/Maths/math.like';
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
-import { getRandomIntWithRecursiveProbability, greekLetterNames, randomBoolean, randomFloat, randomHex, randomInt, range } from 'utilium';
+import { getRandomIntWithRecursiveProbability, greekLetterNames, pick, randomBoolean, randomFloat, randomHex, randomInt, range } from 'utilium';
 import { filterEntities, type Entity } from './entities/entity';
 import { Planet } from './entities/planet';
 import { generateFleetFromPower } from './entities/ship';
@@ -17,7 +17,7 @@ import type { Level } from './level';
 import { config } from './metadata';
 import { logger, randomCords } from './utils';
 
-export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] } | { type: string; value };
+export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] };
 
 export interface SystemJSON {
 	name: string;
@@ -51,7 +51,7 @@ export class System extends EventEmitter<{
 	public name = '';
 
 	public difficulty = 1;
-	public position: IVector2Like;
+	public position: IVector2Like = pick(Vector2.Random(), 'x', 'y');
 	public connections: SystemConnection[] = [];
 
 	constructor(
@@ -97,17 +97,7 @@ export class System extends EventEmitter<{
 		};
 
 		for (const connection of this.connections) {
-			if (connection instanceof System) {
-				data.connections.push({ type: 'system', value: connection.id });
-				continue;
-			}
-
-			if (connection instanceof Vector2) {
-				data.connections.push({ type: 'position', value: connection.asArray() });
-				continue;
-			}
-
-			data.connections.push({ type: 'other', value: connection });
+			data.connections.push(connection instanceof System ? { type: 'system', value: connection.id } : { type: 'position', value: connection.asArray() });
 		}
 
 		return data;

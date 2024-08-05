@@ -15,7 +15,6 @@ export class Client extends Player {
 		public readonly socket: Socket
 	) {
 		super(id, level);
-		this.socket = socket;
 	}
 
 	kick(message: string) {
@@ -46,9 +45,9 @@ export function getDisconnectReason(reason: string): string {
 
 export const clients = new Map<string, Client>();
 
-export function getClientBy(attr: string, val): Client {
+export function getClientBy<T extends keyof Client>(key: T, value: Client[T]): Client {
 	for (const client of clients.values()) {
-		if (client[attr] == val) {
+		if (client[key] == value) {
 			return client;
 		}
 	}

@@ -8,7 +8,7 @@ export interface PlanetData extends CelestialBodyJSON {
 }
 
 export class Planet extends CelestialBody {
-	public biome: PlanetBiome;
+	public biome!: PlanetBiome;
 
 	public toJSON(): PlanetData {
 		return {
