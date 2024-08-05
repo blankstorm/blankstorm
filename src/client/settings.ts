@@ -182,7 +182,7 @@ export class Item<T extends Type = Type> {
 	}
 
 	//for selects
-	public addOption(name: string, label: string) {
+	public addOption(name: string, label: string): void {
 		const option = $<HTMLOptionElement>('<option></option>');
 		option.val(name);
 		option.text(label);
@@ -190,11 +190,11 @@ export class Item<T extends Type = Type> {
 		this.ui.find('select').append(option);
 	}
 
-	public updateLabel() {
+	public updateLabel(): void {
 		this.ui.find('label').text(typeof this.label == 'function' ? this.label(this.value) : this.label);
 	}
 
-	public delete() {
+	public delete(): void {
 		this.ui.detach();
 		items.delete(this.id);
 	}
@@ -216,7 +216,7 @@ export class Section {
 		sections.set(id, this);
 	}
 
-	public dispose(disposeItems?: boolean) {
+	public dispose(disposeItems?: boolean): void {
 		if (disposeItems) {
 			for (const item of items.values()) {
 				if (item.section == this) {
