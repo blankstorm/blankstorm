@@ -1,8 +1,8 @@
 import type { Entries } from 'utilium';
 import { config } from '../metadata';
-import type { Producible } from './production';
+import type { Product } from './production';
 
-export interface Item extends Producible {
+export interface Item extends Product {
 	rare: boolean;
 	value: number;
 	weight: number;

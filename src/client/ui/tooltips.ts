@@ -1,12 +1,12 @@
 import type { Player } from '../../core/entities/player';
 import type { ItemID } from '../../core/generic/items';
-import type { Producible } from '../../core/generic/production';
+import type { Product } from '../../core/generic/production';
 import type { ResearchID } from '../../core/generic/research';
 import { text } from '../locales';
 import * as settings from '../settings';
 import { minimize } from '../utils';
 
-export function productRequirements(thing: Producible, player: Player): string {
+export function productRequirements(thing: Product, player: Player): string {
 	const materials = (Object.entries(thing.recipe) as [ItemID, number][])
 		.map(([id, amount]) => `${text('item.name', id)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`)
 		.join('<br>');

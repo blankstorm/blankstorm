@@ -1,10 +1,10 @@
 import type { Player } from '../entities/player';
 import { config } from '../metadata';
-import type { Producible } from './production';
+import type { Product } from './production';
 import type { ItemID } from './items';
 import type { Entries } from 'utilium';
 
-export interface Research extends Producible {
+export interface Research extends Product {
 	xp: number;
 	scale: number;
 	max: number;

@@ -1,7 +1,7 @@
 import type { Entries } from 'utilium';
 import { config } from '../metadata';
 import { type HardpointType, genericHardpoints } from './hardpoints';
-import type { Producible } from './production';
+import type { Product } from './production';
 import { computeProductionDifficulty } from './production';
 
 export interface HardpointInfo {
@@ -11,7 +11,7 @@ export interface HardpointInfo {
 	scale: number;
 }
 
-export interface GenericShip extends Producible {
+export interface GenericShip extends Product {
 	id: ShipType;
 	hp: number;
 	speed: number;
