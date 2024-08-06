@@ -287,6 +287,15 @@
 		</div>
 		<div id="map" class="cover game-ui ingame" tabindex="-1">
 			<svg id="map-markers-container" class="cover" transform-origin="center">
+				<linearGradient id="system-connection-x-gradient" gradientTransform="rotate(0)">
+					<stop offset="0%" stop-color="hsl(200,100%,90%,1)"></stop>
+					<stop offset="100%" stop-color="hsl(200,100%,90%,0)"></stop>
+				</linearGradient>
+				<linearGradient id="system-connection-y-gradient" gradientTransform="rotate(90)">
+					<stop offset="0%" stop-color="hsl(200,100%,90%,0)"></stop>
+					<stop offset="50%" stop-color="hsl(200,100%,90%,1)"></stop>
+					<stop offset="100%" stop-color="hsl(200,100%,90%,0)"></stop>
+				</linearGradient>
 				<g id="map-markers" style="transition: 0.25s ease-out allow-discrete"></g>
 			</svg>
 			<div id="map-system-info" class="text-overlay"></div>

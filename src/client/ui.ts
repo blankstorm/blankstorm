@@ -50,8 +50,7 @@ export function init() {
 
 	const size = config.system_generation.max_size;
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
-	const grid = $svg<SVGGElement>('g');
-	grid.css('stroke', 'var(--bg-color)').appendTo('#map-markers');
+	const grid = $svg<SVGGElement>('g').css('stroke', 'var(--bg-color)').appendTo('#map-markers');
 	for (let i = -size * 2; i < size * 2; i += 100) {
 		grid.append($svg('line').attr({ x1: -size * 2, x2: size * 2, y1: i, y2: i }), $svg('line').attr({ x1: i, x2: i, y1: -size * 2, y2: size * 2 }));
 	}

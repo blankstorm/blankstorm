@@ -68,6 +68,7 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 			const level = Level.FromJSON(save);
 			await level.ready();
 			load(level);
+			$('#loading_cover').hide();
 		} catch (e) {
 			logger.error(e instanceof Error ? e : e + '');
 			const loadAnyway = await confirm('Failed to load save: ' + e + '\nLoad the save anyway?');

@@ -225,6 +225,17 @@ div.screenshots img {
 	transform-origin: center;
 }
 
+.system-connection-x {
+	stroke: url(#system-connection-x-gradient);
+	stroke-width: 10;
+}
+
+.system-connection-y {
+	stroke: url(#system-connection-y-gradient);
+	stroke-width: 10;
+	mix-blend-mode: screen;
+}
+
 .waypoint-li {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr) 6fr;

@@ -9,9 +9,9 @@ import { config } from '~/core/metadata';
 import { System } from '~/core/system';
 import { getCurrentLevel } from '../client';
 import * as settings from '../settings';
+import { switchTo } from '../ui';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
-import { switchTo } from '../ui';
 
 export type MapMode = 'in-system' | 'inter-system';
 
@@ -51,6 +51,14 @@ export class MapMarker {
 		let internalMarker: JQuery<SVGElement>;
 		if (target instanceof System) {
 			internalMarker = $svg('circle');
+			const { x, y } = target.position;
+			for (const connection of target.connections) {
+				const connID = connection instanceof System ? connection.id : connection.getHashCode();
+				const connPosition = connection instanceof System ? connection.position : connection;
+				const attributes = { x1: x * 100, y1: y * 100, x2: connPosition.x * 100, y2: connPosition.y * 100 };
+				this.gui.append($svg('line').attr({ ...attributes, class: 'system-connection-x', id: target.id + '-' + connID + '-x' }));
+				this.gui.append($svg('line').attr({ ...attributes, class: 'system-connection-y', id: target.id + '-' + connID + '-y' }));
+			}
 		} else {
 			switch (target.entityType) {
 				case 'Star':
@@ -95,6 +103,21 @@ export class MapMarker {
 		});
 		if (isCircle) {
 			marker.attr('r', 'radius' in this.target ? (this.target.radius as number) : 25);
+		}
+		if (isSystem) {
+			const { x, y } = this.target.position;
+			for (const connection of this.target.connections) {
+				const connID = connection instanceof System ? connection.id : connection.getHashCode();
+				const connPosition = connection instanceof System ? connection.position : connection;
+				const attributes = {
+					x1: x * 100,
+					y1: y * 100,
+					x2: connPosition.x * 100,
+					y2: connPosition.y * 100,
+				};
+				$('#' + this.target.id + '-' + connID + '-x').attr(attributes);
+				$('#' + this.target.id + '-' + connID + '-y').attr(attributes);
+			}
 		}
 		(<JQuery>(marker.is('svg') ? marker : this.gui)).css({
 			rotate: (!isSystem ? this.target.absoluteRotation.y : 0) + 'rad',
