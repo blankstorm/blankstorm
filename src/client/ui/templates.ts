@@ -4,7 +4,7 @@ import type { Item } from '~/core/generic/items';
 import type { Research } from '~/core/generic/research';
 import { genericShips, type GenericShip, type ShipType } from '~/core/generic/ships';
 import { Level, type LevelJSON } from '~/core/level';
-import { versions } from '~/core/metadata';
+import { config, versions } from '~/core/metadata';
 import { load } from '../client';
 import * as locales from '../locales';
 import * as saves from '../saves';
@@ -68,11 +68,18 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 			const level = Level.FromJSON(save);
 			await level.ready();
 			load(level);
-			$('#loading_cover').hide();
 		} catch (e) {
-			alert('Failed to load save: ' + e);
 			logger.error(e instanceof Error ? e : e + '');
-			throw e;
+			const loadAnyway = await confirm('Failed to load save: ' + e + '\nLoad the save anyway?');
+			if (config.debug && loadAnyway) {
+				$('#loading_cover').hide();
+				throw e;
+			}
+			if (!loadAnyway) {
+				await alert('Failed to load save: ' + e);
+			}
+			$('#loading_cover,#hud,canvas.game').hide();
+			$('#saves').show();
 		}
 	};
 

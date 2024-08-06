@@ -15,6 +15,7 @@ export function upload(type: string, multiple = false): Promise<File> {
 			.trigger('click');
 	});
 }
+
 export function download(data: BlobPart, name: string): void {
 	$(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click();
 }

@@ -17,7 +17,7 @@ import type { Level } from './level';
 import { config } from './metadata';
 import { logger, randomCords } from './utils';
 
-export type SystemConnectionJSON = { type: 'system'; value: string } | { type: 'position'; value: number[] };
+export type SystemConnectionJSON = string | [number, number];
 
 export interface SystemJSON {
 	name: string;
@@ -45,6 +45,8 @@ export interface ActionData {
 
 export type SystemConnection = System | Vector2;
 
+const _copy = ['difficulty', 'name', 'id', 'position'] as const;
+
 export class System extends EventEmitter<{
 	created: [];
 }> {
@@ -52,14 +54,13 @@ export class System extends EventEmitter<{
 
 	public difficulty = 1;
 	public position: IVector2Like = pick(Vector2.Random(), 'x', 'y');
-	public connections: SystemConnection[] = [];
+	public connections: Set<SystemConnection> = new Set();
 
 	constructor(
-		public id: string = randomHex(32),
+		public readonly id: string = randomHex(32),
 		public level: Level
 	) {
 		super();
-		this.id ||= randomHex(32);
 		this.level.systems.set(this.id, this);
 		this.emit('created');
 	}
@@ -89,39 +90,36 @@ export class System extends EventEmitter<{
 
 	public toJSON(): SystemJSON {
 		const data: SystemJSON = {
-			difficulty: this.difficulty,
-			name: this.name,
-			id: this.id,
-			position: this.position,
+			...pick(this, _copy),
 			connections: [],
 		};
 
 		for (const connection of this.connections) {
-			data.connections.push(connection instanceof System ? { type: 'system', value: connection.id } : { type: 'position', value: connection.asArray() });
+			data.connections.push(connection instanceof System ? connection.id : connection.asArray());
 		}
 
 		return data;
 	}
 
 	public fromJSON(json: SystemJSON): void {
-		this.name = json.name;
-		this.difficulty = json.difficulty;
-		this.position = json.position;
+		Object.assign(this, pick(json, _copy));
 
-		for (const { type, value } of json.connections) {
-			switch (type) {
-				case 'system':
-					if (!this.level.systems.has(value)) {
-						throw new ReferenceError('System does not exist');
-					}
-					this.connections.push(this.level.systems.get(value)!);
-					break;
-				case 'position':
-					this.connections.push(Vector2.FromArray(value));
-					break;
-				default:
-					this.connections.push(value);
+		for (const value of json.connections) {
+			if (typeof value == 'string') {
+				const system = this.level.systems.get(value);
+				if (!system) {
+					throw new ReferenceError('System does not exist');
+				}
+				this.connections.add(system);
+				continue;
 			}
+
+			if (Array.isArray(value)) {
+				this.connections.add(Vector2.FromArray(value));
+				continue;
+			}
+
+			throw logger.error('Invalid connection');
 		}
 	}
 
@@ -136,7 +134,9 @@ export class System extends EventEmitter<{
 		logger.debug(`Generating system "${name}" (${system.id})`);
 		system.name = name;
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
-		system.connections = new Array(connectionCount);
+		for (let i = 0; i < connectionCount; i++) {
+			system.connections.add(Vector2.Random().scale(2.5));
+		}
 		const star = new Star(undefined, level);
 		logger.debug(`	> star ${star.id}`);
 		star.fromJSON({
@@ -146,8 +146,7 @@ export class System extends EventEmitter<{
 			position: [0, 0, 0],
 			color: [0, 1, 2].map(i => Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[i], options.stars.color_max[i])),
 		});
-		const usePrefix = randomBoolean(),
-			planetCount = randomInt(options.planets.min, options.planets.max),
+		const planetCount = randomInt(options.planets.min, options.planets.max),
 			names = randomBoolean() ? greekLetterNames.slice(0, planetCount) : range(1, planetCount + 1),
 			planets: Planet[] = [];
 		for (let i = 0; i < names.length; i++) {
@@ -157,7 +156,7 @@ export class System extends EventEmitter<{
 			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));
 			planet.fleet.position = randomCords(randomInt(planet.radius + 5, planet.radius * 1.25), true);
 
-			planet.name = usePrefix ? names[i] + ' ' + name : name + ' ' + names[i];
+			planet.name = name + ' ' + names[i];
 			planet.system = system;
 			planet.position = randomCords(randomInt((star.radius + planet.radius) * 1.5, options.planets.distance_max), true);
 			planet.biome = planetBiomes[randomInt(0, 5)];

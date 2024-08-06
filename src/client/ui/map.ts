@@ -144,7 +144,7 @@ export function update(): void {
 	`);
 	$('#map-system-info').html(`
 		<span><strong>${system().name}</strong></span><br>
-		<span>${system().connections.length} hyperspace connection(s)</span>
+		<span>${system().connections.size} hyperspace connection(s)</span>
 	`);
 	$('#map .mode').text(modeNames[mode]);
 	for (const entity of system().entities()) {
