@@ -16,13 +16,13 @@ import { switchTo } from '../ui';
 export type MapMode = 'in-system' | 'inter-system';
 
 export class MapMarker {
-	gui = $svg<SVGGElement>('g');
+	public gui = $svg<SVGGElement>('g');
 
-	get markerID(): string {
+	public get markerID(): string {
 		return 'map-marker:' + this.target.id;
 	}
 
-	get color(): string {
+	public get color(): string {
 		if (this.target instanceof System) {
 			return this.target.entity<Star>('.Star').color.toHexString();
 		}
@@ -46,7 +46,7 @@ export class MapMarker {
 		throw new TypeError('Invalid target type');
 	}
 
-	constructor(public readonly target: Entity | System) {
+	public constructor(public readonly target: Entity | System) {
 		this.gui.attr('id', this.markerID).addClass('map-marker').appendTo('#map-markers');
 		let internalMarker: JQuery<SVGElement>;
 		if (target instanceof System) {
@@ -73,11 +73,11 @@ export class MapMarker {
 		this.update();
 	}
 
-	get mode(): MapMode {
+	public get mode(): MapMode {
 		return this.target instanceof System ? 'inter-system' : 'in-system';
 	}
 
-	update() {
+	public update(): void {
 		const isSystem = this.target instanceof System;
 		if (!isSystem && this.target.entityType == 'Waypoint') {
 			this.gui.find('.internal-marker use').attr({
