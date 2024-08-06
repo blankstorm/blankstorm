@@ -17,7 +17,7 @@ import type { Level } from './level';
 import { config } from './metadata';
 import { logger, randomCords } from './utils';
 
-export type SystemConnectionJSON = string | [number, number];
+export type SystemConnectionJSON = string | IVector2Like;
 
 export interface SystemJSON {
 	name: string;
@@ -43,7 +43,7 @@ export interface ActionData {
 	move: MoveInfo<Vector3>[];
 }
 
-export type SystemConnection = System | Vector2;
+export type SystemConnection = System | IVector2Like;
 
 const _copy = ['difficulty', 'name', 'id', 'position'] as const;
 
@@ -53,7 +53,7 @@ export class System extends EventEmitter<{
 	public name = '';
 
 	public difficulty = 1;
-	public position: IVector2Like = pick(Vector2.Random(), 'x', 'y');
+	public position: IVector2Like = pick(randomCords(5, true), 'x', 'y');
 	public connections: Set<SystemConnection> = new Set();
 
 	constructor(
@@ -95,7 +95,7 @@ export class System extends EventEmitter<{
 		};
 
 		for (const connection of this.connections) {
-			data.connections.push(connection instanceof System ? connection.id : connection.asArray());
+			data.connections.push(connection instanceof System ? connection.id : connection);
 		}
 
 		return data;
@@ -135,7 +135,7 @@ export class System extends EventEmitter<{
 		system.name = name;
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		for (let i = 0; i < connectionCount; i++) {
-			system.connections.add(Vector2.Random().scale(2.5));
+			system.connections.add(pick(randomCords(5, true), 'x', 'y'));
 		}
 		const star = new Star(undefined, level);
 		logger.debug(`	> star ${star.id}`);

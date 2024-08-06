@@ -12,6 +12,7 @@ import * as settings from '../settings';
 import { switchTo } from '../ui';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
+import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 
 export type MapMode = 'in-system' | 'inter-system';
 
@@ -53,9 +54,9 @@ export class MapMarker {
 			internalMarker = $svg('circle');
 			const { x, y } = target.position;
 			for (const connection of target.connections) {
-				const connID = connection instanceof System ? connection.id : connection.getHashCode();
+				const connID = connection instanceof System ? connection.id : Vector2.prototype.getHashCode.call(connection);
 				const connPosition = connection instanceof System ? connection.position : connection;
-				const attributes = { x1: x * 100, y1: y * 100, x2: connPosition.x * 100, y2: connPosition.y * 100 };
+				const attributes = { x1: x * 100, y1: y * 100, x2: (connPosition.x || 1) * 100, y2: (connPosition.y || 1) * 100 };
 				this.gui.append($svg('line').attr({ ...attributes, class: 'system-connection-x', id: target.id + '-' + connID + '-x' }));
 				this.gui.append($svg('line').attr({ ...attributes, class: 'system-connection-y', id: target.id + '-' + connID + '-y' }));
 			}
@@ -107,14 +108,9 @@ export class MapMarker {
 		if (isSystem) {
 			const { x, y } = this.target.position;
 			for (const connection of this.target.connections) {
-				const connID = connection instanceof System ? connection.id : connection.getHashCode();
+				const connID = connection instanceof System ? connection.id : Vector2.prototype.getHashCode.call(connection);
 				const connPosition = connection instanceof System ? connection.position : connection;
-				const attributes = {
-					x1: x * 100,
-					y1: y * 100,
-					x2: connPosition.x * 100,
-					y2: connPosition.y * 100,
-				};
+				const attributes = { x1: x * 100, y1: y * 100, x2: (connPosition.x || 1) * 100, y2: (connPosition.y || 1) * 100 };
 				$('#' + this.target.id + '-' + connID + '-x').attr(attributes);
 				$('#' + this.target.id + '-' + connID + '-y').attr(attributes);
 			}
