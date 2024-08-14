@@ -15,9 +15,9 @@ import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { Level } from './level';
 import { config } from './metadata';
-import { logger, randomCords } from './utils';
+import { logger, randomInCircle, randomInSphere } from './utils';
 
-export type SystemConnectionJSON = string | IVector2Like;
+export type SystemConnectionJSON = string | [number, number];
 
 export interface SystemJSON {
 	name: string;
@@ -43,7 +43,7 @@ export interface ActionData {
 	move: MoveInfo<Vector3>[];
 }
 
-export type SystemConnection = System | IVector2Like;
+export type SystemConnection = System | Vector2;
 
 const _copy = ['difficulty', 'name', 'id', 'position'] as const;
 
@@ -53,7 +53,7 @@ export class System extends EventEmitter<{
 	public name = '';
 
 	public difficulty = 1;
-	public position: IVector2Like = pick(randomCords(5, true), 'x', 'y');
+	public position: Vector2 = randomInCircle(5);
 	public connections: Set<SystemConnection> = new Set();
 
 	constructor(
@@ -95,7 +95,7 @@ export class System extends EventEmitter<{
 		};
 
 		for (const connection of this.connections) {
-			data.connections.push(connection instanceof System ? connection.id : connection);
+			data.connections.push(connection instanceof System ? connection.id : connection.asArray());
 		}
 
 		return data;
@@ -135,7 +135,7 @@ export class System extends EventEmitter<{
 		system.name = name;
 		const connectionCount = getRandomIntWithRecursiveProbability(options.connections.probability);
 		for (let i = 0; i < connectionCount; i++) {
-			system.connections.add(pick(randomCords(5, true), 'x', 'y'));
+			system.connections.add(randomInCircle(5));
 		}
 		const star = new Star(undefined, level);
 		logger.debug(`	> star ${star.id}`);
@@ -154,11 +154,11 @@ export class System extends EventEmitter<{
 			logger.debug(`	> planet ${planet.id}`);
 			planet.radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));
-			planet.fleet.position = randomCords(randomInt(planet.radius + 5, planet.radius * 1.25), true);
+			planet.fleet.position = randomInSphere(randomInt(planet.radius + 5, planet.radius * 1.25), true);
 
 			planet.name = name + ' ' + names[i];
 			planet.system = system;
-			planet.position = randomCords(randomInt((star.radius + planet.radius) * 1.5, options.planets.distance_max), true);
+			planet.position = randomInSphere(randomInt((star.radius + planet.radius) * 1.5, options.planets.distance_max), true);
 			planet.biome = planetBiomes[randomInt(0, 5)];
 
 			planets[i] = planet;

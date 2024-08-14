@@ -3,7 +3,7 @@ import type { GenericHardpoint, HardpointType } from '../generic/hardpoints';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { HardpointInfo } from '../generic/ships';
 import type { Level } from '../level';
-import { randomCords } from '../utils';
+import { randomInSphere } from '../utils';
 import type { CelestialBody } from './body';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
@@ -66,7 +66,7 @@ export class Hardpoint extends Entity {
 		this.reload = this.generic.reload;
 		const projectile = new Projectile(undefined, this.level);
 		projectile.hardpoint = this;
-		const targetPosition = target.absolutePosition.add(randomCords(randomFloat(0, 1 / this.generic.accuracy)));
+		const targetPosition = target.absolutePosition.add(randomInSphere(randomFloat(0, 1 / this.generic.accuracy)));
 		projectile.velocity = targetPosition.subtract(this.absolutePosition).normalize().scale(this.generic.projectileSpeed);
 		projectile.target = target.isType<Ship>('Ship') ? target : target.parent;
 		this.projectiles.add(projectile);

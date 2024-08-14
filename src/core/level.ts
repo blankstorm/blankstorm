@@ -1,4 +1,4 @@
-import type { IVector2Like, IVector3Like } from '@babylonjs/core/Maths/math.like';
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
@@ -169,7 +169,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 	}
 
-	public async generateSystem(name: string, position: IVector2Like, options: SystemGenerationOptions = config.system_generation, system?: System) {
+	public async generateSystem(name: string, position: Vector2, options: SystemGenerationOptions = config.system_generation, system?: System) {
 		const difficulty = Math.max(Math.log10(Vector2.Distance(Vector2.Zero(), position)) - 1, 0.25);
 		system = await System.Generate(name, { ...options, difficulty }, this, system);
 		system.position = position;

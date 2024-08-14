@@ -6,7 +6,7 @@ import { FolderMap } from 'utilium/fs.js';
 import { Player } from '../core/entities/player';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
-import { randomCords } from '../core/utils';
+import { randomInSphere } from '../core/utils';
 import { getCurrentLevel } from './client';
 import { path } from './config';
 import { createSaveListItem } from './ui/templates';
@@ -26,7 +26,7 @@ export async function createDefault(name: string): Promise<Level> {
 	player.fleet.at(0).position.z += 7.5;
 	player.system = system;
 	player.name = account.username;
-	player.position = new Vector3(0, 0, -1000).add(randomCords(50, true));
+	player.position = new Vector3(0, 0, -1000).add(randomInSphere(50, true));
 	player.rotation = Vector3.Zero();
 
 	level.rootSystem = system;

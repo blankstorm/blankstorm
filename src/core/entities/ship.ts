@@ -6,7 +6,7 @@ import type { GenericShip, ShipType } from '../generic/ships';
 import { genericShips } from '../generic/ships';
 import type { Level } from '../level';
 import type { System } from '../system';
-import { randomCords } from '../utils';
+import { randomInSphere } from '../utils';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import type { HardpointJSON } from './hardpoint';
@@ -38,7 +38,7 @@ export class Ship extends Entity {
 
 		const { power, hp, jump, storage, hardpoints } = genericShips.get(this.type)!;
 
-		this.position.addInPlace(randomCords(Math.log(randomInt(0, power || 1) ** 3 + 1), true));
+		this.position.addInPlace(randomInSphere(Math.log(randomInt(0, power || 1) ** 3 + 1), true));
 
 		this._storage = new Container(storage);
 		this.hp = hp;
