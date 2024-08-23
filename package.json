@@ -51,7 +51,7 @@
 		"logzen": "^0.3.8",
 		"socket.io": "^4.7.5",
 		"socket.io-client": "^4.7.5",
-		"utilium": "^0.5.6"
+		"utilium": "^0.5.7"
 	},
 	"devDependencies": {
 		"@types/archiver": "^5.3.2",

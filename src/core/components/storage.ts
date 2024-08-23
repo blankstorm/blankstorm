@@ -1,13 +1,8 @@
-import { pick } from 'utilium';
+import { pick, map } from 'utilium';
 import type { Entity } from '../entities/entity';
 import type { ItemContainer, ItemID, PartialItemContainer } from '../generic/items';
 import { items } from '../generic/items';
 import { register, type Component } from './component';
-
-function map<const T extends Partial<Record<ItemID, number>>>(items: T): Map<keyof T, number> {
-	const entries = <[keyof T, number][]>Object.entries(items);
-	return new Map(entries);
-}
 
 /**
  * Generic class for something that stores items
@@ -33,7 +28,7 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 		this.clear();
 		this.max = data.max;
 		for (const [id, amount] of map(data.items)) {
-			this.add(id, amount);
+			this.add(id, amount!);
 		}
 		return this;
 	}
@@ -62,7 +57,7 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 
 	public addItems(items: Partial<Record<ItemID, number>>) {
 		for (const [id, amount] of map(items)) {
-			this.add(id, amount);
+			this.add(id, amount!);
 		}
 	}
 
