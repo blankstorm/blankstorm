@@ -26,7 +26,7 @@ commands.set('kick', {
 		logger.log(`${executor.name} kicked ${player}. Reason: ${reason.join(' ')}`);
 		return 'Kicked ' + player;
 	},
-	oplvl: 3,
+	permissionLevel: 3,
 } as ServerCommand);
 commands.set('ban', {
 	exec({ executor }, player, ...reason: string[]) {
@@ -38,7 +38,7 @@ commands.set('ban', {
 		logger.log(`${executor.name} banned ${player}. Reason: ${reason.join(' ')}`);
 		return 'Banned ' + player;
 	},
-	oplvl: 4,
+	permissionLevel: 4,
 });
 commands.set('unban', {
 	exec({ executor }, player, ...reason) {
@@ -52,13 +52,13 @@ commands.set('unban', {
 				executor.socket.emit('chat', 'Player is not online or does not exist');
 			});
 	},
-	oplvl: 4,
+	permissionLevel: 4,
 });
 commands.set('log', {
 	exec({ executor }, ...message) {
 		logger.log(`${executor.name} logged ${message.join(' ')}`);
 	},
-	oplvl: 1,
+	permissionLevel: 1,
 });
 commands.set('msg', {
 	exec({ executor }, player, ...message) {
@@ -70,32 +70,32 @@ commands.set('msg', {
 		getClientByName(player).lastMessager = executor;
 		return `[me -> ${executor.name}] ${message.join(' ')}`;
 	},
-	oplvl: 0,
+	permissionLevel: 0,
 });
 commands.set('reply', {
 	exec({ executor }, ...message) {
 		return executor.lastMessager ? commands.get('msg')!.exec({ executor }, executor.lastMessager.name, ...message) : 'No one messaged you yet =(';
 	},
-	oplvl: 0,
+	permissionLevel: 0,
 });
 commands.set('stop', {
 	exec() {
 		server.stop();
 	},
-	oplvl: 4,
+	permissionLevel: 4,
 });
 commands.set('restart', {
 	exec() {
 		server.restart();
 	},
-	oplvl: 4,
+	permissionLevel: 4,
 });
 commands.set('save', {
 	exec() {
 		server.save();
 		return 'Saved the current level';
 	},
-	oplvl: 4,
+	permissionLevel: 4,
 });
 export function execCommandString(string: string, context: ServerCommandExecutionContext, ignoreOp?: boolean) {
 	return _execCommandString(string, context, ignoreOp);

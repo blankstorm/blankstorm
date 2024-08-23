@@ -7,12 +7,12 @@ import { game_url } from './metadata';
 import type { ShipType } from './generic/ships';
 
 export interface CommandExecutionContext {
-	executor: Entity & { oplvl?: number };
+	executor: Entity & { permissionLevel?: number };
 }
 
 export interface Command {
 	exec(context: CommandExecutionContext, ...args: string[]): string | void;
-	oplvl: number;
+	permissionLevel: number;
 }
 
 export const commands: Map<string, Command> = new Map(
@@ -21,7 +21,7 @@ export const commands: Map<string, Command> = new Map(
 			exec() {
 				return `See ${game_url}/docs/commands for command documentation`;
 			},
-			oplvl: 0,
+			permissionLevel: 0,
 		},
 		remove: {
 			exec({ executor }, selector) {
@@ -31,7 +31,7 @@ export const commands: Map<string, Command> = new Map(
 				}
 				return `Removed ${entities.size} entities`;
 			},
-			oplvl: 3,
+			permissionLevel: 3,
 		},
 		spawn: {
 			exec({ executor }, type: ShipType, selector, extra) {
@@ -43,7 +43,7 @@ export const commands: Map<string, Command> = new Map(
 				}
 				return `Spawned ${spawned.constructor.name} with id #${spawned.id}`;
 			},
-			oplvl: 3,
+			permissionLevel: 3,
 		},
 		/**
 		 * @todo implement executor position as default
@@ -57,19 +57,19 @@ export const commands: Map<string, Command> = new Map(
 				});
 				return 'Teleported ' + entities.size;
 			},
-			oplvl: 3,
+			permissionLevel: 3,
 		},
 	})
 );
 
 export const execCommandString = (string: string, context: CommandExecutionContext, ignoreOp?: boolean): string | void => {
-	context.executor.oplvl ??= 0;
+	context.executor.permissionLevel ??= 0;
 	for (const [name, command] of commands) {
 		if (!string.startsWith(name)) {
 			continue;
 		}
 
-		if (context.executor.oplvl < command.oplvl && !ignoreOp) {
+		if (context.executor.permissionLevel < command.permissionLevel && !ignoreOp) {
 			return 'You do not have permission to execute that command';
 		}
 
