@@ -20,9 +20,9 @@ export class EntityRenderer<T extends EntityJSON = EntityJSON> extends Transform
 	public async update(data: T): Promise<void> {
 		this.data = data;
 		this.name = data.name;
-		this.position.fromArray(data.position);
-		this.rotation.fromArray(data.rotation);
-		this.velocity.fromArray(data.velocity);
+		this.position = Vector3.FromArray(data.position);
+		this.rotation = Vector3.FromArray(data.rotation);
+		this.velocity = Vector3.FromArray(data.velocity);
 		this.parent = data.parent ? this.getScene().getNodeById(data.parent) : null;
 	}
 }
