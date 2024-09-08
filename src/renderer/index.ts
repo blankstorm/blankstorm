@@ -192,7 +192,7 @@ export async function load(entityJSON: EntityJSON[]) {
 			/**
 			 * @todo change this
 			 */
-			camera.target = entity.position;
+			camera.target = entity.position.clone();
 		}
 
 		await entity.update(data);
