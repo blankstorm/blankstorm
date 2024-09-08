@@ -287,11 +287,7 @@ export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
 			entity = entity.parent as TransformNode;
 		}
 		if (entity instanceof ShipRenderer && entity.parent?.id == ownerID) {
-			if (entity.selected) {
-				entity.unselect();
-			} else {
-				entity.select();
-			}
+			entity.selected ? entity.unselect() : entity.select();
 		}
 	}
 }
