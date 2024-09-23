@@ -2,6 +2,24 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { EntityJSON } from '~/core/entities/entity';
 
+export interface UpdateInfo {
+	updates: number;
+	additions: number;
+	deletions: number;
+}
+
+export const updateInfo = {
+	updates: 0,
+	additions: 0,
+	deletions: 0,
+};
+
+export function resetUpdateInfo(): void {
+	updateInfo.updates = 0;
+	updateInfo.additions = 0;
+	updateInfo.deletions = 0;
+}
+
 export class EntityRenderer<T extends EntityJSON = EntityJSON> extends TransformNode {
 	public velocity: Vector3 = Vector3.Zero();
 
@@ -18,6 +36,7 @@ export class EntityRenderer<T extends EntityJSON = EntityJSON> extends Transform
 	}
 
 	public async update(data: T): Promise<void> {
+		updateInfo.updates++;
 		this.data = data;
 		this.name = data.name;
 		this.position.fromArray(data.position);

@@ -23,6 +23,7 @@ import * as ui from './ui';
 import { alert } from './ui/dialog';
 import * as user from './user';
 import { cookies, logger, minimize, optionsOf } from './utils';
+import { updateInfo } from '../renderer/entities';
 
 export interface ClientInit {
 	/**
@@ -443,6 +444,8 @@ function _update() {
 			<span>${glInfo.renderer}</span><br>
 			<span>${`${(used / 1000000).toFixed()}MB/${(limit / 1000000).toFixed()}MB (${(total / 1000000).toFixed()}MB Allocated)`}</span><br>
 			<span>${navigator.hardwareConcurrency || 'Unknown'} CPU Threads</span><br><br>
+
+			<span>Updates: ${updateInfo.updates} | +${updateInfo.additions}/-${updateInfo.deletions}</span>
 		`);
 
 	renderer.render();
@@ -486,8 +489,8 @@ export function load(level: Level): boolean {
 	currentLevel = level;
 	renderer.clear();
 	renderer.update(currentLevel.toJSON());
-	level.on('update', () => {
-		renderer.update(currentLevel!.toJSON());
+	level.on('update', async () => {
+		const info = await renderer.update(currentLevel!.toJSON());
 	});
 	level.on('player_levelup', async () => {
 		logger.warn('Triggered player_levelup (unimplemented)');
