@@ -11,6 +11,18 @@ import type { System } from '../system';
 import type { CelestialBody } from './body';
 import type { Player } from './player';
 
+export const tickInfo = {
+	updates: 0,
+	additions: 0,
+	deletions: 0,
+};
+
+export function resetTickInfo(): void {
+	tickInfo.updates = 0;
+	tickInfo.additions = 0;
+	tickInfo.deletions = 0;
+}
+
 export interface EntityJSON {
 	id: string;
 	name: string;
@@ -100,12 +112,14 @@ export class Entity
 	) {
 		super();
 		this.id ||= randomHex(32);
+		tickInfo.additions++;
 		level.entities.add(this);
 
 		setTimeout(() => this.emit('created'));
 	}
 
 	public update() {
+		tickInfo.updates++;
 		if (Math.abs(this.rotation.y) > Math.PI) {
 			this.rotation.y += Math.sign(this.rotation.y) * 2 * Math.PI;
 		}
@@ -115,6 +129,7 @@ export class Entity
 	}
 
 	public remove() {
+		tickInfo.deletions++;
 		this.level.entities.delete(this);
 		this.level.emit('entity_removed', this.toJSON());
 	}
@@ -155,9 +170,9 @@ export class Entity
 	public fromJSON(data: Partial<EntityJSON>): void {
 		assignWithDefaults(this as Entity, {
 			...pick(data, copy),
-			position: data.position && Vector3.FromArray(data.position),
-			rotation: data.rotation && Vector3.FromArray(data.rotation),
-			velocity: data.velocity && Vector3.FromArray(data.velocity),
+			position: data.position ? Vector3.FromArray(data.position) : undefined,
+			rotation: data.rotation ? Vector3.FromArray(data.rotation) : undefined,
+			velocity: data.velocity ? Vector3.FromArray(data.velocity) : undefined,
 			parent: data.parent ? this.level.getEntityByID(data.parent) : undefined,
 			owner: data.owner ? this.level.getEntityByID<CelestialBody | Player>(data.owner) : undefined,
 		});

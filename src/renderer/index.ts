@@ -20,7 +20,7 @@ import type { EntityJSON } from '../core/entities/entity';
 import type { LevelJSON } from '../core/level';
 import { config, version } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
-import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, resetUpdateInfo, renderers, updateInfo, type UpdateInfo } from './entities';
+import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, renderers } from './entities';
 import { logger } from './logger';
 import { ModelRenderer, initModel } from './models';
 export { logger };
@@ -187,7 +187,6 @@ export async function load(entityJSON: EntityJSON[]): Promise<void> {
 			continue;
 		}
 		const entity = new (renderers.get(data.entityType)!)(data);
-		updateInfo.additions++;
 		await entity.update(data);
 		if (['Player', 'Client'].includes(data.entityType)) {
 			/**
@@ -206,7 +205,6 @@ export async function update(levelData: LevelJSON): Promise<void> {
 		throw logger.error(new ReferenceError('Renderer not initalized'));
 	}
 
-	resetUpdateInfo();
 	const renderersToAdd: EntityJSON[] = [];
 
 	if (levelData.id != cache.id && cache.id) {
@@ -229,7 +227,6 @@ export async function update(levelData: LevelJSON): Promise<void> {
 		if (!data) {
 			entities.get(entity.id)?.dispose();
 			entities.delete(entity.id);
-			updateInfo.deletions++;
 			continue;
 		}
 

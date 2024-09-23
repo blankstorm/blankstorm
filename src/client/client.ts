@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import $ from 'jquery';
 import { author } from '../../package.json';
 import { execCommandString } from '../core/commands';
-import type { EntityJSON } from '../core/entities/entity';
+import { tickInfo, type EntityJSON } from '../core/entities/entity';
 import type { ItemID } from '../core/generic/items';
 import { Level } from '../core/level';
 import { config, game_url, version, versions } from '../core/metadata';
@@ -23,7 +23,6 @@ import * as ui from './ui';
 import { alert } from './ui/dialog';
 import * as user from './user';
 import { cookies, logger, minimize, optionsOf } from './utils';
-import { updateInfo } from '../renderer/entities';
 
 export interface ClientInit {
 	/**
@@ -445,7 +444,7 @@ function _update() {
 			<span>${`${(used / 1000000).toFixed()}MB/${(limit / 1000000).toFixed()}MB (${(total / 1000000).toFixed()}MB Allocated)`}</span><br>
 			<span>${navigator.hardwareConcurrency || 'Unknown'} CPU Threads</span><br><br>
 
-			<span>Updates: ${updateInfo.updates} | +${updateInfo.additions}/-${updateInfo.deletions}</span>
+			<span>Updates: ${tickInfo.updates} | +${tickInfo.additions}/-${tickInfo.deletions}</span>
 		`);
 
 	renderer.render();
@@ -490,7 +489,7 @@ export function load(level: Level): boolean {
 	renderer.clear();
 	renderer.update(currentLevel.toJSON());
 	level.on('update', async () => {
-		const info = await renderer.update(currentLevel!.toJSON());
+		await renderer.update(currentLevel!.toJSON());
 	});
 	level.on('player_levelup', async () => {
 		logger.warn('Triggered player_levelup (unimplemented)');

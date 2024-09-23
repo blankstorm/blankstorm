@@ -5,7 +5,7 @@ import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, type Entries, type Expand } from 'utilium';
 import type { Component } from './components/component';
 import { Fleet, type FleetJSON } from './components/fleet';
-import { filterEntities, type Entity, type EntityJSON } from './entities/entity';
+import { filterEntities, resetTickInfo, type Entity, type EntityJSON } from './entities/entity';
 import { Planet } from './entities/planet';
 import { Player, type PlayerJSON } from './entities/player';
 import { Ship } from './entities/ship';
@@ -186,6 +186,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	}
 
 	public update() {
+		resetTickInfo();
 		this.sampleTick();
 		this.emit('update');
 
