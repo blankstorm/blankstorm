@@ -133,7 +133,7 @@ async function onBuildEnd() {
 				[`${productName} Setup ${fullVersion}.exe`]: `blankstorm-client-${displayVersion}.exe`,
 				[`${productName}-${fullVersion}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
 				[`${$package.name}_${fullVersion}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
-				[`${productName}-${fullVersion}.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
+				[`${productName}-${fullVersion}-arm64.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
 				[`${productName}-${fullVersion}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
 			});
 			deleteOutput([
