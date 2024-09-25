@@ -31,9 +31,11 @@ export const UIs: Map<string, JQuery<DocumentFragment>> = new Map();
 
 export const waypoints: Map<string, WaypointUI> = new Map();
 
-export function init() {
+export async function init() {
+	const options = await $app.options();
+
 	$('#main .version a')
-		.text(versions.get(version)?.text || version)
+		.text((versions.get(version)?.text || version) + (options.debug ? ' (' + $revision.slice(0, 7) + ')' : ''))
 		.attr('href', game_url + '/releases/' + version);
 
 	for (const [id, item] of items) {

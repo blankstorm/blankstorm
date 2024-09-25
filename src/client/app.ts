@@ -57,6 +57,8 @@ logger.on('entry', entry => {
 	appendFileSync(logFile, entry + '\n');
 });
 
+logger.debug('Revision: ' + $revision);
+
 if (options.quiet || !options.dev) {
 	logger.detach(console, [LogLevel.DEBUG, LogLevel.LOG, LogLevel.INFO]);
 }

@@ -13,11 +13,15 @@ export class EntityRenderer<T extends EntityJSON = EntityJSON> extends Transform
 		public data: T
 	) {
 		super(data.name);
+		this.id = data.id;
 		this.position = Vector3.Zero();
 		this.rotation = Vector3.Zero();
 	}
 
 	public async update(data: T): Promise<void> {
+		if (this.id != data.id) {
+			throw new Error(`ID mismatch while updating ${this.constructor.name} renderer: ${this.id} -> ${data.id}`);
+		}
 		this.data = data;
 		this.name = data.name;
 		this.position.fromArray(data.position);

@@ -182,6 +182,7 @@ export async function load(entityJSON: EntityJSON[]): Promise<void> {
 
 	logger.debug(`Loading ${entityJSON.length} entities`);
 	for (const data of entityJSON) {
+		logger.debug('Loading entity: ' + data.id);
 		if (!renderers.has(data.entityType)) {
 			logger.warn('rendering for entity type is not supported: ' + data.entityType);
 			continue;

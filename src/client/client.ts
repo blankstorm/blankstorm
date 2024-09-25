@@ -368,7 +368,7 @@ async function _init(): Promise<void> {
 	}
 
 	_initLog('Initializing UI...');
-	ui.init();
+	await ui.init();
 
 	_initLog('Registering event listeners...');
 	chat.registerListeners();
