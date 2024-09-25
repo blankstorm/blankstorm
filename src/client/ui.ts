@@ -34,7 +34,7 @@ export const waypoints: Map<string, WaypointUI> = new Map();
 export function init() {
 	$('#main .version a')
 		.text(versions.get(version)?.text || version)
-		.attr('href', game_url + '/versions#' + version);
+		.attr('href', game_url + '/releases/' + version);
 
 	for (const [id, item] of items) {
 		UIs.set(id, templates.createItemUI(item));

@@ -1,6 +1,6 @@
 {
 	"name": "blankstorm",
-	"version": "1.0.0-alpha-1.4.4",
+	"version": "1.0.0-alpha-2.0.0",
 	"private": true,
 	"description": "Blankstorm",
 	"main": "build/client/app.js",
