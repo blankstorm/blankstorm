@@ -17,8 +17,15 @@ const { values: _values } = parseArgs({
 });
 const { watch, mode, output } = _values as { [K in keyof typeof _values]: Exclude<(typeof _values)[K], undefined> };
 
+const platforms = {
+	darwin: 'mac',
+	win32: 'win',
+};
+
+const platform = process.platform in platforms ? platforms[process.platform as keyof typeof platforms] : process.platform;
+
 const outfile = 'build/server.js',
-	seaPath = 'dist/blankstorm-server-' + displayVersion + extname(process.execPath);
+	seaPath = `dist/blankstorm-server-${displayVersion}-${platform}${extname(process.execPath)}`;
 
 async function buildSEA() {
 	const configPath = join(output, 'sea.json'),
