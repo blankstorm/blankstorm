@@ -82,8 +82,7 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 		},
 	},
 	linux: ['zip', 'AppImage', 'snap', 'deb', 'rpm', 'pacman'],
-	win: ['zip', 'nsis']
-
+	win: ['zip', 'nsis'],
 };
 
 function onBuildStart() {
