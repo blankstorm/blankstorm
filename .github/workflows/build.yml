@@ -40,7 +40,7 @@ jobs:
               run: rm -rf dist/*/
 
             - name: Upload build
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v3
               with:
                   name: build
                   path: dist/blankstorm*
