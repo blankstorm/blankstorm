@@ -75,7 +75,7 @@ export async function init(canvas: HTMLCanvasElement) {
 
 	camera = new ArcRotateCamera('camera', -Math.PI / 2, Math.PI / 2, 5, Vector3.Zero(), scene);
 	scene.activeCamera = camera;
-	(<ArcRotateCameraPointersInput>camera.inputs.attached.pointers).buttons = [1];
+	(camera.inputs.attached.pointers as ArcRotateCameraPointersInput).buttons = [1];
 	Object.assign(camera, {
 		wheelPrecision: 5,
 		lowerRadiusLimit: 1,

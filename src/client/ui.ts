@@ -359,8 +359,8 @@ export function registerListeners() {
 		.on('mousemove', e => {
 			$('tool-tip').each((i, tooltip) => {
 				const computedStyle = getComputedStyle(tooltip);
-				const left = (settings.get('font_size') as number) + e.clientX,
-					top = (settings.get('font_size') as number) + e.clientY;
+				const left = settings.get<number>('font_size') + e.clientX,
+					top = settings.get<number>('font_size') + e.clientY;
 				$(tooltip).css({
 					left: left - (left + parseFloat(computedStyle.width) < innerWidth ? 0 : parseFloat(computedStyle.width)),
 					top: top - (top + parseFloat(computedStyle.height) < innerHeight ? 0 : parseFloat(computedStyle.height)),
@@ -413,7 +413,7 @@ export function registerListeners() {
 	});
 	$('canvas.game,.game-ui,#hud,#tablist').on('keydown', e => {
 		for (const setting of [...settings.items.values()].filter(item => item.type == 'keybind')) {
-			const { key, alt, ctrl } = <settings.Keybind>setting.value;
+			const { key, alt, ctrl } = setting.value as settings.Keybind;
 			if (e.key == key && (!alt || e.altKey) && (!ctrl || e.ctrlKey)) setting.onTrigger?.(e);
 		}
 	});

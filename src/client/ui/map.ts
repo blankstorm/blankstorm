@@ -115,7 +115,7 @@ export class MapMarker {
 				$('#' + this.target.id + '-' + connID + '-y').attr(attributes);
 			}
 		}
-		(<JQuery>(marker.is('svg') ? marker : this.gui)).css({
+		((marker.is('svg') ? marker : this.gui) as JQuery).css({
 			rotate: (!isSystem ? this.target.absoluteRotation.y : 0) + 'rad',
 			fill: this.color,
 		});

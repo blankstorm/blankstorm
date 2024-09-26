@@ -74,7 +74,7 @@ export class System extends EventEmitter<{
 
 	public getEntityByID<N extends Entity = Entity>(id: string): N {
 		for (const entity of this.entities()) {
-			if (entity.id == id) return <N>entity;
+			if (entity.id == id) return entity as N;
 		}
 
 		throw new ReferenceError('Entity does not exist');

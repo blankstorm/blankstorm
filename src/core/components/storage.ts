@@ -115,7 +115,7 @@ export class Container extends ItemStorage {
 	}
 
 	public get items(): Record<ItemID, number> {
-		return <Record<ItemID, number>>Object.fromEntries<number>(this._items);
+		return Object.fromEntries<number>(this._items) as Record<ItemID, number>;
 	}
 
 	public add(item: ItemID, amount: number) {
@@ -137,9 +137,9 @@ export class StorageManager extends ItemStorage {
 	}
 
 	public get items(): Record<ItemID, number> {
-		const _items = <Record<ItemID, number>>Object.fromEntries(Object.keys(items).map(i => [i, 0]));
+		const _items = Object.fromEntries(Object.keys(items).map(i => [i, 0])) as Record<ItemID, number>;
 		for (const storage of this.storages) {
-			for (const name of <ItemID[]>Object.keys(items)) {
+			for (const name of Object.keys(items) as ItemID[]) {
 				_items[name] += storage.count(name);
 			}
 		}
@@ -199,9 +199,9 @@ export class EntityStorageManager extends ItemStorage {
 	}
 
 	public get items(): Record<ItemID, number> {
-		const _items = <Record<ItemID, number>>Object.fromEntries(Object.keys(items).map(i => [i, 0]));
+		const _items = Object.fromEntries(Object.keys(items).map(i => [i, 0])) as Record<ItemID, number>;
 		for (const entity of this.entities) {
-			for (const name of <ItemID[]>Object.keys(items)) {
+			for (const name of Object.keys(items) as ItemID[]) {
 				_items[name] += entity.storage.count(name);
 			}
 		}

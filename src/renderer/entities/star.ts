@@ -21,7 +21,7 @@ export class StarRenderer extends CelestialBodyRenderer {
 
 	public async update(data: StarJSON) {
 		await super.update(data);
-		(<StandardMaterial>this.mesh.material).emissiveColor.fromArray(data.color);
+		(this.mesh.material as StandardMaterial).emissiveColor.fromArray(data.color);
 	}
 }
 

@@ -166,7 +166,7 @@ export class Item<T extends Type = Type> {
 	public set value(val: Value) {
 		switch (this.type) {
 			case 'keybind':
-				this.keybind_value = <Value<T> & Keybind>val;
+				this.keybind_value = val as Value<T> & Keybind;
 				this.ui.find('input').val((this.keybind_value.ctrl ? 'Ctrl + ' : '') + (this.keybind_value.alt ? 'Alt + ' : '') + this.keybind_value.key);
 				break;
 			case 'boolean':
@@ -274,7 +274,7 @@ export function load(config: { sections: SettingsSectionConfig[]; items: ItemCon
 
 	for (const itemConfig of config.items) {
 		logger.debug(`Loading setting: "${itemConfig.id}"`);
-		const value: Value = <Value>(file.has(itemConfig.id) ? file.get(itemConfig.id) : itemConfig.value);
+		const value: Value = (file.has(itemConfig.id) ? file.get(itemConfig.id) : itemConfig.value);
 		const item = new Item(itemConfig);
 		items.set(item.id, item);
 		item.value = value;

@@ -90,7 +90,7 @@ export class ModelRenderer<T extends ModelEntityJSON = ModelEntityJSON> extends 
 		const animation = new Animation('pathFollow', 'position', 60 * speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
 			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * speed, value: node.subtract((<TransformNode>this.parent).absolutePosition) })));
+		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * speed, value: node.subtract((this.parent as TransformNode).absolutePosition) })));
 		rotateAnimation.setKeys(
 			path.flatMap((node, i) => {
 				if (i == 0) {

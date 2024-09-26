@@ -90,7 +90,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 
 	public getEntityByID<N extends Entity = Entity>(id: string): N {
 		for (const entity of this.entities) {
-			if (entity.id == id) return <N>entity;
+			if (entity.id == id) return entity as N;
 		}
 
 		throw new ReferenceError('Entity does not exist');
@@ -139,10 +139,10 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 				return true;
 			}
 			case 'research': {
-				if (player.research[_data.id] >= _data.max || isResearchLocked(<ResearchID>_data.id, player)) {
+				if (player.research[_data.id] >= _data.max || isResearchLocked(_data.id, player)) {
 					return false;
 				}
-				const neededItems = priceOfResearch(<ResearchID>_data.id, player.research[_data.id]);
+				const neededItems = priceOfResearch(_data.id, player.research[_data.id]);
 				if (!player.storage.hasItems(neededItems)) {
 					return false;
 				}
