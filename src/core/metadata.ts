@@ -62,6 +62,7 @@ const _versions = {
 	'alpha_1.4.3': { text: 'Alpha 1.4.3', group: 'alpha' },
 	'alpha_1.4.4': { text: 'Alpha 1.4.4', group: 'alpha' },
 	'alpha_2.0.0': { text: 'Alpha 2.0.0', group: 'alpha' },
+	'alpha_2.0.1': { text: 'Alpha 2.0.1', group: 'alpha' },
 };
 
 export type VersionID = keyof typeof _versions;
@@ -71,6 +72,6 @@ export interface Version {
 	group: (typeof _versionGroups)[number];
 }
 
-export const version: VersionID = 'alpha_2.0.0';
+export const version: VersionID = 'alpha_2.0.1';
 
 export const versions = new Map(Object.entries(_versions)) as Map<VersionID, Version>;
