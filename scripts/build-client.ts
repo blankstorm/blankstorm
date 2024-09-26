@@ -1,4 +1,3 @@
-import archiver from 'archiver';
 import * as electronBuilder from 'electron-builder';
 import * as esbuild from 'esbuild';
 import glslPlugin from 'esbuild-plugin-glslx';
@@ -76,11 +75,15 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 		},
 		linux: {
 			category: 'Game',
+			executableName: 'blankstorm-client',
 		},
 		mac: {
 			category: 'public.app-category.games',
 		},
 	},
+	linux: ['zip', 'AppImage', 'snap', 'deb', 'rpm', 'pacman'],
+	win: ['zip', 'nsis']
+
 };
 
 function onBuildStart() {
@@ -121,19 +124,17 @@ async function onBuildEnd() {
 				if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
 					continue;
 				}
-
-				console.log('Compressing: ' + platform);
-				const archive = archiver('zip', { zlib: { level: 5 } });
-
-				archive.pipe(fs.createWriteStream(`dist/blankstorm-client-${displayVersion}-${platform}.zip`));
-				await archive.directory(dirPath, false).finalize();
-				console.log('Compressed: ' + platform);
 			}
 			renameOutput({
 				[`${productName} Setup ${fullVersion}.exe`]: `blankstorm-client-${displayVersion}.exe`,
 				[`${productName}-${fullVersion}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
 				[`${$package.name}_${fullVersion}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
+				[`${$package.name}_${fullVersion}_amd64.deb`]: `blankstorm-client-${displayVersion}.deb`,
+				[`${$package.name}-${fullVersion}.x86_64.rpm`]: `blankstorm-client-${displayVersion}.x86_64.rpm`,
+				[`${$package.name}-${fullVersion}.pacman`]: `blankstorm-client-${displayVersion}.pacman`,
 				[`${productName}-${fullVersion}-arm64.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
+				[`${productName}-${fullVersion}-win.zip`]: `blankstorm-client-${displayVersion}-win.zip`,
+				[`${$package.name}-${fullVersion}.zip`]: `blankstorm-client-${displayVersion}-linux.zip`,
 				[`${productName}-${fullVersion}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
 			});
 			deleteOutput([

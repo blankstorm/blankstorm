@@ -25,8 +25,8 @@
 	],
 	"author": {
 		"name": "James Prevett",
-		"email": "jp@drvortex.dev",
-		"url": "https://drvortex.dev"
+		"email": "jp@jamespre.dev",
+		"url": "https://jamespre.dev"
 	},
 	"license": "See license.md",
 	"bugs": {
@@ -59,7 +59,6 @@
 		"@types/node": "^20.2.1",
 		"@typescript-eslint/eslint-plugin": "^7.7.1",
 		"@typescript-eslint/parser": "^7.7.1",
-		"archiver": "^5.3.1",
 		"electron": "^32.1.2",
 		"electron-builder": "^24.13.3",
 		"esbuild": "^0.20.2",
