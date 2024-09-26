@@ -6,7 +6,7 @@ import { logger } from './utils';
 
 addEventListener('error', ev => {
 	$app.log({
-		contents: ev.error.stack,
+		contents: (ev.error as Error).stack!,
 		level: LogLevel.ERROR,
 		prefix: 'client',
 	});

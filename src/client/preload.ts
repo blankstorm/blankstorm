@@ -5,11 +5,11 @@ import type { ClientInit } from './client';
 
 const app = {
 	require,
-	options(): Promise<ClientInit> {
+	options(this: void): Promise<ClientInit> {
 		return ipcRenderer.invoke('options');
 	},
-	log(entry: IOMessage): Promise<void> {
-		return ipcRenderer.invoke('log', entry);
+	log(this: void, entry: IOMessage): void {
+		void ipcRenderer.invoke('log', entry);
 	},
 } as const;
 contextBridge.exposeInMainWorld('$app', app);

@@ -1,9 +1,9 @@
-export function alert(text: string): Promise<boolean> {
-	return new Promise<boolean>(resolve => {
+export function alert(text: string): Promise<void> {
+	return new Promise<void>(resolve => {
 		$('#alert .message').html(text.replaceAll('\n', '<br>'));
 		$('#alert .ok').on('click', () => {
 			$<HTMLDialogElement>('#alert')[0].close();
-			resolve(true);
+			resolve();
 		});
 		$<HTMLDialogElement>('#alert')[0].showModal();
 	});

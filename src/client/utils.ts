@@ -2,7 +2,6 @@ import $ from 'jquery';
 import { Logger } from 'logzen';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { EntityJSON } from '../core/entities/entity';
 import type { PlanetBiome } from '../core/generic/planets';
 
 export function upload(type: string, multiple = false): Promise<File> {
@@ -20,7 +19,9 @@ export function download(data: BlobPart, name: string): void {
 	$(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click();
 }
 
-export const minimize = Intl.NumberFormat('en', { notation: 'compact' }).format;
+const __formatter = Intl.NumberFormat('en', { notation: 'compact' });
+
+export const minimize = __formatter.format.bind(__formatter);
 
 export function fixPaths(text: string): string {
 	return text.replaceAll(/file:\/\/\/[A-Za-z0-9+&@#/%?=~_|!:,.;-]*[-A-Za-z0-9+&@#/%=~_|]/g, match =>

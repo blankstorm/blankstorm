@@ -61,7 +61,7 @@ export async function init() {
 export function update() {
 	$('.marker').hide();
 
-	$(':root').css('--font-size', settings.get('font_size') + 'px');
+	$(':root').css('--font-size', settings.get<number>('font_size') + 'px');
 
 	if (!hasSystem()) {
 		return;
@@ -153,13 +153,13 @@ export function registerListeners() {
 		$('#saves').show();
 	});
 	$('#main .multiplayer').on('click', () => {
-		if (client.isMultiplayerEnabled) {
-			$('#main').hide();
-			$('#server-list').show();
-			servers.pingAll();
-		} else {
+		if (!client.isMultiplayerEnabled) {
 			$<HTMLDialogElement>('#login')[0].showModal();
+			return;
 		}
+		$('#main').hide();
+		$('#server-list').show();
+		void servers.pingAll();
 	});
 	$('#main .options').on('click', () => {
 		setLast('#main');
@@ -221,7 +221,7 @@ export function registerListeners() {
 		if (isJSON(text)) {
 			saves.add(JSON.parse(text));
 		} else {
-			alert('Can not load save: not JSON.');
+			void alert('Can not load save: not JSON.');
 		}
 	});
 	$('#server-list button.refresh').on('click', servers.pingAll);
@@ -315,7 +315,7 @@ export function registerListeners() {
 		if (locales.has(lang)) {
 			locales.use(lang);
 		} else {
-			alert('That locale is not loaded.');
+			void alert('That locale is not loaded.');
 			logger.warn(`Failed to load locale ${lang}`);
 		}
 	});
@@ -327,9 +327,9 @@ export function registerListeners() {
 			color = wpd.find('[name=color]').val() as string,
 			name = wpd.find('[name=name]').val() as string;
 		if (!isHex(color.slice(1))) {
-			alert(locales.text('error.waypoint.color'));
+			void alert(locales.text('error.waypoint.color'));
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
-			alert(locales.text('error.waypoint.range'));
+			void alert(locales.text('error.waypoint.range'));
 		} else {
 			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(undefined, client.getCurrentLevel());
 			waypoint.system = system();
@@ -389,12 +389,13 @@ export function registerListeners() {
 			return;
 		}
 		const data = renderer.handleCanvasRightClick(e, account.id);
-		action('move', data);
+		void action('move', data);
 	});
 	$('canvas.game').on('keydown', e => {
 		switch (e.key) {
 			case 'F3':
 				$('#debug').toggle();
+				break;
 			case 'F1':
 				e.preventDefault();
 				$('#hud,.marker').toggle();

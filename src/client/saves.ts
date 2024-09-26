@@ -120,7 +120,7 @@ export function flush(): void {
 		update(currentLevel.toJSON());
 		logger.debug('Writing save: ' + currentLevel.id);
 	} catch (error: any) {
-		alert('Failed to save.');
+		void alert('Failed to save.');
 		logger.error(error);
 		throw error;
 	}

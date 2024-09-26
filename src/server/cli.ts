@@ -40,7 +40,7 @@ for (const [data, filePath] of [
 	data.push(...contents);
 }
 
-listen({ port: config.port || coreConfig.default_port }).then(() => logger.log('server started'));
+void listen({ port: config.port || coreConfig.default_port }).then(() => logger.log('server started'));
 process
 	.on('uncaughtException', err => {
 		logger.error('Fatal error: ' + err.stack);

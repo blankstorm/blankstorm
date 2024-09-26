@@ -102,12 +102,12 @@ async function init(): Promise<void> {
 	await window.loadFile(join(dirname, 'index.html'));
 
 	window.webContents.setWindowOpenHandler(({ url }) => {
-		shell.openExternal(url);
+		void shell.openExternal(url);
 		return { action: 'deny' };
 	});
 	window.center();
 }
 
-app.whenReady().then(init);
+void app.whenReady().then(init);
 
-app.on('window-all-closed', app.quit);
+app.on('window-all-closed', app.quit.bind(app));

@@ -24,17 +24,15 @@ export let level: Level, levelData: LevelJSON | undefined;
 
 export function init() {
 	io.use(async (socket, next) => {
-		try {
-			await checkClientAuth(socket);
-			next();
-		} catch (error) {
+		await checkClientAuth(socket).catch(error => {
 			if (error instanceof Error) {
 				logger.error('Client auth failed: ' + error.stack);
 				next(new Error('Server error'));
 			} else {
 				next(new Error(error + ''));
 			}
-		}
+		});
+		next();
 	});
 
 	io.on('connection', socket => {
@@ -49,7 +47,7 @@ export function init() {
 	}
 
 	for (const type of levelEventNames) {
-		level.on(type, async (...args) => {
+		level.on(type, (...args) => {
 			io.emit('event', type, ...args);
 		});
 	}
@@ -111,8 +109,8 @@ export async function checkClientAuth(socket: Socket) {
 		throw 'Server is stopping or restarting';
 	}
 
-	const account = await getAccount('token', socket.handshake.auth.token).catch((error: Error | string) => {
-		logger.warn('API request for client authentication failed: ' + error);
+	const account = await getAccount('token', socket.handshake.auth.token).catch((error: Error) => {
+		logger.warn('API request for client authentication failed: ' + error.stack);
 		throw 'Authentication request failed';
 	});
 

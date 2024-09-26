@@ -82,7 +82,7 @@ export class Entity
 	protected _storage?: ItemStorage;
 	public get storage(): ItemStorage {
 		if (!this._storage) {
-			throw new ReferenceError('Storage does not exist on ' + this);
+			throw new ReferenceError('Storage does not exist on entity ' + this.id);
 		}
 		return this._storage;
 	}

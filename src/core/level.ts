@@ -159,7 +159,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 			}
 			case 'move': {
 				for (const { id, target } of _data) {
-					this.getEntityByID<Entity>(id).moveTo(target);
+					void this.getEntityByID<Entity>(id).moveTo(target);
 				}
 				return true;
 			}

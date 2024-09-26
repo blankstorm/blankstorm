@@ -99,7 +99,7 @@ export class Ship extends Entity {
 
 			if (hardpoint.reload <= 0) {
 				hardpoint.reload = hardpoint.generic.reload;
-				hardpoint.fire(targetPoint);
+				void hardpoint.fire(targetPoint);
 			}
 		}
 		this.jumpCooldown = Math.max(--this.jumpCooldown, 0);

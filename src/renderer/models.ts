@@ -120,7 +120,7 @@ export class ModelRenderer<T extends ModelEntityJSON = ModelEntityJSON> extends 
 
 	// @todo change path following to be on core
 	public async update(data: T) {
-		super.update(data);
+		await super.update(data);
 		if (!this._currentPath) {
 			this.position = Vector3.FromArray(data.position);
 			this.rotation = Vector3.FromArray(data.rotation);

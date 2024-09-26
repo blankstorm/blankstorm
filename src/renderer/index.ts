@@ -156,7 +156,7 @@ export async function render() {
 /**
  * Clears out loaded data and flushs the cache.
  */
-export async function clear() {
+export function clear() {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Not initalized'));
 	}
@@ -231,7 +231,7 @@ export async function update(levelData: LevelJSON): Promise<void> {
 			continue;
 		}
 
-		entities.get(entity.id)?.update(data);
+		void entities.get(entity.id)?.update(data);
 	}
 
 	await load(renderersToAdd);
@@ -288,7 +288,7 @@ export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
 			entity = entity.parent as TransformNode;
 		}
 		if (entity instanceof ShipRenderer && entity.parent?.id == ownerID) {
-			entity.selected ? entity.unselect() : entity.select();
+			entity[entity.selected ? 'unselect' : 'select']();
 		}
 	}
 }

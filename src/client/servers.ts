@@ -77,7 +77,7 @@ export function disconnect(): void {
 	}
 
 	for (const id of ids()) {
-		ping(id);
+		void ping(id);
 	}
 }
 

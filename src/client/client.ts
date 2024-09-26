@@ -341,7 +341,7 @@ async function _init(): Promise<void> {
 	await locales.init();
 
 	_initLog('Loading Mods...');
-	await mods.init();
+	mods.init();
 
 	_initLog('Initializing renderer...');
 	try {
@@ -447,7 +447,7 @@ function _update() {
 			<span>Updates: ${tickInfo.updates} | +${tickInfo.additions}/-${tickInfo.deletions}</span>
 		`);
 
-	renderer.render();
+	void renderer.render();
 }
 
 export function update() {
@@ -455,7 +455,7 @@ export function update() {
 		_update();
 	} catch (error) {
 		logger.error('Client update failed: ' + (error instanceof Error ? (error.cause ?? error.stack) : error));
-		alert('Client update failed.');
+		void alert('Client update failed.');
 		throw error;
 	}
 }
@@ -473,12 +473,12 @@ export function unpause() {
 export function load(level: Level): boolean {
 	if (!level) {
 		logger.warn('No level loaded');
-		alert('No level loaded');
+		void alert('No level loaded');
 		return false;
 	}
 	if (level.version != version) {
 		logger.warn(`Can't play level ${level.id}, version mismatch`);
-		alert('Incompatible version');
+		void alert('Incompatible version');
 		return false;
 	}
 
@@ -487,27 +487,27 @@ export function load(level: Level): boolean {
 	$('#hud').show();
 	currentLevel = level;
 	renderer.clear();
-	renderer.update(currentLevel.toJSON());
-	level.on('update', async () => {
-		await renderer.update(currentLevel!.toJSON());
+	void renderer.update(currentLevel.toJSON());
+	level.on('update', () => {
+		void renderer.update(currentLevel!.toJSON());
 	});
-	level.on('player_levelup', async () => {
+	level.on('player_levelup', () => {
 		logger.warn('Triggered player_levelup (unimplemented)');
 	});
-	level.on('entity_removed', async entity => {
+	level.on('entity_removed', entity => {
 		if (entity.entityType == 'player') {
 			renderer.resetCamera();
 		}
 	});
-	level.on('entity_path_start', async (entityID: string, path: IVector3Like[]) => {
-		renderer.startFollowingPath(entityID, path, settings.get('show_path_gizmos'));
+	level.on('entity_path_start', (entityID: string, path: IVector3Like[]) => {
+		void renderer.startFollowingPath(entityID, path, settings.get('show_path_gizmos'));
 	});
-	level.on('entity_death', async (entity: EntityJSON) => {
+	level.on('entity_death', (entity: EntityJSON) => {
 		if (entity.entityType == 'Ship') {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}
 	});
-	level.on('fleet_items_change', async (_, items: Record<ItemID, number>) => {
+	level.on('fleet_items_change', (_, items: Record<ItemID, number>) => {
 		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
 			$(ui.UIs.get(id)!).find('.count').text(minimize(amount));
 		}
@@ -540,6 +540,7 @@ export function send(command: RPCCommand, ...data: string[]): void {
 	switch (command) {
 		case 'chat':
 			chat.sendMessage(...data);
+			break;
 		case 'command':
 			execCommandString(command, { executor: user.player() }, true);
 	}
