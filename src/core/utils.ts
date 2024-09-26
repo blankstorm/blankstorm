@@ -1,5 +1,6 @@
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Logger } from 'logzen';
+import type { EntityJSON } from './entities/entity';
 
 export const logger = new Logger({ noGlobalConsole: true });
 
@@ -22,4 +23,17 @@ export function xpToLevel(xp: number) {
 
 export function levelToXp(level: number) {
 	return 10 * level ** 2;
+}
+
+export function getEntityIcon(entity: EntityJSON): string {
+	switch (entity.entityType) {
+		case 'Planet':
+			return 'earth-americas';
+		case 'Star':
+			return 'sun-bright';
+		case 'Ship':
+			return 'triangle';
+		default:
+			return 'planet-ringed';
+	}
 }

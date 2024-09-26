@@ -1,6 +1,6 @@
 import type { WithRequired } from 'utilium';
 import { assignWithDefaults, pick } from 'utilium';
-import { getEntityIcon } from '../../client/utils';
+import { getEntityIcon } from '../utils';
 import { Fleet } from '../components/fleet';
 import { Container } from '../components/storage';
 import type { Level } from '../level';

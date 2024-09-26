@@ -7,8 +7,15 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { version, versions } from '../core/metadata';
 import type { ClientInit } from './client';
+import { homedir } from 'os';
 
 const dirname: string = resolve(fileURLToPath(import.meta.url), '..');
+
+const defaultDataPath = join(homedir(), './blankstorm/data');
+
+if (!existsSync(defaultDataPath)) {
+	mkdirSync(defaultDataPath, { recursive: true });
+}
 
 const _values = parseArgs({
 	options: {
@@ -16,7 +23,7 @@ const _values = parseArgs({
 		logLevel: { type: 'string' },
 		quiet: { type: 'boolean', default: false },
 		initalScale: { type: 'string', default: '100' },
-		path: { type: 'string', default: dirname },
+		path: { type: 'string', default: defaultDataPath },
 		help: { type: 'boolean', default: false },
 	},
 	allowPositionals: true,

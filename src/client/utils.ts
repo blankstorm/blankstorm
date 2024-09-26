@@ -98,19 +98,6 @@ export const cookies: Map<string, string> & { get _map(): Map<string, string> } 
 	},
 };
 
-export function getEntityIcon(entity: EntityJSON): string {
-	switch (entity.entityType) {
-		case 'Planet':
-			return 'earth-americas';
-		case 'Star':
-			return 'sun-bright';
-		case 'Ship':
-			return 'triangle';
-		default:
-			return 'planet-ringed';
-	}
-}
-
 export function biomeColor(biome: PlanetBiome): string {
 	switch (biome) {
 		case 'earthlike':
