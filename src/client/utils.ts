@@ -119,7 +119,7 @@ export function biomeColor(biome: PlanetBiome): string {
 
 export function $svg<TElement extends SVGElement>(tag: string): JQuery<TElement> {
 	const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
-	return $<TElement>((element as TElement));
+	return $<TElement>(element as TElement);
 }
 
 export function optionsOf(error: unknown): ErrorOptions {

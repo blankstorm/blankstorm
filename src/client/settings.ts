@@ -274,7 +274,7 @@ export function load(config: { sections: SettingsSectionConfig[]; items: ItemCon
 
 	for (const itemConfig of config.items) {
 		logger.debug(`Loading setting: "${itemConfig.id}"`);
-		const value: Value = (file.has(itemConfig.id) ? file.get(itemConfig.id) : itemConfig.value);
+		const value: Value = file.has(itemConfig.id) ? file.get(itemConfig.id) : itemConfig.value;
 		const item = new Item(itemConfig);
 		items.set(item.id, item);
 		item.value = value;
