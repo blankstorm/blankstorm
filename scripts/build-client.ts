@@ -49,7 +49,7 @@ if (options.keep) {
 	fs.rmSync(options.output, { recursive: true, force: true });
 }
 
-const productName = 'Blankstorm Client';
+const productName = 'blankstorm';
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
 	projectDir: root,
