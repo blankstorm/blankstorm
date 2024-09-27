@@ -11,7 +11,7 @@ import { homedir } from 'os';
 
 const dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
-const defaultDataPath = join(homedir(), './blankstorm/data');
+const defaultDataPath = join(homedir(), '.blankstorm/data');
 
 if (!existsSync(defaultDataPath)) {
 	mkdirSync(defaultDataPath, { recursive: true });
