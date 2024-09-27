@@ -1,4 +1,4 @@
-import type { Level } from '../level';
+import type { System } from '../system';
 import { logger } from '../utils';
 
 export interface Component<TJSON = unknown> {
@@ -18,7 +18,7 @@ export type ComponentData<T extends Component> = T extends Component<infer TJSON
 export interface ComponentStatic<T extends Component = Component> {
 	name: string;
 
-	FromJSON(data: ComponentData<T>, level?: Level): T;
+	FromJSON(data: ComponentData<T>, system?: System): T;
 }
 
 export function isComponent(value: unknown): value is Component {

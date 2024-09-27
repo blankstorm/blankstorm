@@ -14,7 +14,7 @@ export class Client extends Player {
 		id: string,
 		public readonly socket: Socket
 	) {
-		super(id, level);
+		super(id, level.rootSystem);
 	}
 
 	kick(message: string) {

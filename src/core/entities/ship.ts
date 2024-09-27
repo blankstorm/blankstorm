@@ -4,7 +4,6 @@ import { Container } from '../components/storage';
 import { genericHardpoints } from '../generic/hardpoints';
 import type { GenericShip, ShipType } from '../generic/ships';
 import { genericShips } from '../generic/ships';
-import type { Level } from '../level';
 import type { System } from '../system';
 import { randomInSphere } from '../utils';
 import type { EntityJSON } from './entity';
@@ -31,10 +30,10 @@ export class Ship extends Entity {
 	 */
 	constructor(
 		id: string | undefined,
-		level: Level,
+		system: System,
 		public type: ShipType
 	) {
-		super(id, level);
+		super(id, system);
 
 		const { power, hp, jump, storage, hardpoints } = genericShips.get(this.type)!;
 
@@ -50,7 +49,7 @@ export class Ship extends Entity {
 				continue;
 			}
 
-			const hardpoint = new Hardpoint(undefined, this.level, info);
+			const hardpoint = new Hardpoint(undefined, this.system, info);
 			hardpoint.parent = this;
 			this.hardpoints.add(hardpoint);
 		}
@@ -148,9 +147,9 @@ export class Ship extends Entity {
 		this.owner?.fleet?.add(this);
 	}
 
-	public static FromJSON(data: EntityJSON, level: Level): Ship;
-	public static FromJSON(data: ShipJSON, level: Level): Ship {
-		const entity = new this(data.id, level, data.type);
+	public static FromJSON(data: EntityJSON, system: System): Ship;
+	public static FromJSON(data: ShipJSON, system: System): Ship {
+		const entity = new this(data.id, system, data.type);
 		entity.fromJSON(data);
 		return entity;
 	}

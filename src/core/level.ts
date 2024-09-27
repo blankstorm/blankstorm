@@ -13,7 +13,7 @@ import { Star } from './entities/star';
 import type { Shipyard } from './entities/station/shipyard';
 import { Waypoint } from './entities/waypoint';
 import type { Item, ItemID } from './generic/items';
-import { isResearchLocked, priceOfResearch, type Research, type ResearchID } from './generic/research';
+import { isResearchLocked, priceOfResearch, type Research } from './generic/research';
 import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
@@ -130,7 +130,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 				}
 
 				player.storage.removeItems(generic.recipe);
-				const ship = new Ship(undefined, player.level, generic.id);
+				const ship = new Ship(undefined, player.system, generic.id);
 				if (shipyard) {
 					ship.position.addInPlace(shipyard.position);
 				}
@@ -236,7 +236,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 			}
 
 			logger.debug(`Loading ${data.entityType} ${data.id}`);
-			types[priorities.indexOf(data.entityType)].FromJSON(data, this);
+			types[priorities.indexOf(data.entityType)].FromJSON(data, this.systems.get(data.system)!);
 		}
 	}
 

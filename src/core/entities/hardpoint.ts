@@ -10,6 +10,7 @@ import { Entity } from './entity';
 import type { Player } from './player';
 import { Projectile } from './projectile';
 import type { Ship } from './ship';
+import type { System } from '../system';
 
 export interface HardpointJSON extends EntityJSON {
 	type: HardpointType;
@@ -32,8 +33,8 @@ export class Hardpoint extends Entity {
 		return this.parent.owner;
 	}
 
-	public constructor(id: string | undefined, level: Level, info: HardpointInfo) {
-		super(id, level);
+	public constructor(id: string | undefined, system: System, info: HardpointInfo) {
+		super(id, system);
 		this.fromJSON(info);
 	}
 
@@ -64,7 +65,7 @@ export class Hardpoint extends Entity {
 
 	public async fire(target: Ship | Hardpoint): Promise<void> {
 		this.reload = this.generic.reload;
-		const projectile = new Projectile(undefined, this.level);
+		const projectile = new Projectile(undefined, this.system);
 		projectile.hardpoint = this;
 		const targetPosition = target.absolutePosition.add(randomInSphere(randomFloat(0, 1 / this.generic.accuracy)));
 		projectile.velocity = targetPosition.subtract(this.absolutePosition).normalize().scale(this.generic.projectileSpeed);

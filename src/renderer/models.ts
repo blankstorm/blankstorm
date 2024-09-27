@@ -48,7 +48,7 @@ export class ModelRenderer<T extends ModelEntityJSON = ModelEntityJSON> extends 
 		this.instance.rotation.y += Math.PI;
 	}
 
-	public get selected(): boolean {
+	public get isSelected(): boolean {
 		return this._selected;
 	}
 

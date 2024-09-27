@@ -6,6 +6,7 @@ import { research } from '../generic/research';
 import type { Level } from '../level';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
+import type { System } from '../system';
 
 export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;
@@ -29,9 +30,9 @@ export class Player extends Entity {
 		return this.fleet.storage;
 	}
 
-	public constructor(id: string | undefined, level: Level) {
-		super(id, level);
-		this.fleet = new Fleet(undefined, this.level);
+	public constructor(id: string | undefined, system: System) {
+		super(id, system);
+		this.fleet = new Fleet(undefined, system);
 		this.fleet.parent = this;
 	}
 

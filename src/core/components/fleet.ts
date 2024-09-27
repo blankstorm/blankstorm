@@ -75,7 +75,8 @@ export class Fleet extends Entity {
 
 	public addFromStrings(...types: ShipType[]): void {
 		for (const type of types) {
-			const ship = new Ship(undefined, this.level, type);
+			const ship = new Ship(undefined, this.system, type);
+			ship.system = this.system;
 			this.add(ship);
 		}
 	}

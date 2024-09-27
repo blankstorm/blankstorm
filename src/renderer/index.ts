@@ -264,7 +264,7 @@ export function getCamera() {
 	return camera;
 }
 
-export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
+export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string): void {
 	if (!ev.shiftKey) {
 		for (const entity of entities.values()) {
 			if (entity instanceof ShipRenderer) {
@@ -275,21 +275,22 @@ export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string) {
 	const pickInfo = scene.pick(ev.clientX, ev.clientY, mesh => {
 		let entity: TransformNode = mesh;
 		while (entity.parent) {
-			entity = entity.parent as TransformNode;
 			if (entity instanceof ShipRenderer) {
 				return true;
 			}
+			entity = entity.parent as TransformNode;
 		}
 		return false;
 	});
-	if (pickInfo.pickedMesh) {
-		let entity: TransformNode = pickInfo.pickedMesh;
-		while (entity.parent && !(entity instanceof ShipRenderer)) {
-			entity = entity.parent as TransformNode;
-		}
-		if (entity instanceof ShipRenderer && entity.parent?.id == ownerID) {
-			entity.selected ? entity.unselect() : entity.select();
-		}
+	if (!pickInfo.pickedMesh) {
+		return;
+	}
+	let entity: TransformNode = pickInfo.pickedMesh;
+	while (entity.parent && !(entity instanceof ShipRenderer)) {
+		entity = entity.parent as TransformNode;
+	}
+	if (entity instanceof ShipRenderer && entity.parent?.parent?.id == ownerID) {
+		entity.isSelected ? entity.unselect() : entity.select();
 	}
 }
 
@@ -303,7 +304,7 @@ export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: st
 			continue;
 		}
 
-		if (!renderer.selected || renderer.parent?.id != ownerID) {
+		if (!renderer.isSelected || renderer.parent?.parent?.id != ownerID) {
 			continue;
 		}
 

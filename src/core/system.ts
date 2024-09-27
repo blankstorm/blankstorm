@@ -137,7 +137,7 @@ export class System extends EventEmitter<{
 		for (let i = 0; i < connectionCount; i++) {
 			system.connections.add(randomInCircle(5));
 		}
-		const star = new Star(undefined, level);
+		const star = new Star(undefined, system);
 		logger.debug(`	> star ${star.id}`);
 		star.fromJSON({
 			name,
@@ -150,7 +150,7 @@ export class System extends EventEmitter<{
 			names = randomBoolean() ? greekLetterNames.slice(0, planetCount) : range(1, planetCount + 1),
 			planets: Planet[] = [];
 		for (let i = 0; i < names.length; i++) {
-			const planet = new Planet(undefined, level);
+			const planet = new Planet(undefined, system);
 			logger.debug(`	> planet ${planet.id}`);
 			planet.radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));

@@ -66,8 +66,6 @@ export class Entity
 		return types.some(type => this.entityTypes.includes(type));
 	}
 
-	public system!: System;
-
 	public parent?: Entity;
 
 	protected _owner?: CelestialBody | Player;
@@ -106,14 +104,17 @@ export class Entity
 		return this.parent instanceof Entity ? this.parent.absoluteVelocity.add(this.rotation) : this.rotation;
 	}
 
+	public readonly level: Level;
+
 	public constructor(
 		public id: string = randomHex(32),
-		public readonly level: Level
+		public system: System
 	) {
 		super();
 		this.id ||= randomHex(32);
 		tickInfo.additions++;
-		level.entities.add(this);
+		this.level = system.level;
+		this.level.entities.add(this);
 
 		setTimeout(() => this.emit('created'));
 	}
@@ -181,8 +182,8 @@ export class Entity
 		}
 	}
 
-	public static FromJSON(data: Partial<EntityJSON>, level: Level): Entity {
-		const entity = new this(data.id, level);
+	public static FromJSON(data: Partial<EntityJSON>, system: System): Entity {
+		const entity = new this(data.id, system);
 		entity.fromJSON(data);
 		return entity;
 	}

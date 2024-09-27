@@ -331,8 +331,7 @@ export function registerListeners() {
 		} else if (Math.abs(x) > 99999 || Math.abs(y) > 99999 || Math.abs(z) > 99999) {
 			void alert(locales.text('error.waypoint.range'));
 		} else {
-			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(undefined, client.getCurrentLevel());
-			waypoint.system = system();
+			const waypoint = wpd[0]._waypoint instanceof Waypoint ? wpd[0]._waypoint : new Waypoint(undefined, system());
 			waypoint.name = name;
 			waypoint.color = color;
 			waypoint.position = new Vector3(x, y, z);
@@ -380,12 +379,8 @@ export function registerListeners() {
 		update();
 	});
 	$('canvas.game').on('contextmenu', e => {
-		if (account.id != account.id) {
-			logger.warn(`Mismatch: The client's player ID is ${account.id} but the current active player ID is ${account.id}`);
-			return;
-		}
 		if (!(client.currentLevel instanceof Level)) {
-			logger.warn('No active client level');
+			logger.warn('No active level');
 			return;
 		}
 		const data = renderer.handleCanvasRightClick(e, account.id);

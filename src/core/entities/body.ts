@@ -1,9 +1,9 @@
 import type { WithRequired } from 'utilium';
 import { assignWithDefaults, pick } from 'utilium';
-import { getEntityIcon } from '../utils';
 import { Fleet } from '../components/fleet';
 import { Container } from '../components/storage';
-import type { Level } from '../level';
+import type { System } from '../system';
+import { getEntityIcon } from '../utils';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
 import { Waypoint } from './waypoint';
@@ -24,9 +24,9 @@ export class CelestialBody extends Entity {
 
 	public waypoint!: string;
 
-	public constructor(id: string | undefined, level: Level) {
-		super(id, level);
-		this.fleet = new Fleet(undefined, this.level);
+	public constructor(id: string | undefined, system: System) {
+		super(id, system);
+		this.fleet = new Fleet(undefined, this.system);
 		this.fleet.parent = this;
 	}
 
@@ -39,7 +39,7 @@ export class CelestialBody extends Entity {
 		if (this.waypoint) {
 			return;
 		}
-		const wp = new Waypoint(undefined, this.level);
+		const wp = new Waypoint(undefined, this.system);
 		assignWithDefaults(wp, pick(this, 'name', 'position', 'system'));
 		wp.builtin = true;
 		wp.readonly = true;

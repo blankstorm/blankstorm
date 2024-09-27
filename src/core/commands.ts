@@ -36,7 +36,7 @@ export const commands: Map<string, Command> = new Map(
 		spawn: {
 			exec({ executor }, type: ShipType, selector, extra) {
 				const parent: Player = executor.level.entity(selector);
-				const spawned = new Ship(undefined, executor.level, type);
+				const spawned = new Ship(undefined, executor.system, type);
 				spawned.parent = spawned.owner = parent;
 				if (isJSON(extra)) {
 					//spawned.update(JSON.parse(extra));

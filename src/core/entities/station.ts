@@ -1,7 +1,7 @@
 import { pick } from 'utilium';
+import type { System } from '../system';
 import type { CelestialBodyJSON } from './body';
 import { CelestialBody } from './body';
-import type { Level } from '../level';
 import type { StationPartJSON } from './station/part';
 import { StationPart } from './station/part';
 
@@ -14,10 +14,10 @@ export class Station extends CelestialBody {
 	public readonly core: StationPart;
 
 	public isTargetable = true;
-	public constructor(id: string | undefined, level: Level) {
-		super(id, level);
+	public constructor(id: string | undefined, system: System) {
+		super(id, system);
 
-		this.core = new StationPart(undefined, level);
+		this.core = new StationPart(undefined, system);
 		this.core.type = 'core';
 		this.core.station = this.core.parent = this;
 	}

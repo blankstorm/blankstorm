@@ -26,7 +26,7 @@ export class Shipyard extends StationPart implements Producer<ShipType> {
 		if (this.production.time != 0) {
 			return;
 		}
-		const ship = new Ship(undefined, this.level, this.production.id);
+		const ship = new Ship(undefined, this.system, this.production.id);
 		ship.position = this.absolutePosition;
 		this.fleet.add(ship);
 		this.production = null;
