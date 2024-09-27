@@ -34,7 +34,10 @@ jobs:
               with:
                   node-version: 22
 
-            - name: Install dependencies
+            - name: Set up system dependencies
+              run: scripts/build-setup.sh
+
+            - name: Install NPM dependencies
               run: npm install
 
             - name: Formatting
@@ -42,10 +45,6 @@ jobs:
 
             - name: Linting
               run: npm run lint
-
-            # Once tests are added
-            #-name: Test
-            # run: npm run test
 
             - name: Build client
               run: npm run build:client

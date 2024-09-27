@@ -16,10 +16,9 @@ fi
 
 if [ -z "$package_manager" ]; then
 	echo "Error: Could not detect a supported package manager. Please install packages manually: $packages"
-	exit 1
+else
+	echo "Detected package manager: $package_manager"
 fi
-
-echo "Detected package manager: $package_manager"
 
 case $package_manager in
 	apt)
@@ -31,10 +30,6 @@ case $package_manager in
 		;;
 	pacman)
 		sudo pacman -Syu --noconfirm "${packages[@]}"
-		;;
-	*)
-		echo "Unsupported package manager: $package_manager"
-		exit 1
 		;;
 esac
 echo "Installation complete!"
