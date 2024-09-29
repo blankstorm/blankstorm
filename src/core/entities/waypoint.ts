@@ -22,6 +22,12 @@ export class Waypoint extends Entity {
 
 	public readonly: boolean = false;
 
+	public get isSaveable(): boolean {
+		return !this.builtin;
+	}
+
+	public readonly isObstacle = false;
+
 	public builtin: boolean = false;
 
 	public toJSON(): WaypointJSON {

@@ -12,7 +12,6 @@ export interface CelestialBodyJSON extends WithRequired<EntityJSON, 'storage'> {
 	fleet: string;
 	radius: number;
 	seed: number;
-	waypoint: string;
 }
 
 export class CelestialBody extends Entity {
@@ -40,18 +39,22 @@ export class CelestialBody extends Entity {
 			return;
 		}
 		const wp = new Waypoint(undefined, this.system);
-		assignWithDefaults(wp, pick(this, 'name', 'position', 'system'));
-		wp.builtin = true;
-		wp.readonly = true;
-		wp.color = '#88ddff';
-		wp.icon = getEntityIcon(this.toJSON());
+
+		assignWithDefaults(wp, {
+			...pick(this, 'name', 'position', 'system'),
+			builtin: true,
+			readonly: true,
+			color: '#88ddff',
+			icon: getEntityIcon(this.toJSON()),
+		});
+
 		this.waypoint = wp.id;
 	}
 
 	public toJSON(): CelestialBodyJSON {
 		return {
 			...super.toJSON(),
-			...pick(this, 'radius', 'seed', 'waypoint'),
+			...pick(this, 'radius', 'seed'),
 			fleet: this.fleet.id,
 			storage: this.storage.toJSON(),
 		};
@@ -59,7 +62,7 @@ export class CelestialBody extends Entity {
 
 	public fromJSON(data: Partial<CelestialBodyJSON>): void {
 		super.fromJSON(data);
-		assignWithDefaults(this as CelestialBody, pick(data, 'radius', 'seed', 'waypoint'));
+		assignWithDefaults(this as CelestialBody, pick(data, 'radius', 'seed'));
 		if (data.storage) {
 			this.storage.fromJSON({ items: data.storage.items, max: 1e10 });
 		}

@@ -318,12 +318,12 @@ export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: st
 	return returnData;
 }
 
-export async function startFollowingPath(entityID: string, path: IVector3Like[], showPathGizmos: boolean) {
+export function startFollowingPath(entityID: string, path: IVector3Like[], showPathGizmos: boolean) {
 	const renderer = entities.get(entityID);
 	if (!(renderer instanceof ModelRenderer)) {
 		throw logger.error(new TypeError(`Node ${entityID} is not an entity`));
 	}
-	await renderer.followPath(
+	renderer.followPath(
 		path.map(({ x, y, z }) => new Vector3(x, y, z)),
 		showPathGizmos
 	);

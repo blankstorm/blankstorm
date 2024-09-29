@@ -1,4 +1,3 @@
-import { Animation } from '@babylonjs/core/Animations/animation';
 import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
@@ -70,69 +69,32 @@ export class ModelRenderer<T extends ModelEntityJSON = ModelEntityJSON> extends 
 		return this._currentPath;
 	}
 
-	public async followPath(path: Vector3[], showPathGizmos: boolean, { speed = 1, agility = 1 }: { speed?: number; agility?: number } = {}) {
-		if (!Array.isArray(path)) throw new TypeError('path must be a Path');
-		if (path.length == 0) {
+	public followPath(path: Vector3[], showPathGizmos: boolean, { speed = 1, agility = 1 }: { speed?: number; agility?: number } = {}) {
+		if (!path.length) {
 			return;
 		}
-		if (this._pathGizmo && showPathGizmos) {
+
+		if (this._pathGizmo) {
 			this._pathGizmo.dispose();
 			this._pathGizmo = undefined;
 		}
-		this._currentPath = path;
-		if (this._pathGizmo) {
-			console.warn('Path gizmo was already drawn and not disposed');
-		} else if (showPathGizmos) {
-			this._pathGizmo = MeshBuilder.CreateLines('pathGizmo.' + randomHex(16), { points: path }, this.getScene());
+
+		if (showPathGizmos) {
+			this._pathGizmo = MeshBuilder.CreateLines(
+				'pathGizmo.' + randomHex(16),
+				{ points: path.map(point => point.add((this.parent as TransformNode).position)) },
+				this.getScene()
+			);
 			this._pathGizmo.color = Color3.Green();
-		}
-
-		const animation = new Animation('pathFollow', 'position', 60 * speed, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT),
-			rotateAnimation = new Animation('pathRotate', 'rotation', 60 * agility, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
-
-		animation.setKeys(path.map((node, i) => ({ frame: i * 60 * speed, value: node.subtract((this.parent as TransformNode).absolutePosition) })));
-		rotateAnimation.setKeys(
-			path.flatMap((node, i) => {
-				if (i == 0) {
-					return [{ frame: 0, value: this.rotation }];
-				}
-				const value = Vector3.PitchYawRollToMoveBetweenPoints(path[i - 1], node);
-				value.x -= Math.PI / 2;
-				return [
-					{ frame: i * 60 * agility - 30, value },
-					{ frame: i * 60 * agility - 10, value },
-				];
-			})
-		);
-		this.animations.push(animation);
-		this.animations.push(rotateAnimation);
-
-		const result = this.getScene().beginAnimation(this, 0, path.length * 60);
-		result.disposeOnEnd = true;
-		await result.waitAsync();
-		this._currentPath = undefined;
-
-		if (this._pathGizmo) {
-			this._pathGizmo.dispose();
-			this._pathGizmo = undefined;
 		}
 	}
 
 	// @todo change path following to be on core
 	public async update(data: T) {
 		await super.update(data);
-		if (!this._currentPath) {
-			this.position = Vector3.FromArray(data.position);
-			this.rotation = Vector3.FromArray(data.rotation);
-		}
 
 		if (this.modelID != resolveModelID(data)) {
 			throw logger.error(`Can not change model of entity ${data.id} from ${this.modelID} to ${resolveModelID(data)}`);
-		}
-
-		const maybeParent = data.parent ? this.getScene().getNodeById(data.parent) : null;
-		if (maybeParent) {
-			this.parent = maybeParent;
 		}
 	}
 }

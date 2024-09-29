@@ -5,30 +5,41 @@ import type { Entity } from './entities/entity';
 import { logger } from './utils';
 
 function radius(entity: Entity) {
-	return 10 + (entity.isType<CelestialBody>('CelestialBody') ? entity.radius : 10);
-}
-
-function lineIntersectsEntity(start: Vector3, end: Vector3, entity: Entity): boolean {
-	const closestPoint = entity.absolutePosition.subtract(start);
-	const lineDirection = end.subtract(start).normalize();
-	const projection = Vector3.Dot(closestPoint, lineDirection);
-
-	if (projection <= 0 || projection >= Vector3.Distance(start, end)) {
-		return false;
-	}
-
-	return Vector3.Distance(start.add(lineDirection.scale(projection)), entity.absolutePosition) <= radius(entity);
+	return 1.3 * (entity.isType<CelestialBody>('CelestialBody') ? entity.radius : 10);
 }
 
 export function findPath(start: Vector3, end: Vector3, system: System): Vector3[] {
-	let intersector: Entity | null = null;
+	let intersector: Entity | undefined,
+		intersectorDistance: number = Infinity;
 
 	for (const entity of system.entities()) {
-		if (lineIntersectsEntity(start, end, entity)) {
-			logger.debug(`Path: avoiding ${entity.entityType} ${entity.id} ("${entity.name}")`);
-			intersector = entity;
-			break;
+		if (!entity.isObstacle) {
+			continue;
 		}
+
+		const relative = entity.absolutePosition.subtract(start),
+			entityDistance = relative.length();
+
+		if (intersectorDistance < entityDistance) {
+			continue;
+		}
+
+		const lineDirection = end.subtract(start).normalize();
+		const projection = Vector3.Dot(relative, lineDirection);
+
+		if (projection <= 0 || projection >= Vector3.Distance(start, end)) {
+			continue;
+		}
+
+		const distance = Vector3.Distance(start.add(lineDirection.scale(projection)), entity.absolutePosition);
+
+		if (distance > radius(entity)) {
+			continue;
+		}
+
+		logger.debug(`Path: avoiding ${entity.entityType} ${entity.id} ("${entity.name}")`);
+		intersector = entity;
+		intersectorDistance = entityDistance;
 	}
 
 	if (!intersector) {
@@ -40,7 +51,7 @@ export function findPath(start: Vector3, end: Vector3, system: System): Vector3[
 
 	const offsetDirection = intersector.absolutePosition.subtract(start).normalize();
 
-	const sidePoint = new Vector3(-offsetDirection.z, 0, offsetDirection.x).scale(radius(intersector)).addInPlace(intersector.absolutePosition);
+	const sidePoint = new Vector3(-offsetDirection.z, 0, offsetDirection.x).scaleInPlace(radius(intersector)).addInPlace(intersector.absolutePosition);
 
 	return [start, ...findPath(sidePoint, end, system)];
 }

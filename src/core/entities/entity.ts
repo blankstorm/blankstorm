@@ -1,7 +1,6 @@
-import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import EventEmitter from 'eventemitter3';
-import { assignWithDefaults, pick, randomHex, resolveConstructors } from 'utilium';
+import { assignWithDefaults, pick, randomHex, resolveConstructors, type Tuple } from 'utilium';
 import { register, type Component } from '../components/component';
 import type { ItemStorage } from '../components/storage';
 import type { ItemContainer } from '../generic/items';
@@ -35,6 +34,7 @@ export interface EntityJSON {
 	velocity: readonly number[];
 	isSelected: boolean;
 	isTargetable: boolean;
+	path?: Tuple<number, 3>[];
 	storage?: ItemContainer;
 }
 
@@ -88,6 +88,14 @@ export class Entity
 	public isSelected: boolean = false;
 	public isTargetable: boolean = false;
 
+	protected _isSaveable: boolean = true;
+
+	public get isSaveable(): boolean {
+		return this._isSaveable;
+	}
+
+	public readonly isObstacle: boolean = true;
+
 	public position: Vector3 = Vector3.Zero();
 	public rotation: Vector3 = Vector3.Zero();
 	public velocity: Vector3 = Vector3.Zero();
@@ -119,30 +127,45 @@ export class Entity
 		setTimeout(() => this.emit('created'));
 	}
 
-	public update() {
+	public update(): void {
 		tickInfo.updates++;
 		if (Math.abs(this.rotation.y) > Math.PI) {
 			this.rotation.y += Math.sign(this.rotation.y) * 2 * Math.PI;
+		}
+
+		if (this._path.length) {
+			this.velocity.addInPlace(this._path[0].normalizeToNew());
+			if (Vector3.Distance(this.position, this._path[0]) < 1) {
+				this._path.shift()!;
+				const rotation = Vector3.PitchYawRollToMoveBetweenPoints(this.position, this._path[0]);
+				rotation.x -= Math.PI / 2;
+				this.rotation.copyFrom(rotation);
+			}
 		}
 
 		this.position.addInPlace(this.velocity);
 		this.emit('update');
 	}
 
-	public remove() {
+	public remove(): void {
 		tickInfo.deletions++;
 		this.level.entities.delete(this);
 		this.level.emit('entity_removed', this.toJSON());
 	}
 
 	/**
-	 * @param target The position the entity should move to
-	 * @param isRelative Wheter the target is a change to the current position (i.e. a "delta" vector) or absolute
+	 * Used when moving.
 	 */
-	public async moveTo(target: IVector3Like, isRelative = false) {
-		if (!(target instanceof Vector3)) throw new TypeError('target must be a Vector3');
-		const path = findPath(this.absolutePosition, target.add(isRelative ? this.absolutePosition : Vector3.Zero()), this.system);
-		if (path.length == 0) {
+	protected _path: Vector3[] = [];
+
+	/**
+	 * Starts moving the entity to the position
+	 * @param target The position the entity should move to
+	 * @param isRelative Whether the target is a change to the current position (i.e. a "delta" vector) or absolute
+	 */
+	public moveTo(target: Vector3): void {
+		const path = findPath(this.absolutePosition, target, this.system);
+		if (!path.length) {
 			return;
 		}
 		this.level.emit(
@@ -150,10 +173,6 @@ export class Entity
 			this.id,
 			path.map(({ x, y, z }) => ({ x, y, z }))
 		);
-		this.position = path.at(-1)!.subtract(this.parent?.absolutePosition || Vector3.Zero());
-		const rotation = Vector3.PitchYawRollToMoveBetweenPoints(path.at(-2)!, path.at(-1)!);
-		rotation.x -= Math.PI / 2;
-		this.rotation = rotation;
 	}
 
 	public toJSON(): EntityJSON {

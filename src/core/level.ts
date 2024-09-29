@@ -1,5 +1,5 @@
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
-import { Vector2 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PerformanceMonitor } from '@babylonjs/core/Misc/performanceMonitor';
 import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, type Entries, type Expand } from 'utilium';
@@ -159,7 +159,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 			}
 			case 'move': {
 				for (const { id, target } of _data) {
-					void this.getEntityByID<Entity>(id).moveTo(target);
+					this.getEntityByID<Entity>(id).moveTo(new Vector3(target.x, target.y, target.z));
 				}
 				return true;
 			}
@@ -196,7 +196,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	}
 
 	public toJSON(): LevelJSON {
-		const entities: EntityJSON[] = [...this.entities].map(e => e.toJSON());
+		const entities: EntityJSON[] = [...this.entities].filter(entity => entity.isSaveable).map(entity => entity.toJSON());
 		/**
 		 * Note: Sorted to make sure bodies are loaded before ships before players
 		 * This prevents `level.getEntityByID(...)` from returning null

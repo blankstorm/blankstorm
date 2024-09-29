@@ -500,7 +500,8 @@ export function load(level: Level): boolean {
 		}
 	});
 	level.on('entity_path_start', (entityID: string, path: IVector3Like[]) => {
-		void renderer.startFollowingPath(entityID, path, settings.get('show_path_gizmos'));
+		console.debug('Moving along path:', path);
+		renderer.startFollowingPath(entityID, path, settings.get('show_path_gizmos'));
 	});
 	level.on('entity_death', (entity: EntityJSON) => {
 		if (entity.entityType == 'Ship') {
