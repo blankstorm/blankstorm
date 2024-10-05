@@ -22,19 +22,16 @@ export type ServerData = {
 
 let kickMessage: string | null;
 
+const reasons = new Map([
+	['io server disconnect', 'Disconnected by server'],
+	['io client disconnect', 'Client disconnected'],
+	['ping timeout', 'Connection timed out'],
+	['transport error', 'Connection timed out'],
+	['transport close', 'Lost Connection'],
+]);
+
 function handleDisconnect(reason: string): void {
-	const message =
-		kickMessage ??
-		(reason == 'io server disconnect'
-			? 'Disconnected by server'
-			: reason == 'io client disconnect'
-				? 'Client disconnected'
-				: reason == 'ping timeout' || reason == 'transport error'
-					? 'Connection timed out'
-					: reason == 'transport close'
-						? 'Lost Connection'
-						: reason);
-	$('#connect p').text(message);
+	$('#connect p').text(kickMessage ?? reasons.get(reason) ?? reason);
 	kickMessage = null;
 	$('#connect button').text('Back');
 	$('[ingame]').hide();
@@ -118,7 +115,7 @@ export function connect(id: string): void {
 	}
 	unload();
 	const server = get(id),
-		url = new URL(server.url),
+		url = parseURL(server.url),
 		pingInfo = pingCache.get(id);
 	socket = io(url.href, { reconnection: false, auth: pick(options, 'token', 'session') });
 	socket.on('connect', () => {
