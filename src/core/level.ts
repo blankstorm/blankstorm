@@ -242,7 +242,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 
 	public static FromJSON(json: LevelJSON): Level {
 		if (json.version != version) {
-			throw new Error('Can not load level data: wrong version');
+			upgradeLevel(json);
 		}
 
 		const level = new Level();
@@ -251,9 +251,11 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	}
 }
 
-export function upgradeLevel(data: LevelJSON): LevelJSON {
+export function upgradeLevel(data: LevelJSON): void {
 	switch (data.version) {
 		default:
-			throw `Upgrading from ${versions.get(data.version)?.text || data.version} is not supported`;
+			throw new Error(`Upgrading from ${versions.get(data.version)?.text || data.version} is not supported`);
+		case 'alpha_2.0.1':
+			data.version = 'alpha_2.0.2';
 	}
 }
