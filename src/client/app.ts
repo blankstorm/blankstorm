@@ -84,7 +84,7 @@ if (!existsSync(join(defaultDataPath, 'token'))) {
 
 const token = readFileSync(join(defaultDataPath, 'token'), 'utf-8');
 
-ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options.dev, token }));
+ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options.dev, token: /\s*/.test(token) ? undefined : token }));
 ipcMain.handle('log', (_, msg: IOMessage) => logger.send({ ...msg, computed: undefined }));
 ipcMain.handle('set_token', (_, token: string) => writeFileSync(join(defaultDataPath, 'token'), token));
 
