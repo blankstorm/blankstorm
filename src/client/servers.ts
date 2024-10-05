@@ -11,7 +11,7 @@ import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
 import { currentLevel, load, unload } from './client';
 import { path } from './config';
-import { createServerUI } from './ui/templates';
+import { createServerListItem } from './ui/templates';
 import { logger } from './utils';
 
 export type ServerData = {
@@ -35,7 +35,7 @@ function handleDisconnect(reason: string): void {
 	kickMessage = null;
 	$('#connect button').text('Back');
 	$('[ingame]').hide();
-	$(reason == 'io client disconnect' ? '#server-list' : '#connect').show();
+	$(reason == 'io client disconnect' ? '#servers' : '#connect').show();
 }
 
 function handleConnectionError({ message }: Error): void {
@@ -128,7 +128,7 @@ export function connect(id: string): void {
 	socket.on('chat', sendMessage);
 	socket.on('event', handleEvent);
 	socket.on('disconnect', handleDisconnect);
-	$('#server-list').hide();
+	$('#servers').hide();
 	$('#connect').show();
 	$('#connect p').text('Connecting...');
 	$('#connect button').text('Back');
@@ -166,13 +166,14 @@ export function init() {
 	file = new JSONFileMap(filePath, config);
 
 	for (const server of data()) {
-		createServerUI(server);
+		createServerListItem(server);
 	}
 }
 
 export function add(name: string, url: string): string {
 	const id = getID(url);
 	file.set(id, { id, name, url });
+	createServerListItem({ id, name, url });
 	return id;
 }
 

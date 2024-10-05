@@ -158,7 +158,7 @@ export function registerListeners() {
 			return;
 		}
 		$('#main').hide();
-		$('#server-list').show();
+		$('#servers').show();
 		void servers.pingAll();
 	});
 	$('#main .options').on('click', () => {
@@ -177,7 +177,7 @@ export function registerListeners() {
 	$('#saves .new').on('click', () => {
 		$<HTMLDialogElement>('#save-new')[0].showModal();
 	});
-	$('#server-list .new').on('click', () => {
+	$('#servers .new').on('click', () => {
 		$('#server-dialog').find('.name').val('');
 		$('#server-dialog').find('.url').val('');
 		$<HTMLDialogElement>('#server-dialog')[0].showModal();
@@ -188,11 +188,11 @@ export function registerListeners() {
 			id = servers.getID(url);
 		if (!servers.has(id)) {
 			servers.add(name, url);
-			return;
+		} else {
+			const server = servers.get(id);
+			server.name = name;
+			server.url = url;
 		}
-		const server = servers.get(id);
-		server.name = name;
-		server.url = url;
 
 		update();
 		$<HTMLDialogElement>('#server-dialog')[0].close();
@@ -224,9 +224,9 @@ export function registerListeners() {
 			void alert('Can not load save: not JSON.');
 		}
 	});
-	$('#server-list button.refresh').on('click', servers.pingAll);
+	$('#servers button.refresh').on('click', servers.pingAll);
 	$('#connect button.cancel').on('click', () => {
-		$('#server-list').show();
+		$('#servers').show();
 		$('#connect').hide();
 	});
 	$('#save-new button.back').on('click', () => {

@@ -16,7 +16,7 @@
 		"#save-new span.new": "Start",
 		"button.cancel,span.cancel": "Cancel",
 		"button.upload span": "Upload",
-		"#server-list span.refresh": "Refresh",
+		"#servers span.refresh": "Refresh",
 		"span.waypoints": "Waypoints",
 		"button[section=inventory] span": "Inventory",
 		"button[section=screenshots] span": "Screenshots",

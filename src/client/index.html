@@ -95,21 +95,7 @@
 			</ul>
 		</div>
 
-		<ul id="server-list" class="playable-list content bg-transparent">
-			<template id="server">
-				<li class="bg-normal clickable" style="overflow: none; align-items: center; height: 3em"></li>
-				<p class="delete" style="position: absolute; left: 15%">
-					<svg><use href="assets/images/icons.svg#trash" /></svg>
-				</p>
-				<p class="play" style="position: absolute; left: 20%">
-					<svg><use href="assets/images/icons.svg#play" /></svg>
-				</p>
-				<p class="edit" style="position: absolute; left: 25%">
-					<svg><use href="assets/images/icons.svg#pencil" /></svg>
-				</p>
-				<p class="name" style="position: absolute; left: 30%"></p>
-				<p class="info" style="position: absolute; left: 75%"><span></span><tool-tip></tool-tip></p>
-			</template>
+		<div id="servers" class="playable-list content bg-transparent">
 			<button class="back menu">
 				<svg>
 					<use href="assets/images/icons.svg#arrow-left" />
@@ -128,7 +114,24 @@
 				</svg>
 				<span locale class="refresh">Refresh</span>
 			</button>
-		</ul>
+			<ul id="servers">
+				<template id="server">
+					<li class="bg-normal clickable" style="overflow: none; align-items: center; height: 3em">
+						<p class="delete" style="position: absolute; left: 15%">
+							<svg><use href="assets/images/icons.svg#trash" /></svg>
+						</p>
+						<p class="play" style="position: absolute; left: 20%">
+							<svg><use href="assets/images/icons.svg#play" /></svg>
+						</p>
+						<p class="edit" style="position: absolute; left: 25%">
+							<svg><use href="assets/images/icons.svg#pencil" /></svg>
+						</p>
+						<p class="name" style="position: absolute; left: 30%"></p>
+						<p class="info" style="position: absolute; left: 75%"><span></span><tool-tip></tool-tip></p>
+					</li>
+				</template>
+			</ul>
+		</div>
 		<dialog id="login" class="bg-normal">
 			<svg clickable class="top-right cancel">
 				<use href="assets/images/icons.svg#xmark" />

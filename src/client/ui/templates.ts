@@ -113,22 +113,22 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 	return instance;
 }
 
-export function createServerUI(server: ServerData) {
-	const instance = instaniateTemplate('#server');
+export function createServerListItem(server: ServerData): JQuery<HTMLLIElement> {
+	const instance = instaniateTemplate('#server').find('li');
 	instance
-		.find('li')
 		.attr('id', server.id)
 		.on('click', () => {
 			$('.selected').removeClass('selected');
 			instance.addClass('selected');
 		})
 		.on('dblclick', () => connect(server.id))
-		.prependTo('#server-list');
+		.prependTo('#servers ul');
 	instance.find('.name').text(server.name);
 
 	instance.find('.delete').on('click', async e => {
 		if (e.shiftKey || (await confirm('Are you sure?'))) {
 			removeServer(server.id);
+			instance.remove();
 		}
 	});
 	instance.find('.play').on('click', () => connect(server.id));
@@ -137,4 +137,6 @@ export function createServerUI(server: ServerData) {
 		$('#server-dialog').find('.url').val(server.url);
 		$<HTMLDialogElement>('#server-dialog')[0].showModal();
 	});
+
+	return instance;
 }
