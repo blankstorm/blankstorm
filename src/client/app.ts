@@ -1,13 +1,13 @@
 /* eslint-env node */
-import { BrowserWindow, app, ipcMain, nativeTheme, shell } from 'electron';
+import { BrowserWindow, app, ipcMain, nativeTheme, session, shell } from 'electron';
 import { appendFileSync, existsSync, mkdirSync, truncateSync } from 'fs';
 import { LogLevel, Logger, type IOMessage } from 'logzen';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { homedir } from 'os';
 import { version, versions } from '../core/metadata';
 import type { ClientInit } from './client';
-import { homedir } from 'os';
 
 const dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
@@ -84,6 +84,11 @@ ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, computed: un
 nativeTheme.themeSource = 'dark';
 
 async function init(): Promise<void> {
+	const { cookies } = session.defaultSession;
+
+	ipcMain.handle('cookies.get', (_, name?: string) => cookies.get({ name }));
+	ipcMain.handle('cookies.set', (_, name: string, value: string) => cookies.set({ name, value, url: 'https://blankstorm.net/' }));
+
 	const window: BrowserWindow = new BrowserWindow({
 		width: 16 * initialScale,
 		height: 9 * initialScale,

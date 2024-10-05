@@ -45,60 +45,6 @@ export function setByString(object: Record<string, any>, path: string, value: un
 		.reduce((o, p, i) => (o[p] = path.split(seperator).filter(p => p).length === ++i ? value : o[p] || {}), object);
 }
 
-export const cookies: Map<string, string> & { get _map(): Map<string, string> } = {
-	clear() {
-		for (const key of this.keys()) {
-			this.delete(key);
-		}
-	},
-	delete(key: string): boolean {
-		document.cookie = key + '= ; expires = Thu, 01 Jan 1970 00:00:00 GMT';
-		return true;
-	},
-	get(key: string) {
-		return this._map.get(key);
-	},
-	has(key: string) {
-		return this._map.has(key);
-	},
-	set(key: string, value: string) {
-		document.cookie = `${key}=${value}`;
-		return this;
-	},
-
-	get size() {
-		return this._map.size;
-	},
-
-	get [Symbol.iterator]() {
-		return this._map[Symbol.iterator].bind(this);
-	},
-
-	get [Symbol.toStringTag]() {
-		return '[object CookieMap]';
-	},
-
-	get keys() {
-		return this._map.keys.bind(this);
-	},
-
-	get values() {
-		return this._map.values.bind(this);
-	},
-
-	get entries() {
-		return this._map.entries.bind(this);
-	},
-
-	get forEach() {
-		return this._map.forEach.bind(this);
-	},
-
-	get _map(): Map<string, string> {
-		return new Map(document.cookie.split(';').map((cookie: string) => cookie.split('=', 2)) as [string, string][]);
-	},
-};
-
 export function biomeColor(biome: PlanetBiome): string {
 	switch (biome) {
 		case 'earthlike':

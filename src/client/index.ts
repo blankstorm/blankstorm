@@ -29,6 +29,7 @@ if (options.debug) {
 		user: await import('./user'),
 		locales: await import('./locales'),
 		settings: await import('./settings'),
+		utils: await import('./utils'),
 		$,
 	});
 }

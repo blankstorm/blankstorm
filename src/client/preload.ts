@@ -11,6 +11,15 @@ const app = {
 	log(this: void, entry: IOMessage): void {
 		void ipcRenderer.invoke('log', entry);
 	},
+	cookies: {
+		async get(this: void, name?: string): Promise<string | undefined> {
+			const cookies = (await ipcRenderer.invoke('cookies.get', name)) as Electron.Cookie[];
+			return cookies?.[0]?.value;
+		},
+		set(this: void, name: string, value: string): Promise<void> {
+			return ipcRenderer.invoke('cookies.set', name, value);
+		},
+	},
 } as const;
 contextBridge.exposeInMainWorld('$app', app);
 export type $app = typeof app;

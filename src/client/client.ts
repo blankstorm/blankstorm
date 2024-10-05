@@ -22,7 +22,7 @@ import * as settings from './settings';
 import * as ui from './ui';
 import { alert } from './ui/dialog';
 import * as user from './user';
-import { cookies, logger, minimize, optionsOf } from './utils';
+import { logger, minimize, optionsOf } from './utils';
 
 export interface ClientInit {
 	/**
@@ -354,12 +354,14 @@ async function _init(): Promise<void> {
 	if (!navigator.onLine) {
 		logger.warn('Could not authenticate (offline)');
 	}
-	if (!cookies.has('token')) {
+
+	const token = await $app.cookies.get('token');
+	if (!token) {
 		logger.warn('Could not authenticate (no token)');
 	}
-	if (cookies.has('token') && navigator.onLine) {
+	if (token && navigator.onLine) {
 		try {
-			const result: Account = await getAccount('token', cookies.get('token'));
+			const result: Account = await getAccount('token', token);
 			Object.assign(user.account, result);
 			isMultiplayerEnabled = true;
 		} catch (error) {

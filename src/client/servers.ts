@@ -12,7 +12,7 @@ import { sendMessage } from './chat';
 import { currentLevel, load, unload } from './client';
 import { path } from './config';
 import { createServerUI } from './ui/templates';
-import { cookies, logger } from './utils';
+import { logger } from './utils';
 
 export type ServerData = {
 	id: string;
@@ -112,7 +112,7 @@ export async function pingAll(): Promise<void> {
 	}
 }
 
-export function connect(id: string): void {
+export async function connect(id: string): Promise<void> {
 	if (socket?.connected) {
 		throw new ReferenceError(`Can't connect to a server: already connected`);
 	}
@@ -120,7 +120,7 @@ export function connect(id: string): void {
 	const server = get(id),
 		url = new URL(server.url),
 		pingInfo = pingCache.get(id);
-	socket = io(url.href, { reconnection: false, auth: { token: cookies.get('token'), session: cookies.get('session') } });
+	socket = io(url.href, { reconnection: false, auth: { token: await $app.cookies.get('token'), session: await $app.cookies.get('session') } });
 	socket.on('connect', () => {
 		$('#tablist p.info').html(`${url.hostname}<br>${(pingInfo?.version ? versions.get(pingInfo.version)?.text : null) || pingInfo?.version}<br>${pingInfo?.message}<br>`);
 	});
