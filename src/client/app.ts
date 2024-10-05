@@ -78,15 +78,15 @@ if (options.logLevel) {
 
 logger.log('Initializing...');
 
-if (!existsSync(join(defaultDataPath, 'token'))) {
-	writeFileSync(join(defaultDataPath, 'token'), '');
+if (!existsSync(join(options.path, 'token'))) {
+	writeFileSync(join(options.path, 'token'), '');
 }
 
-const token = readFileSync(join(defaultDataPath, 'token'), 'utf-8').replaceAll(/[\s\n]+/g, '');
+const token = readFileSync(join(options.path, 'token'), 'utf-8').replaceAll(/[\s\n]+/g, '');
 
 ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options.dev, token: /\s*/.test(token) ? undefined : token }));
 ipcMain.handle('log', (_, msg: IOMessage) => logger.send({ ...msg, computed: undefined }));
-ipcMain.handle('set_token', (_, token: string) => writeFileSync(join(defaultDataPath, 'token'), token));
+ipcMain.handle('set_token', (_, token: string) => writeFileSync(join(options.path, 'token'), token));
 
 nativeTheme.themeSource = 'dark';
 
