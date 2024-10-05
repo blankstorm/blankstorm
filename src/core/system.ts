@@ -81,7 +81,7 @@ export class System extends EventEmitter<{
 	}
 
 	public entity<T extends Entity = Entity>(selector: string): T {
-		return this.entities<T>(selector).values().next().value;
+		return this.entities<T>(selector).values().next().value as T;
 	}
 
 	public get selectedEntities(): Entity[] {
