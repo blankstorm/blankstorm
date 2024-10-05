@@ -255,6 +255,7 @@ export function upgradeLevel(data: LevelJSON): void {
 	switch (data.version) {
 		default:
 			throw new Error(`Upgrading from ${versions.get(data.version)?.text || data.version} is not supported`);
+		case 'alpha_2.0.0':
 		case 'alpha_2.0.1':
 			data.version = 'alpha_2.0.2';
 	}
