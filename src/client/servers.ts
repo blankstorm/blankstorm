@@ -3,9 +3,9 @@ import $ from 'jquery';
 import * as fs from 'node:fs';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
-import { isJSON } from 'utilium';
+import { isJSON, pick } from 'utilium';
 import { JSONFileMap } from 'utilium/fs.js';
-import { Level, type LevelEvents } from '../core/level';
+import { Level, type LevelEvents, type LevelJSON } from '../core/level';
 import { config, versions } from '../core/metadata';
 import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
@@ -56,7 +56,7 @@ function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ..
 		if (!currentLevel) {
 			load(new Level());
 		}
-		currentLevel!.fromJSON(data[0]);
+		currentLevel!.fromJSON(data[0] as LevelJSON);
 		currentLevel!.sampleTick();
 	}
 
@@ -90,15 +90,15 @@ export async function ping(id: string): Promise<void> {
 	try {
 		const res = await fetch(`${url.origin}/ping`);
 		try {
-			const ping = await res.json();
+			const ping = (await res.json()) as PingInfo;
 			pingCache.set(id, ping);
 			info.find('span').text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${ping.current_clients}/${ping.max_clients}`);
 			info.find('tool-tip').html(`${url.hostname}<br><br>${versions.get(ping.version)?.text || ping.version}<br><br>${ping.message}`);
-		} catch (e) {
+		} catch (_) {
 			info.find('span').html('<svg><use href="assets/images/icons.svg#xmark"/></svg>');
 			info.find('tool-tip').html('Invalid response');
 		}
-	} catch (e) {
+	} catch (_) {
 		info.find('span').html('<svg><use href="assets/images/icons.svg#xmark"/></svg>');
 		info.find('tool-tip').html(`Can't connect to server`);
 	} finally {
@@ -112,7 +112,7 @@ export async function pingAll(): Promise<void> {
 	}
 }
 
-export async function connect(id: string): Promise<void> {
+export function connect(id: string): void {
 	if (socket?.connected) {
 		throw new ReferenceError(`Can't connect to a server: already connected`);
 	}
@@ -120,7 +120,7 @@ export async function connect(id: string): Promise<void> {
 	const server = get(id),
 		url = new URL(server.url),
 		pingInfo = pingCache.get(id);
-	socket = io(url.href, { reconnection: false, auth: { token: await $app.cookies.get('token'), session: await $app.cookies.get('session') } });
+	socket = io(url.href, { reconnection: false, auth: pick(options, 'token', 'session') });
 	socket.on('connect', () => {
 		$('#tablist p.info').html(`${url.hostname}<br>${(pingInfo?.version ? versions.get(pingInfo.version)?.text : null) || pingInfo?.version}<br>${pingInfo?.message}<br>`);
 	});

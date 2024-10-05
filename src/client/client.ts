@@ -34,6 +34,16 @@ export interface ClientInit {
 	 * Whether debugging is enabled
 	 */
 	debug: boolean;
+
+	/**
+	 * The token to be used for authentication
+	 */
+	token?: string;
+
+	/**
+	 * The session to be used (unused)
+	 */
+	session?: string;
 }
 
 export let currentLevel: Level | null;
@@ -318,7 +328,7 @@ async function _init(): Promise<void> {
 	settings.items.get('toggle_map')!.onTrigger = () => ui.switchTo('#map');
 	settings.items.get('toggle_temp_menu')!.onTrigger = () => ui.switchTo('#ingame-temp-menu');
 	settings.items.get('screenshot')!.onTrigger = () => {
-		canvas[0].toBlob(async blob => {
+		canvas[0].toBlob(async (blob: Blob | null) => {
 			const data = await blob?.arrayBuffer();
 			if (!data) {
 				chat.sendMessage('Failed to save screenshot.');
@@ -355,7 +365,7 @@ async function _init(): Promise<void> {
 		logger.warn('Could not authenticate (offline)');
 	}
 
-	const token = await $app.cookies.get('token');
+	const token = (await $app.options()).token;
 	if (!token) {
 		logger.warn('Could not authenticate (no token)');
 	}

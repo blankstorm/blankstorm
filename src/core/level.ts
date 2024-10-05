@@ -84,8 +84,8 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	public rootSystem!: System;
 	protected _performanceMonitor = new PerformanceMonitor(60);
 
-	public async ready(): Promise<this> {
-		return this;
+	public ready(): Promise<this> {
+		return Promise.resolve(this);
 	}
 
 	public getEntityByID<N extends Entity = Entity>(id: string): N {
@@ -101,7 +101,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	}
 
 	public entity<T extends Entity = Entity>(selector: string): T {
-		return this.selectEntities(selector).values().next().value;
+		return this.selectEntities(selector).values().next().value as T;
 	}
 
 	public tryAction<T extends ActionType>(id: string, action: T, data: ActionData<T>): boolean {

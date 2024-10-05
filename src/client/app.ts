@@ -1,6 +1,6 @@
 /* eslint-env node */
-import { BrowserWindow, app, ipcMain, nativeTheme, session, shell } from 'electron';
-import { appendFileSync, existsSync, mkdirSync, truncateSync } from 'fs';
+import { BrowserWindow, app, ipcMain, nativeTheme, shell } from 'electron';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, truncateSync, writeFileSync } from 'fs';
 import { LogLevel, Logger, type IOMessage } from 'logzen';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +11,7 @@ import type { ClientInit } from './client';
 
 const dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
-const defaultDataPath = join(homedir(), '.blankstorm/data');
+const defaultDataPath = join(homedir(), '.blankstorm');
 
 if (!existsSync(defaultDataPath)) {
 	mkdirSync(defaultDataPath, { recursive: true });
@@ -78,17 +78,19 @@ if (options.logLevel) {
 
 logger.log('Initializing...');
 
-ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options.dev }));
-ipcMain.handle('log', (ev, msg: IOMessage) => logger.send({ ...msg, computed: undefined }));
+if (!existsSync(join(defaultDataPath, 'token'))) {
+	writeFileSync(join(defaultDataPath, 'token'), '');
+}
+
+const token = readFileSync(join(defaultDataPath, 'token'), 'utf-8');
+
+ipcMain.handle('options', (): ClientInit => ({ ...options, debug: options.dev, token }));
+ipcMain.handle('log', (_, msg: IOMessage) => logger.send({ ...msg, computed: undefined }));
+ipcMain.handle('set_token', (_, token: string) => writeFileSync(join(defaultDataPath, 'token'), token));
 
 nativeTheme.themeSource = 'dark';
 
 async function init(): Promise<void> {
-	const { cookies } = session.defaultSession;
-
-	ipcMain.handle('cookies.get', (_, name?: string) => cookies.get({ name }));
-	ipcMain.handle('cookies.set', (_, name: string, value: string) => cookies.set({ name, value, url: 'https://blankstorm.net/' }));
-
 	const window: BrowserWindow = new BrowserWindow({
 		width: 16 * initialScale,
 		height: 9 * initialScale,

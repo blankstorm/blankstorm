@@ -18,7 +18,12 @@ $.event.special.wheel = {
 	},
 };
 
-const options = await $app.options();
+declare global {
+	// eslint-disable-next-line no-var
+	var options: client.ClientInit;
+}
+
+const options = (globalThis.options = await $app.options());
 if (options.debug) {
 	logger.info('Debug mode enabled');
 	Object.assign(globalThis, {
