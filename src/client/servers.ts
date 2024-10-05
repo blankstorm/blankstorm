@@ -142,7 +142,7 @@ export function parseURL(url: string | URL): URL {
 		return url;
 	}
 	if (!/^(http|ws)s?:\/\//.test(url)) {
-		url = location.protocol + '//' + url;
+		url = 'http://' + url;
 	}
 	if (!/^(http|ws)s?:\/\/[\w.]+:\d+/.test(url)) {
 		url += ':' + config.default_port;
