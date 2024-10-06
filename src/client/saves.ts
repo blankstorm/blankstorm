@@ -121,7 +121,7 @@ export function flush(): void {
 	$('#pause .save').text('Save Game');
 }
 
-export async function fixPlayerID(save: LevelJSON): Promise<boolean> {
+export async function replaceGuest(save: LevelJSON): Promise<boolean> {
 	if (account.id == '_guest_') {
 		return true;
 	}

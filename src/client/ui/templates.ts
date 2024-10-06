@@ -65,7 +65,10 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 		$('#loading_cover').show();
 		try {
 			logger.info('Loading level from save ' + save.id);
-			if (!(await saves.fixPlayerID(save))) {
+
+			const replaceGuest = await saves.replaceGuest(save);
+			logger.debug('Replacing guest: ' + (replaceGuest ? 'Yes' : 'No'));
+			if (!replaceGuest) {
 				$('#loading_cover,#hud,canvas.game').hide();
 				$('#saves').show();
 			}
