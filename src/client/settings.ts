@@ -282,6 +282,10 @@ export function load(config: { sections: SettingsSectionConfig[]; items: ItemCon
 	}
 }
 
+export function reset(): void {
+	file.clear();
+}
+
 export const get: (typeof file)['get'] = key => file.get(key);
 export const has: (typeof file)['has'] = key => file.has(key);
 export const set: (typeof file)['set'] = (key, val) => file.set(key, val);

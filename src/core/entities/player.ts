@@ -3,10 +3,9 @@ import { Fleet } from '../components/fleet';
 import type { EntityStorageManager } from '../components/storage';
 import type { ResearchID } from '../generic/research';
 import { research } from '../generic/research';
-import type { Level } from '../level';
+import type { System } from '../system';
 import type { EntityJSON } from './entity';
 import { Entity } from './entity';
-import type { System } from '../system';
 
 export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;

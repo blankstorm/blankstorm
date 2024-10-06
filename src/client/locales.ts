@@ -43,6 +43,9 @@ export function use(id: string) {
 	}
 	currentLang = id;
 	for (const [selector, text] of Object.entries(locale.markup_text)) {
+		if (!text || /^\s*$/.test(text)) {
+			logger.warn('Empty or whitespace-only locale text: ' + selector);
+		}
 		$(selector).filter('[locale]').text(text);
 	}
 	for (const [id, section] of settings.sections) {

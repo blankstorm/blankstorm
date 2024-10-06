@@ -18,6 +18,7 @@
 		"button.upload span": "Upload",
 		"#servers span.refresh": "Refresh",
 		"span.waypoints": "Waypoints",
+		"#settings button.reset span": "Reset",
 		"button[section=inventory] span": "Inventory",
 		"button[section=screenshots] span": "Screenshots",
 		"button[section=shipyard] span": "Shipyard",

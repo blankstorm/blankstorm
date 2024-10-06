@@ -18,7 +18,7 @@ import * as locales from './locales';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
-import { alert } from './ui/dialog';
+import { alert, confirm } from './ui/dialog';
 import * as map from './ui/map';
 import * as templates from './ui/templates';
 import * as tooltip from './ui/tooltips';
@@ -308,6 +308,12 @@ export function registerListeners() {
 		$('#settings').hide();
 		$(getLast()).show();
 		update();
+	});
+	$('#settings button.reset').on('click', async event => {
+		if (event.shiftKey || (await confirm('Are you sure you want to reset your settings?'))) {
+			settings.reset();
+			update();
+		}
 	});
 	$('#settings div.general input').on('change', update);
 	$<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
