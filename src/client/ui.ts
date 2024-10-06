@@ -311,7 +311,7 @@ export function registerListeners() {
 	});
 	$('#settings button.reset').on('click', async event => {
 		if (event.shiftKey || (await confirm(locales.text('reset_settings')))) {
-			settings.reset();
+			await settings.reset();
 			update();
 		}
 	});
