@@ -20,24 +20,20 @@ export let currentLang: string = 'en';
  *
  */
 export async function load(url: string): Promise<Locale> {
-	try {
-		if (!settings.initialized) {
-			throw 'Settings not initialized';
-		}
-		const locale: Locale = isJSON(url) ? JSON.parse(url) : await (await fetch(url)).json();
-		if (typeof locale != 'object') throw 'Not an object';
-		if (!locale.language) throw 'Does not have a language';
-		if (!locale.version) throw 'Does not have a version';
-		if (!locale?.text) throw 'Missing data';
-		if (!version.match(locale.version)) throw 'Incompatible game version';
-
-		store.set(locale.language, locale);
-		logger.debug(`Loaded locale "${locale.name}" (${locale.language})`);
-		settings.items.get('locale')!.addOption(locale.language, locale.name);
-		return locale;
-	} catch (e) {
-		throw new Error(`Failed to load locale from ${url}: ${e}`);
+	if (!settings.initialized) {
+		throw 'Settings not initialized';
 	}
+	const locale: Locale = isJSON(url) ? JSON.parse(url) : await (await fetch(url)).json();
+	if (typeof locale != 'object') throw 'Not an object';
+	if (!locale.language) throw 'Does not have a language';
+	if (!locale.version) throw 'Does not have a version';
+	if (!locale?.text) throw 'Missing data';
+	if (!version.match(locale.version)) throw 'Incompatible game version';
+
+	store.set(locale.language, locale);
+	logger.debug(`Loaded locale "${locale.name}" (${locale.language})`);
+	settings.items.get('locale')!.addOption(locale.language, locale.name);
+	return locale;
 }
 
 export function use(id: string) {

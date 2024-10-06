@@ -424,7 +424,7 @@ export async function reload() {
 	ui.update();
 }
 
-function _update() {
+export function update() {
 	if (!(currentLevel instanceof Level) || isPaused) {
 		return;
 	}
@@ -460,16 +460,6 @@ function _update() {
 		`);
 
 	void renderer.render();
-}
-
-export function update() {
-	try {
-		_update();
-	} catch (error) {
-		logger.error('Client update failed: ' + (error instanceof Error ? (error.cause ?? error.stack) : error));
-		void alert('Client update failed.');
-		throw error;
-	}
 }
 
 export function pause() {

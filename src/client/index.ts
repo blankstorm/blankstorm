@@ -3,13 +3,24 @@ import { LogLevel } from 'logzen';
 import { logger as coreLogger } from '../core';
 import * as client from './client';
 import { logger } from './utils';
+import { alert, confirm } from './ui/dialog';
 
-addEventListener('error', ev => {
+addEventListener('error', async ({ error }: { error: Error }) => {
 	$app.log({
-		contents: (ev.error as Error).stack!,
+		contents: error.stack!,
 		level: LogLevel.ERROR,
 		prefix: 'client',
 	});
+
+	const notice =
+		'\n\n\nThe game will now exit to avoid further issues.' +
+		(options.debug ? ' Press cancel to continue in an unstable state.\nDoing so could lead to data loss, please take caution.' : '');
+
+	if (options.debug ? !(await confirm(error.stack + notice)) : await alert(error.toString() + notice).then(() => false)) {
+		return;
+	}
+
+	close();
 });
 
 $.event.special.wheel = {
