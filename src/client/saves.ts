@@ -6,14 +6,14 @@ import { FolderMap } from 'utilium/fs.js';
 import { Player } from '../core/entities/player';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
+import { versions } from '../core/metadata';
 import { randomInSphere } from '../core/utils';
 import { getCurrentLevel } from './client';
 import { path } from './config';
+import { confirm } from './ui/dialog';
 import { createSaveListItem } from './ui/templates';
 import { account } from './user';
 import { logger } from './utils';
-import { alert } from './ui/dialog';
-import { versions } from '../core/metadata';
 
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();
@@ -116,13 +116,43 @@ export { remove as delete };
 export function flush(): void {
 	const currentLevel = getCurrentLevel();
 	$('#pause .save').text('Saving...');
-	try {
-		update(currentLevel.toJSON());
-		logger.debug('Writing save: ' + currentLevel.id);
-	} catch (error: any) {
-		void alert('Failed to save.');
-		logger.error(error);
-		throw error;
-	}
+	logger.debug('Writing save: ' + currentLevel.id);
+	update(currentLevel.toJSON());
 	$('#pause .save').text('Save Game');
+}
+
+export async function fixPlayerID(save: LevelJSON): Promise<boolean> {
+	if (account.id == '_guest_') {
+		return true;
+	}
+
+	const guest = save.entities.find(entity => entity.entityType == 'Player' && entity.id == '_guest_');
+
+	if (!guest) {
+		return false;
+	}
+
+	if (
+		!(await confirm(`
+		This save has a default "guest" player.
+		This happens if you play without being logged in.
+		If you continue, the save will be updated with your user ID.
+		This is not reversible.`))
+	) {
+		return false;
+	}
+
+	for (const entity of save.entities) {
+		for (const property of ['id', 'owner', 'parent'] as const) {
+			if (entity[property] == '_guest_') {
+				entity[property] = account.id;
+			}
+		}
+
+		if (entity.name == '[guest]') {
+			entity.name = account.username;
+		}
+	}
+
+	return true;
 }

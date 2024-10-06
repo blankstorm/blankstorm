@@ -65,6 +65,10 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 		$('#loading_cover').show();
 		try {
 			logger.info('Loading level from save ' + save.id);
+			if (!(await saves.fixPlayerID(save))) {
+				$('#loading_cover,#hud,canvas.game').hide();
+				$('#saves').show();
+			}
 			const level = Level.FromJSON(save);
 			await level.ready();
 			load(level);
