@@ -13,8 +13,8 @@ import { xpToLevel } from '../core/utils';
 import * as renderer from '../renderer/index';
 import { playsound } from './audio';
 import * as chat from './chat';
-import { isServer, path, setDebug, setPath } from './config';
-import * as locales from './locales';
+import { isServer, setDebug, setPath } from './config';
+import { text, init as init_locales } from './locales';
 import * as mods from './mods';
 import * as saves from './saves';
 import * as servers from './servers';
@@ -79,7 +79,14 @@ function _initLog(message: string): void {
 	logger.log(message);
 }
 
-async function _init(): Promise<void> {
+export async function init({ path = '.', debug = false }: Partial<ClientInit> = {}): Promise<void> {
+	if (isInitialized) {
+		logger.warn('Attempted to initialize client that was already initialized. (Options ignored)');
+		return;
+	}
+	setPath(path);
+	setDebug(debug);
+
 	if ('client_init' in sessionStorage) {
 		_initLog('Reloading...');
 	} else {
@@ -138,7 +145,7 @@ async function _init(): Promise<void> {
 				section: 'general',
 				type: 'number',
 
-				label: val => `Font Size (${val}px)`,
+				label: val => `${text('setting.font_size')} (${val}px)`,
 				attributes: { min: 10, max: 20, step: 1 },
 				value: 13,
 			},
@@ -147,7 +154,7 @@ async function _init(): Promise<void> {
 				section: 'general',
 				type: 'number',
 
-				label: val => `Chat Timeout (${val} seconds)`,
+				label: val => `${text('setting.chat_timeout')} (${val} seconds)`,
 				attributes: { min: 5, max: 15, step: 1 },
 				value: 10,
 			},
@@ -156,7 +163,7 @@ async function _init(): Promise<void> {
 				section: 'general',
 				type: 'number',
 
-				label: val => `Camera Sensitivity (${((val as number) * 100).toFixed()}%)`,
+				label: val => `${text('setting.sensitivity')} (${((val as number) * 100).toFixed()}%)`,
 				attributes: { min: 0.1, max: 2, step: 0.05 },
 				value: 1,
 			},
@@ -165,7 +172,7 @@ async function _init(): Promise<void> {
 				section: 'general',
 				type: 'number',
 
-				label: val => `Music Volume (${((val as number) * 100).toFixed()}%)`,
+				label: val => `${text('setting.music')} (${((val as number) * 100).toFixed()}%)`,
 				attributes: { min: 0, max: 1, step: 0.05 },
 				value: 1,
 			},
@@ -173,7 +180,7 @@ async function _init(): Promise<void> {
 				id: 'sfx',
 				section: 'general',
 				type: 'number',
-				label: val => `Sound Effects Volume (${((val as number) * 100).toFixed()}%)`,
+				label: val => `${text('setting.sfx')} (${((val as number) * 100).toFixed()}%)`,
 				attributes: { min: 0, max: 1, step: 0.05 },
 				value: 1,
 			},
@@ -181,133 +188,133 @@ async function _init(): Promise<void> {
 				id: 'locale',
 				section: 'general',
 				type: 'select',
-				label: 'Language',
+				label: () => text('setting.locale'),
 				value: 'en',
 			},
 			{
 				id: 'show_path_gizmos',
 				section: 'debug',
 				type: 'boolean',
-				label: 'Show Path Gizmos',
+				label: () => text('setting.show_path_gizmos'),
 				value: false,
 			},
 			{
 				id: 'tooltips',
 				section: 'debug',
 				type: 'boolean',
-				label: 'Show Advanced Tooltips',
+				label: () => text('setting.'),
 				value: false,
 			},
 			{
 				id: 'disable_saves',
 				section: 'debug',
 				type: 'boolean',
-				label: 'Disable Saves',
+				label: () => text('setting.disable_saves'),
 				value: false,
 			},
 			{
 				id: 'forward',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Forward',
+				label: () => text('setting.forward'),
 				value: { key: 'w', ctrl: false, alt: false },
 			},
 			{
 				id: 'left',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Strafe Left',
+				label: () => text('setting.left'),
 				value: { key: 'a', ctrl: false, alt: false },
 			},
 			{
 				id: 'right',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Strafe Right',
+				label: () => text('setting.right'),
 				value: { key: 'd', ctrl: false, alt: false },
 			},
 			{
 				id: 'back',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Backward',
+				label: () => text('setting.back'),
 				value: { key: 's', ctrl: false, alt: false },
 			},
 			{
 				id: 'chat',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Toggle Chat',
+				label: () => text('setting.chat'),
 				value: { key: 't', ctrl: false, alt: false },
 			},
 			{
 				id: 'command',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Toggle Command',
+				label: () => text('setting.command'),
 				value: { key: '/', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_temp_menu',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Toggle Temporary Ingame Menu',
+				label: () => text('setting.toggle_temp_menu'),
 				value: { key: 'Tab', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_menu',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Toggle Ingame Menu',
+				label: () => text('setting.toggle_menu'),
 				value: { key: 'e', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_map',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Toggle Map',
+				label: () => text('setting.toggle_map'),
 				value: { key: 'm', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_left',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Map Move Left',
+				label: () => text('setting.map_move_left'),
 				value: { key: 'ArrowLeft', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_down',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Map Move Down',
+				label: () => text('setting.map_move_down'),
 				value: { key: 'ArrowDown', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_right',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Map Move Right',
+				label: () => text('setting.map_move_right'),
 				value: { key: 'ArrowRight', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_up',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Map Move Up',
+				label: () => text('setting.map_move_up'),
 				value: { key: 'ArrowUp', ctrl: false, alt: false },
 			},
 			{
 				id: 'screenshot',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Take Screenshot',
+				label: () => text('setting.screenshot'),
 				value: { key: 'F2', ctrl: false, alt: false },
 			},
 			{
 				id: 'save',
 				section: 'keybinds',
 				type: 'keybind',
-				label: 'Save Game',
+				label: () => text('setting.save'),
 				value: { key: 's', ctrl: true, alt: false },
 			},
 		],
@@ -331,7 +338,7 @@ async function _init(): Promise<void> {
 		canvas[0].toBlob(async (blob: Blob | null) => {
 			const data = await blob?.arrayBuffer();
 			if (!data) {
-				chat.sendMessage('Failed to save screenshot.');
+				chat.sendMessage(text('screenshot_failed'));
 				return;
 			}
 			const name = new Date().toISOString().replaceAll(':', '.') + '.png';
@@ -348,7 +355,7 @@ async function _init(): Promise<void> {
 	};
 
 	_initLog('Loading locales...');
-	await locales.init();
+	await init_locales();
 
 	_initLog('Loading Mods...');
 	mods.init();
@@ -398,26 +405,6 @@ async function _init(): Promise<void> {
 		}
 	}, 1000 / config.tick_rate);
 	isInitialized = true;
-}
-
-export async function init({ path = '.', debug = false }: Partial<ClientInit> = {}): Promise<void> {
-	if (isInitialized) {
-		logger.warn('Attempted to initialize client that was already initialized. (Options ignored)');
-		return;
-	}
-	try {
-		setPath(path);
-		setDebug(debug);
-		await _init();
-		return;
-	} catch (error) {
-		logger.error('Client initialization failed: ' + (error instanceof Error ? (error.cause ?? error.stack) : error));
-		await alert('Client initialization failed.');
-		if (!debug) {
-			close();
-		}
-		throw error;
-	}
 }
 
 export async function reload() {
@@ -475,12 +462,12 @@ export function unpause() {
 export function load(level: Level): boolean {
 	if (!level) {
 		logger.warn('No level loaded');
-		void alert('No level loaded');
+		void alert(text('load_no_level'));
 		return false;
 	}
 	if (level.version != version) {
-		logger.warn(`Can't play level ${level.id}, version mismatch`);
-		void alert('Incompatible version');
+		logger.warn('Can not load level due to version mismatch: ' + level.id);
+		void alert(text('bad_version'));
 		return false;
 	}
 

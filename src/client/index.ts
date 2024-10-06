@@ -12,9 +12,15 @@ addEventListener('error', async ({ error }: { error: Error }) => {
 		prefix: 'client',
 	});
 
-	const notice =
+	let notice: string =
 		'\n\n\nThe game will now exit to avoid further issues.' +
 		(options.debug ? ' Press cancel to continue in an unstable state.\nDoing so could lead to data loss, please take caution.' : '');
+
+	try {
+		const { text } = await import('./locales');
+
+		notice = '\n\n\n' + text('uncaught_error') + (options.debug ? ' ' + text('uncaught_error_debug') : '');
+	} catch (_) {}
 
 	if (options.debug ? !(await confirm(error.stack + notice)) : await alert(error.toString() + notice).then(() => false)) {
 		return;

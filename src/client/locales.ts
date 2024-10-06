@@ -21,7 +21,7 @@ export let currentLang: string = 'en';
  */
 export async function load(url: string): Promise<Locale> {
 	if (!settings.initialized) {
-		throw 'Settings not initialized';
+		throw new Error('Settings not initialized');
 	}
 	const locale: Locale = isJSON(url) ? JSON.parse(url) : await (await fetch(url)).json();
 	if (typeof locale != 'object') throw 'Not an object';
@@ -39,7 +39,7 @@ export async function load(url: string): Promise<Locale> {
 export function use(id: string) {
 	const locale = store.get(id);
 	if (!locale) {
-		throw new Error(`Locale ${id} does not exist`);
+		throw new Error('Locale does not exist: ' + id);
 	}
 	currentLang = id;
 	for (const [selector, text] of Object.entries(locale.markup_text)) {
@@ -58,6 +58,17 @@ export function use(id: string) {
 
 export function text(...keyParts: string[]): string {
 	return store.get(currentLang)?.text?.[keyParts.join('.')] || 'Unknown';
+}
+
+/**
+ * Gets the text for a selector
+ */
+export function textFor(selector: string): string {
+	return store.get(currentLang)?.markup_text[selector] || 'Unknown';
+}
+
+export function hasText(...keyParts: string[]): boolean {
+	return Object.hasOwn(store.get(currentLang)?.text || {}, keyParts.join('.'));
 }
 
 export const has = (lang: string): boolean => store.has(lang);

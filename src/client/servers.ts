@@ -13,6 +13,8 @@ import { currentLevel, load, unload } from './client';
 import { path } from './config';
 import { createServerListItem } from './ui/templates';
 import { logger } from './utils';
+import { hasText, text } from './locales';
+import { alert } from './ui/dialog';
 
 export type ServerData = {
 	id: string;
@@ -22,30 +24,19 @@ export type ServerData = {
 
 let kickMessage: string | null;
 
-const reasons = new Map([
-	['io server disconnect', 'Disconnected by server'],
-	['io client disconnect', 'Client disconnected'],
-	['ping timeout', 'Connection timed out'],
-	['transport error', 'Connection timed out'],
-	['transport close', 'Lost Connection'],
-]);
-
 function handleDisconnect(reason: string): void {
-	$('#connect p').text(kickMessage ?? reasons.get(reason) ?? reason);
+	$('#connect p').text(kickMessage ?? (hasText('disconnet_reason', reason) ? text('disconnet_reason', reason) : reason));
 	kickMessage = null;
-	$('#connect button').text('Back');
 	$('[ingame]').hide();
 	$(reason == 'io client disconnect' ? '#servers' : '#connect').show();
 }
 
 function handleConnectionError({ message }: Error): void {
-	$('#connect p').text('Connection refused: ' + message);
-	$('#connect button').text('Back');
+	$('#connect p').text(text('connection_refused') + message);
 }
 
 function handleConnectionFailed({ message }: Error): void {
-	$('#connect p').text('Connection failed: ' + message);
-	$('#connect button').text('Back');
+	$('#connect p').text(text('connection_failed') + message);
 }
 
 function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ...data: EventEmitter.EventArgs<LevelEvents, T>) {
@@ -97,7 +88,7 @@ export async function ping(id: string): Promise<void> {
 		}
 	} catch (_) {
 		info.find('span').html('<svg><use href="assets/images/icons.svg#xmark"/></svg>');
-		info.find('tool-tip').html(`Can't connect to server`);
+		info.find('tool-tip').html(text('server_no_connection'));
 	} finally {
 		info.find('span svg').removeClass('server-ping-rotate');
 	}
@@ -111,7 +102,9 @@ export async function pingAll(): Promise<void> {
 
 export function connect(id: string): void {
 	if (socket?.connected) {
-		throw new ReferenceError(`Can't connect to a server: already connected`);
+		logger.error('Attempted to connect to a server while already connected');
+		void alert(text('server_already_connected'));
+		return;
 	}
 	unload();
 	const server = get(id),
@@ -124,14 +117,13 @@ export function connect(id: string): void {
 	socket.on('connect_error', handleConnectionError);
 	socket.on('connect_failed', handleConnectionFailed);
 	socket.on('playerlist', updatePlayerList);
-	socket.on('kick', message => (kickMessage = 'Kicked from server: ' + message));
+	socket.on('kick', message => (kickMessage = text('kick_prefix') + message));
 	socket.on('chat', sendMessage);
 	socket.on('event', handleEvent);
 	socket.on('disconnect', handleDisconnect);
 	$('#servers').hide();
 	$('#connect').show();
-	$('#connect p').text('Connecting...');
-	$('#connect button').text('Back');
+	$('#connect p').text(text('connecting'));
 }
 
 export function parseURL(url: string | URL): URL {

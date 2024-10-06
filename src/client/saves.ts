@@ -14,6 +14,7 @@ import { confirm } from './ui/dialog';
 import { createSaveListItem } from './ui/templates';
 import { account } from './user';
 import { logger } from './utils';
+import * as locales from './locales';
 
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();
@@ -30,7 +31,7 @@ export async function createDefault(name: string): Promise<Level> {
 	player.rotation = Vector3.Zero();
 
 	level.rootSystem = system;
-	logger.log(`Created default level "${name}"`);
+	logger.log('Created default level: ' + name);
 	return level;
 }
 
@@ -72,16 +73,16 @@ export function init() {
 export function get(id: string): LevelJSON {
 	const data = saves.get(id);
 	if (!isJSON(data)) {
-		throw new TypeError('Cannot get invalid save: ' + id);
+		throw new Error('Cannot get invalid save: ' + id);
 	}
 	return JSON.parse(data);
 }
 
 export function add(save: LevelJSON): void {
-	logger.debug('Added save: ' + save.id);
 	if (saves.has(save.id)) {
 		throw new ReferenceError('Can not add save because it already exists: ' + save.id);
 	}
+	logger.debug('Added save: ' + save.id);
 	runtimeData.set(save.id, { gui: createSaveListItem(save) });
 	saves.set(save.id, JSON.stringify(save));
 }
@@ -115,10 +116,10 @@ export { remove as delete };
  */
 export function flush(): void {
 	const currentLevel = getCurrentLevel();
-	$('#pause .save').text('Saving...');
+	$('#pause .save').text(locales.text('saving'));
 	logger.debug('Writing save: ' + currentLevel.id);
 	update(currentLevel.toJSON());
-	$('#pause .save').text('Save Game');
+	$('#pause .save').text(locales.textFor('#pause button.save'));
 }
 
 export async function replaceGuest(save: LevelJSON): Promise<boolean> {
@@ -132,13 +133,7 @@ export async function replaceGuest(save: LevelJSON): Promise<boolean> {
 		return false;
 	}
 
-	if (
-		!(await confirm(`
-		This save has a default "guest" player.
-		This happens if you play without being logged in.
-		If you continue, the save will be updated with your user ID.
-		This is not reversible.`))
-	) {
+	if (!(await confirm(locales.text('replace_guest_notice')))) {
 		return false;
 	}
 

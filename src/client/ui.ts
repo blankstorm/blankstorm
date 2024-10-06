@@ -221,7 +221,7 @@ export function registerListeners() {
 		if (isJSON(text)) {
 			saves.add(JSON.parse(text));
 		} else {
-			void alert('Can not load save: not JSON.');
+			void alert(locales.text('save_not_json'));
 		}
 	});
 	$('#servers button.refresh').on('click', servers.pingAll);
@@ -310,7 +310,7 @@ export function registerListeners() {
 		update();
 	});
 	$('#settings button.reset').on('click', async event => {
-		if (event.shiftKey || (await confirm('Are you sure you want to reset your settings?'))) {
+		if (event.shiftKey || (await confirm(locales.text('reset_settings')))) {
 			settings.reset();
 			update();
 		}
@@ -321,8 +321,8 @@ export function registerListeners() {
 		if (locales.has(lang)) {
 			locales.use(lang);
 		} else {
-			void alert('That locale is not loaded.');
-			logger.warn(`Failed to load locale ${lang}`);
+			void alert(locales.text('locale_not_loaded'));
+			logger.warn('Failed to load locale: ' + lang);
 		}
 	});
 	$('#waypoint-dialog .save').on('click', () => {
