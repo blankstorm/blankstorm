@@ -282,6 +282,12 @@ export function load(config: { sections: SettingsSectionConfig[]; items: ItemCon
 	}
 }
 
+export function updateUI() {
+	for (const item of items.values()) {
+		item.updateLabel();
+	}
+}
+
 export function reset(): void {
 	file.clear();
 }

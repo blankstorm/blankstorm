@@ -50,7 +50,7 @@ export function use(id: string) {
 	}
 	for (const [id, section] of settings.sections) {
 		const label = text('settings_section', id);
-		section.ui.find('h2.settings-name').text('Settings - ' + label);
+		section.ui.find('h2.settings-name').text(text('settings') + ' - ' + label);
 		section.button.find('span').text(label);
 	}
 	logger.debug(`Using locale "${locale.name}" (${locale.language})`);
@@ -81,7 +81,7 @@ export async function init(): Promise<void> {
 	if (!settings.initialized) {
 		throw new Error('Settings not initialized');
 	}
-	for (const locale of ['en']) {
+	for (const locale of ['en', 'nl']) {
 		await load(`locales/${locale}.json`);
 	}
 	use('en');

@@ -47,6 +47,7 @@
 		"screenshot_failed": "Failed to save screenshot.",
 		"bad_version": "Incompatible version",
 		"load_no_level": "No level loaded",
+		"settings": "Settings",
 		"settings_section.general": "General",
 		"settings_section.debug": "Debug",
 		"settings_section.keybinds": "Keybinds",

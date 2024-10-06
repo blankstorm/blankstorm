@@ -47,6 +47,7 @@
 		"screenshot_failed": "Schermafdruk opslaan mislukt.",
 		"bad_version": "Geen geldige versie",
 		"load_no_level": "Geen level geladen",
+		"settings": "Instellingen",
 		"settings_section.general": "Algemeen",
 		"settings_section.debug": "Debug",
 		"settings_section.keybinds": "Toetscombinaties",

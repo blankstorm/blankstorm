@@ -356,6 +356,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 
 	_initLog('Loading locales...');
 	await init_locales();
+	settings.updateUI();
 
 	_initLog('Loading Mods...');
 	mods.init();
