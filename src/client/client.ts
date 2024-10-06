@@ -14,7 +14,7 @@ import * as renderer from '../renderer/index';
 import { playsound } from './audio';
 import * as chat from './chat';
 import { isServer, setDebug, setPath } from './config';
-import { text, init as init_locales } from './locales';
+import * as locales from './locales';
 import * as mods from './mods';
 import * as saves from './saves';
 import * as servers from './servers';
@@ -145,7 +145,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 				section: 'general',
 				type: 'number',
 
-				label: val => `${text('setting.font_size')} (${val}px)`,
+				label: val => `${locales.text('setting.font_size')} (${val}px)`,
 				attributes: { min: 10, max: 20, step: 1 },
 				value: 13,
 			},
@@ -154,7 +154,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 				section: 'general',
 				type: 'number',
 
-				label: val => `${text('setting.chat_timeout')} (${val} seconds)`,
+				label: val => `${locales.text('setting.chat_timeout')} (${val} seconds)`,
 				attributes: { min: 5, max: 15, step: 1 },
 				value: 10,
 			},
@@ -163,7 +163,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 				section: 'general',
 				type: 'number',
 
-				label: val => `${text('setting.sensitivity')} (${((val as number) * 100).toFixed()}%)`,
+				label: val => `${locales.text('setting.sensitivity')} (${((val as number) * 100).toFixed()}%)`,
 				attributes: { min: 0.1, max: 2, step: 0.05 },
 				value: 1,
 			},
@@ -172,7 +172,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 				section: 'general',
 				type: 'number',
 
-				label: val => `${text('setting.music')} (${((val as number) * 100).toFixed()}%)`,
+				label: val => `${locales.text('setting.music')} (${((val as number) * 100).toFixed()}%)`,
 				attributes: { min: 0, max: 1, step: 0.05 },
 				value: 1,
 			},
@@ -180,7 +180,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 				id: 'sfx',
 				section: 'general',
 				type: 'number',
-				label: val => `${text('setting.sfx')} (${((val as number) * 100).toFixed()}%)`,
+				label: val => `${locales.text('setting.sfx')} (${((val as number) * 100).toFixed()}%)`,
 				attributes: { min: 0, max: 1, step: 0.05 },
 				value: 1,
 			},
@@ -188,133 +188,133 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 				id: 'locale',
 				section: 'general',
 				type: 'select',
-				label: () => text('setting.locale'),
+				label: () => locales.text('setting.locale'),
 				value: 'en',
 			},
 			{
 				id: 'show_path_gizmos',
 				section: 'debug',
 				type: 'boolean',
-				label: () => text('setting.show_path_gizmos'),
+				label: () => locales.text('setting.show_path_gizmos'),
 				value: false,
 			},
 			{
 				id: 'tooltips',
 				section: 'debug',
 				type: 'boolean',
-				label: () => text('setting.'),
+				label: () => locales.text('setting.'),
 				value: false,
 			},
 			{
 				id: 'disable_saves',
 				section: 'debug',
 				type: 'boolean',
-				label: () => text('setting.disable_saves'),
+				label: () => locales.text('setting.disable_saves'),
 				value: false,
 			},
 			{
 				id: 'forward',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.forward'),
+				label: () => locales.text('setting.forward'),
 				value: { key: 'w', ctrl: false, alt: false },
 			},
 			{
 				id: 'left',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.left'),
+				label: () => locales.text('setting.left'),
 				value: { key: 'a', ctrl: false, alt: false },
 			},
 			{
 				id: 'right',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.right'),
+				label: () => locales.text('setting.right'),
 				value: { key: 'd', ctrl: false, alt: false },
 			},
 			{
 				id: 'back',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.back'),
+				label: () => locales.text('setting.back'),
 				value: { key: 's', ctrl: false, alt: false },
 			},
 			{
 				id: 'chat',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.chat'),
+				label: () => locales.text('setting.chat'),
 				value: { key: 't', ctrl: false, alt: false },
 			},
 			{
 				id: 'command',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.command'),
+				label: () => locales.text('setting.command'),
 				value: { key: '/', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_temp_menu',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.toggle_temp_menu'),
+				label: () => locales.text('setting.toggle_temp_menu'),
 				value: { key: 'Tab', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_menu',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.toggle_menu'),
+				label: () => locales.text('setting.toggle_menu'),
 				value: { key: 'e', ctrl: false, alt: false },
 			},
 			{
 				id: 'toggle_map',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.toggle_map'),
+				label: () => locales.text('setting.toggle_map'),
 				value: { key: 'm', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_left',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.map_move_left'),
+				label: () => locales.text('setting.map_move_left'),
 				value: { key: 'ArrowLeft', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_down',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.map_move_down'),
+				label: () => locales.text('setting.map_move_down'),
 				value: { key: 'ArrowDown', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_right',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.map_move_right'),
+				label: () => locales.text('setting.map_move_right'),
 				value: { key: 'ArrowRight', ctrl: false, alt: false },
 			},
 			{
 				id: 'map_move_up',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.map_move_up'),
+				label: () => locales.text('setting.map_move_up'),
 				value: { key: 'ArrowUp', ctrl: false, alt: false },
 			},
 			{
 				id: 'screenshot',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.screenshot'),
+				label: () => locales.text('setting.screenshot'),
 				value: { key: 'F2', ctrl: false, alt: false },
 			},
 			{
 				id: 'save',
 				section: 'keybinds',
 				type: 'keybind',
-				label: () => text('setting.save'),
+				label: () => locales.text('setting.save'),
 				value: { key: 's', ctrl: true, alt: false },
 			},
 		],
@@ -338,7 +338,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 		canvas[0].toBlob(async (blob: Blob | null) => {
 			const data = await blob?.arrayBuffer();
 			if (!data) {
-				chat.sendMessage(text('screenshot_failed'));
+				chat.sendMessage(locales.text('screenshot_failed'));
 				return;
 			}
 			const name = new Date().toISOString().replaceAll(':', '.') + '.png';
@@ -353,10 +353,12 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 		e.preventDefault();
 		saves.flush();
 	};
+	settings.items.get('locale')?.on('change', value => {
+		locales.use(value as string);
+	});
 
 	_initLog('Loading locales...');
-	await init_locales();
-	settings.updateUI();
+	await locales.init();
 
 	_initLog('Loading Mods...');
 	mods.init();
@@ -463,12 +465,12 @@ export function unpause() {
 export function load(level: Level): boolean {
 	if (!level) {
 		logger.warn('No level loaded');
-		void alert(text('load_no_level'));
+		void alert(locales.text('load_no_level'));
 		return false;
 	}
 	if (level.version != version) {
 		logger.warn('Can not load level due to version mismatch: ' + level.id);
-		void alert(text('bad_version'));
+		void alert(locales.text('bad_version'));
 		return false;
 	}
 

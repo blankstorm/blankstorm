@@ -315,7 +315,7 @@ export function registerListeners() {
 			update();
 		}
 	});
-	$('#settings div.general input').on('change', update);
+	$('#settings div.general .input').on('change', update);
 	$<HTMLInputElement>('#settings div.general select[name=locale]').on('change', e => {
 		const lang = e.target.value;
 		if (locales.has(lang)) {

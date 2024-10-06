@@ -7,6 +7,7 @@ import { config } from '../core';
 import { path } from './config';
 import { instaniateTemplate } from './ui/templates';
 import { logger } from './utils';
+import { EventEmitter } from 'eventemitter3';
 
 export const settingTypes = ['boolean', 'string', 'number', 'color', 'select', 'keybind'] as const;
 
@@ -69,7 +70,12 @@ const htmlTypes = {
 	keybind: 'button',
 } satisfies Record<Type, string>;
 
-export class Item<T extends Type = Type> {
+/**
+ * @todo Fix this type nonsense
+ */
+export class Item<T extends Type = Type> extends EventEmitter<{
+	change: [value: Value<T>];
+}> {
 	public readonly id: string;
 	public readonly type: T;
 	public readonly section: Section;
@@ -90,10 +96,14 @@ export class Item<T extends Type = Type> {
 
 	public readonly ui: JQuery<HTMLDivElement>;
 
+	public readonly defaultValue: Value<T>;
+
 	public constructor({ id, type, label, section, value, options, attributes }: ItemConfig<T>) {
+		super();
 		this.id = id;
 		this.type = type;
 		this.label = label;
+		this.defaultValue = value;
 		this.ui = instaniateTemplate('#setting').find<HTMLDivElement>('div.setting');
 
 		const _section = section instanceof Section ? section : sections.get(section);
@@ -109,9 +119,7 @@ export class Item<T extends Type = Type> {
 		this.ui.find('input').attr({ type: htmlTypes[this.type], name: this.id });
 
 		if (this.type == 'select') {
-			$('<select class="input"></select>')
-				.text(value + '')
-				.appendTo(this.ui.find('div.input-container'));
+			$('<select class="input"></select>').appendTo(this.ui.find('div.input-container'));
 			this.ui.find('input').removeClass('input');
 			for (const option of options || []) {
 				this.addOption(option.name, option.label);
@@ -137,14 +145,16 @@ export class Item<T extends Type = Type> {
 
 		this.section.ui.append(this.ui);
 
+		const input = this.ui.find('.input');
 		if (attributes) {
-			this.ui.find('input,select').attr(attributes);
+			input.attr(attributes);
 		}
 		this.updateLabel();
-		const input = this.ui.find('input,select');
+
 		input.on('change', () => {
 			this.value = (this.type == 'boolean' ? input.is(':checked') : input.val()) as Value<T>;
 			set(this.id, this.value);
+			this.emit('change', this.value);
 		});
 
 		this.value = value;
@@ -176,6 +186,7 @@ export class Item<T extends Type = Type> {
 				this.ui.find('input').val(+val);
 				break;
 			default:
+				console.log('setting value of ' + this.id + ' to ' + val, this.ui.find('.input'));
 				this.ui.find('.input').val(val as string);
 		}
 		this.updateLabel();
@@ -265,7 +276,7 @@ export function load(config: { sections: SettingsSectionConfig[]; items: ItemCon
 		throw new Error('Can not load settings before initialization');
 	}
 	for (const { id, icon, isDefault } of config.sections) {
-		logger.debug(`Loading settings section: "${id}"`);
+		logger.debug('Loading settings section: ' + id);
 		const section = new Section(id, icon);
 		if (isDefault) {
 			section.ui.css('display', 'flex');
@@ -273,7 +284,7 @@ export function load(config: { sections: SettingsSectionConfig[]; items: ItemCon
 	}
 
 	for (const itemConfig of config.items) {
-		logger.debug(`Loading setting: "${itemConfig.id}"`);
+		logger.debug('Loading setting: ' + itemConfig.id);
 		const value: Value = file.has(itemConfig.id) ? file.get(itemConfig.id) : itemConfig.value;
 		const item = new Item(itemConfig);
 		items.set(item.id, item);
@@ -288,8 +299,15 @@ export function updateUI() {
 	}
 }
 
-export function reset(): void {
-	file.clear();
+export async function reset(): Promise<void> {
+	for (const [id, item] of items) {
+		item.value = item.defaultValue;
+		file.set(id, item.defaultValue);
+	}
+	const ui = await import('./ui');
+	ui.update();
+	const locales = await import('./locales');
+	locales.use('en');
 }
 
 export const get: (typeof file)['get'] = key => file.get(key);

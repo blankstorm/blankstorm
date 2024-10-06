@@ -53,6 +53,7 @@ export function use(id: string) {
 		section.ui.find('h2.settings-name').text(text('settings') + ' - ' + label);
 		section.button.find('span').text(label);
 	}
+	settings.updateUI();
 	logger.debug(`Using locale "${locale.name}" (${locale.language})`);
 }
 
@@ -89,4 +90,5 @@ export async function init(): Promise<void> {
 	if (has(selected) && selected != 'en') {
 		use(selected);
 	}
+	settings.items.get('locale')!.value = selected || 'en';
 }
