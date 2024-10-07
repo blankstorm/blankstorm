@@ -7,7 +7,7 @@ import { config } from '../core';
 import { path } from './config';
 import { logger } from './utils';
 import { EventEmitter } from 'eventemitter3';
-import { instaniateTemplate } from './ui/tmpl';
+import { instaniateTemplate } from './ui/utils';
 
 export const settingTypes = ['boolean', 'string', 'number', 'color', 'select', 'keybind'] as const;
 

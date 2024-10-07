@@ -5,12 +5,12 @@ import { config as coreConfig } from '../core';
 // whitelist
 
 export const whitelist = new List<string>();
-whitelist.on('update', () => writeFileSync('whitelist.json', whitelist.json()));
+whitelist.on('update', () => writeFileSync('whitelist.json', whitelist.toJSON()));
 
 // blacklist
 
 export const blacklist = new List<string>();
-blacklist.on('update', () => writeFileSync('blacklist.json', blacklist.json()));
+blacklist.on('update', () => writeFileSync('blacklist.json', blacklist.toJSON()));
 
 //operators
 
@@ -21,7 +21,7 @@ export interface OpsEntry {
 }
 
 export const ops = new List<OpsEntry>();
-ops.on('update', () => writeFileSync('ops.json', ops.json()));
+ops.on('update', () => writeFileSync('ops.json', ops.toJSON()));
 
 export interface ServerConfig {
 	whitelist: boolean;

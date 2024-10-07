@@ -18,3 +18,26 @@ export let isServer: boolean = false;
 export function setServer(value: boolean): void {
 	isServer = value;
 }
+
+export let isPaused: boolean;
+
+export function pause() {
+	logger.debug('Paused');
+	isPaused = true;
+}
+
+export function unpause() {
+	logger.debug('Unpaused');
+	isPaused = false;
+}
+
+export let hitboxesEnabled: boolean = false;
+export function toggleHitboxes() {
+	hitboxesEnabled = !hitboxesEnabled;
+}
+
+export let isMultiplayerEnabled: boolean = false;
+
+export function enableMultiplayer() {
+	isMultiplayerEnabled = true;
+}

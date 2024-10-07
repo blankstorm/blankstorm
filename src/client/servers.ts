@@ -5,16 +5,16 @@ import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { isJSON, pick } from 'utilium';
 import { JSONFileMap } from 'utilium/fs.js';
-import { Level, type LevelEvents, type LevelJSON } from '../core/level';
+import { type LevelEvents, type LevelJSON } from '../core/level';
 import { config, displayVersion } from '../core/metadata';
 import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
-import { currentLevel, load, unload } from './client';
 import { path } from './config';
-import { logger } from './utils';
+import { level, unload } from './level';
 import { hasText, text } from './locales';
 import { alert, confirm } from './ui/dialog';
-import { instaniateTemplate } from './ui/tmpl';
+import { instaniateTemplate } from './ui/utils';
+import { logger } from './utils';
 
 export type ServerData = {
 	id: string;
@@ -41,14 +41,11 @@ function handleConnectionFailed({ message }: Error): void {
 
 function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ...data: EventEmitter.EventArgs<LevelEvents, T>) {
 	if (type == 'update') {
-		if (!currentLevel) {
-			load(new Level());
-		}
-		currentLevel!.fromJSON(data[0] as LevelJSON);
-		currentLevel!.sampleTick();
+		level.fromJSON(data[0] as LevelJSON);
+		level.sampleTick();
 	}
 
-	currentLevel?.emit(type, ...data);
+	level.emit(type, ...data);
 }
 
 function updatePlayerList(list: string[]): void {
@@ -135,6 +132,7 @@ export function connect(id: string): void {
 		return;
 	}
 	unload();
+	disconnect();
 	const server = get(id),
 		url = parseURL(server.url),
 		pingInfo = pingCache.get(id);

@@ -4,16 +4,15 @@ import $ from 'jquery';
 import { isHex, isJSON } from 'utilium';
 import type { Player } from '~/core/entities/player';
 import { Waypoint } from '~/core/entities/waypoint';
-import { items } from '~/core/generic/items';
+import { items, type ItemID } from '~/core/generic/items';
 import type { ResearchID } from '~/core/generic/research';
 import { isResearchLocked, research } from '~/core/generic/research';
 import { genericShips } from '~/core/generic/ships';
 import { Level } from '~/core/level';
-import { config, currentVersion, displayVersion, game_url } from '~/core/metadata';
+import { config as coreConfig, currentVersion, displayVersion, game_url } from '~/core/metadata';
 import * as renderer from '~/renderer';
-import { getCamera } from '~/renderer';
-import * as client from './client';
-import { isServer } from './config';
+import * as config from './config';
+import { level, setLevel, unload } from './level';
 import * as locales from './locales';
 import * as saves from './saves';
 import * as servers from './servers';
@@ -22,6 +21,7 @@ import { alert, confirm } from './ui/dialog';
 import * as map from './ui/map';
 import * as templates from './ui/templates';
 import * as tooltip from './ui/tooltips';
+import { switchTo } from './ui/utils';
 import { WaypointUI } from './ui/waypoint';
 import { account, action, player as getPlayer, hasSystem, system } from './user';
 import { $svg, logger, minimize, upload } from './utils';
@@ -50,7 +50,7 @@ export async function init() {
 		UIs.set(type, templates.createShipUI(ship));
 	}
 
-	const size = config.system_generation.max_size;
+	const size = coreConfig.system_generation.max_size;
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
 	const grid = $svg<SVGGElement>('g').css('stroke', 'var(--bg-color)').appendTo('#map-markers');
 	for (let i = -size * 2; i < size * 2; i += 100) {
@@ -101,7 +101,7 @@ export function update() {
 	}
 	map.update();
 
-	if (isServer) {
+	if (config.isServer) {
 		$('#pause .quit').text('Disconnect');
 		$('#pause .save').hide();
 	} else {
@@ -134,26 +134,13 @@ function strobe(rate: number) {
 	}
 }
 
-export function switchTo(selector: string, hideAll?: boolean) {
-	if ($(selector).is(':visible')) {
-		$('canvas.game').trigger('focus');
-		$(selector).hide();
-	} else if ($('.game-ui').not(selector).is(':visible') && hideAll) {
-		$('canvas.game').trigger('focus');
-		$('.game-ui').hide();
-	} else if (!$('.game-ui').is(':visible')) {
-		getCamera().detachControl();
-		$(selector).show().trigger('focus');
-	}
-}
-
 export function registerListeners() {
 	$('#main .singleplayer').on('click', () => {
 		$('#main').hide();
 		$('#saves').show();
 	});
 	$('#main .multiplayer').on('click', () => {
-		if (!client.isMultiplayerEnabled) {
+		if (!config.isMultiplayerEnabled) {
 			$<HTMLDialogElement>('#login')[0].showModal();
 			return;
 		}
@@ -237,12 +224,12 @@ export function registerListeners() {
 		const name = $('#save-new .name').val() as string;
 		const live = await saves.createDefault(name);
 		saves.add(live.toJSON());
-		client.load(live);
+		setLevel(live);
 	});
 	$('#pause .resume').on('click', () => {
 		$('#pause').hide();
 		$('canvas.game').trigger('focus');
-		client.unpause();
+		config.unpause();
 	});
 	$('#pause .save').on('click', saves.flush);
 	$('#pause .options').on('click', () => {
@@ -250,7 +237,7 @@ export function registerListeners() {
 		$('#pause').hide();
 		$('#settings').show();
 	});
-	$('#pause .quit').on('click', client.unload);
+	$('#pause .quit').on('click', unload);
 	$('#login')
 		.find('.cancel')
 		.on('click', e => {
@@ -374,10 +361,10 @@ export function registerListeners() {
 		});
 	$('canvas.game').on('focus', () => renderer.getCamera().attachControl(true));
 	$('canvas.game').on('click', e => {
-		if (!client.isPaused) {
+		if (!config.isPaused) {
 			renderer.getCamera().attachControl(true);
 		}
-		if (!(client.currentLevel instanceof Level)) {
+		if (!(level instanceof Level)) {
 			logger.warn('No active client level');
 			return;
 		}
@@ -385,7 +372,7 @@ export function registerListeners() {
 		update();
 	});
 	$('canvas.game').on('contextmenu', e => {
-		if (!(client.currentLevel instanceof Level)) {
+		if (!(level instanceof Level)) {
 			logger.warn('No active level');
 			return;
 		}
@@ -403,12 +390,12 @@ export function registerListeners() {
 				break;
 			case 'F4':
 				e.preventDefault();
-				client.toggleHitboxes();
-				renderer.setHitboxes(client.hitboxesEnabled);
+				config.toggleHitboxes();
+				renderer.setHitboxes(config.hitboxesEnabled);
 				break;
 			case 'Tab':
 				e.preventDefault();
-				if (isServer) $('#tablist').show();
+				if (config.isServer) $('#tablist').show();
 				break;
 		}
 	});
@@ -422,7 +409,7 @@ export function registerListeners() {
 		switch (e.key) {
 			case 'Tab':
 				e.preventDefault();
-				if (isServer) $('#tablist').hide();
+				if (config.isServer) $('#tablist').hide();
 				break;
 		}
 	});
@@ -437,8 +424,13 @@ export function registerListeners() {
 	$('canvas.game,#pause,#hud').on('keydown', e => {
 		if (e.key == 'Escape') {
 			switchTo('#pause', true);
-			client.isPaused ? client.unpause() : client.pause();
+			config.isPaused ? config.unpause() : config.pause();
 		}
 		update();
+	});
+	level.on('fleet_items_change', (_, items: Record<ItemID, number>) => {
+		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
+			$(UIs.get(id)!).find('.count').text(minimize(amount));
+		}
 	});
 }

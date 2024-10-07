@@ -1,19 +1,17 @@
-import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { getAccount, type Account } from '@blankstorm/api';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import $ from 'jquery';
 import { author } from '../../package.json';
 import { execCommandString } from '../core/commands';
-import { tickInfo, type EntityJSON } from '../core/entities/entity';
-import type { ItemID } from '../core/generic/items';
+import { tickInfo } from '../core/entities/entity';
 import { Level } from '../core/level';
 import { config, currentVersion } from '../core/metadata';
 import { xpToLevel } from '../core/utils';
 import * as renderer from '../renderer/index';
-import { playsound } from './audio';
 import * as chat from './chat';
-import { isServer, setDebug, setPath } from './config';
+import { enableMultiplayer, isPaused, isServer, setDebug, setPath, unpause } from './config';
+import { level, setLevel } from './level';
 import * as locales from './locales';
 import * as mods from './mods';
 import * as saves from './saves';
@@ -21,8 +19,9 @@ import * as servers from './servers';
 import * as settings from './settings';
 import * as ui from './ui';
 import { alert } from './ui/dialog';
+import { switchTo } from './ui/utils';
 import * as user from './user';
-import { logger, minimize, optionsOf } from './utils';
+import { logger, optionsOf } from './utils';
 
 export interface ClientInit {
 	/**
@@ -46,31 +45,7 @@ export interface ClientInit {
 	session?: string;
 }
 
-export let currentLevel: Level | null;
-
-export function getCurrentLevel(): Level {
-	if (!currentLevel) {
-		throw new ReferenceError('No current level');
-	}
-	return currentLevel;
-}
-
-export function clearLevel(): void {
-	logger.debug('Clearing current level');
-	currentLevel = null;
-	$('.waypoint-li,.waypoint-marker').remove();
-}
-
-export let isPaused: boolean;
-
 export let isInitialized: boolean = false;
-
-export let isMultiplayerEnabled: boolean = false;
-
-export let hitboxesEnabled: boolean = false;
-export function toggleHitboxes() {
-	hitboxesEnabled = !hitboxesEnabled;
-}
 
 export const screenshots = [];
 
@@ -321,8 +296,8 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 		chat.toggleUI(true);
 	};
 	settings.items.get('toggle_menu')!.onTrigger = () => null;
-	settings.items.get('toggle_map')!.onTrigger = () => ui.switchTo('#map');
-	settings.items.get('toggle_temp_menu')!.onTrigger = () => ui.switchTo('#ingame-temp-menu');
+	settings.items.get('toggle_map')!.onTrigger = () => switchTo('#map');
+	settings.items.get('toggle_temp_menu')!.onTrigger = () => switchTo('#ingame-temp-menu');
 	settings.items.get('screenshot')!.onTrigger = () => {
 		canvas[0].toBlob(async (blob: Blob | null) => {
 			const data = await blob?.arrayBuffer();
@@ -369,7 +344,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 		try {
 			const result: Account = await getAccount('token', token);
 			Object.assign(user.account, result);
-			isMultiplayerEnabled = true;
+			enableMultiplayer();
 		} catch (error) {
 			throw new Error('Could not authenticate', optionsOf(error));
 		}
@@ -389,8 +364,8 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 	logger.log('Loaded successfully');
 	renderer.engine.runRenderLoop(update);
 	setInterval(() => {
-		if (!isPaused && !isServer && currentLevel instanceof Level) {
-			currentLevel.update();
+		if (!isPaused && !isServer && level instanceof Level) {
+			level.update();
 		}
 	}, 1000 / config.tick_rate);
 	isInitialized = true;
@@ -401,7 +376,7 @@ export async function reload() {
 }
 
 export function update() {
-	if (!(currentLevel instanceof Level) || isPaused) {
+	if (!(level instanceof Level) || isPaused) {
 		return;
 	}
 	const camera = renderer.getCamera();
@@ -410,8 +385,8 @@ export function update() {
 	$('#hud svg.xp rect').attr('width', (xpToLevel(user.player().xp) % 1) * 100 + '%');
 	$('#debug .left').html(`
 			<span>${currentVersion} ${mods.size ? `[${[...mods.ids()].join(', ')}]` : `(vanilla)`}</span><br>
-			<span>${renderer.engine.getFps().toFixed()} FPS | ${currentLevel.tps.toFixed()} TPS</span><br>
-			<span>${currentLevel.id} (${currentLevel.date.toLocaleString()})</span><br><br>
+			<span>${renderer.engine.getFps().toFixed()} FPS | ${level.tps.toFixed()} TPS</span><br>
+			<span>${level.id} (${level.date.toLocaleString()})</span><br><br>
 			<span>
 				P: (${camera.target
 					.asArray()
@@ -438,16 +413,6 @@ export function update() {
 	void renderer.render();
 }
 
-export function pause() {
-	logger.debug('Paused');
-	isPaused = true;
-}
-
-export function unpause() {
-	logger.debug('Unpaused');
-	isPaused = false;
-}
-
 export function load(level: Level): boolean {
 	if (!level) {
 		logger.warn('No level loaded');
@@ -463,49 +428,11 @@ export function load(level: Level): boolean {
 	$('#saves,#servers').hide();
 	$('canvas.game').show().trigger('focus');
 	$('#hud').show();
-	currentLevel = level;
+	setLevel(level);
 	renderer.clear();
-	void renderer.update(currentLevel.toJSON());
-	level.on('update', () => {
-		void renderer.update(currentLevel!.toJSON());
-	});
-	level.on('player_levelup', () => {
-		logger.warn('Triggered player_levelup (unimplemented)');
-	});
-	level.on('entity_removed', entity => {
-		if (entity.entityType == 'player') {
-			renderer.resetCamera();
-		}
-	});
-	level.on('entity_path_start', (entityID: string, path: IVector3Like[]) => {
-		console.debug('Moving along path:', path);
-		renderer.startFollowingPath(entityID, path, settings.get('show_path_gizmos'));
-	});
-	level.on('entity_death', (entity: EntityJSON) => {
-		if (entity.entityType == 'Ship') {
-			playsound('destroy_ship', +settings.get('sfx'));
-		}
-	});
-	level.on('fleet_items_change', (_, items: Record<ItemID, number>) => {
-		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
-			$(ui.UIs.get(id)!).find('.count').text(minimize(amount));
-		}
-	});
+	void renderer.update(level.toJSON());
 	unpause();
-
 	return true;
-}
-
-export function unload(): void {
-	currentLevel?.removeAllListeners();
-	pause();
-	$('.ingame').hide();
-	if (isServer) {
-		servers.disconnect();
-	} else {
-		$('#main').show();
-	}
-	clearLevel();
 }
 
 function send(command: 'chat' | 'command', ...data: string[]): void {

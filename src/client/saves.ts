@@ -8,11 +8,11 @@ import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
 import { config, displayVersion } from '../core/metadata';
 import { randomInSphere } from '../core/utils';
-import { getCurrentLevel, load } from './client';
 import { path } from './config';
+import { level } from './level';
 import * as locales from './locales';
 import { alert, confirm } from './ui/dialog';
-import { instaniateTemplate } from './ui/tmpl';
+import { instaniateTemplate } from './ui/utils';
 import { account } from './user';
 import { download, logger } from './utils';
 
@@ -49,9 +49,7 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 				$('#loading_cover,#hud,canvas.game').hide();
 				$('#saves').show();
 			}
-			const level = Level.FromJSON(save);
-			await level.ready();
-			load(level);
+			level.fromJSON(save);
 			$('#loading_cover').hide();
 		} catch (e) {
 			logger.error(e instanceof Error ? e : e + '');
@@ -177,10 +175,9 @@ export { remove as delete };
  * Writes a level to the save file
  */
 export function flush(): void {
-	const currentLevel = getCurrentLevel();
 	$('#pause .save').text(locales.text('saving'));
-	logger.debug('Writing save: ' + currentLevel.id);
-	update(currentLevel.toJSON());
+	logger.debug('Writing save: ' + level.id);
+	update(level.toJSON());
 	$('#pause .save').text(locales.textFor('#pause button.save'));
 }
 

@@ -2,7 +2,7 @@ mkdep() {
 	madge --extensions ts --image "tmp/deps/$1.svg" $2
 }
 mkdep.all() {
-	mkdep all src/index.ts
+	mkdep all src
 }
 mkdep.core() {
 	mkdep core src/core/index.ts
@@ -23,6 +23,7 @@ mkdeps() {
 	mkdep.all
 	mkdep.core
 	mkdep.client
+	mkdep.client-app
 	mkdep.server 
 	mkdep.server-cli
 }

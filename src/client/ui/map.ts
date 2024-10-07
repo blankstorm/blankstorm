@@ -7,12 +7,12 @@ import type { Star } from '~/core/entities/star';
 import type { Waypoint } from '~/core/entities/waypoint';
 import { config } from '~/core/metadata';
 import { System } from '~/core/system';
-import { getCurrentLevel } from '../client';
 import * as settings from '../settings';
-import { switchTo } from '../ui';
+import { switchTo } from './utils';
 import { account, system } from '../user';
 import { $svg, biomeColor } from '../utils';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
+import { level } from '../level';
 
 export type MapMode = 'in-system' | 'inter-system';
 
@@ -176,7 +176,7 @@ export function update(): void {
 		const marker = new MapMarker(entity);
 		markers.set(entity.id, marker);
 	}
-	for (const [id, system] of getCurrentLevel().systems) {
+	for (const [id, system] of level.systems) {
 		if (markers.has(id)) {
 			continue;
 		}

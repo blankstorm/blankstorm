@@ -3,7 +3,7 @@ import type { ActionType, ActionData } from '../core';
 import type { Player } from '../core/entities/player';
 import type { System } from '../core/system';
 import { sendMessage } from './chat';
-import { getCurrentLevel } from './client';
+import { level } from './level';
 
 export const account: Account = {
 	id: '_guest_',
@@ -21,7 +21,7 @@ export function chat(...messages: string[]) {
 }
 
 export function player(): Player {
-	return getCurrentLevel().getEntityByID(account.id);
+	return level.getEntityByID(account.id);
 }
 
 export function hasPlayer(): boolean {
@@ -46,6 +46,9 @@ export function hasSystem(): boolean {
 	}
 }
 
+/**
+ * @todo Fix this so it works with servers
+ */
 export async function action<T extends ActionType>(action: T, data: ActionData<T>): Promise<boolean> {
-	return getCurrentLevel().tryAction(account.id, action, data);
+	return level.tryAction(account.id, action, data);
 }

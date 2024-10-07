@@ -7,7 +7,7 @@ import { genericShips } from '~/core/generic/ships';
 import * as locales from '../locales';
 import { action } from '../user';
 import { alert } from './dialog';
-import { instaniateTemplate } from './tmpl';
+import { instaniateTemplate } from './utils';
 
 export function createItemUI(item: Item): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#item');
