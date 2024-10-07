@@ -3,7 +3,7 @@ import type { PlayerJSON } from '../core/entities/player';
 import { Player } from '../core/entities/player';
 import { level } from './server';
 import { blacklist } from './config';
-import { execCommandString } from './commands';
+import { execCommandString } from '../core/commands';
 import { logger } from './utils';
 import { io } from './transport';
 
@@ -23,7 +23,7 @@ export class Client extends Player {
 	}
 
 	ban(message: string) {
-		this.kick(`You have been banned from this server: ${message}`);
+		this.kick('You have been banned from this server: ' + message);
 		blacklist.add(this.id);
 	}
 
@@ -81,8 +81,8 @@ export function addClient(client: Client) {
 			[...clients.values()].slice(0, 25).map(client => client.name)
 		);
 	});
-	client.socket.on('command', commandString => {
-		const result = execCommandString(commandString, { executor: client });
+	client.socket.on('command', (command: string) => {
+		const result = execCommandString(command, { executor: client });
 		if (result) {
 			client.socket.emit('chat', result);
 		}
