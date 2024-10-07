@@ -1,20 +1,21 @@
 import type { Socket } from 'socket.io';
+import { execCommandString } from '../core/commands';
 import type { PlayerJSON } from '../core/entities/player';
 import { Player } from '../core/entities/player';
-import { level } from './server';
+import type { System } from '../core/system';
 import { blacklist } from './config';
-import { execCommandString } from '../core/commands';
-import { logger } from './utils';
 import { io } from './transport';
+import { logger } from './utils';
 
 export class Client extends Player {
 	lastMessager?: Client;
 	sentPackets = 0;
 	constructor(
 		id: string,
+		system: System,
 		public readonly socket: Socket
 	) {
-		super(id, level.rootSystem);
+		super(id, system);
 	}
 
 	kick(message: string) {

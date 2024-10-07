@@ -139,7 +139,7 @@ export async function checkClientAuth(socket: Socket) {
 		throw 'Already connected';
 	}
 
-	const client = new Client(account.id, socket);
+	const client = new Client(account.id, level.rootSystem, socket);
 	client.name = account.username;
 	clients.set(socket.id, client);
 	logger.log(`${client.name} connected with socket id ${socket.id}`);
