@@ -8,7 +8,7 @@ import { execCommandString } from '../core/commands';
 import { tickInfo, type EntityJSON } from '../core/entities/entity';
 import type { ItemID } from '../core/generic/items';
 import { Level } from '../core/level';
-import { config, game_url, version, versions } from '../core/metadata';
+import { config, game_url, currentVersion } from '../core/metadata';
 import { xpToLevel } from '../core/utils';
 import * as renderer from '../renderer/index';
 import { playsound } from './audio';
@@ -97,17 +97,6 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 	if (isInitialized) {
 		logger.warn('Tried to initialize client after it was already initialized.');
 		return;
-	}
-
-	if (config.load_remote_manifest) {
-		fetch(game_url + '/versions.json')
-			.then(response => response.json())
-			.then(data => {
-				for (const [key, value] of data) {
-					versions.set(key, value);
-				}
-			})
-			.catch(err => logger.warn('Failed to retrieve version manifest: ' + err));
 	}
 
 	$<HTMLParagraphElement>('p.copyright').text(`Copyright © ${new Date().getFullYear()} ${author.name}. All Rights Reserved.`);
@@ -423,7 +412,7 @@ export function update() {
 	$('#hud p.level').text(Math.floor(xpToLevel(user.player().xp)));
 	$('#hud svg.xp rect').attr('width', (xpToLevel(user.player().xp) % 1) * 100 + '%');
 	$('#debug .left').html(`
-			<span>${version} ${mods.size ? `[${[...mods.ids()].join(', ')}]` : `(vanilla)`}</span><br>
+			<span>${currentVersion} ${mods.size ? `[${[...mods.ids()].join(', ')}]` : `(vanilla)`}</span><br>
 			<span>${renderer.engine.getFps().toFixed()} FPS | ${currentLevel.tps.toFixed()} TPS</span><br>
 			<span>${currentLevel.id} (${currentLevel.date.toLocaleString()})</span><br><br>
 			<span>
@@ -468,7 +457,7 @@ export function load(level: Level): boolean {
 		void alert(locales.text('load_no_level'));
 		return false;
 	}
-	if (level.version != version) {
+	if (level.version != currentVersion) {
 		logger.warn('Can not load level due to version mismatch: ' + level.id);
 		void alert(locales.text('bad_version'));
 		return false;

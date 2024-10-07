@@ -5,9 +5,8 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { dirname, extname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { inject } from 'postject';
-import { defines, getVersionInfo } from './build-common';
+import { defines, version } from './build-common';
 
-const { display: displayVersion } = getVersionInfo();
 const { values: _values } = parseArgs({
 	options: {
 		watch: { type: 'boolean', short: 'w', default: false },
@@ -25,7 +24,7 @@ const platforms = {
 const platform = process.platform in platforms ? platforms[process.platform as keyof typeof platforms] : process.platform;
 
 const outfile = 'build/server.js',
-	seaPath = `dist/blankstorm-server-${displayVersion}-${platform}${extname(process.execPath)}`;
+	seaPath = `dist/blankstorm-server-${version.display.replaceAll(' ', '-').toLowerCase()}-${platform}${extname(process.execPath)}`;
 
 async function buildSEA() {
 	const configPath = join(output, 'sea.json'),

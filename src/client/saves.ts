@@ -6,7 +6,6 @@ import { FolderMap } from 'utilium/fs.js';
 import { Player } from '../core/entities/player';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
-import { versions } from '../core/metadata';
 import { randomInSphere } from '../core/utils';
 import { getCurrentLevel } from './client';
 import { path } from './config';
@@ -15,6 +14,7 @@ import { createSaveListItem } from './ui/templates';
 import { account } from './user';
 import { logger } from './utils';
 import * as locales from './locales';
+import { displayVersion } from '../core';
 
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();
@@ -92,7 +92,7 @@ export function update(save: LevelJSON): void {
 	save.date = date.toJSON();
 	const gui = runtimeData.get(save.id)?.gui;
 	gui?.find('.name').text(save.name);
-	gui?.find('.version').text(versions.get(save.version)?.text || save.version);
+	gui?.find('.version').text(displayVersion(save.version));
 	gui?.find('.date').text(date.toLocaleString());
 	saves.set(save.id, JSON.stringify(save));
 }

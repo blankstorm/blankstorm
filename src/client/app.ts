@@ -6,8 +6,8 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { homedir } from 'os';
-import { version, versions } from '../core/metadata';
 import type { ClientInit } from './client';
+import { currentVersion, displayVersion } from '../core';
 
 const dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
@@ -100,7 +100,7 @@ async function init(): Promise<void> {
 			preload: join(dirname, 'preload.mjs'),
 			nodeIntegration: true,
 		},
-		title: 'Blankstorm Client ' + versions.get(version)?.text || version,
+		title: 'Blankstorm Client ' + displayVersion(currentVersion),
 		backgroundColor: '#000',
 	});
 

@@ -3,7 +3,7 @@ import { createServer } from 'node:http';
 import type { ListenOptions } from 'node:net';
 import { Server as SocketIOServer } from 'socket.io';
 import type { VersionID } from '../core/metadata';
-import { version } from '../core/metadata';
+import { currentVersion } from '../core/metadata';
 import { config } from './config';
 import { logger } from './utils';
 
@@ -23,7 +23,7 @@ export const http: HTTPServer = createServer((req, res) => {
 				current_clients: io.sockets.sockets.size,
 				max_clients: config.max_clients,
 				message: config.message,
-				version,
+				version: currentVersion,
 			};
 			if (config.public_uptime) data.uptime = process.uptime();
 			res.end(JSON.stringify(data));

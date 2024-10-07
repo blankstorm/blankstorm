@@ -17,7 +17,7 @@ import { isResearchLocked, priceOfResearch, type Research } from './generic/rese
 import type { GenericShip } from './generic/ships';
 import type { SystemGenerationOptions } from './generic/system';
 import type { VersionID } from './metadata';
-import { config, version, versions } from './metadata';
+import { config, currentVersion, displayVersion } from './metadata';
 import type { SystemJSON } from './system';
 import { System } from './system';
 import { logger } from './utils';
@@ -76,7 +76,7 @@ export type ActionData<T extends ActionType> = _ActionsData[T];
 export class Level extends EventEmitter<LevelEvents> implements Component<LevelJSON> {
 	public id: string = randomHex(16);
 	public name: string = '';
-	public version = version;
+	public version: VersionID = currentVersion;
 	public date = new Date();
 	public difficulty = 1;
 	public entities: Set<Entity> = new Set();
@@ -241,7 +241,7 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 	}
 
 	public static FromJSON(json: LevelJSON): Level {
-		if (json.version != version) {
+		if (json.version != currentVersion) {
 			upgradeLevel(json);
 		}
 
@@ -254,9 +254,10 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 export function upgradeLevel(data: LevelJSON): void {
 	switch (data.version) {
 		default:
-			throw new Error(`Upgrading from ${versions.get(data.version)?.text || data.version} is not supported`);
+			throw new Error(`Upgrading from ${displayVersion(data.version)} is not supported`);
 		case 'alpha_2.0.0':
 		case 'alpha_2.0.1':
-			data.version = 'alpha_2.0.2';
+		case 'alpha_2.0.2':
+			data.version = 'alpha_2.0.3';
 	}
 }

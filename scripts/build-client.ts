@@ -7,9 +7,10 @@ import path, { relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import $package from '../package.json' assert { type: 'json' };
-import { defines, deleteOutput, getVersionInfo, renameOutput } from './build-common';
+import { defines, deleteOutput, renameOutput, version } from './build-common';
 const root = path.resolve(fileURLToPath(import.meta.url), '..', '..');
-const { display: displayVersion, electronBuilder: electronBuilderVersions, fullVersion } = getVersionInfo();
+
+const displayVersion = version.display.replaceAll(' ', '-').toLowerCase();
 
 const { values: _values } = parseArgs({
 	options: {
@@ -49,7 +50,8 @@ if (options.keep) {
 	fs.rmSync(options.output, { recursive: true, force: true });
 }
 
-const productName = 'blankstorm';
+const productName = 'blankstorm',
+	shortVersion = 'type' in version ? '0.' + version.core : version.core + '.0';
 const electronBuilderConfig: electronBuilder.CliOptions = {
 	publish: 'never',
 	projectDir: root,
@@ -57,7 +59,9 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 		extends: null,
 		extraMetadata: {
 			main: path.join(options.output, 'app.js'),
-			...electronBuilderVersions,
+			version: $package.version,
+			shortVersion,
+			shortVersionWindows: shortVersion,
 		},
 		files: ['package.json', path.join(options.output, '**/*')],
 		appId: 'net.blankstorm.client',
@@ -125,16 +129,16 @@ async function onBuildEnd() {
 				}
 			}
 			renameOutput({
-				[`${productName} Setup ${fullVersion}.exe`]: `blankstorm-client-${displayVersion}.exe`,
-				[`${productName}-${fullVersion}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
-				[`${$package.name}_${fullVersion}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
-				[`${$package.name}_${fullVersion}_amd64.deb`]: `blankstorm-client-${displayVersion}.deb`,
-				[`${$package.name}-${fullVersion}.x86_64.rpm`]: `blankstorm-client-${displayVersion}.x86_64.rpm`,
-				[`${$package.name}-${fullVersion}.pacman`]: `blankstorm-client-${displayVersion}.pacman`,
-				[`${productName}-${fullVersion}-arm64.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
-				[`${productName}-${fullVersion}-win.zip`]: `blankstorm-client-${displayVersion}-win.zip`,
-				[`${$package.name}-${fullVersion}.zip`]: `blankstorm-client-${displayVersion}-linux.zip`,
-				[`${productName}-${fullVersion}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
+				[`${productName} Setup ${version.full}.exe`]: `blankstorm-client-${displayVersion}.exe`,
+				[`${productName}-${version.full}.AppImage`]: `blankstorm-client-${displayVersion}.AppImage`,
+				[`${$package.name}_${version.full}_amd64.snap`]: `blankstorm-client-${displayVersion}.snap`,
+				[`${$package.name}_${version.full}_amd64.deb`]: `blankstorm-client-${displayVersion}.deb`,
+				[`${$package.name}-${version.full}.x86_64.rpm`]: `blankstorm-client-${displayVersion}.x86_64.rpm`,
+				[`${$package.name}-${version.full}.pacman`]: `blankstorm-client-${displayVersion}.pacman`,
+				[`${productName}-${version.full}-arm64.dmg`]: `blankstorm-client-${displayVersion}.dmg`,
+				[`${productName}-${version.full}-win.zip`]: `blankstorm-client-${displayVersion}-win.zip`,
+				[`${$package.name}-${version.full}.zip`]: `blankstorm-client-${displayVersion}-linux.zip`,
+				[`${productName}-${version.full}-mac.zip`]: `blankstorm-client-${displayVersion}-mac.zip`,
 			});
 			deleteOutput([
 				'__snap-amd64',
@@ -145,9 +149,9 @@ async function onBuildEnd() {
 				'latest-linux.yml',
 				'.icon-ico',
 				'tmp',
-				`${productName} Setup ${fullVersion}.exe.blockmap`,
-				`${productName}-${fullVersion}-mac.zip.blockmap`,
-				`${productName}-${fullVersion}.dmg.blockmap`,
+				`${productName} Setup ${version.full}.exe.blockmap`,
+				`${productName}-${version.full}-mac.zip.blockmap`,
+				`${productName}-${version.full}.dmg.blockmap`,
 			]);
 		}
 	} catch (e) {

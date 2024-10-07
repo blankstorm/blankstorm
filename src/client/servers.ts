@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 import { isJSON, pick } from 'utilium';
 import { JSONFileMap } from 'utilium/fs.js';
 import { Level, type LevelEvents, type LevelJSON } from '../core/level';
-import { config, versions } from '../core/metadata';
+import { config, displayVersion } from '../core/metadata';
 import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
 import { currentLevel, load, unload } from './client';
@@ -81,7 +81,7 @@ export async function ping(id: string): Promise<void> {
 			const ping = (await res.json()) as PingInfo;
 			pingCache.set(id, ping);
 			info.find('span').text(`${((performance.now() - beforeTime) / 2).toFixed()}ms ${ping.current_clients}/${ping.max_clients}`);
-			info.find('tool-tip').html(`${url.hostname}<br><br>${versions.get(ping.version)?.text || ping.version}<br><br>${ping.message}`);
+			info.find('tool-tip').html(`${url.hostname}<br><br>${displayVersion(ping.version) || ping.version}<br><br>${ping.message}`);
 		} catch (_) {
 			info.find('span').html('<svg><use href="assets/images/icons.svg#xmark"/></svg>');
 			info.find('tool-tip').html('Invalid response');
@@ -112,7 +112,7 @@ export function connect(id: string): void {
 		pingInfo = pingCache.get(id);
 	socket = io(url.href, { reconnection: false, auth: pick(options, 'token', 'session') });
 	socket.on('connect', () => {
-		$('#tablist p.info').html(`${url.hostname}<br>${(pingInfo?.version ? versions.get(pingInfo.version)?.text : null) || pingInfo?.version}<br>${pingInfo?.message}<br>`);
+		$('#tablist p.info').html(`${url.hostname}<br>${(pingInfo?.version ? displayVersion(pingInfo.version) : null) || pingInfo?.version}<br>${pingInfo?.message}<br>`);
 	});
 	socket.on('connect_error', handleConnectionError);
 	socket.on('connect_failed', handleConnectionFailed);

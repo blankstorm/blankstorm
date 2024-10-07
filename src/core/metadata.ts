@@ -1,9 +1,8 @@
-export { version as fullVersion } from '../../package.json';
+import * as version from 'utilium/version.js';
 
 export const game_url = 'https://blankstorm.net';
 
 export const config = {
-	load_remote_manifest: false,
 	debug: $debug,
 	overwrite_invalid: true,
 	default_port: 1123,
@@ -36,43 +35,47 @@ export const config = {
 	},
 };
 
-const _versionGroups = ['prototype', 'alpha'] as const;
-const _versions = {
-	infdev_1: { text: 'Infdev 1', group: 'prototype' },
-	infdev_2: { text: 'Infdev 2', group: 'prototype' },
-	infdev_3: { text: 'Infdev 3', group: 'prototype' },
-	infdev_4: { text: 'Infdev 4', group: 'prototype' },
-	infdev_5: { text: 'Infdev 5', group: 'prototype' },
-	infdev_6: { text: 'Infdev 6', group: 'prototype' },
-	infdev_7: { text: 'Infdev 7', group: 'prototype' },
-	infdev_8: { text: 'Infdev 8', group: 'prototype' },
-	infdev_9: { text: 'Infdev 9', group: 'prototype' },
-	infdev_10: { text: 'Infdev 10', group: 'prototype' },
-	infdev_11: { text: 'Infdev 11', group: 'prototype' },
-	infdev_12: { text: 'Infdev 12', group: 'prototype' },
-	'alpha_1.0.0': { text: 'Alpha 1.0.0', group: 'alpha' },
-	'alpha_1.1.0': { text: 'Alpha 1.1.0', group: 'alpha' },
-	'alpha_1.2.0': { text: 'Alpha 1.2.0', group: 'alpha' },
-	'alpha_1.2.1': { text: 'Alpha 1.2.1', group: 'alpha' },
-	'alpha_1.3.0': { text: 'Alpha 1.3.0', group: 'alpha' },
-	'alpha_1.3.1': { text: 'Alpha 1.3.1', group: 'alpha' },
-	'alpha_1.4.0': { text: 'Alpha 1.4.0', group: 'alpha' },
-	'alpha_1.4.1': { text: 'Alpha 1.4.1', group: 'alpha' },
-	'alpha_1.4.2': { text: 'Alpha 1.4.2', group: 'alpha' },
-	'alpha_1.4.3': { text: 'Alpha 1.4.3', group: 'alpha' },
-	'alpha_1.4.4': { text: 'Alpha 1.4.4', group: 'alpha' },
-	'alpha_2.0.0': { text: 'Alpha 2.0.0', group: 'alpha' },
-	'alpha_2.0.1': { text: 'Alpha 2.0.1', group: 'alpha' },
-	'alpha_2.0.2': { text: 'Alpha 2.0.2', group: 'alpha' },
-};
+export const knownVersions = [
+	'infdev_1',
+	'infdev_2',
+	'infdev_3',
+	'infdev_4',
+	'infdev_5',
+	'infdev_6',
+	'infdev_7',
+	'infdev_8',
+	'infdev_9',
+	'infdev_10',
+	'infdev_11',
+	'infdev_12',
+	'alpha_1.0.0',
+	'alpha_1.1.0',
+	'alpha_1.2.0',
+	'alpha_1.2.1',
+	'alpha_1.3.0',
+	'alpha_1.3.1',
+	'alpha_1.4.0',
+	'alpha_1.4.1',
+	'alpha_1.4.2',
+	'alpha_1.4.3',
+	'alpha_1.4.4',
+	'alpha_2.0.0',
+	'alpha_2.0.1',
+	'alpha_2.0.2',
+	'alpha_2.0.3',
+] as const;
 
-export type VersionID = keyof typeof _versions;
+export const currentVersion = 'alpha_2.0.3';
 
-export interface Version {
-	text: string;
-	group: (typeof _versionGroups)[number];
+export type VersionID = (typeof knownVersions)[number];
+
+type Normalize<V extends VersionID> = V extends version.Full ? V : `1.0.0_${V}`;
+type Display<V extends VersionID> = version.Parse<Normalize<V>, true>['display'];
+
+export function displayVersion(): Display<typeof currentVersion>;
+export function displayVersion<const V extends VersionID>(v: V): Display<V>;
+export function displayVersion<const V extends VersionID>(v?: V): Display<V> {
+	v ||= currentVersion as V;
+	const normalized = (version.regex.test(v) ? v : `1.0.0_${v}`) as Normalize<V>;
+	return version.parse(normalized, true).display;
 }
-
-export const version: VersionID = 'alpha_2.0.2';
-
-export const versions = new Map(Object.entries(_versions)) as Map<VersionID, Version>;

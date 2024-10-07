@@ -18,7 +18,7 @@ import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import { Scene } from '@babylonjs/core/scene';
 import type { EntityJSON } from '../core/entities/entity';
 import type { LevelJSON } from '../core/level';
-import { config, version } from '../core/metadata';
+import { config, currentVersion } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
 import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, renderers } from './entities';
 import { logger } from './logger';
@@ -33,7 +33,7 @@ function createEmptyCache(): LevelJSON {
 		entities: [],
 		date: '',
 		systems: [],
-		version,
+		version: currentVersion,
 	};
 }
 

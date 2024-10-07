@@ -9,7 +9,7 @@ import type { ResearchID } from '~/core/generic/research';
 import { isResearchLocked, research } from '~/core/generic/research';
 import { genericShips } from '~/core/generic/ships';
 import { Level } from '~/core/level';
-import { config, game_url, version, versions } from '~/core/metadata';
+import { config, displayVersion, game_url } from '~/core/metadata';
 import * as renderer from '~/renderer';
 import { getCamera } from '~/renderer';
 import * as client from './client';
@@ -35,8 +35,8 @@ export async function init() {
 	const options = await $app.options();
 
 	$('#main .version a')
-		.text((versions.get(version)?.text || version) + (options.debug ? ' (' + $revision.slice(0, 7) + ')' : ''))
-		.attr('href', game_url + '/releases/' + version);
+		.text(displayVersion() + (options.debug ? ' (' + $revision.slice(0, 7) + ')' : ''))
+		.attr('href', game_url + '/releases/' + $tag);
 
 	for (const [id, item] of items) {
 		UIs.set(id, templates.createItemUI(item));

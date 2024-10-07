@@ -1,37 +1,49 @@
-import path from 'node:path';
+import { listTags, log, readTag, resolveRef } from 'isomorphic-git';
 import * as fs from 'node:fs';
-import $package from '../package.json' assert { type: 'json' };
+import path from 'node:path';
 import { gitCommitHash } from 'utilium/fs.js';
+import { parse, type Full } from 'utilium/version.js';
+import $package from '../package.json' assert { type: 'json' };
 
-export interface VersionInfo {
-	fullVersion: string;
-	version: string;
-	subversion: string;
-	type?: 'indev' | 'alpha' | 'beta' | 'prerelease' | 'release' | string;
-	display: string;
-	electronBuilder: {
-		version: string;
-		shortVersion: string;
-		shortVersionWindows: string;
-	};
+async function getLatestTag(): Promise<string | null> {
+	const tags = new Map<string, string[]>();
+
+	// Map each commit SHA to its associated tags
+	for (const tag of await listTags({ fs, dir: '.' })) {
+		const oid = await resolveRef({ fs, dir: '.', ref: tag });
+
+		let commitSha = oid;
+		try {
+			// Handle annotated tags
+			const tagObject = await readTag({ fs, dir: '.', oid });
+			commitSha = tagObject.tag.object;
+		} catch {
+			// Handle lightweight tags (no action needed)
+		}
+
+		if (!tags.has(commitSha)) {
+			tags.set(commitSha, []);
+		}
+		tags.get(commitSha)!.push(tag);
+	}
+
+	// Traverse commits from HEAD
+	const commits = await log({ fs, dir: '.', depth: 100 });
+	for (const commit of commits) {
+		const commitSha = commit.oid;
+		if (tags.has(commitSha)) {
+			// Return the first tag found for this commit
+			return tags.get(commitSha)![0];
+		}
+	}
+
+	// No tag found in the recent commit history
+	return null;
 }
 
-export function getVersionInfo(fullVersion: string = $package.version): VersionInfo {
-	const { type, subversion, version } = /^(?<version>\d+(?:\.\d+)*)(?:[-_](?<type>\w+)[-_](?<subversion>\d*(?:\.\d+)*))?/.exec(fullVersion)!.groups!;
-	const shortVersion = type ? '0.' + subversion : version + '.0';
-	return {
-		fullVersion,
-		version,
-		subversion,
-		type,
-		display: ['alpha', 'beta'].includes(type) ? `${type}-${subversion}` : version,
-		electronBuilder: {
-			version: $package.version,
-			shortVersion,
-			shortVersionWindows: shortVersion,
-		},
-	};
-}
+const latestTag = await getLatestTag();
+
+export const version = parse($package.version as Full, true);
 
 export function renameOutput(renames: { [key: string]: string }, outPath = 'dist') {
 	for (const [oldName, newName] of Object.entries(renames)) {
@@ -52,9 +64,10 @@ export function deleteOutput(deletes: string[], outPath = 'dist') {
 	}
 }
 
-export function defines(mode: string): Record<'$debug' | '$revision', string> {
+export function defines(mode: string): Record<'$debug' | '$revision' | '$tag', string> {
 	return {
 		$debug: JSON.stringify(mode == 'dev' || mode == 'development'),
 		$revision: JSON.stringify(gitCommitHash()),
+		$tag: JSON.stringify(latestTag),
 	};
 }

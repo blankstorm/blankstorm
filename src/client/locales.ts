@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import { isJSON } from 'utilium';
-import { version } from '../core/metadata';
+import { currentVersion } from '../core/metadata';
 import * as settings from './settings';
 import { logger } from './utils';
 
@@ -28,7 +28,7 @@ export async function load(url: string): Promise<Locale> {
 	if (!locale.language) throw 'Does not have a language';
 	if (!locale.version) throw 'Does not have a version';
 	if (!locale?.text) throw 'Missing data';
-	if (!version.match(locale.version)) throw 'Incompatible game version';
+	if (!currentVersion.match(locale.version)) throw 'Incompatible game version';
 
 	store.set(locale.language, locale);
 	logger.debug(`Loaded locale "${locale.name}" (${locale.language})`);

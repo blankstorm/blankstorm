@@ -4,7 +4,7 @@ import type { Item } from '~/core/generic/items';
 import type { Research } from '~/core/generic/research';
 import { genericShips, type GenericShip, type ShipType } from '~/core/generic/ships';
 import { Level, type LevelJSON } from '~/core/level';
-import { config, versions } from '~/core/metadata';
+import { config, displayVersion } from '~/core/metadata';
 import { load } from '../client';
 import * as locales from '../locales';
 import * as saves from '../saves';
@@ -113,7 +113,7 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 		$<HTMLDialogElement>('#save-edit')[0].showModal();
 	});
 	instance.find('.name').text(save.name);
-	instance.find('.version').text(versions.get(save.version)?.text || save.version);
+	instance.find('.version').text(displayVersion(save.version));
 	instance.find('.date').text(new Date(save.date).toLocaleString());
 
 	instance.prependTo('#saves ul');
