@@ -2,8 +2,8 @@ import $ from 'jquery';
 import { LogLevel } from 'logzen';
 import { logger as coreLogger } from '../core';
 import * as client from './client';
-import { logger } from './utils';
 import { alert, confirm } from './ui/dialog';
+import { logger } from './utils';
 
 addEventListener('error', async ({ error }: { error: Error }) => {
 	$app.log({

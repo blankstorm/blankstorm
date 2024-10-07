@@ -8,7 +8,7 @@ import { execCommandString } from '../core/commands';
 import { tickInfo, type EntityJSON } from '../core/entities/entity';
 import type { ItemID } from '../core/generic/items';
 import { Level } from '../core/level';
-import { config, game_url, currentVersion } from '../core/metadata';
+import { config, currentVersion } from '../core/metadata';
 import { xpToLevel } from '../core/utils';
 import * as renderer from '../renderer/index';
 import { playsound } from './audio';

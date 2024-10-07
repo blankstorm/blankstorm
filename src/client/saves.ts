@@ -6,15 +6,15 @@ import { FolderMap } from 'utilium/fs.js';
 import { Player } from '../core/entities/player';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
+import { displayVersion } from '../core/metadata';
 import { randomInSphere } from '../core/utils';
 import { getCurrentLevel } from './client';
 import { path } from './config';
+import * as locales from './locales';
 import { confirm } from './ui/dialog';
 import { createSaveListItem } from './ui/templates';
 import { account } from './user';
 import { logger } from './utils';
-import * as locales from './locales';
-import { displayVersion } from '../core';
 
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();

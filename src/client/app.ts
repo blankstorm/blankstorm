@@ -6,8 +6,8 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { homedir } from 'os';
-import type { ClientInit } from './client';
 import { currentVersion, displayVersion } from '../core';
+import type { ClientInit } from './client';
 
 const dirname: string = resolve(fileURLToPath(import.meta.url), '..');
 
