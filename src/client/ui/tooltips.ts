@@ -1,7 +1,7 @@
 import type { Player } from '../../core/entities/player';
 import type { ItemID } from '../../core/generic/items';
 import type { Product } from '../../core/generic/production';
-import { type Research, type ResearchID } from '../../core/generic/research';
+import type { Research, ResearchID } from '../../core/generic/research';
 import { text } from '../locales';
 import * as settings from '../settings';
 import { minimize } from '../utils';

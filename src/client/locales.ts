@@ -91,4 +91,5 @@ export async function init(): Promise<void> {
 		use(selected);
 	}
 	settings.items.get('locale')!.value = selected || 'en';
+	settings.items.get('locale')!.on('change', lang => use(lang as string));
 }

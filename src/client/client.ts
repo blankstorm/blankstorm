@@ -342,9 +342,6 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 		e.preventDefault();
 		saves.flush();
 	};
-	settings.items.get('locale')?.on('change', value => {
-		locales.use(value as string);
-	});
 
 	_initLog('Loading locales...');
 	await locales.init();
@@ -511,9 +508,7 @@ export function unload(): void {
 	clearLevel();
 }
 
-export type RPCCommand = 'chat' | 'command';
-
-export function send(command: RPCCommand, ...data: string[]): void {
+function send(command: 'chat' | 'command', ...data: string[]): void {
 	if (isServer) {
 		servers.socket.emit(command, data);
 		return;
@@ -527,3 +522,5 @@ export function send(command: RPCCommand, ...data: string[]): void {
 			execCommandString(command, { executor: user.player() }, true);
 	}
 }
+
+chat.onSend(send);

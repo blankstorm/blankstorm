@@ -5,9 +5,9 @@ import type { JSONObject } from 'utilium/fs.js';
 import { JSONFileMap } from 'utilium/fs.js';
 import { config } from '../core';
 import { path } from './config';
-import { instaniateTemplate } from './ui/templates';
 import { logger } from './utils';
 import { EventEmitter } from 'eventemitter3';
+import { instaniateTemplate } from './ui/tmpl';
 
 export const settingTypes = ['boolean', 'string', 'number', 'color', 'select', 'keybind'] as const;
 
@@ -154,7 +154,6 @@ export class Item<T extends Type = Type> extends EventEmitter<{
 		input.on('change', () => {
 			this.value = (this.type == 'boolean' ? input.is(':checked') : input.val()) as Value<T>;
 			set(this.id, this.value);
-			this.emit('change', this.value);
 		});
 
 		this.value = value;
@@ -186,10 +185,10 @@ export class Item<T extends Type = Type> extends EventEmitter<{
 				this.ui.find('input').val(+val);
 				break;
 			default:
-				console.log('setting value of ' + this.id + ' to ' + val, this.ui.find('.input'));
 				this.ui.find('.input').val(val as string);
 		}
 		this.updateLabel();
+		this.emit('change', this.value);
 	}
 
 	//for selects
@@ -299,15 +298,12 @@ export function updateUI() {
 	}
 }
 
-export async function reset(): Promise<void> {
+export function reset(): void {
 	for (const [id, item] of items) {
 		item.value = item.defaultValue;
 		file.set(id, item.defaultValue);
 	}
-	const ui = await import('./ui');
-	ui.update();
-	const locales = await import('./locales');
-	locales.use('en');
+	updateUI();
 }
 
 export const get: (typeof file)['get'] = key => file.get(key);

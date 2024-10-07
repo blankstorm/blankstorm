@@ -5,8 +5,8 @@ import { scene } from '~/renderer';
 import * as settings from '../settings';
 import { player, system } from '../user';
 import { minimize } from '../utils';
-import { instaniateTemplate } from './templates';
 import { confirm } from './dialog';
+import { instaniateTemplate } from './tmpl';
 
 export function createWaypointListItem(waypoint: Waypoint): JQuery<HTMLDivElement> {
 	const instance = instaniateTemplate('#waypoint-li').find('div');

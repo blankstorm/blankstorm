@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import { getCamera } from '../renderer';
-import { send } from './client';
 import * as settings from './settings';
 import { logger } from './utils';
 
@@ -83,6 +82,12 @@ export function handleInput(event: JQuery.KeyDownEvent): void {
 			index = 0;
 			break;
 	}
+}
+
+let send: (command: 'chat' | 'command', ...data: string[]) => void;
+
+export function onSend(fn: typeof send): void {
+	send = fn;
 }
 
 export function toggleUI(command?: boolean): void {

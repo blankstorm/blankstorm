@@ -6,15 +6,15 @@ import { FolderMap } from 'utilium/fs.js';
 import { Player } from '../core/entities/player';
 import type { LevelJSON } from '../core/level';
 import { Level } from '../core/level';
-import { displayVersion } from '../core/metadata';
+import { config, displayVersion } from '../core/metadata';
 import { randomInSphere } from '../core/utils';
-import { getCurrentLevel } from './client';
+import { getCurrentLevel, load } from './client';
 import { path } from './config';
 import * as locales from './locales';
-import { confirm } from './ui/dialog';
-import { createSaveListItem } from './ui/templates';
+import { alert, confirm } from './ui/dialog';
+import { instaniateTemplate } from './ui/tmpl';
 import { account } from './user';
-import { logger } from './utils';
+import { download, logger } from './utils';
 
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();
@@ -33,6 +33,68 @@ export async function createDefault(name: string): Promise<Level> {
 	level.rootSystem = system;
 	logger.log('Created default level: ' + name);
 	return level;
+}
+
+export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
+	const instance = instaniateTemplate('#save').find('li');
+
+	const loadAndPlay = async () => {
+		$('#loading_cover').show();
+		try {
+			logger.info('Loading level from save ' + save.id);
+
+			const replace = await replaceGuest(save);
+			logger.debug('Replacing guest: ' + (replace ? 'Yes' : 'No'));
+			if (!replace) {
+				$('#loading_cover,#hud,canvas.game').hide();
+				$('#saves').show();
+			}
+			const level = Level.FromJSON(save);
+			await level.ready();
+			load(level);
+			$('#loading_cover').hide();
+		} catch (e) {
+			logger.error(e instanceof Error ? e : e + '');
+			const loadAnyway = await confirm('Failed to load save: ' + e + '\nLoad the save anyway?');
+			if (config.debug && loadAnyway) {
+				$('#loading_cover').hide();
+				throw e;
+			}
+			if (!loadAnyway) {
+				await alert('Failed to load save: ' + e);
+			}
+			$('#loading_cover,#hud,canvas.game').hide();
+			$('#saves').show();
+		}
+	};
+
+	instance
+		.on('click', () => {
+			$('.selected').removeClass('selected');
+			instance.addClass('selected');
+		})
+		.on('dblclick', loadAndPlay);
+
+	instance.find('.delete').on('click', async e => {
+		if (e.shiftKey || (await confirm('Are you sure?'))) {
+			remove(save.id);
+			instance.remove();
+		}
+	});
+
+	instance.find('.download').on('click', () => download(JSON.stringify(save), (save.name || 'save') + '.json'));
+	instance.find('.play').on('click', loadAndPlay);
+	instance.find('.edit').on('click', () => {
+		$('#save-edit').find('.id').val(save.id);
+		$('#save-edit').find('.name').val(save.name);
+		$<HTMLDialogElement>('#save-edit')[0].showModal();
+	});
+	instance.find('.name').text(save.name);
+	instance.find('.version').text(displayVersion(save.version));
+	instance.find('.date').text(new Date(save.date).toLocaleString());
+
+	instance.prependTo('#saves ul');
+	return instance;
 }
 
 /**

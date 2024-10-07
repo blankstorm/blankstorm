@@ -11,10 +11,10 @@ import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
 import { currentLevel, load, unload } from './client';
 import { path } from './config';
-import { createServerListItem } from './ui/templates';
 import { logger } from './utils';
 import { hasText, text } from './locales';
-import { alert } from './ui/dialog';
+import { alert, confirm } from './ui/dialog';
+import { instaniateTemplate } from './ui/tmpl';
 
 export type ServerData = {
 	id: string;
@@ -53,6 +53,34 @@ function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ..
 
 function updatePlayerList(list: string[]): void {
 	$('#tablist p.players').html(list.join('<br>'));
+}
+
+export function createServerListItem(server: ServerData): JQuery<HTMLLIElement> {
+	const instance = instaniateTemplate('#server').find('li');
+	instance
+		.attr('id', server.id)
+		.on('click', () => {
+			$('.selected').removeClass('selected');
+			instance.addClass('selected');
+		})
+		.on('dblclick', () => connect(server.id))
+		.prependTo('#servers ul');
+	instance.find('.name').text(server.name);
+
+	instance.find('.delete').on('click', async e => {
+		if (e.shiftKey || (await confirm('Are you sure?'))) {
+			remove(server.id);
+			instance.remove();
+		}
+	});
+	instance.find('.play').on('click', () => connect(server.id));
+	instance.find('.edit').on('click', () => {
+		$('#server-dialog').find('.name').val(server.name);
+		$('#server-dialog').find('.url').val(server.url);
+		$<HTMLDialogElement>('#server-dialog')[0].showModal();
+	});
+
+	return instance;
 }
 
 export const pingCache: Map<string, PingInfo> = new Map();

@@ -10,7 +10,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/loaders/glTF/index';
 import { randomHex } from 'utilium';
 import type { EntityJSON } from '../core/entities/entity';
-import { EntityRenderer } from './entities';
+import { EntityRenderer } from './entities/entity';
 import { logger } from './logger';
 
 interface ModelEntityJSON extends EntityJSON {
