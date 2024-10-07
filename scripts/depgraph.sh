@@ -10,6 +10,9 @@ mkdep.core() {
 mkdep.client() {
 	mkdep client src/client/index.ts
 }
+mkdep.client-app() {
+	mkdep client-app src/client/app.ts
+}
 mkdep.server() {
 	mkdep server src/server/index.ts
 }
