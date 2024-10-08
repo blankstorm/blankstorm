@@ -13,7 +13,7 @@ import type { EntityJSON } from '../core/entities/entity';
 import { EntityRenderer } from './entities/entity';
 import { logger } from './logger';
 
-interface ModelEntityJSON extends EntityJSON {
+export interface ModelEntityJSON extends EntityJSON {
 	model?: string;
 	type?: string;
 }

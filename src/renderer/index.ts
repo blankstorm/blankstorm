@@ -22,7 +22,7 @@ import { config, currentVersion } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
 import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, renderers } from './entities';
 import { logger } from './logger';
-import { ModelRenderer, initModel } from './models';
+import { ModelRenderer, initModel, type ModelEntityJSON } from './models';
 export { logger };
 
 function createEmptyCache(): LevelJSON {
@@ -289,7 +289,7 @@ export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string): void 
 	while (entity.parent && !(entity instanceof ShipRenderer)) {
 		entity = entity.parent as TransformNode;
 	}
-	if (entity instanceof ShipRenderer && entity.parent?.parent?.id == ownerID) {
+	if (entity instanceof ShipRenderer && entity.data.owner == ownerID) {
 		entity.isSelected ? entity.unselect() : entity.select();
 	}
 }
@@ -299,12 +299,13 @@ export function handleCanvasClick(ev: JQuery.ClickEvent, ownerID: string): void 
  */
 export function handleCanvasRightClick(evt: JQuery.ContextMenuEvent, ownerID: string): MoveInfo<Vector3>[] {
 	const returnData: MoveInfo<Vector3>[] = [];
-	for (const renderer of entities.values()) {
+	// Note: This type assertion is used so `data` is well typed.
+	for (const renderer of entities.values() as Iterable<ModelRenderer<ModelEntityJSON>>) {
 		if (!(renderer instanceof ModelRenderer)) {
 			continue;
 		}
 
-		if (!renderer.isSelected || renderer.parent?.parent?.id != ownerID) {
+		if (!renderer.isSelected || renderer.data.owner != ownerID) {
 			continue;
 		}
 
