@@ -1,4 +1,5 @@
 import { getCamera } from '../../renderer';
+import $ from 'jquery';
 
 export function instaniateTemplate(selector: string): JQuery<DocumentFragment> {
 	return $($<HTMLTemplateElement>(selector)[0].content.cloneNode(true) as DocumentFragment);

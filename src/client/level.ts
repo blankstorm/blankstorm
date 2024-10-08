@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
 import type { Level } from '../core/level';
 import type { EntityJSON } from '../core/entities/entity';

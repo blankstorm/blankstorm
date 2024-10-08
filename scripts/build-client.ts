@@ -19,8 +19,8 @@ const { values: _values } = parseArgs({
 		output: { type: 'string', short: 'o', default: 'build/client' },
 		'no-app': { type: 'boolean', default: false },
 		mode: { type: 'string', short: 'm', default: 'dev' },
-		debug: { type: 'boolean', default: false },
 		keep: { type: 'boolean', short: 'k', default: false },
+		fast: { type: 'boolean', default: false },
 	},
 });
 const options = _values as { [K in keyof typeof _values]: Exclude<(typeof _values)[K], undefined> };
@@ -85,8 +85,8 @@ const electronBuilderConfig: electronBuilder.CliOptions = {
 			category: 'public.app-category.games',
 		},
 	},
-	linux: ['zip', 'AppImage', 'snap', 'deb', 'rpm', 'pacman'],
-	win: ['zip', 'nsis'],
+	linux: options.fast ? ['zip', 'AppImage'] : ['zip', 'AppImage', 'snap', 'deb', 'rpm', 'pacman'],
+	win: options.fast ? [] : ['zip', 'nsis'],
 };
 
 function onBuildStart() {
@@ -164,7 +164,6 @@ const esbuildConfig = {
 	assetNames: '[dir]/[name]',
 	outdir: options.output,
 	bundle: true,
-	minify: !options.debug,
 	keepNames: true,
 	sourcemap: true,
 	format: 'esm',

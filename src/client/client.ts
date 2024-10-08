@@ -368,7 +368,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 	isInitialized = true;
 }
 
-export async function reload() {
+export function reload() {
 	ui.update();
 }
 

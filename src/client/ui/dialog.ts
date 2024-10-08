@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 export function alert(text: string): Promise<void> {
 	return new Promise<void>(resolve => {
 		$('#alert .message').html(text.replaceAll('\n', '<br>'));
