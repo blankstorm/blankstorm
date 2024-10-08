@@ -163,7 +163,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 				id: 'tooltips',
 				section: 'debug',
 				type: 'boolean',
-				label: () => locales.text('setting.'),
+				label: () => locales.text('setting.tooltips'),
 				value: false,
 			},
 			{
