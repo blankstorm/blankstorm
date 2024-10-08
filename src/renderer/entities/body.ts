@@ -17,8 +17,8 @@ export class CelestialBodyRenderer extends EntityRenderer<CelestialBodyJSON> {
 		},
 	];
 
-	public async update(data: CelestialBodyJSON) {
-		await super.update(data);
+	public update(data: CelestialBodyJSON) {
+		super.update(data);
 		if (this.radius != data.radius) {
 			this.radius = data.radius;
 			CreateSphereVertexData({ diameter: data.radius * 2, segments: 64 }).applyToMesh(this.mesh);

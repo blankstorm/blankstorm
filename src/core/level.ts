@@ -169,9 +169,9 @@ export class Level extends EventEmitter<LevelEvents> implements Component<LevelJ
 		}
 	}
 
-	public async generateSystem(name: string, position: Vector2, options: SystemGenerationOptions = config.system_generation, system?: System) {
+	public generateSystem(name: string, position: Vector2, options: SystemGenerationOptions = config.system_generation, system?: System) {
 		const difficulty = Math.max(Math.log10(Vector2.Distance(Vector2.Zero(), position)) - 1, 0.25);
-		system = await System.Generate(name, { ...options, difficulty }, this, system);
+		system = System.Generate(name, { ...options, difficulty }, this, system);
 		system.position = position;
 		return system;
 	}

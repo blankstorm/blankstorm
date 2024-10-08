@@ -18,7 +18,7 @@ export class EntityRenderer<T extends EntityJSON = EntityJSON> extends Transform
 		this.rotation = Vector3.Zero();
 	}
 
-	public async update(data: T): Promise<void> {
+	public update(data: T): void {
 		if (this.id != data.id) {
 			throw new Error(`ID mismatch while updating ${this.constructor.name} renderer: ${this.id} -> ${data.id}`);
 		}

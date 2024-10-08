@@ -117,14 +117,14 @@ export async function init(canvas: HTMLCanvasElement) {
 	}
 }
 
-export async function dispose() {
+export function dispose() {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
 	scene.dispose();
 }
 
-export async function render() {
+export function render() {
 	if (!scene) {
 		throw new ReferenceError('Renderer not initalized');
 	}
@@ -171,7 +171,7 @@ export function clear() {
 	logger.debug('Cleared');
 }
 
-export async function load(entityJSON: EntityJSON[]): Promise<void> {
+export function load(entityJSON: EntityJSON[]): void {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Not initalized'));
 	}
@@ -188,7 +188,7 @@ export async function load(entityJSON: EntityJSON[]): Promise<void> {
 			continue;
 		}
 		const entity = new (renderers.get(data.entityType)!)(data);
-		await entity.update(data);
+		entity.update(data);
 		if (['Player', 'Client'].includes(data.entityType)) {
 			/**
 			 * @todo change this
@@ -196,12 +196,12 @@ export async function load(entityJSON: EntityJSON[]): Promise<void> {
 			camera.target = entity.position.clone();
 		}
 
-		await entity.update(data);
+		entity.update(data);
 		entities.set(data.id, entity);
 	}
 }
 
-export async function update(levelData: LevelJSON): Promise<void> {
+export function update(levelData: LevelJSON): void {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Renderer not initalized'));
 	}
@@ -234,7 +234,7 @@ export async function update(levelData: LevelJSON): Promise<void> {
 		void entities.get(entity.id)?.update(data);
 	}
 
-	await load(renderersToAdd);
+	load(renderersToAdd);
 	cache = levelData;
 	return;
 }

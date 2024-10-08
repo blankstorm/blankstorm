@@ -20,7 +20,7 @@ export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();
 	level.name = name;
 	await level.ready();
-	const system = await level.generateSystem('Kurassh', Vector2.Zero());
+	const system = level.generateSystem('Kurassh', Vector2.Zero());
 
 	const player = new Player(account.id, system);
 	player.fleet.addFromStrings('mosquito', 'cillus');

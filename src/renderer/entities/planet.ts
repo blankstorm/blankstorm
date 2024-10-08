@@ -166,8 +166,8 @@ export class PlanetRenderer extends CelestialBodyRenderer {
 	public biome!: PlanetBiome;
 	public seed!: number;
 
-	public async update(data: PlanetData) {
-		await super.update(data);
+	public update(data: PlanetData) {
+		super.update(data);
 		if (this.biome == data.biome && this.seed == data.seed) {
 			return;
 		}

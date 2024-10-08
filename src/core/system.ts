@@ -129,7 +129,7 @@ export class System extends EventEmitter<{
 		return system;
 	}
 
-	static async Generate(name: string, options: SystemGenerationOptions = config.system_generation, level: Level, system?: System) {
+	static Generate(name: string, options: SystemGenerationOptions = config.system_generation, level: Level, system?: System) {
 		system ||= new System(undefined, level);
 		logger.debug(`Generating system "${name}" (${system.id})`);
 		system.name = name;

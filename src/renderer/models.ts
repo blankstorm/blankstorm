@@ -90,8 +90,8 @@ export class ModelRenderer<T extends ModelEntityJSON = ModelEntityJSON> extends 
 	}
 
 	// @todo change path following to be on core
-	public async update(data: T) {
-		await super.update(data);
+	public update(data: T) {
+		super.update(data);
 
 		if (this.modelID != resolveModelID(data)) {
 			throw logger.error(`Can not change model of entity ${data.id} from ${this.modelID} to ${resolveModelID(data)}`);

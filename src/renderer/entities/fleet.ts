@@ -2,8 +2,8 @@ import type { FleetJSON } from '~/core/components/fleet';
 import { EntityRenderer, renderers } from './entity';
 
 export class FleetRenderer extends EntityRenderer {
-	public async update(data: FleetJSON): Promise<void> {
-		await super.update(data);
+	public update(data: FleetJSON): void {
+		super.update(data);
 		for (const id of data?.ships || []) {
 			const ship = this.getScene().getNodeById(id);
 			if (!ship) {
