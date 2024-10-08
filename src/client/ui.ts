@@ -428,7 +428,10 @@ export function registerListeners() {
 		}
 		update();
 	});
-	level.on('fleet_items_change', (_, items: Record<ItemID, number>) => {
+	/**
+	 * @todo make sure this gets added when new levels are `load`ed
+	 */
+	level?.on('fleet_items_change', (_, items: Record<ItemID, number>) => {
 		for (const [id, amount] of Object.entries(items) as [ItemID, number][]) {
 			$(UIs.get(id)!).find('.count').text(minimize(amount));
 		}

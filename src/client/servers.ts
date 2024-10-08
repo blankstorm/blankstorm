@@ -5,12 +5,12 @@ import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { isJSON, pick } from 'utilium';
 import { JSONFileMap } from 'utilium/fs.js';
-import { type LevelEvents, type LevelJSON } from '../core/level';
+import { Level, type LevelEvents, type LevelJSON } from '../core/level';
 import { config, displayVersion } from '../core/metadata';
 import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
 import { path } from './config';
-import { level, unload } from './level';
+import { level, load, unload } from './level';
 import { hasText, text } from './locales';
 import { alert, confirm } from './ui/dialog';
 import { instaniateTemplate } from './ui/utils';
@@ -41,8 +41,16 @@ function handleConnectionFailed({ message }: Error): void {
 
 function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ...data: EventEmitter.EventArgs<LevelEvents, T>) {
 	if (type == 'update') {
-		level.fromJSON(data[0] as LevelJSON);
-		level.sampleTick();
+		const json = data[0] as LevelJSON;
+		if (!level) {
+			load(Level.FromJSON(json));
+		}
+		level!.fromJSON(json);
+		level!.sampleTick();
+	}
+
+	if (!level) {
+		throw new ReferenceError('No level loaded');
 	}
 
 	level.emit(type, ...data);

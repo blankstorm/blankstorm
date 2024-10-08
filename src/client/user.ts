@@ -21,7 +21,7 @@ export function chat(...messages: string[]) {
 }
 
 export function player(): Player {
-	return level.getEntityByID(account.id);
+	return level!.getEntityByID(account.id);
 }
 
 export function hasPlayer(): boolean {
@@ -50,5 +50,5 @@ export function hasSystem(): boolean {
  * @todo Fix this so it works with servers
  */
 export async function action<T extends ActionType>(action: T, data: ActionData<T>): Promise<boolean> {
-	return level.tryAction(account.id, action, data);
+	return level!.tryAction(account.id, action, data);
 }

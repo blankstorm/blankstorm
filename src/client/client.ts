@@ -10,15 +10,14 @@ import { config, currentVersion } from '../core/metadata';
 import { xpToLevel } from '../core/utils';
 import * as renderer from '../renderer/index';
 import * as chat from './chat';
-import { enableMultiplayer, isPaused, isServer, setDebug, setPath, unpause } from './config';
-import { level, setLevel } from './level';
+import { enableMultiplayer, isPaused, isServer, setDebug, setPath } from './config';
+import { level } from './level';
 import * as locales from './locales';
 import * as mods from './mods';
 import * as saves from './saves';
 import * as servers from './servers';
 import * as settings from './settings';
 import * as ui from './ui';
-import { alert } from './ui/dialog';
 import { switchTo } from './ui/utils';
 import * as user from './user';
 import { logger, optionsOf } from './utils';
@@ -46,8 +45,6 @@ export interface ClientInit {
 }
 
 export let isInitialized: boolean = false;
-
-export const screenshots = [];
 
 function _initLog(message: string): void {
 	$('#loading_cover p').text(message);
@@ -411,28 +408,6 @@ export function update() {
 		`);
 
 	void renderer.render();
-}
-
-export function load(level: Level): boolean {
-	if (!level) {
-		logger.warn('No level loaded');
-		void alert(locales.text('load_no_level'));
-		return false;
-	}
-	if (level.version != currentVersion) {
-		logger.warn('Can not load level due to version mismatch: ' + level.id);
-		void alert(locales.text('bad_version'));
-		return false;
-	}
-
-	$('#saves,#servers').hide();
-	$('canvas.game').show().trigger('focus');
-	$('#hud').show();
-	setLevel(level);
-	renderer.clear();
-	void renderer.update(level.toJSON());
-	unpause();
-	return true;
 }
 
 function send(command: 'chat' | 'command', ...data: string[]): void {

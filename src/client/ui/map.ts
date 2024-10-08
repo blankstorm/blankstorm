@@ -176,7 +176,7 @@ export function update(): void {
 		const marker = new MapMarker(entity);
 		markers.set(entity.id, marker);
 	}
-	for (const [id, system] of level.systems) {
+	for (const [id, system] of level?.systems || []) {
 		if (markers.has(id)) {
 			continue;
 		}

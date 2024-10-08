@@ -1,11 +1,16 @@
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
-import { Level, logger, type EntityJSON } from '../core';
+import type { Level } from '../core/level';
+import type { EntityJSON } from '../core/entities/entity';
+import { currentVersion } from '../core/metadata';
+import { logger } from '../core/utils';
 import * as renderer from '../renderer';
 import { playsound } from './audio';
 import * as settings from './settings';
-import { isServer, pause } from './config';
+import { isServer, pause, unpause } from './config';
+import { text } from './locales';
+import { alert } from './ui/dialog';
 
-export let level: Level = new Level();
+export let level: Level | undefined;
 
 export function setLevel(value: Level) {
 	logger.log('Using new level: ' + value.id);
@@ -13,8 +18,11 @@ export function setLevel(value: Level) {
 }
 
 export function registerListeners() {
+	if (!level) {
+		throw new ReferenceError('No level loaded');
+	}
 	level.on('update', () => {
-		void renderer.update(level.toJSON());
+		void renderer.update(level!.toJSON());
 	});
 	level.on('player_levelup', () => {
 		logger.warn('Triggered player_levelup (unimplemented)');
@@ -35,7 +43,32 @@ export function registerListeners() {
 	});
 }
 
+export function load(newLevel: Level): boolean {
+	if (!newLevel) {
+		logger.warn('No level loaded');
+		void alert(text('load_no_level'));
+		return false;
+	}
+	if (newLevel.version != currentVersion) {
+		logger.warn('Can not load level due to version mismatch: ' + newLevel.id);
+		void alert(text('bad_version'));
+		return false;
+	}
+
+	$('#saves,#servers').hide();
+	$('canvas.game').show().trigger('focus');
+	$('#hud').show();
+	level = newLevel;
+	renderer.clear();
+	void renderer.update(newLevel.toJSON());
+	unpause();
+	return true;
+}
+
 export function unload(): void {
+	if (!level) {
+		throw new ReferenceError('No level loaded');
+	}
 	renderer.clear();
 	level.removeAllListeners();
 	pause();

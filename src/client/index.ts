@@ -52,6 +52,8 @@ if (options.debug) {
 		locales: await import('./locales'),
 		settings: await import('./settings'),
 		utils: await import('./utils'),
+		saves: await import('./saves'),
+		servers: await import('./servers'),
 		$,
 	});
 }

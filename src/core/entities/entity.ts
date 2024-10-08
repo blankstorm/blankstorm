@@ -188,11 +188,11 @@ export class Entity
 	}
 
 	public fromJSON(data: Partial<EntityJSON>): void {
+		for (const vec of ['position', 'rotation', 'velocity'] as const) {
+			data[vec] && this[vec].fromArray(data[vec]);
+		}
 		assignWithDefaults(this as Entity, {
 			...pick(data, copy),
-			position: data.position ? Vector3.FromArray(data.position) : undefined,
-			rotation: data.rotation ? Vector3.FromArray(data.rotation) : undefined,
-			velocity: data.velocity ? Vector3.FromArray(data.velocity) : undefined,
 			parent: data.parent ? this.level.getEntityByID(data.parent) : undefined,
 			owner: data.owner ? this.level.getEntityByID<CelestialBody | Player>(data.owner) : undefined,
 		});

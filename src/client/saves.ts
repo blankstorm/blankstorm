@@ -9,7 +9,7 @@ import { Level } from '../core/level';
 import { config, displayVersion } from '../core/metadata';
 import { randomInSphere } from '../core/utils';
 import { path } from './config';
-import { level } from './level';
+import { level, load } from './level';
 import * as locales from './locales';
 import { alert, confirm } from './ui/dialog';
 import { instaniateTemplate } from './ui/utils';
@@ -25,9 +25,9 @@ export async function createDefault(name: string): Promise<Level> {
 	const player = new Player(account.id, system);
 	player.fleet.addFromStrings('mosquito', 'cillus');
 	player.fleet.at(0).position.z += 7.5;
-	player.system = system;
 	player.name = account.username;
-	player.position = new Vector3(0, 0, -1000).add(randomInSphere(50, true));
+	player.fleet.position = new Vector3(0, 0, -1000).add(randomInSphere(50, true));
+	player.position = player.fleet.position.clone();
 	player.rotation = Vector3.Zero();
 
 	level.rootSystem = system;
@@ -49,7 +49,7 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 				$('#loading_cover,#hud,canvas.game').hide();
 				$('#saves').show();
 			}
-			level.fromJSON(save);
+			load(Level.FromJSON(save));
 			$('#loading_cover').hide();
 		} catch (e) {
 			logger.error(e instanceof Error ? e : e + '');
@@ -175,6 +175,9 @@ export { remove as delete };
  * Writes a level to the save file
  */
 export function flush(): void {
+	if (!level) {
+		throw new ReferenceError('No level loaded');
+	}
 	$('#pause .save').text(locales.text('saving'));
 	logger.debug('Writing save: ' + level.id);
 	update(level.toJSON());

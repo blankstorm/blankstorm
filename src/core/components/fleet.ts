@@ -90,6 +90,7 @@ export class Fleet extends Entity {
 
 	public fromJSON(data: FleetJSON): void {
 		super.fromJSON(data);
+		this.owner.fleet.remove();
 		this.owner.fleet = this;
 		// Note: Ship loaded after Fleet
 	}
