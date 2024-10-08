@@ -1,9 +1,9 @@
 import $ from 'jquery';
-import type { Shipyard } from '~/core/entities/station/shipyard';
-import type { Item } from '~/core/generic/items';
-import type { Research } from '~/core/generic/research';
-import type { GenericShip, ShipType } from '~/core/generic/ships';
-import { genericShips } from '~/core/generic/ships';
+import type { Shipyard } from '../../core/entities/station/shipyard';
+import type { Item } from '../../core/generic/items';
+import type { Research } from '../../core/generic/research';
+import type { GenericShip, ShipType } from '../../core/generic/ships';
+import { genericShips } from '../../core/generic/ships';
 import * as locales from '../locales';
 import { action } from '../user';
 import { alert } from './dialog';

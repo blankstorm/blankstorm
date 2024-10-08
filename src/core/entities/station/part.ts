@@ -2,8 +2,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { assignWithDefaults, pick } from 'utilium';
 import type { CelestialBodyJSON } from '../body';
 import { CelestialBody } from '../body';
-import type { GenericStationPartID } from '~/core/generic/station';
-import { stationParts } from '~/core/generic/station';
+import type { GenericStationPartID } from '../../generic/station';
+import { stationParts } from '../../generic/station';
 import type { Station } from '../station';
 
 export interface StationPartJSON extends CelestialBodyJSON {

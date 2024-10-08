@@ -9,7 +9,7 @@
 		"format:check": "prettier --check .",
 		"format": "prettier --write .",
 		"lint": "eslint src && tsc --project tsconfig.json --noEmit",
-		"dev:client": "tsx scripts/build-client.ts --no-app --debug && npm run dev+nobuild:client --",
+		"dev:client": "tsx scripts/build-client.ts --no-app && npm run dev+nobuild:client --",
 		"dev+nobuild:client": "electron build/client/app.js --dev --quiet --path $HOME/.blankstorm/data-dev",
 		"dev:server": "tsx src/server/cli.ts",
 		"build:client": "tsx scripts/build-client.ts",

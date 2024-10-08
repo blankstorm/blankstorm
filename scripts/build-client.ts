@@ -168,9 +168,6 @@ const esbuildConfig = {
 	sourcemap: true,
 	format: 'esm',
 	loader: { '.html': 'copy' },
-	alias: {
-		'~': root + '/src',
-	},
 	define: defines(options.mode),
 	plugins: [
 		glslPlugin(),

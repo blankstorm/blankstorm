@@ -51,7 +51,7 @@ if (!existsSync(logDir)) {
 	// This also creates the data directory if it doesn't exist
 	mkdirSync(logDir, { recursive: true });
 }
-const logger = new Logger({ prefix: 'main' });
+const logger = new Logger({ prefix: 'main', hideWarningStack: true });
 
 const latestLog = join(logDir, 'latest.log');
 if (existsSync(latestLog)) {

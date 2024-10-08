@@ -72,5 +72,5 @@ export function optionsOf(error: unknown): ErrorOptions {
 	return { cause: error instanceof Error ? error.stack : error + '' };
 }
 
-export const logger = new Logger({ prefix: 'client' });
+export const logger = new Logger({ prefix: 'client', hideWarningStack: true });
 logger.on('send', $app.log);

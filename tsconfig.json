@@ -11,8 +11,7 @@
 		"noImplicitThis": true,
 		"strict": true,
 		"paths": {
-			"*.glslx": ["./src/types.d.ts"],
-			"~/*": ["./src/*"]
+			"*.glslx": ["./src/types.d.ts"]
 		},
 		"moduleSuffixes": [".glslx", ""],
 		"skipLibCheck": true

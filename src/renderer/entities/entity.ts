@@ -1,6 +1,6 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { EntityJSON } from '~/core/entities/entity';
+import type { EntityJSON } from '../../core/entities/entity';
 
 export class EntityRenderer<T extends EntityJSON = EntityJSON> extends TransformNode {
 	public velocity: Vector3 = Vector3.Zero();

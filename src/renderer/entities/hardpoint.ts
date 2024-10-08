@@ -1,5 +1,5 @@
-import type { HardpointJSON } from '~/core/entities/hardpoint';
-import { genericHardpoints, type GenericHardpoint, type HardpointType } from '~/core/generic/hardpoints';
+import type { HardpointJSON } from '../../core/entities/hardpoint';
+import { genericHardpoints, type GenericHardpoint, type HardpointType } from '../../core/generic/hardpoints';
 import { ModelRenderer } from '../models';
 import { renderers } from './entity';
 

@@ -1,6 +1,6 @@
-import type { ShipJSON } from '~/core/entities/ship';
-import type { GenericShip } from '~/core/generic/ships';
-import { genericShips } from '~/core/generic/ships';
+import type { ShipJSON } from '../../core/entities/ship';
+import type { GenericShip } from '../../core/generic/ships';
+import { genericShips } from '../../core/generic/ships';
 import { ModelRenderer } from '../models';
 import { renderers } from './entity';
 

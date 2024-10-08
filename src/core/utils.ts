@@ -2,7 +2,7 @@ import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Logger } from 'logzen';
 import type { EntityJSON } from './entities/entity';
 
-export const logger = new Logger({ noGlobalConsole: true });
+export const logger = new Logger({ noGlobalConsole: true, hideWarningStack: true });
 
 export function randomInCircle(dis = 1): Vector2 {
 	const angle = Math.random() * Math.PI * 2;

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { Logger } from 'logzen';
 import { isJSON } from 'utilium';
 
-export const logger = new Logger();
+export const logger = new Logger({ hideWarningStack: true });
 
 export function readJSONFile<T extends object = object>(path: string): T | undefined {
 	if (!fs.existsSync(path)) {

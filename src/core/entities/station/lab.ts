@@ -1,6 +1,6 @@
 import { assignWithDefaults, pick } from 'utilium';
-import type { Producer, ProductionInfo } from '~/core/generic/production';
-import { research, type ResearchID } from '~/core/generic/research';
+import type { Producer, ProductionInfo } from '../../generic/production';
+import { research, type ResearchID } from '../../generic/research';
 import type { StationPartJSON } from './part';
 import { StationPart } from './part';
 import { logger } from '../../utils';

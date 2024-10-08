@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import { Matrix, Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Viewport } from '@babylonjs/core/Maths/math.viewport';
-import { type Waypoint } from '~/core/entities/waypoint';
-import { scene } from '~/renderer';
+import { type Waypoint } from '../../core/entities/waypoint';
+import { scene } from '../../renderer';
 import * as settings from '../settings';
 import { player, system } from '../user';
 import { minimize } from '../utils';
