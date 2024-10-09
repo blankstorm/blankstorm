@@ -1,10 +1,10 @@
-import { PointLight } from '@babylonjs/core/Lights/pointLight';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import type { StarJSON } from '../../core/entities/star';
-import { config } from '../../core/metadata';
-import { CelestialBodyRenderer } from './body';
-import { renderers } from './entity';
+import { PointLight } from '@babylonjs/core/Lights/pointLight.js';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import type { StarJSON } from '../../core/entities/star.js';
+import { config } from '../../core/metadata.js';
+import { CelestialBodyRenderer } from './body.js';
+import { renderers } from './entity.js';
 
 export class StarRenderer extends CelestialBodyRenderer {
 	public light: PointLight;

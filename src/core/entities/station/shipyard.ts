@@ -1,11 +1,11 @@
 import { assignWithDefaults, pick } from 'utilium';
-import { Ship } from '../ship';
-import type { Producer, ProductionInfo } from '../../generic/production';
-import type { ShipType } from '../../generic/ships';
-import { genericShips } from '../../generic/ships';
-import type { StationPartJSON } from './part';
-import { StationPart } from './part';
-import { logger } from '../../utils';
+import { Ship } from '../ship.js';
+import type { Producer, ProductionInfo } from '../../generic/production.js';
+import type { ShipType } from '../../generic/ships.js';
+import { genericShips } from '../../generic/ships.js';
+import type { StationPartJSON } from './part.js';
+import { StationPart } from './part.js';
+import { logger } from '../../utils.js';
 
 export interface ShipyardJSON extends StationPartJSON {
 	production: ProductionInfo<ShipType>;

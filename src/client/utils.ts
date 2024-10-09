@@ -2,7 +2,7 @@ import $ from 'jquery';
 import { Logger } from 'logzen';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { PlanetBiome } from '../core/generic/planets';
+import type { PlanetBiome } from '../core/generic/planets.js';
 
 export function upload(type: string, multiple = false): Promise<File> {
 	return new Promise<File>((resolve, reject) => {

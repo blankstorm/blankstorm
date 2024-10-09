@@ -1,11 +1,11 @@
 import { getAccount } from '@blankstorm/api';
-import type { Command, CommandExecutionContext } from '../core/commands';
-import { commands as _commands, execCommandString as _execCommandString } from '../core/commands';
-import { Client } from './clients';
-import * as server from './server';
-import { blacklist } from './config';
-import { getClientByName } from './clients';
-import { logger } from './utils';
+import type { Command, CommandExecutionContext } from '../core/commands.js';
+import { commands as _commands, execCommandString as _execCommandString } from '../core/commands.js';
+import { Client } from './clients.js';
+import * as server from './server.js';
+import { blacklist } from './config.js';
+import { getClientByName } from './clients.js';
+import { logger } from './utils.js';
 
 export interface ServerCommandExecutionContext extends CommandExecutionContext {
 	executor: Client;

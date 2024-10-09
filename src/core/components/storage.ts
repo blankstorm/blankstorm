@@ -1,8 +1,8 @@
 import { pick, map } from 'utilium';
-import type { Entity } from '../entities/entity';
-import type { ItemContainer, ItemID, PartialItemContainer } from '../generic/items';
-import { items } from '../generic/items';
-import { register, type Component } from './component';
+import type { Entity } from '../entities/entity.js';
+import type { ItemContainer, ItemID, PartialItemContainer } from '../generic/items.js';
+import { items } from '../generic/items.js';
+import { register, type Component } from './component.js';
 
 /**
  * Generic class for something that stores items

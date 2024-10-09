@@ -1,10 +1,10 @@
-import type { CelestialBody } from '../entities/body';
-import { Entity, type EntityJSON } from '../entities/entity';
-import type { Player } from '../entities/player';
-import { Ship } from '../entities/ship';
-import type { ShipType } from '../generic/ships';
-import { register } from './component';
-import { EntityStorageManager } from './storage';
+import type { CelestialBody } from '../entities/body.js';
+import { Entity, type EntityJSON } from '../entities/entity.js';
+import type { Player } from '../entities/player.js';
+import { Ship } from '../entities/ship.js';
+import type { ShipType } from '../generic/ships.js';
+import { register } from './component.js';
+import { EntityStorageManager } from './storage.js';
 
 export interface FleetJSON extends EntityJSON {
 	ships: string[];

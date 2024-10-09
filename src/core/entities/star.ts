@@ -1,6 +1,6 @@
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import type { CelestialBodyJSON } from './body';
-import { CelestialBody } from './body';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import type { CelestialBodyJSON } from './body.js';
+import { CelestialBody } from './body.js';
 
 export interface StarJSON extends CelestialBodyJSON {
 	color: number[];

@@ -1,11 +1,11 @@
 import type { Socket } from 'socket.io';
-import { execCommandString } from '../core/commands';
-import type { PlayerJSON } from '../core/entities/player';
-import { Player } from '../core/entities/player';
-import type { System } from '../core/system';
-import { blacklist } from './config';
-import { io } from './transport';
-import { logger } from './utils';
+import { execCommandString } from '../core/commands.js';
+import type { PlayerJSON } from '../core/entities/player.js';
+import { Player } from '../core/entities/player.js';
+import type { System } from '../core/system.js';
+import { blacklist } from './config.js';
+import { io } from './transport.js';
+import { logger } from './utils.js';
 
 export class Client extends Player {
 	lastMessager?: Client;

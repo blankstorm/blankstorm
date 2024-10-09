@@ -1,7 +1,7 @@
 import $ from 'jquery';
-import { getCamera } from '../renderer';
-import * as settings from './settings';
-import { logger } from './utils';
+import { getCamera } from '../renderer/index.js';
+import * as settings from './settings.js';
+import { logger } from './utils.js';
 
 /**
  * How many previous chat messages to cache

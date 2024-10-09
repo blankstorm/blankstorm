@@ -1,14 +1,14 @@
-import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Scene } from '@babylonjs/core/scene';
+import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import type { Scene } from '@babylonjs/core/scene.js';
 import { assignWithDefaults, pick, randomHex } from 'utilium';
-import type { PlanetData } from '../../core/entities/planet';
-import type { PlanetBiome } from '../../core/generic/planets';
-import { logger } from '../logger';
+import type { PlanetData } from '../../core/entities/planet.js';
+import type { PlanetBiome } from '../../core/generic/planets.js';
+import { logger } from '../logger.js';
 import * as planetShader from '../shaders/planet.glslx';
-import { CelestialBodyRenderer } from './body';
-import { renderers } from './entity';
+import { CelestialBodyRenderer } from './body.js';
+import { renderers } from './entity.js';
 
 export interface PlanetMaterialOptions {
 	colors: Color3[];

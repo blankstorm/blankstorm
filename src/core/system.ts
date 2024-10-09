@@ -1,21 +1,21 @@
-import type { IVector2Like } from '@babylonjs/core/Maths/math.like';
-import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { Vector2 } from '@babylonjs/core/Maths/math.vector';
+import type { IVector2Like } from '@babylonjs/core/Maths/math.like.js';
+import type { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Vector2 } from '@babylonjs/core/Maths/math.vector.js';
 import EventEmitter from 'eventemitter3';
 import { getRandomIntWithRecursiveProbability, greekLetterNames, pick, randomBoolean, randomFloat, randomHex, randomInt, range } from 'utilium';
-import { filterEntities, type Entity } from './entities/entity';
-import { Planet } from './entities/planet';
-import { generateFleetFromPower } from './entities/ship';
-import { Star } from './entities/star';
-import type { Shipyard } from './entities/station/shipyard';
-import type { Item } from './generic/items';
-import { planetBiomes } from './generic/planets';
-import type { Research } from './generic/research';
-import type { GenericShip } from './generic/ships';
-import type { SystemGenerationOptions } from './generic/system';
-import type { Level } from './level';
-import { config } from './metadata';
-import { logger, randomInCircle, randomInSphere } from './utils';
+import { filterEntities, type Entity } from './entities/entity.js';
+import { Planet } from './entities/planet.js';
+import { generateFleetFromPower } from './entities/ship.js';
+import { Star } from './entities/star.js';
+import type { Shipyard } from './entities/station/shipyard.js';
+import type { Item } from './generic/items.js';
+import { planetBiomes } from './generic/planets.js';
+import type { Research } from './generic/research.js';
+import type { GenericShip } from './generic/ships.js';
+import type { SystemGenerationOptions } from './generic/system.js';
+import type { Level } from './level.js';
+import { config } from './metadata.js';
+import { logger, randomInCircle, randomInSphere } from './utils.js';
 
 export type SystemConnectionJSON = string | [number, number];
 

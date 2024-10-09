@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import { isJSON } from 'utilium';
-import { path } from './config';
-import { logger } from './utils';
+import { path } from './config.js';
+import { logger } from './utils.js';
 
 interface ModData {
 	id: string;

@@ -1,7 +1,7 @@
 /* eslint-env node */
 import { contextBridge, ipcRenderer } from 'electron';
 import type { IOMessage } from 'logzen';
-import type { ClientInit } from './client';
+import type { ClientInit } from './client.js';
 
 const app = {
 	require,

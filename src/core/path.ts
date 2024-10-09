@@ -1,8 +1,8 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { System } from './system';
-import type { CelestialBody } from './entities/body';
-import type { Entity } from './entities/entity';
-import { logger } from './utils';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import type { System } from './system.js';
+import type { CelestialBody } from './entities/body.js';
+import type { Entity } from './entities/entity.js';
+import { logger } from './utils.js';
 
 function radius(entity: Entity) {
 	return 1.3 * (entity.isType<CelestialBody>('CelestialBody') ? entity.radius : 10);

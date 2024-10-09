@@ -1,11 +1,11 @@
-import type { Material } from '@babylonjs/core/Materials/material';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-import type { ProjectileJSON, ProjectileType } from '../../core/entities/projectile';
-import { ModelRenderer } from '../models';
-import type { CelestialBodyRenderer } from './body';
-import { renderers } from './entity';
-import type { HardpointRenderer } from './hardpoint';
-import type { PlayerRenderer } from './player';
+import type { Material } from '@babylonjs/core/Materials/material.js';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh.js';
+import type { ProjectileJSON, ProjectileType } from '../../core/entities/projectile.js';
+import { ModelRenderer } from '../models.js';
+import type { CelestialBodyRenderer } from './body.js';
+import { renderers } from './entity.js';
+import type { HardpointRenderer } from './hardpoint.js';
+import type { PlayerRenderer } from './player.js';
 
 export interface ProjectileMaterial {
 	applies_to: ProjectileType[];

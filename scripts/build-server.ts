@@ -5,7 +5,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { dirname, extname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { inject } from 'postject';
-import { defines, version } from './build-common';
+import { defines, version } from './build-common.js';
 
 const { values: _values } = parseArgs({
 	options: {

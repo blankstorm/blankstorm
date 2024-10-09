@@ -3,11 +3,11 @@ import * as fs from 'node:fs';
 import { isJSON } from 'utilium';
 import type { JSONObject } from 'utilium/fs.js';
 import { JSONFileMap } from 'utilium/fs.js';
-import { config } from '../core';
-import { path } from './config';
-import { logger } from './utils';
+import { config } from '../core/index.js';
+import { path } from './config.js';
+import { logger } from './utils.js';
 import { EventEmitter } from 'eventemitter3';
-import { instaniateTemplate } from './ui/utils';
+import { instaniateTemplate } from './ui/utils.js';
 
 export const settingTypes = ['boolean', 'string', 'number', 'color', 'select', 'keybind'] as const;
 

@@ -1,18 +1,18 @@
 import $ from 'jquery';
 import { toDegrees } from 'utilium';
-import type { Entity } from '../../core/entities/entity';
-import type { Planet } from '../../core/entities/planet';
-import type { Ship } from '../../core/entities/ship';
-import type { Star } from '../../core/entities/star';
-import type { Waypoint } from '../../core/entities/waypoint';
-import { config } from '../../core/metadata';
-import { System } from '../../core/system';
-import * as settings from '../settings';
-import { switchTo } from './utils';
-import { account, system } from '../user';
-import { $svg, biomeColor } from '../utils';
-import { Vector2 } from '@babylonjs/core/Maths/math.vector';
-import { level } from '../level';
+import type { Entity } from '../../core/entities/entity.js';
+import type { Planet } from '../../core/entities/planet.js';
+import type { Ship } from '../../core/entities/ship.js';
+import type { Star } from '../../core/entities/star.js';
+import type { Waypoint } from '../../core/entities/waypoint.js';
+import { config } from '../../core/metadata.js';
+import { System } from '../../core/system.js';
+import * as settings from '../settings.js';
+import { switchTo } from './utils.js';
+import { account, system } from '../user.js';
+import { $svg, biomeColor } from '../utils.js';
+import { Vector2 } from '@babylonjs/core/Maths/math.vector.js';
+import { level } from '../level.js';
 
 export type MapMode = 'in-system' | 'inter-system';
 

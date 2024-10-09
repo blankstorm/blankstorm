@@ -1,6 +1,6 @@
 import { assignWithDefaults, pick } from 'utilium';
-import type { EntityJSON } from './entity';
-import { Entity } from './entity';
+import type { EntityJSON } from './entity.js';
+import { Entity } from './entity.js';
 
 export interface WaypointJSON extends EntityJSON {
 	color: string;

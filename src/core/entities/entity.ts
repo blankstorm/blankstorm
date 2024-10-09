@@ -1,14 +1,14 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import EventEmitter from 'eventemitter3';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { EventEmitter } from 'eventemitter3';
 import { assignWithDefaults, pick, randomHex, resolveConstructors, type Tuple } from 'utilium';
-import { register, type Component } from '../components/component';
-import type { ItemStorage } from '../components/storage';
-import type { ItemContainer } from '../generic/items';
-import type { Level } from '../level';
-import { findPath } from '../path';
-import type { System } from '../system';
-import type { CelestialBody } from './body';
-import type { Player } from './player';
+import { register, type Component } from '../components/component.js';
+import type { ItemStorage } from '../components/storage.js';
+import type { ItemContainer } from '../generic/items.js';
+import type { Level } from '../level.js';
+import { findPath } from '../path.js';
+import type { System } from '../system.js';
+import type { CelestialBody } from './body.js';
+import type { Player } from './player.js';
 
 export const tickInfo = {
 	updates: 0,

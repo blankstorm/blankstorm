@@ -7,7 +7,7 @@ import path, { relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import $package from '../package.json' assert { type: 'json' };
-import { defines, deleteOutput, renameOutput, version } from './build-common';
+import { defines, deleteOutput, renameOutput, version } from './build-common.js';
 const root = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 
 const displayVersion = version.display.replaceAll(' ', '-').toLowerCase();
@@ -16,7 +16,7 @@ const { values: _values } = parseArgs({
 	options: {
 		verbose: { type: 'boolean', short: 'v', default: false },
 		watch: { type: 'boolean', short: 'w', default: false },
-		output: { type: 'string', short: 'o', default: 'build/client' },
+		output: { type: 'string', short: 'o', default: 'build' },
 		'no-app': { type: 'boolean', default: false },
 		mode: { type: 'string', short: 'm', default: 'dev' },
 		keep: { type: 'boolean', short: 'k', default: false },
@@ -33,6 +33,9 @@ function fromPath(sourcePath: string): string[] {
 	}
 	const files: string[] = [];
 	for (const file of fs.readdirSync(sourcePath)) {
+		if (file.includes('.glslx') || file == 'assets') {
+			continue;
+		}
 		const fpath = path.join(sourcePath, file);
 		if (fs.statSync(fpath).isDirectory()) {
 			files.push(...fromPath(fpath));
@@ -160,10 +163,11 @@ async function onBuildEnd() {
 }
 
 const esbuildConfig = {
-	entryPoints: ['index.ts', 'index.html', 'styles'].flatMap(p => fromPath(path.join(input, p))),
+	//entryPoints: ['index.ts', 'index.html', 'styles'].flatMap(p => fromPath(path.join(input, p))),
+	entryPoints: fromPath('src').flat(),
 	assetNames: '[dir]/[name]',
 	outdir: options.output,
-	bundle: true,
+	//bundle: true,
 	keepNames: true,
 	sourcemap: true,
 	format: 'esm',
@@ -241,6 +245,7 @@ if (options.watch) {
 	await esbuild.build(esbuildConfig);
 	await esbuild.build(esbuildAppConfig);
 }
+
 if (fs.statSync(symlinkPath).isDirectory()) {
 	fs.rmSync(symlinkPath, { recursive: true, force: true });
 } else {

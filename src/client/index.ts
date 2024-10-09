@@ -1,9 +1,9 @@
 import $ from 'jquery';
 import { LogLevel } from 'logzen';
-import { logger as coreLogger } from '../core';
-import * as client from './client';
-import { alert, confirm } from './ui/dialog';
-import { logger } from './utils';
+import { logger as coreLogger } from '../core/index.js';
+import * as client from './client.js';
+import { alert, confirm } from './ui/dialog.js';
+import { logger } from './utils.js';
 
 addEventListener('error', async ({ error }: { error: Error }) => {
 	$app.log({
@@ -17,7 +17,7 @@ addEventListener('error', async ({ error }: { error: Error }) => {
 		(options.debug ? ' Press cancel to continue in an unstable state.\nDoing so could lead to data loss, please take caution.' : '');
 
 	try {
-		const { text } = await import('./locales');
+		const { text } = await import('./locales.js');
 
 		notice = '\n\n\n' + text('uncaught_error') + (options.debug ? ' ' + text('uncaught_error_debug') : '');
 	} catch (_) {}
@@ -45,15 +45,15 @@ if (options.debug) {
 	logger.info('Debug mode enabled');
 	Object.assign(globalThis, {
 		client,
-		core: await import('../core'),
-		renderer: await import('../renderer'),
-		ui: await import('./ui'),
-		user: await import('./user'),
-		locales: await import('./locales'),
-		settings: await import('./settings'),
-		utils: await import('./utils'),
-		saves: await import('./saves'),
-		servers: await import('./servers'),
+		core: await import('../core/index.js'),
+		renderer: await import('../renderer/index.js'),
+		ui: await import('./ui.js'),
+		user: await import('./user.js'),
+		locales: await import('./locales.js'),
+		settings: await import('./settings.js'),
+		utils: await import('./utils.js'),
+		saves: await import('./saves.js'),
+		servers: await import('./servers.js'),
 		$,
 	});
 }

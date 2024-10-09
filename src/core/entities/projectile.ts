@@ -1,10 +1,10 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { xpToLevel } from '../utils';
-import type { CelestialBody } from './body';
-import { Entity, type EntityJSON } from './entity';
-import type { Hardpoint } from './hardpoint';
-import type { Player } from './player';
-import type { Ship } from './ship';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { xpToLevel } from '../utils.js';
+import type { CelestialBody } from './body.js';
+import { Entity, type EntityJSON } from './entity.js';
+import type { Hardpoint } from './hardpoint.js';
+import type { Player } from './player.js';
+import type { Ship } from './ship.js';
 
 export type ProjectileType = 'laser';
 

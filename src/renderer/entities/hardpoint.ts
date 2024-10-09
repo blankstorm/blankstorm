@@ -1,7 +1,7 @@
-import type { HardpointJSON } from '../../core/entities/hardpoint';
-import { genericHardpoints, type GenericHardpoint, type HardpointType } from '../../core/generic/hardpoints';
-import { ModelRenderer } from '../models';
-import { renderers } from './entity';
+import type { HardpointJSON } from '../../core/entities/hardpoint.js';
+import { genericHardpoints, type GenericHardpoint, type HardpointType } from '../../core/generic/hardpoints.js';
+import { ModelRenderer } from '../models.js';
+import { renderers } from './entity.js';
 
 export class HardpointRenderer extends ModelRenderer<HardpointJSON> {
 	public declare modelID: HardpointType;

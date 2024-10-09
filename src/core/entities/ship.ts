@@ -1,15 +1,15 @@
-import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { assignWithDefaults, pick, randomInt, type WithRequired } from 'utilium';
-import { Container } from '../components/storage';
-import { genericHardpoints } from '../generic/hardpoints';
-import type { GenericShip, ShipType } from '../generic/ships';
-import { genericShips } from '../generic/ships';
-import type { System } from '../system';
-import { randomInSphere } from '../utils';
-import type { EntityJSON } from './entity';
-import { Entity } from './entity';
-import type { HardpointJSON } from './hardpoint';
-import { Hardpoint } from './hardpoint';
+import { Container } from '../components/storage.js';
+import { genericHardpoints } from '../generic/hardpoints.js';
+import type { GenericShip, ShipType } from '../generic/ships.js';
+import { genericShips } from '../generic/ships.js';
+import type { System } from '../system.js';
+import { randomInSphere } from '../utils.js';
+import type { EntityJSON } from './entity.js';
+import { Entity } from './entity.js';
+import type { HardpointJSON } from './hardpoint.js';
+import { Hardpoint } from './hardpoint.js';
 
 export interface ShipJSON extends WithRequired<EntityJSON, 'storage'> {
 	type: ShipType;

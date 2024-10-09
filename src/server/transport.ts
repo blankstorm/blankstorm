@@ -2,10 +2,10 @@ import type { Server as HTTPServer } from 'node:http';
 import { createServer } from 'node:http';
 import type { ListenOptions } from 'node:net';
 import { Server as SocketIOServer } from 'socket.io';
-import type { VersionID } from '../core/metadata';
-import { currentVersion } from '../core/metadata';
-import { config } from './config';
-import { logger } from './utils';
+import type { VersionID } from '../core/metadata.js';
+import { currentVersion } from '../core/metadata.js';
+import { config } from './config.js';
+import { logger } from './utils.js';
 
 export interface PingInfo {
 	current_clients: number;

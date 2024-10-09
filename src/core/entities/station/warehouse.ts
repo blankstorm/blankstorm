@@ -1,6 +1,6 @@
-import { Container } from '../../components/storage';
-import type { StationPartJSON } from './part';
-import { StationPart } from './part';
+import { Container } from '../../components/storage.js';
+import type { StationPartJSON } from './part.js';
+import { StationPart } from './part.js';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface WarehouseJSON extends StationPartJSON {}

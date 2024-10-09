@@ -1,20 +1,20 @@
-import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import $ from 'jquery';
 import * as fs from 'node:fs';
 import { isJSON } from 'utilium';
 import { FolderMap } from 'utilium/fs.js';
-import { Player } from '../core/entities/player';
-import type { LevelJSON } from '../core/level';
-import { Level } from '../core/level';
-import { config, displayVersion } from '../core/metadata';
-import { randomInSphere } from '../core/utils';
-import { path } from './config';
-import { level, load } from './level';
-import * as locales from './locales';
-import { alert, confirm } from './ui/dialog';
-import { instaniateTemplate } from './ui/utils';
-import { account } from './user';
-import { download, logger } from './utils';
+import { Player } from '../core/entities/player.js';
+import type { LevelJSON } from '../core/level.js';
+import { Level } from '../core/level.js';
+import { config, displayVersion } from '../core/metadata.js';
+import { randomInSphere } from '../core/utils.js';
+import { path } from './config.js';
+import { level, load } from './level.js';
+import * as locales from './locales.js';
+import { alert, confirm } from './ui/dialog.js';
+import { instaniateTemplate } from './ui/utils.js';
+import { account } from './user.js';
+import { download, logger } from './utils.js';
 
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();

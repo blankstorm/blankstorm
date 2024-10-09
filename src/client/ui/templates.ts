@@ -1,13 +1,13 @@
 import $ from 'jquery';
-import type { Shipyard } from '../../core/entities/station/shipyard';
-import type { Item } from '../../core/generic/items';
-import type { Research } from '../../core/generic/research';
-import type { GenericShip, ShipType } from '../../core/generic/ships';
-import { genericShips } from '../../core/generic/ships';
-import * as locales from '../locales';
-import { action } from '../user';
-import { alert } from './dialog';
-import { instaniateTemplate } from './utils';
+import type { Shipyard } from '../../core/entities/station/shipyard.js';
+import type { Item } from '../../core/generic/items.js';
+import type { Research } from '../../core/generic/research.js';
+import type { GenericShip, ShipType } from '../../core/generic/ships.js';
+import { genericShips } from '../../core/generic/ships.js';
+import * as locales from '../locales.js';
+import { action } from '../user.js';
+import { alert } from './dialog.js';
+import { instaniateTemplate } from './utils.js';
 
 export function createItemUI(item: Item): JQuery<DocumentFragment> {
 	const instance = instaniateTemplate('#item');

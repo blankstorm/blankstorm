@@ -2,13 +2,13 @@ import { getAccount } from '@blankstorm/api';
 import { spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import type { Socket } from 'socket.io';
-import { Level, levelEventNames, type LevelJSON } from '../core/level';
-import type { VersionID } from '../core/metadata';
-import { config as coreConfig } from '../core/metadata';
-import { Client, addClient, clients, getClientByID } from './clients';
-import { blacklist, config, ops, whitelist } from './config';
-import { http, io } from './transport';
-import { logger } from './utils';
+import { Level, levelEventNames, type LevelJSON } from '../core/level.js';
+import type { VersionID } from '../core/metadata.js';
+import { config as coreConfig } from '../core/metadata.js';
+import { Client, addClient, clients, getClientByID } from './clients.js';
+import { blacklist, config, ops, whitelist } from './config.js';
+import { http, io } from './transport.js';
+import { logger } from './utils.js';
 
 export interface PingInfo {
 	current_clients: number;

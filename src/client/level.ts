@@ -1,15 +1,15 @@
 import $ from 'jquery';
-import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
-import type { Level } from '../core/level';
-import type { EntityJSON } from '../core/entities/entity';
-import { currentVersion } from '../core/metadata';
-import { logger } from '../core/utils';
-import * as renderer from '../renderer';
-import { playsound } from './audio';
-import * as settings from './settings';
-import { isServer, pause, unpause } from './config';
-import { text } from './locales';
-import { alert } from './ui/dialog';
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like.js';
+import type { Level } from '../core/level.js';
+import type { EntityJSON } from '../core/entities/entity.js';
+import { currentVersion } from '../core/metadata.js';
+import { logger } from '../core/utils.js';
+import * as renderer from '../renderer/index.js';
+import { playsound } from './audio.js';
+import * as settings from './settings.js';
+import { isServer, pause, unpause } from './config.js';
+import { text } from './locales.js';
+import { alert } from './ui/dialog.js';
 
 export let level: Level | undefined;
 

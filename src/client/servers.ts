@@ -1,20 +1,20 @@
-import type EventEmitter from 'eventemitter3';
+import type { EventEmitter } from 'eventemitter3';
 import $ from 'jquery';
 import * as fs from 'node:fs';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { isJSON, pick } from 'utilium';
 import { JSONFileMap } from 'utilium/fs.js';
-import { Level, type LevelEvents, type LevelJSON } from '../core/level';
-import { config, displayVersion } from '../core/metadata';
-import type { PingInfo } from '../server/server';
-import { sendMessage } from './chat';
-import { path } from './config';
-import { level, load, unload } from './level';
-import { hasText, text } from './locales';
-import { alert, confirm } from './ui/dialog';
-import { instaniateTemplate } from './ui/utils';
-import { logger } from './utils';
+import { Level, type LevelEvents, type LevelJSON } from '../core/level.js';
+import { config, displayVersion } from '../core/metadata.js';
+import type { PingInfo } from '../server/server.js';
+import { sendMessage } from './chat.js';
+import { path } from './config.js';
+import { level, load, unload } from './level.js';
+import { hasText, text } from './locales.js';
+import { alert, confirm } from './ui/dialog.js';
+import { instaniateTemplate } from './ui/utils.js';
+import { logger } from './utils.js';
 
 export type ServerData = {
 	id: string;

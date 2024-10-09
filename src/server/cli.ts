@@ -1,11 +1,11 @@
 import * as path from 'node:path';
 import { List } from 'utilium';
-import type { LevelJSON } from '../core/level';
-import { config as coreConfig } from '../core/metadata';
-import { blacklist, config, ops, whitelist, type OpsEntry, type ServerConfig } from './config';
-import { stop } from './server';
-import { listen } from './transport';
-import { logger, readJSONFile } from './utils';
+import type { LevelJSON } from '../core/level.js';
+import { config as coreConfig } from '../core/metadata.js';
+import { blacklist, config, ops, whitelist, type OpsEntry, type ServerConfig } from './config.js';
+import { stop } from './server.js';
+import { listen } from './transport.js';
+import { logger, readJSONFile } from './utils.js';
 
 const levelData: LevelJSON | Record<string, never> = {};
 

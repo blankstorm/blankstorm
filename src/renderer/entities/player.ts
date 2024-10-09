@@ -1,7 +1,7 @@
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { EntityRenderer, renderers } from './entity';
-import type { ProjectileMaterial } from './projectile';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { EntityRenderer, renderers } from './entity.js';
+import type { ProjectileMaterial } from './projectile.js';
 
 export class PlayerRenderer extends EntityRenderer {
 	public readonly projectileMaterials: ProjectileMaterial[] = [

@@ -1,9 +1,9 @@
 import { pick } from 'utilium';
-import type { System } from '../system';
-import type { CelestialBodyJSON } from './body';
-import { CelestialBody } from './body';
-import type { StationPartJSON } from './station/part';
-import { StationPart } from './station/part';
+import type { System } from '../system.js';
+import type { CelestialBodyJSON } from './body.js';
+import { CelestialBody } from './body.js';
+import type { StationPartJSON } from './station/part.js';
+import { StationPart } from './station/part.js';
 
 export interface StationJSON extends CelestialBodyJSON {
 	parts: StationPartJSON[];

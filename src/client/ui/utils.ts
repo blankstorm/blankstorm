@@ -1,4 +1,4 @@
-import { getCamera } from '../../renderer';
+import { getCamera } from '../../renderer/index.js';
 import $ from 'jquery';
 
 export function instaniateTemplate(selector: string): JQuery<DocumentFragment> {

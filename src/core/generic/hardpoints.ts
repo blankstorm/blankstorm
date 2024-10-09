@@ -1,4 +1,4 @@
-import type { ProjectileType } from '../entities/projectile';
+import type { ProjectileType } from '../entities/projectile.js';
 
 export interface GenericHardpoint {
 	damage: number;

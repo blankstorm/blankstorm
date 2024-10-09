@@ -1,8 +1,8 @@
 import type { Entries } from 'utilium';
-import { config } from '../metadata';
-import { type HardpointType, genericHardpoints } from './hardpoints';
-import type { Product } from './production';
-import { computeProductionDifficulty } from './production';
+import { config } from '../metadata.js';
+import { type HardpointType, genericHardpoints } from './hardpoints.js';
+import type { Product } from './production.js';
+import { computeProductionDifficulty } from './production.js';
 
 export interface HardpointInfo {
 	type: HardpointType;

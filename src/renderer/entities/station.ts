@@ -1,6 +1,6 @@
-import type { StationJSON } from '../../core/entities/station';
-import type { ModelRenderer } from '../models';
-import { EntityRenderer, renderers } from './entity';
+import type { StationJSON } from '../../core/entities/station.js';
+import type { ModelRenderer } from '../models.js';
+import { EntityRenderer, renderers } from './entity.js';
 
 export class StationRenderer extends EntityRenderer<StationJSON> {
 	public components: ModelRenderer[] = [];

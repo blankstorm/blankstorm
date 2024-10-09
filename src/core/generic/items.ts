@@ -1,6 +1,6 @@
 import type { Entries } from 'utilium';
-import { config } from '../metadata';
-import type { Product } from './production';
+import { config } from '../metadata.js';
+import type { Product } from './production.js';
 
 export interface Item extends Product {
 	rare: boolean;

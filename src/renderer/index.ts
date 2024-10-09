@@ -2,27 +2,27 @@ import type { ArcRotateCameraPointersInput } from '@babylonjs/core';
 import { ArcRotateCamera } from '@babylonjs/core';
 import '@babylonjs/core/Animations/animatable';
 import '@babylonjs/core/Culling'; // For Ray side effects
-import { Engine } from '@babylonjs/core/Engines/engine';
-import { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
-import { HighlightLayer } from '@babylonjs/core/Layers/highlightLayer';
-import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
-import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
-import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
+import { Engine } from '@babylonjs/core/Engines/engine.js';
+import { GlowLayer } from '@babylonjs/core/Layers/glowLayer.js';
+import { HighlightLayer } from '@babylonjs/core/Layers/highlightLayer.js';
+import { CubeTexture } from '@babylonjs/core/Materials/Textures/cubeTexture.js';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import type { IVector3Like } from '@babylonjs/core/Maths/math.like.js';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh.js';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
+import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe.js';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
-import { Scene } from '@babylonjs/core/scene';
-import type { EntityJSON } from '../core/entities/entity';
-import type { LevelJSON } from '../core/level';
-import { config, currentVersion } from '../core/metadata';
-import type { MoveInfo } from '../core/system';
-import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, renderers } from './entities';
-import { logger } from './logger';
-import { ModelRenderer, initModel, type ModelEntityJSON } from './models';
+import { Scene } from '@babylonjs/core/scene.js';
+import type { EntityJSON } from '../core/entities/entity.js';
+import type { LevelJSON } from '../core/level.js';
+import { config, currentVersion } from '../core/metadata.js';
+import type { MoveInfo } from '../core/system.js';
+import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, renderers } from './entities/index.js';
+import { logger } from './logger.js';
+import { ModelRenderer, initModel, type ModelEntityJSON } from './models.js';
 export { logger };
 
 function createEmptyCache(): LevelJSON {

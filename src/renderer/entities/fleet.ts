@@ -1,5 +1,5 @@
-import type { FleetJSON } from '../../core/components/fleet';
-import { EntityRenderer, renderers } from './entity';
+import type { FleetJSON } from '../../core/components/fleet.js';
+import { EntityRenderer, renderers } from './entity.js';
 
 export class FleetRenderer extends EntityRenderer {
 	public update(data: FleetJSON): void {

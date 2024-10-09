@@ -1,26 +1,26 @@
 //core info and setup
-export * from './generic/hardpoints';
-export * from './generic/items';
-export * from './generic/research';
-export * from './generic/ships';
-export * from './generic/station';
-export * from './path';
-export * from './components/storage';
+export * from './generic/hardpoints.js';
+export * from './generic/items.js';
+export * from './generic/research.js';
+export * from './generic/ships.js';
+export * from './generic/station.js';
+export * from './path.js';
+export * from './components/storage.js';
 
-export * from './entities/body';
-export * from './entities/entity';
-export * from './entities/hardpoint';
-export * from './entities/planet';
-export * from './entities/player';
-export * from './entities/ship';
-export * from './entities/star';
+export * from './entities/body.js';
+export * from './entities/entity.js';
+export * from './entities/hardpoint.js';
+export * from './entities/planet.js';
+export * from './entities/player.js';
+export * from './entities/ship.js';
+export * from './entities/star.js';
 
-export * from './entities/station/part';
-export * from './entities/station';
+export * from './entities/station/part.js';
+export * from './entities/station.js';
 
-export * from './components/component';
-export * from './level';
+export * from './components/component.js';
+export * from './level.js';
 
-export * from './commands';
-export * from './metadata';
-export * from './utils';
+export * from './commands.js';
+export * from './metadata.js';
+export * from './utils.js';

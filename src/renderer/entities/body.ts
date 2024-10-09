@@ -1,10 +1,10 @@
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
-import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import type { CelestialBodyJSON } from '../../core/entities/body';
-import { EntityRenderer, renderers } from './entity';
-import type { ProjectileMaterial } from './projectile';
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { CreateSphereVertexData } from '@babylonjs/core/Meshes/Builders/sphereBuilder.js';
+import { Mesh } from '@babylonjs/core/Meshes/mesh.js';
+import type { CelestialBodyJSON } from '../../core/entities/body.js';
+import { EntityRenderer, renderers } from './entity.js';
+import type { ProjectileMaterial } from './projectile.js';
 
 export class CelestialBodyRenderer extends EntityRenderer<CelestialBodyJSON> {
 	public radius = 0;

@@ -1,7 +1,7 @@
-import type { Player } from '../entities/player';
-import { config } from '../metadata';
-import type { Product } from './production';
-import type { ItemID } from './items';
+import type { Player } from '../entities/player.js';
+import { config } from '../metadata.js';
+import type { Product } from './production.js';
+import type { ItemID } from './items.js';
 import type { Entries } from 'utilium';
 
 export interface Research extends Product {

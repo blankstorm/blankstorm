@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import { isJSON } from 'utilium';
-import { currentVersion } from '../core/metadata';
-import * as settings from './settings';
-import { logger } from './utils';
+import { currentVersion } from '../core/metadata.js';
+import * as settings from './settings.js';
+import { logger } from './utils.js';
 
 export interface Locale {
 	language: string;

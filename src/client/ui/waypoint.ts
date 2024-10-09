@@ -1,13 +1,13 @@
 import $ from 'jquery';
-import { Matrix, Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { Viewport } from '@babylonjs/core/Maths/math.viewport';
-import { type Waypoint } from '../../core/entities/waypoint';
-import { scene } from '../../renderer';
-import * as settings from '../settings';
-import { player, system } from '../user';
-import { minimize } from '../utils';
-import { confirm } from './dialog';
-import { instaniateTemplate } from './utils';
+import { Matrix, Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import { Viewport } from '@babylonjs/core/Maths/math.viewport.js';
+import { type Waypoint } from '../../core/entities/waypoint.js';
+import { scene } from '../../renderer/index.js';
+import * as settings from '../settings.js';
+import { player, system } from '../user.js';
+import { minimize } from '../utils.js';
+import { confirm } from './dialog.js';
+import { instaniateTemplate } from './utils.js';
 
 export function createWaypointListItem(waypoint: Waypoint): JQuery<HTMLDivElement> {
 	const instance = instaniateTemplate('#waypoint-li').find('div');

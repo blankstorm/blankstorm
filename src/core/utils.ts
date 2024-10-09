@@ -1,6 +1,6 @@
-import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { Logger } from 'logzen';
-import type { EntityJSON } from './entities/entity';
+import type { EntityJSON } from './entities/entity.js';
 
 export const logger = new Logger({ noGlobalConsole: true, hideWarningStack: true });
 

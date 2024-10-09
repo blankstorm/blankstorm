@@ -1,16 +1,16 @@
 import { assignWithDefaults, pick, randomFloat } from 'utilium';
-import type { GenericHardpoint, HardpointType } from '../generic/hardpoints';
-import { genericHardpoints } from '../generic/hardpoints';
-import type { HardpointInfo } from '../generic/ships';
-import type { Level } from '../level';
-import { randomInSphere } from '../utils';
-import type { CelestialBody } from './body';
-import type { EntityJSON } from './entity';
-import { Entity } from './entity';
-import type { Player } from './player';
-import { Projectile } from './projectile';
-import type { Ship } from './ship';
-import type { System } from '../system';
+import type { GenericHardpoint, HardpointType } from '../generic/hardpoints.js';
+import { genericHardpoints } from '../generic/hardpoints.js';
+import type { HardpointInfo } from '../generic/ships.js';
+import type { Level } from '../level.js';
+import { randomInSphere } from '../utils.js';
+import type { CelestialBody } from './body.js';
+import type { EntityJSON } from './entity.js';
+import { Entity } from './entity.js';
+import type { Player } from './player.js';
+import { Projectile } from './projectile.js';
+import type { Ship } from './ship.js';
+import type { System } from '../system.js';
 
 export interface HardpointJSON extends EntityJSON {
 	type: HardpointType;

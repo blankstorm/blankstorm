@@ -1,12 +1,12 @@
 import type { WithRequired } from 'utilium';
 import { assignWithDefaults, pick } from 'utilium';
-import { Fleet } from '../components/fleet';
-import { Container } from '../components/storage';
-import type { System } from '../system';
-import { getEntityIcon } from '../utils';
-import type { EntityJSON } from './entity';
-import { Entity } from './entity';
-import { Waypoint } from './waypoint';
+import { Fleet } from '../components/fleet.js';
+import { Container } from '../components/storage.js';
+import type { System } from '../system.js';
+import { getEntityIcon } from '../utils.js';
+import type { EntityJSON } from './entity.js';
+import { Entity } from './entity.js';
+import { Waypoint } from './waypoint.js';
 
 export interface CelestialBodyJSON extends WithRequired<EntityJSON, 'storage'> {
 	fleet: string;

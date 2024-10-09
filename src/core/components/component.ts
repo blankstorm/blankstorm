@@ -1,5 +1,5 @@
-import type { System } from '../system';
-import { logger } from '../utils';
+import type { System } from '../system.js';
+import { logger } from '../utils.js';
 
 export interface Component<TJSON = unknown> {
 	//readonly component: string;

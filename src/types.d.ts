@@ -1,4 +1,4 @@
-import type { $app } from './client/preload';
+import type { $app } from './client/preload.js';
 
 declare global {
 	const $debug: boolean;

@@ -1,17 +1,17 @@
-import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader';
-import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
-import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { AssetContainer } from '@babylonjs/core/assetContainer';
-import type { Scene } from '@babylonjs/core/scene';
+import { SceneLoader } from '@babylonjs/core/Loading/sceneLoader.js';
+import { Color3 } from '@babylonjs/core/Maths/math.color.js';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
+import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh.js';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh.js';
+import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder.js';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
+import type { AssetContainer } from '@babylonjs/core/assetContainer.js';
+import type { Scene } from '@babylonjs/core/scene.js';
 import '@babylonjs/loaders/glTF/index';
 import { randomHex } from 'utilium';
-import type { EntityJSON } from '../core/entities/entity';
-import { EntityRenderer } from './entities/entity';
-import { logger } from './logger';
+import type { EntityJSON } from '../core/entities/entity.js';
+import { EntityRenderer } from './entities/entity.js';
+import { logger } from './logger.js';
 
 export interface ModelEntityJSON extends EntityJSON {
 	model?: string;

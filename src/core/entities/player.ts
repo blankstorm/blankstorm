@@ -1,11 +1,11 @@
 import { assignWithDefaults, pick } from 'utilium';
-import { Fleet } from '../components/fleet';
-import type { EntityStorageManager } from '../components/storage';
-import type { ResearchID } from '../generic/research';
-import { research } from '../generic/research';
-import type { System } from '../system';
-import type { EntityJSON } from './entity';
-import { Entity } from './entity';
+import { Fleet } from '../components/fleet.js';
+import type { EntityStorageManager } from '../components/storage.js';
+import type { ResearchID } from '../generic/research.js';
+import { research } from '../generic/research.js';
+import type { System } from '../system.js';
+import type { EntityJSON } from './entity.js';
+import { Entity } from './entity.js';
 
 export interface PlayerJSON extends EntityJSON {
 	research: Record<ResearchID, number>;

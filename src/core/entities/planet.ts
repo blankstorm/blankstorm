@@ -1,7 +1,7 @@
 import { assignWithDefaults, pick } from 'utilium';
-import type { PlanetBiome } from '../generic/planets';
-import type { CelestialBodyJSON } from './body';
-import { CelestialBody } from './body';
+import type { PlanetBiome } from '../generic/planets.js';
+import type { CelestialBodyJSON } from './body.js';
+import { CelestialBody } from './body.js';
 
 export interface PlanetData extends CelestialBodyJSON {
 	biome: PlanetBiome;

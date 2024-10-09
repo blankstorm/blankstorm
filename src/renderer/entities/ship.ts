@@ -1,8 +1,8 @@
-import type { ShipJSON } from '../../core/entities/ship';
-import type { GenericShip } from '../../core/generic/ships';
-import { genericShips } from '../../core/generic/ships';
-import { ModelRenderer } from '../models';
-import { renderers } from './entity';
+import type { ShipJSON } from '../../core/entities/ship.js';
+import type { GenericShip } from '../../core/generic/ships.js';
+import { genericShips } from '../../core/generic/ships.js';
+import { ModelRenderer } from '../models.js';
+import { renderers } from './entity.js';
 
 export class ShipRenderer extends ModelRenderer {
 	public readonly generic: GenericShip;

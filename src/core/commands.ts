@@ -1,10 +1,10 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { isJSON } from 'utilium';
-import type { Entity } from './entities/entity';
-import type { Player } from './entities/player';
-import { Ship } from './entities/ship';
-import { game_url } from './metadata';
-import type { ShipType } from './generic/ships';
+import type { Entity } from './entities/entity.js';
+import type { Player } from './entities/player.js';
+import { Ship } from './entities/ship.js';
+import { game_url } from './metadata.js';
+import type { ShipType } from './generic/ships.js';
 
 export interface CommandExecutionContext {
 	executor: Entity & { permissionLevel?: number };

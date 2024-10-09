@@ -1,8 +1,8 @@
-import type { ItemID } from './items';
-import { items } from './items';
-import type { ResearchID } from './research';
-import { research } from './research';
-import type { ShipType } from './ships';
+import type { ItemID } from './items.js';
+import { items } from './items.js';
+import type { ResearchID } from './research.js';
+import { research } from './research.js';
+import type { ShipType } from './ships.js';
 
 export type ProductID = ItemID | ResearchID | ShipType;
 

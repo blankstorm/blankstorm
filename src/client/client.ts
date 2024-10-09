@@ -1,26 +1,26 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector.js';
 import { getAccount, type Account } from '@blankstorm/api';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import $ from 'jquery';
 import { author } from '../../package.json';
-import { execCommandString } from '../core/commands';
-import { tickInfo } from '../core/entities/entity';
-import { Level } from '../core/level';
-import { config, currentVersion } from '../core/metadata';
-import { xpToLevel } from '../core/utils';
-import * as renderer from '../renderer/index';
-import * as chat from './chat';
-import { enableMultiplayer, isPaused, isServer, setDebug, setPath } from './config';
-import { level } from './level';
-import * as locales from './locales';
-import * as mods from './mods';
-import * as saves from './saves';
-import * as servers from './servers';
-import * as settings from './settings';
-import * as ui from './ui';
-import { switchTo } from './ui/utils';
-import * as user from './user';
-import { logger, optionsOf } from './utils';
+import { execCommandString } from '../core/commands.js';
+import { tickInfo } from '../core/entities/entity.js';
+import { Level } from '../core/level.js';
+import { config, currentVersion } from '../core/metadata.js';
+import { xpToLevel } from '../core/utils.js';
+import * as renderer from '../renderer/index.js';
+import * as chat from './chat.js';
+import { enableMultiplayer, isPaused, isServer, setDebug, setPath } from './config.js';
+import { level } from './level.js';
+import * as locales from './locales.js';
+import * as mods from './mods.js';
+import * as saves from './saves.js';
+import * as servers from './servers.js';
+import * as settings from './settings.js';
+import * as ui from './ui.js';
+import { switchTo } from './ui/utils.js';
+import * as user from './user.js';
+import { logger, optionsOf } from './utils.js';
 
 export interface ClientInit {
 	/**

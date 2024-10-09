@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { List } from 'utilium';
-import { config as coreConfig } from '../core';
+import { config as coreConfig } from '../core/index.js';
 
 // whitelist
 

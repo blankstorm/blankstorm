@@ -1,9 +1,9 @@
 import type { Account } from '@blankstorm/api';
-import type { ActionType, ActionData } from '../core';
-import type { Player } from '../core/entities/player';
-import type { System } from '../core/system';
-import { sendMessage } from './chat';
-import { level } from './level';
+import type { ActionType, ActionData } from '../core/index.js';
+import type { Player } from '../core/entities/player.js';
+import type { System } from '../core/system.js';
+import { sendMessage } from './chat.js';
+import { level } from './level.js';
 
 export const account: Account = {
 	id: '_guest_',
