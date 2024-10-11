@@ -13,7 +13,7 @@ import { path } from './config';
 import { level, load, unload } from './level';
 import { hasText, text } from './locales';
 import { alert, confirm } from './ui/dialog';
-import { instaniateTemplate } from './ui/utils';
+import { instantiateTemplate } from './ui/utils';
 import { logger } from './utils';
 
 export type ServerData = {
@@ -61,7 +61,7 @@ function updatePlayerList(list: string[]): void {
 }
 
 export function createServerListItem(server: ServerData): JQuery<HTMLLIElement> {
-	const instance = instaniateTemplate('#server').find('li');
+	const instance = instantiateTemplate('#server').find('li');
 	instance
 		.attr('id', server.id)
 		.on('click', () => {

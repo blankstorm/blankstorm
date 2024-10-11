@@ -7,10 +7,10 @@ import { genericShips } from '../../core/generic/ships';
 import * as locales from '../locales';
 import { action } from '../user';
 import { alert } from './dialog';
-import { instaniateTemplate } from './utils';
+import { instantiateTemplate } from './utils';
 
 export function createItemUI(item: Item): JQuery<DocumentFragment> {
-	const instance = instaniateTemplate('#item');
+	const instance = instantiateTemplate('#item');
 	instance.find('.name').text(locales.text('item.name', item.id) + (item.rare ? ' (rare)' : '') + ': ');
 	instance.find('.ui-item').on('click', () => action('create_item', item));
 	$('div.inventory').append(instance);
@@ -18,7 +18,7 @@ export function createItemUI(item: Item): JQuery<DocumentFragment> {
 }
 
 export function createResearchUI(research: Research): JQuery<DocumentFragment> {
-	const instance = instaniateTemplate('#research');
+	const instance = instantiateTemplate('#research');
 	instance.find('.name').text(locales.text('tech.name', research.id));
 	instance.find('.upgrade').on('click', () => action('research', research));
 	$('div.lab').append(instance);
@@ -26,7 +26,7 @@ export function createResearchUI(research: Research): JQuery<DocumentFragment> {
 }
 
 export function createShipUI(ship: GenericShip): JQuery<DocumentFragment> {
-	const instance = instaniateTemplate('#ship');
+	const instance = instantiateTemplate('#ship');
 	instance.find('.name').text(locales.text('entity.name', ship.id));
 	instance.find('.add').on('click', () => alert('Disabled.'));
 	$('div.shipyard').append(instance);
@@ -34,7 +34,7 @@ export function createShipUI(ship: GenericShip): JQuery<DocumentFragment> {
 }
 
 export function createShipyardUI(shipyard: Shipyard): JQuery<DocumentFragment> {
-	const instance = instaniateTemplate('#shipyard');
+	const instance = instantiateTemplate('#shipyard');
 	instance.find('.add').on('click', () => action('create_ship', { ship: genericShips.get(instance.find('select').val() as ShipType)!, shipyard }));
 	instance.find(shipyard.production ? '.non-active' : '.active').hide();
 	instance.find(shipyard.production ? '.active' : '.non-active').show();

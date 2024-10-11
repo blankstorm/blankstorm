@@ -7,10 +7,10 @@ import * as settings from '../settings';
 import { player, system } from '../user';
 import { minimize } from '../utils';
 import { confirm } from './dialog';
-import { instaniateTemplate } from './utils';
+import { instantiateTemplate } from './utils';
 
 export function createWaypointListItem(waypoint: Waypoint): JQuery<HTMLDivElement> {
-	const instance = instaniateTemplate('#waypoint-li').find('div');
+	const instance = instantiateTemplate('#waypoint-li').find('div');
 
 	instance.find('.edit').on('click', () => {
 		const dialog = $<HTMLDialogElement & { _waypoint: Waypoint }>('#waypoint-dialog')[0];
@@ -37,7 +37,7 @@ export function createWaypointListItem(waypoint: Waypoint): JQuery<HTMLDivElemen
 }
 
 export function createWaypointMarker(): JQuery<HTMLDivElement> {
-	const instance = instaniateTemplate('#waypoint-marker').find('div');
+	const instance = instantiateTemplate('#waypoint-marker').find('div');
 	instance.hide().appendTo('#hud');
 	return instance;
 }

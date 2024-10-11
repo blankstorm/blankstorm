@@ -12,7 +12,7 @@ import { path } from './config';
 import { level, load } from './level';
 import * as locales from './locales';
 import { alert, confirm } from './ui/dialog';
-import { instaniateTemplate } from './ui/utils';
+import { instantiateTemplate } from './ui/utils';
 import { account } from './user';
 import { download, logger } from './utils';
 
@@ -36,7 +36,7 @@ export async function createDefault(name: string): Promise<Level> {
 }
 
 export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
-	const instance = instaniateTemplate('#save').find('li');
+	const instance = instantiateTemplate('#save').find('li');
 
 	const loadAndPlay = async () => {
 		$('#loading_cover').show();
@@ -163,7 +163,7 @@ export function has(id: string): boolean {
 
 export function remove(save: string | LevelJSON): boolean {
 	const id = typeof save == 'string' ? save : save.id;
-	logger.debug('Deleteing save: ' + id);
+	logger.debug('Deleting save: ' + id);
 	runtimeData.get(id)?.gui.remove();
 	runtimeData.delete(id);
 	return saves.delete(id);

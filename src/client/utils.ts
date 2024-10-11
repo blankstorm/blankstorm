@@ -31,18 +31,18 @@ export function fixPaths(text: string): string {
 	);
 }
 
-export function getByString(object: Record<string, any>, path: string, seperator = /[.[\]'"]/) {
+export function getByString(object: Record<string, any>, path: string, separator = /[.[\]'"]/) {
 	return path
-		.split(seperator)
+		.split(separator)
 		.filter(p => p)
 		.reduce((o, p) => o?.[p], object);
 }
 
-export function setByString(object: Record<string, any>, path: string, value: unknown, seperator = /[.[\]'"]/) {
+export function setByString(object: Record<string, any>, path: string, value: unknown, separator = /[.[\]'"]/) {
 	return path
-		.split(seperator)
+		.split(separator)
 		.filter(p => p)
-		.reduce((o, p, i) => (o[p] = path.split(seperator).filter(p => p).length === ++i ? value : o[p] || {}), object);
+		.reduce((o, p, i) => (o[p] = path.split(separator).filter(p => p).length === ++i ? value : o[p] || {}), object);
 }
 
 export function biomeColor(biome: PlanetBiome): string {

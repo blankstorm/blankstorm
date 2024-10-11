@@ -7,7 +7,7 @@ import { config } from '../core';
 import { path } from './config';
 import { logger } from './utils';
 import { EventEmitter } from 'eventemitter3';
-import { instaniateTemplate } from './ui/utils';
+import { instantiateTemplate } from './ui/utils';
 
 export const settingTypes = ['boolean', 'string', 'number', 'color', 'select', 'keybind'] as const;
 
@@ -104,7 +104,7 @@ export class Item<T extends Type = Type> extends EventEmitter<{
 		this.type = type;
 		this.label = label;
 		this.defaultValue = value;
-		this.ui = instaniateTemplate('#setting').find<HTMLDivElement>('div.setting');
+		this.ui = instantiateTemplate('#setting').find<HTMLDivElement>('div.setting');
 
 		const _section = section instanceof Section ? section : sections.get(section);
 		if (!_section) {
@@ -218,7 +218,7 @@ export class Section {
 		public readonly id: string,
 		public readonly icon: string
 	) {
-		const ui = instaniateTemplate('#settings-section');
+		const ui = instantiateTemplate('#settings-section');
 		ui.children().attr('section', id);
 		this.ui = ui.find('form').appendTo('#settings');
 		ui.find('button use').attr('href', 'assets/images/icons.svg#' + icon);
