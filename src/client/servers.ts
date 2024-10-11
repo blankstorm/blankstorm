@@ -25,7 +25,7 @@ export type ServerData = {
 let kickMessage: string | null;
 
 function handleDisconnect(reason: string): void {
-	$('#connect p').text(kickMessage ?? (hasText('disconnet_reason', reason) ? text('disconnet_reason', reason) : reason));
+	$('#connect p').text(kickMessage ?? (hasText('disconnect_reason', reason) ? text('disconnect_reason', reason) : reason));
 	kickMessage = null;
 	$('[ingame]').hide();
 	$(reason == 'io client disconnect' ? '#servers' : '#connect').show();

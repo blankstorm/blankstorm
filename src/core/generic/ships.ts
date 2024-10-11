@@ -267,8 +267,8 @@ export function computeRatings(ship: GenericShip): ShipRatings {
 	let combat = Math.log10(ship.hp);
 	for (const info of ship.hardpoints) {
 		const hardpoint = genericHardpoints[info.type];
-		const hardpointpRating = hardpoint.damage / hardpoint.reload + hardpoint.critChance * hardpoint.critFactor;
-		combat += hardpointpRating;
+		const hardpointRating = hardpoint.damage / hardpoint.reload + hardpoint.critChance * hardpoint.critFactor;
+		combat += hardpointRating;
 	}
 
 	const movement = ship.speed + ship.agility + Math.log10(ship.jump.range) / Math.log10(ship.jump.cooldown);

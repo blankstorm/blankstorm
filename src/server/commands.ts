@@ -67,14 +67,14 @@ commands.set('msg', {
 		}
 		getClientByName(player).socket.emit(`[${executor.name} -> me] ${message.join(' ')}`);
 		logger.log(`[${executor.name} -> ${player}] ${message.join(' ')}`);
-		getClientByName(player).lastMessager = executor;
+		getClientByName(player).lastSender = executor;
 		return `[me -> ${executor.name}] ${message.join(' ')}`;
 	},
 	permissionLevel: 0,
 });
 commands.set('reply', {
 	exec({ executor }, ...message) {
-		return executor.lastMessager ? commands.get('msg')!.exec({ executor }, executor.lastMessager.name, ...message) : 'No one messaged you yet =(';
+		return executor.lastSender ? commands.get('msg')!.exec({ executor }, executor.lastSender.name, ...message) : 'No one messaged you yet =(';
 	},
 	permissionLevel: 0,
 });

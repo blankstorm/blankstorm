@@ -325,7 +325,7 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 	try {
 		await renderer.init(canvas[0]);
 	} catch (error) {
-		throw new Error('Failed to initalize renderer: ' + error, optionsOf(error));
+		throw new Error('Failed to initialize renderer: ' + error, optionsOf(error));
 	}
 
 	_initLog('Authenticating...');

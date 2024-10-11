@@ -119,14 +119,14 @@ export async function init(canvas: HTMLCanvasElement) {
 
 export function dispose() {
 	if (!scene) {
-		throw new ReferenceError('Renderer not initalized');
+		throw new ReferenceError('Renderer not initialized');
 	}
 	scene.dispose();
 }
 
 export function render() {
 	if (!scene) {
-		throw new ReferenceError('Renderer not initalized');
+		throw new ReferenceError('Renderer not initialized');
 	}
 
 	// camera
@@ -154,11 +154,11 @@ export function render() {
 }
 
 /**
- * Clears out loaded data and flushs the cache.
+ * Clears out loaded data and flushes the cache.
  */
 export function clear() {
 	if (!scene) {
-		throw logger.error(new ReferenceError('Not initalized'));
+		throw logger.error(new ReferenceError('Not initialized'));
 	}
 
 	for (const [id, entity] of entities) {
@@ -173,7 +173,7 @@ export function clear() {
 
 export function load(entityJSON: EntityJSON[]): void {
 	if (!scene) {
-		throw logger.error(new ReferenceError('Not initalized'));
+		throw logger.error(new ReferenceError('Not initialized'));
 	}
 
 	if (!entityJSON.length) {
@@ -203,7 +203,7 @@ export function load(entityJSON: EntityJSON[]): void {
 
 export function update(levelData: LevelJSON): void {
 	if (!scene) {
-		throw logger.error(new ReferenceError('Renderer not initalized'));
+		throw logger.error(new ReferenceError('Renderer not initialized'));
 	}
 
 	const renderersToAdd: EntityJSON[] = [];
@@ -254,11 +254,11 @@ export function addCameraVelocity(vector = Vector3.Zero()) {
 
 export function getCamera() {
 	if (!scene) {
-		throw logger.error(new ReferenceError('Not initalized'));
+		throw logger.error(new ReferenceError('Not initialized'));
 	}
 
 	if (!camera) {
-		throw logger.error(new ReferenceError('Camera not initalized'));
+		throw logger.error(new ReferenceError('Camera not initialized'));
 	}
 
 	return camera;

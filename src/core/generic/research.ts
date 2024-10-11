@@ -19,7 +19,7 @@ const _research = {
 	energy: { id: 'energy', productionTime: config.tick_rate, recipe: { hydrogen: 5000, quartz: 1000 }, xp: 1, scale: 1.5, max: 25, requires: {} },
 	shields: { id: 'shields', productionTime: config.tick_rate, recipe: { titanium: 2500, quartz: 5000 }, xp: 1, scale: 1.5, max: 10, requires: { armor: 5 } },
 	storage: { id: 'storage', productionTime: config.tick_rate, recipe: { titanium: 10000, quartz: 10000, hydrogen: 10000 }, xp: 2, scale: 10, max: 25, requires: {} },
-	missle: { id: 'missle', productionTime: config.tick_rate, recipe: { titanium: 10000, quartz: 1000, hydrogen: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 } },
+	missile: { id: 'missile', productionTime: config.tick_rate, recipe: { titanium: 10000, quartz: 1000, hydrogen: 5000 }, xp: 1, scale: 1.5, max: 25, requires: { laser: 5 } },
 	regen: {
 		id: 'regen',
 		productionTime: config.tick_rate,

@@ -159,7 +159,7 @@ export function generateFleetFromPower(power: number): ShipType[] {
 	//enemy spawning algorithm
 	const fleet: ShipType[] = [],
 		generic = [...Object.entries(genericShips)] as [ShipType, GenericShip][];
-	generic.sort((a, b) => b[1].power - a[1].power); //decending
+	generic.sort((a, b) => b[1].power - a[1].power); //descending
 	for (const [name, ship] of generic) {
 		for (let i = 0; i < Math.floor(power / ship.power); i++) {
 			fleet.push(name);

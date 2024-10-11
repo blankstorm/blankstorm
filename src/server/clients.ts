@@ -8,9 +8,9 @@ import { io } from './transport';
 import { logger } from './utils';
 
 export class Client extends Player {
-	lastMessager?: Client;
-	sentPackets = 0;
-	constructor(
+	public lastSender?: Client;
+	public sentPackets = 0;
+	public constructor(
 		id: string,
 		system: System,
 		public readonly socket: Socket
@@ -18,17 +18,17 @@ export class Client extends Player {
 		super(id, system);
 	}
 
-	kick(message: string) {
+	public kick(message: string) {
 		this.socket.emit('kick', message);
 		this.socket.disconnect();
 	}
 
-	ban(message: string) {
+	public ban(message: string) {
 		this.kick('You have been banned from this server: ' + message);
 		blacklist.add(this.id);
 	}
 
-	toJSON(): PlayerJSON {
+	public toJSON(): PlayerJSON {
 		return Object.assign(super.toJSON(), { nodeType: 'Player' });
 	}
 }

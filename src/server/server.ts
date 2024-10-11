@@ -115,7 +115,7 @@ export async function checkClientAuth(socket: Socket) {
 	});
 
 	if (!account) {
-		logger.warn('Invalid account data recieved');
+		logger.warn('Invalid account data received');
 		throw 'Invalid account';
 	}
 
