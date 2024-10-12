@@ -55,7 +55,7 @@
 		"socket.io": "^4.7.5",
 		"socket.io-client": "^4.7.5",
 		"typescript-eslint": "^8.7.0",
-		"utilium": "^0.7.7"
+		"utilium": "^0.8.2"
 	},
 	"devDependencies": {
 		"@types/node": "^20.2.1",

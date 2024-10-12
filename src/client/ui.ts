@@ -24,7 +24,8 @@ import * as tooltip from './ui/tooltips';
 import { switchTo } from './ui/utils';
 import { WaypointUI } from './ui/waypoint';
 import { account, action, player as getPlayer, hasSystem, system } from './user';
-import { $svg, logger, minimize, upload } from './utils';
+import { $svg, logger, minimize } from './utils';
+import { upload } from 'utilium/dom.js';
 export { map, templates };
 
 export const UIs: Map<string, JQuery<DocumentFragment>> = new Map();

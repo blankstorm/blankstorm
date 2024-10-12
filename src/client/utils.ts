@@ -4,21 +4,6 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { PlanetBiome } from '../core/generic/planets';
 
-export function upload(type: string, multiple = false): Promise<File> {
-	return new Promise<File>((resolve, reject) => {
-		$<HTMLInputElement>(`<input type=file ${type ? `accept='${type}'` : ''} ${multiple ? 'multiple' : ''}>`)
-			.on('change', e => {
-				const file = e.target?.files?.[0];
-				file ? resolve(file) : reject(new ReferenceError('No files uploaded'));
-			})
-			.trigger('click');
-	});
-}
-
-export function download(data: BlobPart, name: string): void {
-	$(`<a href=${URL.createObjectURL(new Blob([data]))} download="${name ?? 'download'}"></a>`)[0].click();
-}
-
 const __formatter = Intl.NumberFormat('en', { notation: 'compact' });
 
 export const minimize = __formatter.format.bind(__formatter);

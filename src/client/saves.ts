@@ -14,7 +14,8 @@ import * as locales from './locales';
 import { alert, confirm } from './ui/dialog';
 import { instantiateTemplate } from './ui/utils';
 import { account } from './user';
-import { download, logger } from './utils';
+import { logger } from './utils';
+import { download } from 'utilium/dom.js';
 
 export async function createDefault(name: string): Promise<Level> {
 	const level = new Level();
