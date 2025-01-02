@@ -44,7 +44,7 @@ async function buildSEA() {
 			mkdirSync(dirname(seaPath));
 		}
 		copyFileSync(process.execPath, seaPath);
-		await inject(seaPath, 'NODE_SEA_BLOB', readFileSync(blobPath), {
+		inject(seaPath, 'NODE_SEA_BLOB', readFileSync(blobPath), {
 			machoSegmentName: 'NODE_SEA',
 			sentinelFuse: 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
 		});
