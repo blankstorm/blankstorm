@@ -11,7 +11,10 @@ export function productRequirements(thing: Product, player: Player): string {
 		.map(([id, amount]) => `${text('item.name', id)}: ${minimize(player.storage.count(id))}/${minimize(amount)}`)
 		.join('<br>');
 	const requires = (Object.entries(thing.requires) as [ResearchID, number][])
-		.map(([id, tech]) => `${tech == 0 ? `Incompatible with ${text('tech.name', id)}` : `${text('tech.name', id)}: ${player.research[id]}/${tech}`}`)
+		.map(
+			([id, tech]) =>
+				`${tech == 0 ? `Incompatible with ${text('tech.name', id)}` : `${text('tech.name', id)}: ${player.research[id]}/${tech}`}`
+		)
 		.join('<br>');
 	return `<br /><br /><strong>Material Cost</strong>${materials}<br>${Object.keys(thing.requires).length ? `<br><strong>Requires:</strong>` : ``}${requires}${settings.get('tooltips') ? '<br>' + thing.id : ''}`;
 }

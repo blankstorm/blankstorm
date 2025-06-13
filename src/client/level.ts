@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import type { IVector3Like } from '@babylonjs/core/Maths/math.like';
-import type { Level } from '../core/level';
-import type { EntityJSON } from '../core/entities/entity';
+import type { BS_Level } from '../core/level';
+import type { BS_EntityJSON } from '../core/entities/.tmp.entity';
 import { currentVersion } from '../core/metadata';
 import { logger } from '../core/utils';
 import * as renderer from '../renderer';
@@ -11,10 +11,10 @@ import { isServer, pause, unpause } from './config';
 import { text } from './locales';
 import { alert } from './ui/dialog';
 
-export let level: Level | undefined;
+export let level: BS_Level | undefined;
 
-export function setLevel(value: Level) {
-	logger.log('Using new level: ' + value.id);
+export function setLevel(value: BS_Level) {
+	logger.info('Using new level: ' + value.id);
 	level = value;
 }
 
@@ -29,7 +29,7 @@ export function registerListeners() {
 		logger.warn('Triggered player_levelup (unimplemented)');
 	});
 	level.on('entity_removed', entity => {
-		if (entity.entityType == 'player') {
+		if (entity.type == 'player') {
 			renderer.resetCamera();
 		}
 	});
@@ -37,14 +37,14 @@ export function registerListeners() {
 		console.debug('Moving along path:', path);
 		renderer.startFollowingPath(entityID, path, settings.get('show_path_gizmos'));
 	});
-	level.on('entity_death', (entity: EntityJSON) => {
-		if (entity.entityType == 'Ship') {
+	level.on('entity_death', (entity: BS_EntityJSON) => {
+		if (entity.type == 'Ship') {
 			playsound('destroy_ship', +settings.get('sfx'));
 		}
 	});
 }
 
-export function load(newLevel: Level): boolean {
+export function load(newLevel: BS_Level): boolean {
 	if (!newLevel) {
 		logger.warn('No level loaded');
 		void alert(text('load_no_level'));

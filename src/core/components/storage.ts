@@ -1,13 +1,23 @@
-import { pick, map } from 'utilium';
-import type { Entity } from '../entities/entity';
-import type { ItemContainer, ItemID, PartialItemContainer } from '../generic/items';
-import { items } from '../generic/items';
-import { register, type Component } from './component';
+import { Component, registerComponent } from 'deltablank/core/component.js';
+import type { Entity, EntityJSON } from 'deltablank/core/entity.js';
+import { map } from 'utilium';
+import type { ItemContainer, ItemID } from '../data';
+import { items } from '../data';
+
+interface StorageJSON {
+	items: Record<ItemID, number>;
+	max_items: number;
+}
+
+interface StorageMixin {
+	storage: ItemStorage;
+}
 
 /**
  * Generic class for something that stores items
  */
-export abstract class ItemStorage implements ItemContainer, Component<ItemContainer> {
+@registerComponent
+export abstract class ItemStorage extends Component<StorageMixin, StorageJSON, { max_items: number }> implements ItemContainer {
 	public get [Symbol.toStringTag](): string {
 		return 'ItemStorage';
 	}
@@ -20,17 +30,23 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 
 	public abstract get items(): Record<ItemID, number>;
 
-	public toJSON(): ItemContainer {
-		return pick(this, 'items', 'max');
+	setup(): StorageMixin {
+		return { storage: this };
 	}
 
-	public fromJSON(data: PartialItemContainer): this {
+	load(data: EntityJSON & StorageJSON): void {
 		this.clear();
-		this.max = data.max;
+		this.max = data.max_items;
 		for (const [id, amount] of map(data.items)) {
-			this.add(id, amount!);
+			this.add(id, amount);
 		}
-		return this;
+	}
+
+	public toJSON(): StorageJSON {
+		return {
+			items: this.items,
+			max_items: this.max,
+		};
 	}
 
 	public clear(...filter: ItemID[]) {
@@ -96,22 +112,16 @@ export abstract class ItemStorage implements ItemContainer, Component<ItemContai
 	public [Symbol.iterator](): IterableIterator<[ItemID, number]> {
 		return map(this.items).entries();
 	}
-
-	public static FromJSON<const T extends ItemStorage = ItemStorage>(this: new () => T, container: PartialItemContainer): T {
-		return new this().fromJSON(container);
-	}
 }
 
 /**
  * Duh- stores items
  */
-@register
 export class Container extends ItemStorage {
-	public constructor(
-		public max: number = 1,
-		protected _items: Map<ItemID, number> = new Map()
-	) {
-		super();
+	protected _items: Map<ItemID, number> = new Map();
+
+	public get max(): number {
+		return this.config.max_items;
 	}
 
 	public get items(): Record<ItemID, number> {
@@ -130,11 +140,8 @@ export class Container extends ItemStorage {
 /**
  * Manages the storage for a group of other storages
  */
-@register
 export class StorageManager extends ItemStorage {
-	public constructor(protected storages: Set<ItemStorage> = new Set()) {
-		super();
-	}
+	protected storages: Set<ItemStorage> = new Set();
 
 	public get items(): Record<ItemID, number> {
 		const _items = Object.fromEntries(Object.keys(items).map(i => [i, 0])) as Record<ItemID, number>;
@@ -192,11 +199,8 @@ export class StorageManager extends ItemStorage {
 /**
  * Manages the storage for a group of entities
  */
-@register
 export class EntityStorageManager extends ItemStorage {
-	public constructor(protected entities: Iterable<Entity> = new Set()) {
-		super();
-	}
+	protected entities: Iterable<Entity & StorageMixin> = new Set();
 
 	public get items(): Record<ItemID, number> {
 		const _items = Object.fromEntries(Object.keys(items).map(i => [i, 0])) as Record<ItemID, number>;

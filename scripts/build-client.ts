@@ -98,7 +98,10 @@ function onBuildStart() {
 			}
 			console.log('Exporting assets: ' + entry);
 			if (entry == 'models') {
-				execSync(`bash ${path.join(root, 'assets/models/export.sh')} ${asset_path}/models`, options.verbose ? { stdio: 'inherit' } : undefined);
+				execSync(
+					`bash ${path.join(root, 'assets/models/export.sh')} ${asset_path}/models`,
+					options.verbose ? { stdio: 'inherit' } : undefined
+				);
 				continue;
 			}
 

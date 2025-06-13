@@ -20,7 +20,9 @@ export class ProjectileRenderer extends ModelRenderer<ProjectileJSON> {
 		super(data);
 		this.hardpoint = this.getScene().getNodeById(this.data.hardpoint) as HardpointRenderer;
 		this.owner = this.getScene().getNodeById(this.hardpoint.data.owner!) as CelestialBodyRenderer | PlayerRenderer;
-		const material = this.owner.projectileMaterials.find(({ applies_to, material }) => applies_to.includes(this.data.type) && material)?.material ?? null;
+		const material =
+			this.owner.projectileMaterials.find(({ applies_to, material }) => applies_to.includes(this.data.type) && material)?.material ??
+			null;
 		for (const mesh of this.getChildMeshes<Mesh>()) {
 			mesh.material = material;
 		}

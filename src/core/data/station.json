@@ -1,0 +1,62 @@
+{
+	"core": {
+		"max_items": 10000,
+		"fleet": {
+			"max_ships": 9999,
+			"allow_nesting": false
+		},
+		"waypoint": {
+			"builtin": true,
+			"readonly": true,
+			"color": "#88ddff",
+			"icon": "space-station"
+		},
+		"hp": 100,
+		"hardpoints": [],
+		"is_hardpoint": false,
+		"station_part_type": "core",
+		"connectors": [
+			{ "position": [0, 0, 0], "rotation": [0, 0, 0] },
+			{ "position": [0, 0, 0], "rotation": [0, 1.5708, 0] },
+			{ "position": [0, 0, 0], "rotation": [0, 3.14159, 0] },
+			{ "position": [0, 0, 0], "rotation": [0, 4.7124, 0] }
+		]
+	},
+	"connector_i": {
+		"station_part_type": "connector",
+		"hp": 50,
+		"max_items": 0,
+		"hardpoints": [],
+		"fleet": { "max_ships": 0, "allow_nesting": false },
+		"connectors": [
+			{ "position": [0, 0, -0.5], "rotation": [0, 0, 0] },
+			{ "position": [0, 0, 0.5], "rotation": [0, 0, 0] }
+		]
+	},
+	"warehouse": {
+		"station_part_type": "storage",
+		"hp": 100,
+		"max_items": 10000,
+		"fleet": { "max_ships": 0, "allow_nesting": false },
+		"hardpoints": [],
+		"connectors": [{ "position": [0, 0, 0], "rotation": [0, 0, 0] }]
+	},
+	"shipyard": {
+		"station_part_type": "special",
+		"hp": 100,
+		"max_items": 1000,
+		"hardpoints": [],
+		"fleet": { "max_ships": 0, "allow_nesting": false },
+		"connectors": [{ "position": [0, 0, 0], "rotation": [0, 0, 0] }],
+		"copy_data": ["production"]
+	},
+	"lab": {
+		"station_part_type": "special",
+		"hp": 100,
+		"max_items": 1000,
+		"fleet": { "max_ships": 0, "allow_nesting": false },
+		"hardpoints": [],
+		"connectors": [{ "position": [0, 0, 0], "rotation": [0, 0, 0] }],
+		"copy_data": ["production"]
+	}
+}

@@ -9,17 +9,17 @@ import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import type { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/loaders/glTF/index';
 import { randomHex } from 'utilium';
-import type { EntityJSON } from '../core/entities/entity';
+import type { BS_EntityJSON } from '../core/entities/.tmp.entity';
 import { EntityRenderer } from './entities/entity';
 import { logger } from './logger';
 
-export interface ModelEntityJSON extends EntityJSON {
+export interface ModelEntityJSON extends BS_EntityJSON {
 	model?: string;
 	type?: string;
 }
 
 function resolveModelID(data: ModelEntityJSON): string {
-	return data.model || data.type || data.entityType;
+	return data.model || data.type || data.type;
 }
 
 /**

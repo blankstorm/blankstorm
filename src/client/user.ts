@@ -16,7 +16,9 @@ export const account: Account = {
 
 export function chat(...messages: string[]) {
 	for (const message of messages) {
-		sendMessage(`${account.username}: ${message}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+		sendMessage(
+			`${account.username}: ${message}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+		);
 	}
 }
 

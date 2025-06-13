@@ -5,7 +5,7 @@ import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
 import { isJSON, pick } from 'utilium';
 import { JSONFileMap } from 'utilium/fs.js';
-import { Level, type LevelEvents, type LevelJSON } from '../core/level';
+import { BS_Level, type LevelEvents, type BS_LevelJSON } from '../core/level';
 import { config, displayVersion } from '../core/metadata';
 import type { PingInfo } from '../server/server';
 import { sendMessage } from './chat';
@@ -41,9 +41,9 @@ function handleConnectionFailed({ message }: Error): void {
 
 function handleEvent<T extends EventEmitter.EventNames<LevelEvents>>(type: T, ...data: EventEmitter.EventArgs<LevelEvents, T>) {
 	if (type == 'update') {
-		const json = data[0] as LevelJSON;
+		const json = data[0] as BS_LevelJSON;
 		if (!level) {
-			load(Level.FromJSON(json));
+			load(BS_Level.FromJSON(json));
 		}
 		level!.fromJSON(json);
 		level!.sampleTick();
@@ -146,7 +146,9 @@ export function connect(id: string): void {
 		pingInfo = pingCache.get(id);
 	socket = io(url.href, { reconnection: false, auth: pick(options, 'token', 'session') });
 	socket.on('connect', () => {
-		$('#tablist p.info').html(`${url.hostname}<br>${(pingInfo?.version ? displayVersion(pingInfo.version) : null) || pingInfo?.version}<br>${pingInfo?.message}<br>`);
+		$('#tablist p.info').html(
+			`${url.hostname}<br>${(pingInfo?.version ? displayVersion(pingInfo.version) : null) || pingInfo?.version}<br>${pingInfo?.message}<br>`
+		);
 	});
 	socket.on('connect_error', handleConnectionError);
 	socket.on('connect_failed', handleConnectionFailed);

@@ -2,37 +2,16 @@ import * as version from 'utilium/version.js';
 
 export const game_url = 'https://blankstorm.net';
 
+// $debug is inlined at build time, this is for development
+Object.assign(globalThis, { $debug: false });
+
 export const config = {
 	debug: $debug,
 	overwrite_invalid: true,
 	default_port: 1123,
 	region_size: 1e5,
-	tick_rate: 30,
+	tick_rate: 60,
 	level_max_size: 1000,
-	system_generation: {
-		difficulty: 1,
-		max_size: 5e3,
-		connections: {
-			probability: 0.5,
-			distance_min: 0.25,
-			distance_max: 10,
-		},
-		stars: {
-			min: 1,
-			max: 1,
-			radius_min: 300,
-			radius_max: 500,
-			color_min: [0.3, 0.3, 0.3],
-			color_max: [0.4, 0.4, 0.4],
-		},
-		planets: {
-			min: 1,
-			max: 9,
-			radius_min: 25,
-			radius_max: 50,
-			distance_max: 5e3,
-		},
-	},
 };
 
 export const knownVersions = [

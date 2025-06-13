@@ -4,8 +4,8 @@ import * as fs from 'node:fs';
 import { isJSON } from 'utilium';
 import { FolderMap } from 'utilium/fs.js';
 import { Player } from '../core/entities/player';
-import type { LevelJSON } from '../core/level';
-import { Level } from '../core/level';
+import type { BS_LevelJSON } from '../core/level';
+import { BS_Level } from '../core/level';
 import { config, displayVersion } from '../core/metadata';
 import { randomInSphere } from '../core/utils';
 import { path } from './config';
@@ -17,8 +17,8 @@ import { account } from './user';
 import { logger } from './utils';
 import { download } from 'utilium/dom.js';
 
-export async function createDefault(name: string): Promise<Level> {
-	const level = new Level();
+export async function createDefault(name: string): Promise<BS_Level> {
+	const level = new BS_Level();
 	level.name = name;
 	await level.ready();
 	const system = level.generateSystem('Kurassh', Vector2.Zero());
@@ -32,11 +32,11 @@ export async function createDefault(name: string): Promise<Level> {
 	player.rotation = Vector3.Zero();
 
 	level.rootSystem = system;
-	logger.log('Created default level: ' + name);
+	logger.info('Created default level: ' + name);
 	return level;
 }
 
-export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
+export function createSaveListItem(save: BS_LevelJSON): JQuery<HTMLLIElement> {
 	const instance = instantiateTemplate('#save').find('li');
 
 	const loadAndPlay = async () => {
@@ -50,7 +50,7 @@ export function createSaveListItem(save: LevelJSON): JQuery<HTMLLIElement> {
 				$('#loading_cover,#hud,canvas.game').hide();
 				$('#saves').show();
 			}
-			load(Level.FromJSON(save));
+			load(BS_Level.FromJSON(save));
 			$('#loading_cover').hide();
 		} catch (e) {
 			logger.error(e instanceof Error ? e : e + '');
@@ -131,7 +131,7 @@ export function init() {
 	logger.info('Loaded ' + saves.size + ' saves');
 }
 
-export function get(id: string): LevelJSON {
+export function get(id: string): BS_LevelJSON {
 	const data = saves.get(id);
 	if (!isJSON(data)) {
 		throw new Error('Cannot get invalid save: ' + id);
@@ -139,7 +139,7 @@ export function get(id: string): LevelJSON {
 	return JSON.parse(data);
 }
 
-export function add(save: LevelJSON): void {
+export function add(save: BS_LevelJSON): void {
 	if (saves.has(save.id)) {
 		throw new ReferenceError('Can not add save because it already exists: ' + save.id);
 	}
@@ -148,7 +148,7 @@ export function add(save: LevelJSON): void {
 	saves.set(save.id, JSON.stringify(save));
 }
 
-export function update(save: LevelJSON): void {
+export function update(save: BS_LevelJSON): void {
 	const date = new Date();
 	save.date = date.toJSON();
 	const gui = runtimeData.get(save.id)?.gui;
@@ -162,7 +162,7 @@ export function has(id: string): boolean {
 	return saves.has(id);
 }
 
-export function remove(save: string | LevelJSON): boolean {
+export function remove(save: string | BS_LevelJSON): boolean {
 	const id = typeof save == 'string' ? save : save.id;
 	logger.debug('Deleting save: ' + id);
 	runtimeData.get(id)?.gui.remove();
@@ -185,12 +185,12 @@ export function flush(): void {
 	$('#pause .save').text(locales.textFor('#pause button.save'));
 }
 
-export async function replaceGuest(save: LevelJSON): Promise<boolean> {
+export async function replaceGuest(save: BS_LevelJSON): Promise<boolean> {
 	if (account.id == '_guest_') {
 		return true;
 	}
 
-	const guest = save.entities.find(entity => entity.entityType == 'Player' && entity.id == '_guest_');
+	const guest = save.entities.find(entity => entity.type == 'Player' && entity.id == '_guest_');
 
 	if (!guest) {
 		return false;

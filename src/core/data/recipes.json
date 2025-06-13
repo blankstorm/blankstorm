@@ -1,0 +1,135 @@
+[
+	{
+		"items": { "titanium": 1000, "quartz": 500, "hydrogen": 250 },
+		"research": {},
+		"time": 3600,
+		"result": { "type": "entity", "id": "wind", "amount": 1 },
+		"location": ["shipyard"]
+	},
+	{
+		"items": { "titanium": 2000, "quartz": 2000, "hydrogen": 500 },
+		"research": {},
+		"time": 9000,
+		"result": { "type": "entity", "id": "mosquito", "amount": 1 },
+		"location": ["shipyard"]
+	},
+	{
+		"items": { "titanium": 5000, "quartz": 1000, "hydrogen": 2500 },
+		"research": { "storage": 3 },
+		"time": 36000,
+		"result": { "type": "entity", "id": "cillus", "amount": 1 },
+		"location": ["shipyard"]
+	},
+	{
+		"items": { "titanium": 4000, "quartz": 1000, "hydrogen": 1000 },
+		"research": {},
+		"time": 36000,
+		"result": { "type": "entity", "id": "inca", "amount": 1 },
+		"location": ["shipyard"]
+	},
+	{
+		"items": { "titanium": 10000, "quartz": 4000, "hydrogen": 2500 },
+		"research": {},
+		"time": 45000,
+		"result": { "type": "entity", "id": "pilsung", "amount": 1 },
+		"location": ["shipyard"]
+	},
+	{
+		"items": { "titanium": 10000, "quartz": 2000, "hydrogen": 5000 },
+		"research": { "storage": 5 },
+		"time": 72000,
+		"result": { "type": "entity", "id": "apis", "amount": 1 },
+		"location": ["shipyard"]
+	},
+	{
+		"items": { "titanium": 25000, "quartz": 10000, "hydrogen": 5000 },
+		"research": {},
+		"time": 54000,
+		"result": { "type": "entity", "id": "hurricane", "amount": 1 },
+		"location": ["shipyard"]
+	},
+	{
+		"items": { "titanium": 1000000, "quartz": 500000, "hydrogen": 250000 },
+		"research": { "build": 5 },
+		"time": 108000,
+		"result": { "type": "entity", "id": "horizon", "amount": 1 },
+		"location": ["shipyard"]
+	},
+	{
+		"items": { "titanium": 1000 },
+		"research": {},
+		"time": 60,
+		"result": { "type": "research", "id": "armor" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "quartz": 1000 },
+		"research": {},
+		"time": 60,
+		"result": { "type": "research", "id": "laser" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "titanium": 4000, "quartz": 1500 },
+		"research": {},
+		"time": 120,
+		"result": { "type": "research", "id": "reload" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "hydrogen": 1000 },
+		"research": {},
+		"time": 60,
+		"result": { "type": "research", "id": "thrust" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "hydrogen": 5000, "quartz": 1000 },
+		"research": {},
+		"time": 120,
+		"result": { "type": "research", "id": "energy" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "titanium": 2500, "quartz": 5000 },
+		"research": { "armor": 5 },
+		"time": 180,
+		"result": { "type": "research", "id": "shields" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "titanium": 10000, "quartz": 10000, "hydrogen": 10000 },
+		"research": {},
+		"time": 300,
+		"result": { "type": "research", "id": "storage" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "titanium": 10000, "quartz": 1000, "hydrogen": 5000 },
+		"research": { "laser": 5 },
+		"time": 180,
+		"result": { "type": "research", "id": "missile" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "titanium": 50000, "quartz": 10000, "hydrogen": 10000 },
+		"research": { "reload": 5, "armor": 15 },
+		"time": 600,
+		"result": { "type": "research", "id": "regen" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "titanium": 100000 },
+		"research": { "armor": 10, "thrust": 10, "reload": 10 },
+		"time": 1200,
+		"result": { "type": "research", "id": "build" },
+		"location": ["lab"]
+	},
+	{
+		"items": { "titanium": 250000, "quartz": 50000, "hydrogen": 100000 },
+		"research": { "build": 5 },
+		"time": 3600,
+		"result": { "type": "research", "id": "salvage" },
+		"location": ["lab"]
+	}
+]

@@ -1,66 +1,29 @@
-import { assignWithDefaults, pick } from 'utilium';
-import { Fleet } from '../components/fleet';
-import type { EntityStorageManager } from '../components/storage';
-import type { ResearchID } from '../generic/research';
-import { research } from '../generic/research';
-import type { System } from '../system';
-import type { EntityJSON } from './entity';
-import { Entity } from './entity';
+import { CopyData } from 'deltablank/core/component.js';
+import { EntityWithComponents, type EntityConfig } from 'deltablank/core/entity.js';
+import { EntityStorageManager, Fleet, Owner } from '../components';
+import { research, type ResearchID } from '../data';
 
-export interface PlayerJSON extends EntityJSON {
-	research: Record<ResearchID, number>;
-	fleet: string;
-	xp: number;
-}
+// Note: Fleet loaded after Player
+export class Player extends EntityWithComponents(EntityStorageManager, Fleet, Owner, CopyData) {
+	static config = {
+		self_owned: true,
+		max_items: 1e10,
+		fleet: {
+			max_ships: 9999,
+			allow_nesting: false,
+		},
+		copy_data: ['xp', 'research'],
+	} satisfies EntityConfig<[EntityStorageManager, Fleet, Owner, CopyData]>;
 
-export class Player extends Entity {
+	public xp: number = 0;
 	public research = Object.fromEntries([...research.keys()].map(k => [k, 0])) as Record<ResearchID, number>;
-	public fleet: Fleet;
-	public xp = 0;
-	public get power(): number {
-		return this.fleet.power;
-	}
 
-	public get owner(): this {
-		return this;
-	}
-
-	public get storage(): EntityStorageManager {
-		return this.fleet.storage;
-	}
-
-	public constructor(id: string | undefined, system: System) {
-		super(id, system);
-		this.fleet = new Fleet(undefined, system);
-		this.fleet.parent = this;
-	}
-
-	public update(): void {
-		this.velocity.scaleInPlace(0.9);
-	}
-
-	public reset(): void {
-		this.fleet.storage.clear();
+	public async reset(): Promise<void> {
+		this.storage.clear();
 		for (const type of research.keys()) {
 			this.research[type] = 0;
 		}
-		for (const ship of this.fleet) {
-			ship.remove();
-		}
-		this.level.emit('player_reset', this.toJSON());
-	}
 
-	public fromJSON(data: PlayerJSON): void {
-		super.fromJSON(data);
-		assignWithDefaults(this as Player, pick(data, 'xp', 'research'));
-		// Note: Fleet loaded after Player
-	}
-
-	public toJSON(): PlayerJSON {
-		return {
-			...super.toJSON(),
-			...pick(this, 'xp', 'research'),
-			fleet: this.fleet.id,
-		};
+		for (const ship of this.fleet) await ship.dispose();
 	}
 }

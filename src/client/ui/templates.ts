@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import type { Shipyard } from '../../core/entities/station/shipyard';
+import type { Shipyard } from '../../core/entities/shipyard';
 import type { Item } from '../../core/generic/items';
 import type { Research } from '../../core/generic/research';
 import type { GenericShip, ShipType } from '../../core/generic/ships';
@@ -35,7 +35,9 @@ export function createShipUI(ship: GenericShip): JQuery<DocumentFragment> {
 
 export function createShipyardUI(shipyard: Shipyard): JQuery<DocumentFragment> {
 	const instance = instantiateTemplate('#shipyard');
-	instance.find('.add').on('click', () => action('create_ship', { ship: genericShips.get(instance.find('select').val() as ShipType)!, shipyard }));
+	instance
+		.find('.add')
+		.on('click', () => action('create_ship', { ship: genericShips.get(instance.find('select').val() as ShipType)!, shipyard }));
 	instance.find(shipyard.production ? '.non-active' : '.active').hide();
 	instance.find(shipyard.production ? '.active' : '.non-active').show();
 

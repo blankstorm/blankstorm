@@ -30,7 +30,7 @@ let eggCounter: number = 0;
 
 export function sendMessage(...msg: string[]): void {
 	for (const m of msg) {
-		logger.log('CHAT: ' + m);
+		logger.info('CHAT: ' + m);
 		$(`<li bg=none></li>`)
 			.text(m)
 			.appendTo('#chat')

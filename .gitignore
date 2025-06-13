@@ -17,3 +17,5 @@ tmp
 temp
 src/client/assets
 *.blend1
+.tmp.*
+_tmp.*

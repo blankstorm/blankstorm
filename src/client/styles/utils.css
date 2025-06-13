@@ -31,8 +31,23 @@ tool-tip {
 	border-radius: var(--bg-radius);
 	box-shadow: var(--bg-shadow);
 	--bg-color-seethru: hsla(var(--_bg-color), 0.33);
-	background: linear-gradient(to right, var(--bg-color) 0%, var(--bg-color-seethru) 10%, var(--bg-color-seethru) 50%, var(--bg-color-seethru) 90%, var(--bg-color) 100%),
-		linear-gradient(to bottom, var(--bg-color) 0%, var(--bg-color-seethru) 20%, var(--bg-color-seethru) 50%, var(--bg-color-seethru) 80%, var(--bg-color) 100%) !important;
+	background:
+		linear-gradient(
+			to right,
+			var(--bg-color) 0%,
+			var(--bg-color-seethru) 10%,
+			var(--bg-color-seethru) 50%,
+			var(--bg-color-seethru) 90%,
+			var(--bg-color) 100%
+		),
+		linear-gradient(
+			to bottom,
+			var(--bg-color) 0%,
+			var(--bg-color-seethru) 20%,
+			var(--bg-color-seethru) 50%,
+			var(--bg-color-seethru) 80%,
+			var(--bg-color) 100%
+		) !important;
 }
 
 .bg-light {

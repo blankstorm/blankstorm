@@ -16,8 +16,8 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { ReflectionProbe } from '@babylonjs/core/Probes/reflectionProbe';
 import '@babylonjs/core/Rendering/boundingBoxRenderer'; // for showBoundingBox
 import { Scene } from '@babylonjs/core/scene';
-import type { EntityJSON } from '../core/entities/entity';
-import type { LevelJSON } from '../core/level';
+import type { BS_EntityJSON } from '../core/entities/.tmp.entity';
+import type { BS_LevelJSON } from '../core/level';
 import { config, currentVersion } from '../core/metadata';
 import type { MoveInfo } from '../core/system';
 import { EntityRenderer, PlanetMaterial, PlanetRenderer, ShipRenderer, renderers } from './entities';
@@ -25,7 +25,7 @@ import { logger } from './logger';
 import { ModelRenderer, initModel, type ModelEntityJSON } from './models';
 export { logger };
 
-function createEmptyCache(): LevelJSON {
+function createEmptyCache(): BS_LevelJSON {
 	return {
 		id: '',
 		difficulty: 0,
@@ -40,7 +40,7 @@ function createEmptyCache(): LevelJSON {
 let skybox: Mesh,
 	xzPlane: Mesh,
 	camera: ArcRotateCamera,
-	cache: LevelJSON = createEmptyCache(),
+	cache: BS_LevelJSON = createEmptyCache(),
 	glow: GlowLayer;
 
 export const cameraVelocity: Vector3 = Vector3.Zero();
@@ -171,7 +171,7 @@ export function clear() {
 	logger.debug('Cleared');
 }
 
-export function load(entityJSON: EntityJSON[]): void {
+export function load(entityJSON: BS_EntityJSON[]): void {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Not initialized'));
 	}
@@ -183,13 +183,13 @@ export function load(entityJSON: EntityJSON[]): void {
 	logger.debug(`Loading ${entityJSON.length} entities`);
 	for (const data of entityJSON) {
 		logger.debug('Loading entity: ' + data.id);
-		if (!renderers.has(data.entityType)) {
-			logger.warn('rendering for entity type is not supported: ' + data.entityType);
+		if (!renderers.has(data.type)) {
+			logger.warn('rendering for entity type is not supported: ' + data.type);
 			continue;
 		}
-		const entity = new (renderers.get(data.entityType)!)(data);
+		const entity = new (renderers.get(data.type)!)(data);
 		entity.update(data);
-		if (['Player', 'Client'].includes(data.entityType)) {
+		if (['Player', 'Client'].includes(data.type)) {
 			/**
 			 * @todo change this
 			 */
@@ -201,22 +201,24 @@ export function load(entityJSON: EntityJSON[]): void {
 	}
 }
 
-export function update(levelData: LevelJSON): void {
+export function update(levelData: BS_LevelJSON): void {
 	if (!scene) {
 		throw logger.error(new ReferenceError('Renderer not initialized'));
 	}
 
-	const renderersToAdd: EntityJSON[] = [];
+	const renderersToAdd: BS_EntityJSON[] = [];
 
 	if (levelData.id != cache.id && cache.id) {
-		logger.warn(`Updating the renderer with a different system (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`);
+		logger.warn(
+			`Updating the renderer with a different system (${cache.id} -> ${levelData.id}). The renderer should be cleared first.`
+		);
 	}
 
 	for (const entity of [...cache.entities, ...levelData.entities]) {
 		const data = levelData.entities.find(_ => _.id == entity.id),
 			cached = cache.entities.find(_ => _.id == entity.id);
 
-		if (!renderers.has(data?.entityType ?? '')) {
+		if (!renderers.has(data?.type ?? '')) {
 			continue;
 		}
 

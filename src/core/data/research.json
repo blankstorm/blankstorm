@@ -1,0 +1,145 @@
+{
+	"armor": {
+		"id": "armor",
+		"recipe": {
+			"items": { "titanium": 1000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": {}
+		},
+		"xp": 1,
+		"scale": 1.5,
+		"max_level": 25,
+		"tree_position": [20, 0]
+	},
+	"laser": {
+		"id": "laser",
+		"recipe": {
+			"items": { "quartz": 1000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": {}
+		},
+		"xp": 1,
+		"scale": 1.5,
+		"max_level": 25,
+		"tree_position": [40, 0]
+	},
+	"reload": {
+		"id": "reload",
+		"recipe": {
+			"items": { "titanium": 4000, "quartz": 1500 },
+			"location": ["lab"],
+			"time": 60,
+			"research": {}
+		},
+		"xp": 1,
+		"scale": 1.2,
+		"max_level": 10,
+		"tree_position": [50, 20]
+	},
+	"thrust": {
+		"id": "thrust",
+		"recipe": {
+			"items": { "hydrogen": 1000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": {}
+		},
+		"xp": 1,
+		"scale": 1.5,
+		"max_level": 25,
+		"tree_position": [60, 0]
+	},
+	"energy": {
+		"id": "energy",
+		"recipe": {
+			"items": { "hydrogen": 5000, "quartz": 1000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": {}
+		},
+		"xp": 1,
+		"scale": 1.5,
+		"max_level": 25,
+		"tree_position": [80, 20]
+	},
+	"shields": {
+		"id": "shields",
+		"recipe": {
+			"items": { "titanium": 2500, "quartz": 5000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": { "armor": 5 }
+		},
+		"xp": 1,
+		"scale": 1.5,
+		"max_level": 10,
+		"tree_position": [0, 40]
+	},
+	"storage": {
+		"id": "storage",
+		"recipe": {
+			"items": { "titanium": 10000, "quartz": 10000, "hydrogen": 10000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": {}
+		},
+		"xp": 2,
+		"scale": 10,
+		"max_level": 25,
+		"tree_position": [100, 0]
+	},
+	"missile": {
+		"id": "missile",
+		"recipe": {
+			"items": { "titanium": 10000, "quartz": 1000, "hydrogen": 5000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": { "laser": 5 }
+		},
+		"xp": 1,
+		"scale": 1.5,
+		"max_level": 25,
+		"tree_position": [40, 40]
+	},
+	"regen": {
+		"id": "regen",
+		"recipe": {
+			"items": { "titanium": 50000, "quartz": 10000, "hydrogen": 10000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": { "reload": 5, "armor": 15 }
+		},
+		"xp": 1,
+		"scale": 1.5,
+		"max_level": 25,
+		"tree_position": [60, 70]
+	},
+	"build": {
+		"id": "build",
+		"recipe": {
+			"items": { "titanium": 100000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": { "armor": 10, "thrust": 10, "reload": 10 }
+		},
+		"xp": 2,
+		"scale": 1.5,
+		"max_level": 50,
+		"tree_position": [80, 70]
+	},
+	"salvage": {
+		"id": "salvage",
+		"recipe": {
+			"items": { "titanium": 250000, "quartz": 50000, "hydrogen": 100000 },
+			"location": ["lab"],
+			"time": 60,
+			"research": { "build": 5 }
+		},
+		"xp": 5,
+		"scale": 1.25,
+		"max_level": 25,
+		"tree_position": [80, 100]
+	}
+}

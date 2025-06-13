@@ -176,7 +176,9 @@ export class Item<T extends Type = Type> extends EventEmitter<{
 		switch (this.type) {
 			case 'keybind':
 				this.keybind_value = val as Value<T> & Keybind;
-				this.ui.find('input').val((this.keybind_value.ctrl ? 'Ctrl + ' : '') + (this.keybind_value.alt ? 'Alt + ' : '') + this.keybind_value.key);
+				this.ui
+					.find('input')
+					.val((this.keybind_value.ctrl ? 'Ctrl + ' : '') + (this.keybind_value.alt ? 'Alt + ' : '') + this.keybind_value.key);
 				break;
 			case 'boolean':
 				this.ui.find('input')[0].checked = val as boolean;

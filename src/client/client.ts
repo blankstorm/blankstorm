@@ -4,8 +4,8 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import $ from 'jquery';
 import { author } from '../../package.json';
 import { execCommandString } from '../core/commands';
-import { tickInfo } from '../core/entities/entity';
-import { Level } from '../core/level';
+import { tickInfo } from '../core/entities/.tmp.entity';
+import { BS_Level } from '../core/level';
 import { config, currentVersion } from '../core/metadata';
 import { xpToLevel } from '../core/utils';
 import * as renderer from '../renderer/index';
@@ -48,7 +48,7 @@ export let isInitialized: boolean = false;
 
 function _initLog(message: string): void {
 	$('#loading_cover p').text(message);
-	logger.log(message);
+	logger.info(message);
 }
 
 export async function init({ path = '.', debug = false }: Partial<ClientInit> = {}): Promise<void> {
@@ -358,11 +358,11 @@ export async function init({ path = '.', debug = false }: Partial<ClientInit> = 
 	ui.update();
 	$('#loading_cover p').text('Done!');
 	$('#loading_cover').fadeOut(1000);
-	logger.log('Loaded successfully');
+	logger.info('Loaded successfully');
 	renderer.engine.runRenderLoop(update);
 	setInterval(() => {
-		if (!isPaused && !isServer && level instanceof Level) {
-			level.update();
+		if (!isPaused && !isServer && level instanceof BS_Level) {
+			level.tick();
 		}
 	}, 1000 / config.tick_rate);
 	isInitialized = true;
@@ -373,7 +373,7 @@ export function reload() {
 }
 
 export function update() {
-	if (!(level instanceof Level) || isPaused) {
+	if (!(level instanceof BS_Level) || isPaused) {
 		return;
 	}
 	const camera = renderer.getCamera();

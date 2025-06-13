@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import { toDegrees } from 'utilium';
-import type { Entity } from '../../core/entities/entity';
+import type { BS_Entity } from '../../core/entities/.tmp.entity';
 import type { Planet } from '../../core/entities/planet';
-import type { Ship } from '../../core/entities/ship';
+import type { Ship } from '../../core/entities/ships';
 import type { Star } from '../../core/entities/star';
 import type { Waypoint } from '../../core/entities/waypoint';
 import { config } from '../../core/metadata';
@@ -47,7 +47,7 @@ export class MapMarker {
 		throw new TypeError('Invalid target type');
 	}
 
-	public constructor(public readonly target: Entity | System) {
+	public constructor(public readonly target: BS_Entity | System) {
 		this.gui.attr('id', this.markerID).addClass('map-marker').appendTo('#map-markers');
 		let internalMarker: JQuery<SVGElement>;
 		if (target instanceof System) {

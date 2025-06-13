@@ -81,7 +81,13 @@ input {
 
 input[type='text'] {
 	display: inline-block;
-	background: linear-gradient(to top, var(--bg-gradient-light) 0, var(--bg-gradient-dark) 20%, var(--bg-gradient-dark) 60%, var(--bg-gradient-light) 100%);
+	background: linear-gradient(
+		to top,
+		var(--bg-gradient-light) 0,
+		var(--bg-gradient-dark) 20%,
+		var(--bg-gradient-dark) 60%,
+		var(--bg-gradient-light) 100%
+	);
 }
 dfn {
 	font-style: normal;

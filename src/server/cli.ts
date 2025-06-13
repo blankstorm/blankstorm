@@ -1,13 +1,20 @@
+import { execCommandString } from 'deltablank/core/commands.js';
+import 'deltablank/server/commands.js';
+import { blacklist, config, ops, whitelist, type OpsEntry, type ServerConfig } from 'deltablank/server/config.js';
+import { onClose, stop } from 'deltablank/server/server.js';
+import { listen } from 'deltablank/server/transport.js';
+import { logger, readJSONFile } from 'deltablank/server/utils.js';
 import * as path from 'node:path';
+import { createInterface } from 'node:readline';
+import { styleText } from 'node:util';
 import { List } from 'utilium';
-import type { LevelJSON } from '../core/level';
-import { config as coreConfig } from '../core/metadata';
-import { blacklist, config, ops, whitelist, type OpsEntry, type ServerConfig } from './config';
-import { stop } from './server';
-import { listen } from './transport';
-import { logger, readJSONFile } from './utils';
+import '../core/commands.js';
+import '../core/components/index.js';
+import '../core/entities/index.js';
+import type { BS_LevelJSON } from '../core/level.js';
+import { config as coreConfig } from '../core/metadata.js';
 
-const levelData: LevelJSON | Record<string, never> = {};
+const levelData: BS_LevelJSON | Record<string, never> = {};
 
 //load config and settings and things
 
@@ -40,12 +47,28 @@ for (const [data, filePath] of [
 	data.push(...contents);
 }
 
-void listen({ port: config.port || coreConfig.default_port }).then(() => logger.log('server started'));
+void listen({ port: config.port || coreConfig.default_port }).then(() => logger.info('server started'));
+
+const input = createInterface(process.stdin, process.stdout);
+
+input.on('line', line => {
+	const result = execCommandString(line, { executor: {} as any }, true);
+	if (result) console.log(styleText('blue', result));
+});
+
+onClose(() => {
+	input.close();
+});
+
 process
 	.on('uncaughtException', err => {
 		logger.error('Fatal error: ' + err.stack);
 		stop();
 	})
 	.on('warning', warning => logger.warn(warning.name))
-	.once('SIGINT', () => stop())
-	.once('SIGTERM', () => stop());
+	.once('SIGINT', stop)
+	.once('SIGTERM', stop);
+
+input.resume();
+
+input.on('close', stop);

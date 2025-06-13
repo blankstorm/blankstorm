@@ -8,7 +8,7 @@ import { items, type ItemID } from '../core/generic/items';
 import type { ResearchID } from '../core/generic/research';
 import { isResearchLocked, research } from '../core/generic/research';
 import { genericShips } from '../core/generic/ships';
-import { Level } from '../core/level';
+import { BS_Level } from '../core/level';
 import { config as coreConfig, currentVersion, displayVersion, game_url } from '../core/metadata';
 import * as renderer from '../renderer';
 import * as config from './config';
@@ -55,7 +55,10 @@ export async function init() {
 	$('#map-markers-container').attr('viewBox', `-${size / 2} -${size / 2} ${size} ${size}`);
 	const grid = $svg<SVGGElement>('g').css('stroke', 'var(--bg-color)').appendTo('#map-markers');
 	for (let i = -size * 2; i < size * 2; i += 100) {
-		grid.append($svg('line').attr({ x1: -size * 2, x2: size * 2, y1: i, y2: i }), $svg('line').attr({ x1: i, x2: i, y1: -size * 2, y2: size * 2 }));
+		grid.append(
+			$svg('line').attr({ x1: -size * 2, x2: size * 2, y1: i, y2: i }),
+			$svg('line').attr({ x1: i, x2: i, y1: -size * 2, y2: size * 2 })
+		);
 	}
 }
 
@@ -365,7 +368,7 @@ export function registerListeners() {
 		if (!config.isPaused) {
 			renderer.getCamera().attachControl(true);
 		}
-		if (!(level instanceof Level)) {
+		if (!(level instanceof BS_Level)) {
 			logger.warn('No active client level');
 			return;
 		}
@@ -373,7 +376,7 @@ export function registerListeners() {
 		update();
 	});
 	$('canvas.game').on('contextmenu', e => {
-		if (!(level instanceof Level)) {
+		if (!(level instanceof BS_Level)) {
 			logger.warn('No active level');
 			return;
 		}

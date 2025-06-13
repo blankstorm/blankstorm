@@ -1,8 +1,8 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import type { EntityJSON } from '../../core/entities/entity';
+import type { BS_EntityJSON } from '../../core/entities/.tmp.entity';
 
-export class EntityRenderer<T extends EntityJSON = EntityJSON> extends TransformNode {
+export class EntityRenderer<T extends BS_EntityJSON = BS_EntityJSON> extends TransformNode {
 	public velocity: Vector3 = Vector3.Zero();
 
 	public constructor(
@@ -31,4 +31,4 @@ export class EntityRenderer<T extends EntityJSON = EntityJSON> extends Transform
 	}
 }
 
-export const renderers: Map<string, typeof EntityRenderer<EntityJSON>> = new Map();
+export const renderers: Map<string, typeof EntityRenderer<BS_EntityJSON>> = new Map();

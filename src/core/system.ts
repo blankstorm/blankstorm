@@ -1,41 +1,68 @@
 import type { IVector2Like } from '@babylonjs/core/Maths/math.like';
 import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Vector2 } from '@babylonjs/core/Maths/math.vector';
-import EventEmitter from 'eventemitter3';
-import { getRandomIntWithRecursiveProbability, greekLetterNames, pick, randomBoolean, randomFloat, randomHex, randomInt, range } from 'utilium';
-import { filterEntities, type Entity } from './entities/entity';
-import { Planet } from './entities/planet';
-import { generateFleetFromPower } from './entities/ship';
-import { Star } from './entities/star';
-import type { Shipyard } from './entities/station/shipyard';
-import type { Item } from './generic/items';
-import { planetBiomes } from './generic/planets';
-import type { Research } from './generic/research';
-import type { GenericShip } from './generic/ships';
-import type { SystemGenerationOptions } from './generic/system';
-import type { Level } from './level';
-import { config } from './metadata';
+import { filterEntities, type Entity } from 'deltablank/core/entity.js';
+import { EventEmitter } from 'eventemitter3';
+import {
+	getRandomIntWithRecursiveProbability,
+	greekLetterNames,
+	pick,
+	randomBoolean,
+	randomFloat,
+	randomInt,
+	range,
+	type UUID,
+} from 'utilium';
+import type { Item, Research } from './data';
+import { Planet, planetBiomes, Star } from './entities/natural';
+import { generateFleetFromPower, type ShipConfig } from './entities/ships';
+import type { Shipyard } from './entities/station';
+import type { BS_Level } from './level';
+import config from './data/system.json' with { type: 'json' };
 import { logger, randomInCircle, randomInSphere } from './utils';
+
+export interface NaturalBodyGeneration {
+	min: number;
+	max: number;
+	radius_min: number;
+	radius_max: number;
+}
+
+export interface SystemGeneration {
+	difficulty: number;
+	stars: NaturalBodyGeneration & {
+		color_min: number[];
+		color_max: number[];
+	};
+	planets: NaturalBodyGeneration & {
+		distance_max: number;
+	};
+	connections: {
+		probability: number;
+		distance_min: number;
+		distance_max: number;
+	};
+}
 
 export type SystemConnectionJSON = string | [number, number];
 
 export interface SystemJSON {
 	name: string;
-	id: string;
+	id: UUID;
 	difficulty: number;
 	position: IVector2Like;
 	connections: SystemConnectionJSON[];
 }
 
 export interface MoveInfo<T> {
-	id: string;
+	id: UUID;
 	target: T;
 }
 
 export interface ActionData {
 	create_item: Item;
 	create_ship: {
-		ship: GenericShip;
+		ship: ShipConfig;
 		shipyard?: Shipyard;
 	};
 	do_research: Research;
@@ -57,17 +84,22 @@ export class System extends EventEmitter<{
 	public connections: Set<SystemConnection> = new Set();
 
 	constructor(
-		public readonly id: string = randomHex(32),
-		public level: Level
+		public readonly id: UUID = crypto.randomUUID(),
+		public level: BS_Level
 	) {
 		super();
 		this.level.systems.set(this.id, this);
 		this.emit('created');
 	}
 
-	public entities(): Set<Entity>;
-	public entities<T extends Entity = Entity>(selector: string): Set<T>;
-	public entities(selector?: string): Set<Entity> {
+	public entities(): IteratorObject<Entity>;
+	public entities<T extends Entity = Entity>(selector: string): IteratorObject<T>;
+	public *entities(selector?: string): IteratorObject<Entity> {
+		for (const entity of this.level.entities) {
+			if (entity.system != this) continue;
+			if (!selector || entity.matches(selector)) yield entity;
+		}
+
 		const entities = [...this.level.entities].filter(e => e.system == this);
 		return selector ? filterEntities(entities, selector) : new Set(entities);
 	}
@@ -81,11 +113,11 @@ export class System extends EventEmitter<{
 	}
 
 	public entity<T extends Entity = Entity>(selector: string): T {
-		return this.entities<T>(selector).values().next().value as T;
+		return this.entities<T>(selector).next().value as T;
 	}
 
-	public get selectedEntities(): Entity[] {
-		return [...this.entities()].filter(e => e.isSelected);
+	public get selectedEntities(): IteratorObject<Entity> {
+		return this.entities().filter(e => e.isSelected);
 	}
 
 	public toJSON(): SystemJSON {
@@ -123,13 +155,13 @@ export class System extends EventEmitter<{
 		}
 	}
 
-	public static FromJSON(json: SystemJSON, level: Level): System {
+	public static FromJSON(json: SystemJSON, level: BS_Level): System {
 		const system = new System(json.id, level);
 		system.fromJSON(json);
 		return system;
 	}
 
-	static Generate(name: string, options: SystemGenerationOptions = config.system_generation, level: Level, system?: System) {
+	static async Generate(name: string, options: SystemGeneration = config, level: BS_Level, system?: System) {
 		system ||= new System(undefined, level);
 		logger.debug(`Generating system "${name}" (${system.id})`);
 		system.name = name;
@@ -137,24 +169,23 @@ export class System extends EventEmitter<{
 		for (let i = 0; i < connectionCount; i++) {
 			system.connections.add(randomInCircle(5));
 		}
-		const star = new Star(undefined, system);
+		const star = new Star(undefined, level);
 		logger.debug(`	> star ${star.id}`);
-		star.fromJSON({
+		await star.load({
 			name,
-			system: system.id,
-			radius: randomInt(options.stars.radius_min, options.stars.radius_max),
 			position: [0, 0, 0],
 			color: [0, 1, 2].map(i => Math.random() ** 3 / 2 + randomFloat(options.stars.color_min[i], options.stars.color_max[i])),
 		});
+		star.radius = randomInt(options.stars.radius_min, options.stars.radius_max);
 		const planetCount = randomInt(options.planets.min, options.planets.max),
 			names = randomBoolean() ? greekLetterNames.slice(0, planetCount) : range(1, planetCount + 1),
 			planets: Planet[] = [];
 		for (let i = 0; i < names.length; i++) {
-			const planet = new Planet(undefined, system);
+			const planet = new Planet(undefined, level);
 			logger.debug(`	> planet ${planet.id}`);
 			planet.radius = randomInt(options.planets.radius_min, options.planets.radius_max);
 			planet.fleet.addFromStrings(...generateFleetFromPower((options.difficulty * (i + 1)) ** 2));
-			planet.fleet.position = randomInSphere(randomInt(planet.radius + 5, planet.radius * 1.25), true);
+			//planet.fleet.position = randomInSphere(randomInt(planet.radius + 5, planet.radius * 1.25), true);
 
 			planet.name = name + ' ' + names[i];
 			planet.system = system;

@@ -25,14 +25,21 @@
 		</template>
 
 		<div id="loading_cover" class="cover bg-alt" style="z-index: 100">
-			<svg xmlns="http://www.w3.org/2000/svg" style="position: fixed; left: calc(50% - 75px); top: calc(50% - 100px); width: 150px; height: 150px" viewBox="0 0 100 100">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				style="position: fixed; left: calc(50% - 75px); top: calc(50% - 100px); width: 150px; height: 150px"
+				viewBox="0 0 100 100"
+			>
 				<defs>
 					<linearGradient id="gradient">
 						<stop offset="0%" stop-color="hsl(200,100%,90%,.2)" />
 						<stop offset="100%" stop-color="hsl(200,100%,90%,1)" />
 					</linearGradient>
 				</defs>
-				<path fill="var(--text-color)" d="m60,50c0,5.5 -4.5,10 -10,10c-5.5,0 -10,-4.5 -10,-10c0,-5.5 4.5,-10 10,-10c5.5,0 10,4.5 10,10z" />
+				<path
+					fill="var(--text-color)"
+					d="m60,50c0,5.5 -4.5,10 -10,10c-5.5,0 -10,-4.5 -10,-10c0,-5.5 4.5,-10 10,-10c5.5,0 10,4.5 10,10z"
+				/>
 				<path
 					fill="url(#gradient)"
 					d="m73,50c0,-12.7 -10.3,-23 -23,-23s-23,10.3 -23,23m0.47001,0c0,-10.5 11.50746,-20.6493 22.10746,-20.6493s19.52254,10.1493 19.52254,20.6493"
@@ -202,7 +209,11 @@
 				<span locale class="back">Back</span>
 			</button>
 		</div>
-		<div id="tablist" class="bg-transparent ingame center-x" style="top: 0; width: 200px; height: fit-content; display: none; word-wrap: break-word; text-align: center">
+		<div
+			id="tablist"
+			class="bg-transparent ingame center-x"
+			style="top: 0; width: 200px; height: fit-content; display: none; word-wrap: break-word; text-align: center"
+		>
 			<p class="info"></p>
 			<p class="players"></p>
 		</div>
@@ -347,7 +358,10 @@
 		</div>
 		<div id="hud" class="ingame" style="display: none">
 			<p class="level center-x" style="bottom: 1em; width: 150px; height: 1em; text-align: center; line-height: 3em"></p>
-			<div class="xp center-x" style="bottom: 1em; width: 300px; height: 1em; border: 1px solid var(--text-color); border-radius: var(--bg-radius)">
+			<div
+				class="xp center-x"
+				style="bottom: 1em; width: 300px; height: 1em; border: 1px solid var(--text-color); border-radius: var(--bg-radius)"
+			>
 				<svg class="xp" style="width: 100%; height: 100%" preserveAspectRatio="none" viewBox="0 0 100 1" border>
 					<rect fill="var(--button-color)" x="0" y="0" width="0" height="100%"></rect>
 				</svg>

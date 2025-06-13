@@ -28,7 +28,9 @@ const _values = parseArgs({
 	},
 	allowPositionals: true,
 }).values;
-const options = _values as { [K in keyof typeof _values]: K extends 'logLevel' ? (typeof _values)[K] : Exclude<(typeof _values)[K], undefined> };
+const options = _values as {
+	[K in keyof typeof _values]: K extends 'logLevel' ? (typeof _values)[K] : Exclude<(typeof _values)[K], undefined>;
+};
 
 if (options.help) {
 	console.log(`Options:
@@ -76,7 +78,7 @@ if (options.logLevel) {
 	logger.warn('CLI flag for log level ignored (unsupported)');
 }
 
-logger.log('Initializing...');
+logger.info('Initializing...');
 
 if (!existsSync(join(options.path, 'token'))) {
 	writeFileSync(join(options.path, 'token'), '');

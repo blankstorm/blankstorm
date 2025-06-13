@@ -1,0 +1,196 @@
+{
+	"wind": {
+		"id": "wind",
+		"hp": 10,
+		"speed": 2,
+		"agility": 2,
+		"hyperspace": {
+			"range": 10000,
+			"cooldown": 1800
+		},
+		"power": 1,
+		"enemy": true,
+		"view_radius": 10,
+		"xp_yield": 5,
+		"max_items": 100,
+		"hardpoints": [{ "type": "laser_cannon_double", "position": [0, 0.01, 0.05], "scale": 0.25 }]
+	},
+	"mosquito": {
+		"id": "mosquito",
+		"hp": 25,
+		"speed": 1,
+		"agility": 1.5,
+		"hyperspace": {
+			"range": 10000,
+			"cooldown": 2400
+		},
+		"power": 2,
+		"enemy": true,
+		"view_radius": 15,
+		"xp_yield": 7.5,
+		"max_items": 250,
+		"hardpoints": [
+			{ "type": "laser_cannon_double", "position": [-0.125, 0.03, -0.25], "scale": 0.1 },
+			{ "type": "laser_cannon_double", "position": [0.125, 0.03, -0.25], "scale": 0.1 }
+		]
+	},
+	"cillus": {
+		"id": "cillus",
+		"hp": 5,
+		"speed": 1,
+		"agility": 0.75,
+		"hyperspace": {
+			"range": 10000,
+			"cooldown": 3000
+		},
+		"power": 1,
+		"enemy": false,
+		"view_radius": 20,
+		"xp_yield": 10,
+		"max_items": 25000,
+		"hardpoints": []
+	},
+	"inca": {
+		"id": "inca",
+		"hp": 50,
+		"speed": 1,
+		"agility": 1,
+		"hyperspace": {
+			"range": 10000,
+			"cooldown": 2700
+		},
+		"power": 5,
+		"enemy": true,
+		"view_radius": 20,
+		"xp_yield": 10,
+		"max_items": 250,
+		"hardpoints": [
+			{ "type": "laser_cannon_double", "position": [-0.06, 0.03, -0.1], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [0.06, 0.03, -0.1], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [0.06, 0.015, 0.05], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [-0.06, 0.015, 0.05], "scale": 0.75 }
+		]
+	},
+	"pilsung": {
+		"id": "pilsung",
+		"hp": 100,
+		"speed": 1,
+		"agility": 1,
+		"hyperspace": {
+			"range": 10000,
+			"cooldown": 2700
+		},
+		"power": 10,
+		"enemy": true,
+		"view_radius": 30,
+		"xp_yield": 20,
+		"max_items": 1000,
+		"hardpoints": [
+			{ "type": "laser_cannon_double", "position": [0.1, 0.04, -0.1], "rotation": [0, 1.57, 0], "scale": 0.8 },
+			{ "type": "laser_cannon_double", "position": [0.1, 0.04, -0.05], "rotation": [0, 1.57, 0], "scale": 0.8 },
+			{ "type": "laser_cannon_double", "position": [0.1, 0.04, 0], "rotation": [0, 1.57, 0], "scale": 0.8 },
+			{ "type": "laser_cannon_double", "position": [0.1, 0.04, 0.05], "rotation": [0, 1.57, 0], "scale": 0.8 },
+			{ "type": "laser_cannon_double", "position": [-0.1, 0.04, -0.1], "rotation": [0, -1.57, 0], "scale": 0.8 },
+			{ "type": "laser_cannon_double", "position": [-0.1, 0.04, -0.05], "rotation": [0, -1.57, 0], "scale": 0.8 },
+			{ "type": "laser_cannon_double", "position": [-0.1, 0.04, 0], "rotation": [0, -1.57, 0], "scale": 0.8 },
+			{ "type": "laser_cannon_double", "position": [-0.1, 0.04, 0.05], "rotation": [0, -1.57, 0], "scale": 0.8 }
+		]
+	},
+	"apis": {
+		"id": "apis",
+		"hp": 50,
+		"speed": 0.65,
+		"agility": 0.5,
+		"hyperspace": {
+			"range": 10000,
+			"cooldown": 3600
+		},
+		"power": 10,
+		"enemy": false,
+		"view_radius": 50,
+		"xp_yield": 10,
+		"max_items": 100000,
+		"hardpoints": []
+	},
+	"hurricane": {
+		"id": "hurricane",
+		"hp": 250,
+		"speed": 0.69,
+		"agility": 1,
+		"hyperspace": {
+			"range": 10000,
+			"cooldown": 2700
+		},
+		"power": 25,
+		"enemy": true,
+		"view_radius": 40,
+		"xp_yield": 50,
+		"max_items": 2500,
+		"hardpoints": [
+			{ "type": "laser_cannon_double", "position": [0.325, 0.0375, -1.225], "rotation": [0, 1.57, 0], "scale": 0.85 },
+			{ "type": "laser_cannon_double", "position": [0.325, 0.0375, -1.15], "rotation": [0, 1.57, 0], "scale": 0.85 },
+			{ "type": "laser_cannon_double", "position": [0.325, 0.0375, -1.075], "rotation": [0, 1.57, 0], "scale": 0.85 },
+			{ "type": "laser_cannon_double", "position": [-0.325, 0.0375, -1.225], "rotation": [0, -1.57, 0], "scale": 0.85 },
+			{ "type": "laser_cannon_double", "position": [-0.325, 0.0375, -1.15], "rotation": [0, -1.57, 0], "scale": 0.85 },
+			{ "type": "laser_cannon_double", "position": [-0.325, 0.0375, -1.075], "rotation": [0, -1.57, 0], "scale": 0.85 },
+			{ "type": "laser_cannon_double", "position": [0.1, 0.03, -0.35], "rotation": [0, 1.57, 0], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [0.1, 0.03, -0.2875], "rotation": [0, 1.57, 0], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [0.1, 0.03, -0.225], "rotation": [0, 1.57, 0], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [0.1, 0.03, -0.1625], "rotation": [0, 1.57, 0], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [-0.1, 0.03, -0.35], "rotation": [0, -1.57, 0], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [-0.1, 0.03, -0.2875], "rotation": [0, -1.57, 0], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [-0.1, 0.03, -0.225], "rotation": [0, -1.57, 0], "scale": 0.75 },
+			{ "type": "laser_cannon_double", "position": [-0.1, 0.03, -0.1625], "rotation": [0, -1.57, 0], "scale": 0.75 }
+		]
+	},
+	"horizon": {
+		"id": "horizon",
+		"hp": 2000,
+		"speed": 0.35,
+		"agility": 1,
+		"hyperspace": {
+			"range": 10000,
+			"cooldown": 3600
+		},
+		"power": 100,
+		"enemy": true,
+		"view_radius": 65,
+		"xp_yield": 100,
+		"max_items": 10000,
+		"hardpoints": [
+			{ "type": "laser_cannon_double", "position": [2.125, 0.055, -0.5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [2, 0.055, 0], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [1.875, 0.055, 0.5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [1.75, 0.055, 1], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [1.625, 0.055, 1.5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [1.5, 0.055, 2], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [1.375, 0.055, 2.5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [1.25, 0.055, 3], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [1.125, 0.055, 3.5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [1, 0.055, 4], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [0.875, 0.055, 4.5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [0.75, 0.055, 5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [0.625, 0.055, 5.5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [0.5, 0.055, 6], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [0.375, 0.055, 6.5], "rotation": [0, 1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [0.25, 0.055, 7], "rotation": [0, 1.309, 0], "scale": 1.5 },
+
+			{ "type": "laser_cannon_double", "position": [-2.125, 0.055, -0.5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-2, 0.055, 0], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-1.875, 0.055, 0.5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-1.75, 0.055, 1], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-1.625, 0.055, 1.5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-1.5, 0.055, 2], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-1.375, 0.055, 2.5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-1.25, 0.055, 3], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-1.125, 0.055, 3.5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-1, 0.055, 4], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-0.875, 0.055, 4.5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-0.75, 0.055, 5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-0.625, 0.055, 5.5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-0.5, 0.055, 6], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-0.375, 0.055, 6.5], "rotation": [0, -1.309, 0], "scale": 1.5 },
+			{ "type": "laser_cannon_double", "position": [-0.25, 0.055, 7], "rotation": [0, -1.309, 0], "scale": 1.5 }
+		]
+	}
+}

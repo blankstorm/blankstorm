@@ -36,11 +36,6 @@
 	"engines": {
 		"node": ">=22.0.0"
 	},
-	"lint-staged": {
-		"*": [
-			"prettier --write"
-		]
-	},
 	"dependencies": {
 		"@babylonjs/core": "^7.28.0",
 		"@babylonjs/loaders": "^7.28.0",
@@ -48,14 +43,14 @@
 		"@eslint/js": "^9.11.1",
 		"@stylistic/eslint-plugin": "^2.8.0",
 		"@types/jquery": "^3.5.31",
+		"deltablank": "^0.0.1",
 		"eventemitter3": "^5.0.1",
 		"jquery": "^3.7.1",
-		"lint-staged": "^15.2.7",
-		"logzen": "^0.3.10",
+		"logzen": "^0.7.0",
 		"socket.io": "^4.7.5",
 		"socket.io-client": "^4.7.5",
 		"typescript-eslint": "^8.7.0",
-		"utilium": "^0.8.2"
+		"utilium": "^2.3.7"
 	},
 	"devDependencies": {
 		"@types/node": "^20.2.1",
